@@ -101,3 +101,20 @@ export async function mergeMany(user, coll, records, onProgress) {
     onProgress?.(Math.min(i + 400, records.length))
   }
 }
+
+// Create-or-replace fields of one record (arrays are replaced, not merged).
+export async function saveRecord(user, coll, id, data) {
+  if (demoMode) return demoWrite(coll, id, (d) => ({ ...d, ...data, updatedBy: user.email }))
+  const { fs, db } = await fire()
+  await fs.setDoc(fs.doc(db, coll, id), { ...data, ...stamp(fs, user) }, { merge: true })
+}
+
+export async function deleteRecord(coll, id) {
+  if (demoMode) {
+    delete demo.data[coll]?.[id]
+    demo.listeners.forEach((f) => f())
+    return
+  }
+  const { fs, db } = await fire()
+  await fs.deleteDoc(fs.doc(db, coll, id))
+}

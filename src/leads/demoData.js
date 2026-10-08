@@ -38,6 +38,10 @@ export const demoData = {
     { id: 'demo-call-2', customerId: 'example-family', customerName: 'Example Family', issue: 'Tripped GFCI',
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
   ]),
+  views: byId([
+    { id: 'demo-view-1', name: 'Needs scheduling', order: 1, mode: 'install', statuses: ['Confirmed - Needs to be Scheduled'],
+      columns: ['name', 'area', 'phone', 'timeframe', 'status'] },
+  ]),
   gateCodes: byId([
     { id: 'example-lakes', neighborhood: 'Example Lakes', code: '#2468' },
     { id: 'sample-meadow', neighborhood: 'Sample Meadow', code: '1875#', notes: 'Code, then hit green button' },

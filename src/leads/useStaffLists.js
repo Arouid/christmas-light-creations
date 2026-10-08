@@ -1,5 +1,5 @@
 import { customerId, todayISO } from '../lib/customers'
-import { addRecord, mergeMany, updateField, useLiveCollection } from './staffStore'
+import { addRecord, deleteRecord, mergeMany, saveRecord, updateField, useLiveCollection } from './staffStore'
 
 const newestFirst = (a, b) => (b.received ?? '').localeCompare(a.received ?? '')
 const byNeighborhood = (a, b) => (a.neighborhood ?? '').localeCompare(b.neighborhood ?? '')
@@ -29,5 +29,19 @@ export function useGateCodes(user) {
     update: (id, path, value) => updateField(user, 'gateCodes', id, path, value),
     add: (neighborhood, code) => mergeMany(user, 'gateCodes', [{ id: customerId(neighborhood), data: { neighborhood, code } }]),
     importMany: (records, onProgress) => mergeMany(user, 'gateCodes', records, onProgress),
+  }
+}
+
+const byOrder = (a, b) => (a.order ?? 0) - (b.order ?? 0)
+
+// Custom tabs shared by all staff.
+export function useViews(user) {
+  const { items, error } = useLiveCollection(user, 'views', byOrder)
+  return {
+    views: items,
+    error,
+    add: (view) => addRecord(user, 'views', { ...view, order: Date.now() }),
+    save: (id, view) => saveRecord(user, 'views', id, view),
+    remove: (id) => deleteRecord('views', id),
   }
 }

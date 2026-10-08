@@ -81,6 +81,15 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
+    // Custom tabs (saved filters) shared by all staff.
+    match /views/{viewId} {
+      allow read, delete: if isStaff();
+      allow create, update: if isStaff()
+        && filledStr(request.resource.data.name, 60)
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+    }
+
     // Staff list: one document per person, ID = their lowercase Google email.
     // Managed in the Firebase console only.
     match /staff/{email} {

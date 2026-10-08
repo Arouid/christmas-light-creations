@@ -41,6 +41,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Don't reword customer reviews; quote them as written.
 - Old WordPress URLs (`/faq/`, `/photos/`, `/info/`, `/get-an-estimate/`) must keep redirecting (`public/<path>/index.html`).
 - Estimate form saves to Firestore `leads`; staff read and update them at `/leads/` (Google sign-in, allowlist in the `staff` collection). Access rules live in `firestore.rules`; any new lead field must be added there and in `LEAD_FIELDS` in `src/lib/firebase.js`. With Firebase not configured, the form shows a call button and `/leads/` shows sample data.
+- New Firestore collections need `firestore.rules` republished by the owner (paste in Firebase console). Until then that list is refused; it must not lock staff out (only leads/customers decide access). Say so before shipping a feature that adds a collection.
 - Load Firebase with dynamic `import()` only, so the public page stays light.
 - Street View on lead cards: `src/lib/streetView.js`. The Maps key is locked to the site's domains + localhost:5173 and to Maps JavaScript, Geocoding and Street View Static APIs (Google Cloud, project clc-leads-site).
 - Staff app at `/leads/` has tabs Leads / Customers / Season / Import (spec: `docs/specs/customers.md`). Customers live in Firestore `customers`; ids are name slugs so re-imports update. Use `/leads/?demo` in dev to check the UI with sample data (no sign-in). Importer mapping is pure (`src/lib/importSheet.js`) and tested in `tests/`.

@@ -8,23 +8,32 @@ import ImportView from './ImportView'
 import LeadsView from './LeadsView'
 import SeasonView from './SeasonView'
 import ServiceView from './ServiceView'
+import ViewEditor from './ViewEditor'
+import ViewTab from './ViewTab'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
-import { useGateCodes, useServiceCalls } from './useStaffLists'
+import { useGateCodes, useServiceCalls, useViews } from './useStaffLists'
 
-const TABS = [['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
+// Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
+const BEFORE = [['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season']]
+const AFTER = [['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
   return <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">{children}</main>
 }
 
-const tabFromHash = () => TABS.find(([k]) => `#${k}` === window.location.hash)?.[0] ?? 'leads'
+const tabFromHash = () => {
+  const h = window.location.hash.slice(1)
+  return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'leads'
+}
 
 export default function LeadsApp() {
   const { user, leads, error, signIn, signOut, updateLead, demo } = useLeads()
   const customersApi = useCustomers(user)
   const serviceApi = useServiceCalls(user)
   const gatesApi = useGateCodes(user)
+  const viewsApi = useViews(user)
+  const [editing, setEditing] = useState(null) // null | {} (new) | view
   const [tab, setTab] = useState(tabFromHash)
   const [openId, setOpenId] = useState(null)
   const [signInError, setSignInError] = useState(false)
@@ -51,7 +60,9 @@ export default function LeadsApp() {
     )
   }
 
-  if ([error, customersApi.error, serviceApi.error, gatesApi.error].includes('not-staff')) {
+  // Only the core lists decide access; a refused extra list (e.g. rules not
+  // yet published for a new feature) shows a warning instead of locking staff out.
+  if ([error, customersApi.error].includes('not-staff')) {
     return (
       <Screen>
         <h1 className="font-display text-2xl font-extrabold">Not on the staff list</h1>
@@ -66,7 +77,24 @@ export default function LeadsApp() {
   const { customers } = customersApi
   const gates = gatesApi.gates ?? []
   const calls = serviceApi.calls ?? []
-  const listError = [customersApi.error, serviceApi.error, gatesApi.error].find((e) => e && e !== 'not-staff')
+  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error].find((e) => e && e !== 'not-staff')
+    ?? ([serviceApi.error, gatesApi.error, viewsApi.error].includes('not-staff')
+      ? 'part of the app was refused by the database. The security rules probably need publishing again (firestore.rules).'
+      : null)
+  const views = viewsApi.views ?? []
+  const currentView = tab.startsWith('view-') ? views.find((v) => `view-${v.id}` === tab) : null
+  const tabs = [...BEFORE, ...views.map((v) => [`view-${v.id}`, v.name]), ...AFTER]
+
+  async function saveView(data) {
+    if (editing?.id) return viewsApi.save(editing.id, data)
+    const id = await viewsApi.add(data)
+    window.location.hash = `#view-${id}`
+  }
+  async function deleteView() {
+    await viewsApi.remove(editing.id)
+    setEditing(null)
+    window.location.hash = '#season'
+  }
 
   const openCustomer = (id) => { setOpenId(id); window.location.hash = '#customers' }
 
@@ -99,12 +127,16 @@ export default function LeadsApp() {
           </div>
         </div>
         <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 lg:max-w-7xl" aria-label="Sections">
-          {TABS.map(([k, label]) => (
+          {tabs.map(([k, label]) => (
             <a key={k} href={`#${k}`} aria-current={tab === k ? 'page' : undefined}
               className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${tab === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
               {label}
             </a>
           ))}
+          {customers && (
+            <button type="button" onClick={() => setEditing({})}
+              className="shrink-0 px-3 py-3 text-sm font-semibold text-glow-400 hover:text-glow-300">+ New tab</button>
+          )}
         </nav>
       </header>
 
@@ -117,8 +149,12 @@ export default function LeadsApp() {
           ? <CustomersView customers={customers} season={season} onOpen={setOpenId} onCreate={customersApi.create} />
           : loading)}
         {tab === 'season' && (customers
-          ? <SeasonView customers={customers} season={season} onOpen={setOpenId} onUpdate={customersApi.update} />
+          ? <SeasonView customers={customers} season={season} gates={gates} onOpen={setOpenId} onUpdate={customersApi.update} />
           : loading)}
+        {tab.startsWith('view-') && (!customers || !viewsApi.views ? loading : currentView
+          ? <ViewTab view={currentView} customers={customers} season={season} gates={gates} onOpen={setOpenId}
+              onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} />
+          : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
         {tab === 'service' && (customers && serviceApi.calls
           ? <ServiceView calls={calls} customers={customers} gates={gates} onLog={serviceApi.log} onUpdate={serviceApi.update} onOpen={setOpenId} />
           : loading)}
@@ -130,6 +166,9 @@ export default function LeadsApp() {
           : loading)}
       </main>
 
+      {editing && customers && (
+        <ViewEditor view={editing} customers={customers} season={season} onSave={saveView} onDelete={deleteView} onClose={() => setEditing(null)} />
+      )}
       {open && (
         <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} />

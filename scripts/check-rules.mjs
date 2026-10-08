@@ -25,6 +25,7 @@ const cases = [
   ['Public can read customers', () => getDocsFromServer(collection(db, 'customers'))],
   ['Public can read service calls', () => getDocsFromServer(collection(db, 'serviceCalls'))],
   ['Public can read gate codes', () => getDocsFromServer(collection(db, 'gateCodes'))],
+  ['Public can read custom tabs', () => getDocsFromServer(collection(db, 'views'))],
   ['Public can add a customer', () => addDoc(collection(db, 'customers'), { fullName: 'Intruder', updatedAt: serverTimestamp(), updatedBy: 'x@example.com' })],
 ]
 

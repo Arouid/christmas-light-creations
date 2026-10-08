@@ -50,6 +50,10 @@ All 4 staff can see and edit everything, including prices and payments. Nobody c
 
 The sheet's Repairs/Warranty tab was empty, so nothing was imported for service calls.
 
+## Custom tabs (built 2026-10-08)
+
+"+ New tab" in the staff app's tab bar saves a named filter for all staff: Installs or Takedowns, statuses (none = all), areas, early/regular, week of, and which columns to show. Firestore `views/{auto}`; season "current" follows the calendar. Custom tabs sit between Season and Service; Edit tab / Delete this tab on each. Filtering is `matchesView()` in `src/lib/views.js` (tested).
+
 ## Not built yet (Phase 3)
 
 Mass-email lists, route map per day, export to spreadsheet.

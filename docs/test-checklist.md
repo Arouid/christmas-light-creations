@@ -24,3 +24,4 @@
 | 20 | Publish updated rules, then import the Gate Codes CSV | 16 neighborhoods on Gates tab | Done 2026-10-08 (owner saw 16) |
 | 21 | Real service call logged on a phone | Shows on Service tab and the customer's page for all staff | Not checked |
 | 22 | Make customer from a real lead | Customer created, lead shows "Customer record ✓" | Not checked |
+| 23 | Publish rules with `views`, create a real custom tab | Tab appears for every staff member | Blocked: rules not republished |
