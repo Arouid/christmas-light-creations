@@ -130,3 +130,16 @@ export function buildCustomers(schedulingRows, accountsRows = []) {
 
   return { customers, warnings, currentSeason: cur, previousSeason: prev }
 }
+
+// "Gate Codes" tab: Neighborhood, Code, Alternative, Notes.
+export function buildGateCodes(rows) {
+  const keys = headerKeys(rows?.[0] ?? [])
+  if (!keys.includes('neighborhood')) throw new Error('The Gate Codes file has no "Neighborhood" column. Is it the right tab?')
+  return rows.slice(1)
+    .map((r) => Object.fromEntries(keys.map((k, i) => [k, String(r[i] ?? '').trim()])))
+    .filter((g) => g.neighborhood)
+    .map((g) => ({
+      id: customerId(g.neighborhood),
+      data: compact({ neighborhood: g.neighborhood, code: g.code, alternative: g.alternative, notes: g.notes }),
+    }))
+}

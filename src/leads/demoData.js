@@ -1,5 +1,5 @@
-// Made-up customers for previewing the staff app (?demo in development).
-export const demoCustomers = [
+// Made-up records for previewing the staff app (?demo in development).
+const customers = [
   {
     id: 'sample-customer', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer',
     phone: '555-0101', email: 'sample@example.com', address: '123 Example St Pearland, TX 77581', city: 'Pearland',
@@ -27,3 +27,19 @@ export const demoCustomers = [
     seasons: { 2026: { installStatus: 'Confirmed - Needs to be Scheduled', firstContact: 'Confirmed', timeframe: 'first week of Nov' } },
   },
 ]
+
+const byId = (list) => Object.fromEntries(list.map(({ id, ...d }) => [id, d]))
+
+export const demoData = {
+  customers: byId(customers),
+  serviceCalls: byId([
+    { id: 'demo-call-1', customerId: 'sample-customer', customerName: 'Sample Customer', issue: 'Burned-out bulbs',
+      details: 'Left side of garage dark', received: '2026-12-02', status: 'Open' },
+    { id: 'demo-call-2', customerId: 'example-family', customerName: 'Example Family', issue: 'Tripped GFCI',
+      received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
+  ]),
+  gateCodes: byId([
+    { id: 'example-lakes', neighborhood: 'Example Lakes', code: '#2468' },
+    { id: 'sample-meadow', neighborhood: 'Sample Meadow', code: '1875#', notes: 'Code, then hit green button' },
+  ]),
+}

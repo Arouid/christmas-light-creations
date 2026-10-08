@@ -53,3 +53,41 @@ export function setPath(obj, path, value) {
 export const byName = (a, b) =>
   (a.lastName || a.fullName || '').localeCompare(b.lastName || b.fullName || '')
   || (a.fullName || '').localeCompare(b.fullName || '')
+
+export const SERVICE_STATUSES = ['Open', 'Scheduled', 'Done', 'Cancelled']
+export const SERVICE_ISSUES = ['Burned-out bulbs', 'Timer', 'Tripped GFCI', 'Unglued bulbs', 'Lights down / damaged', 'Other']
+
+// Local date as YYYY-MM-DD (sorts correctly as text).
+export function todayISO(date = new Date()) {
+  const p = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`
+}
+
+const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined && v !== ''))
+
+// A website estimate request becomes a customer record, ready to schedule.
+export function leadToCustomer(lead, season) {
+  const fullName = `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim()
+  const cityLine = [lead.city, 'TX', lead.zip].filter(Boolean).join(' ')
+  return clean({
+    fullName,
+    firstName: lead.firstName,
+    lastName: lead.lastName,
+    email: lead.email,
+    phone: lead.phone,
+    address: [lead.address, cityLine].filter(Boolean).join(', '),
+    city: lead.city,
+    since: season,
+    leadId: lead.id,
+    notes: lead.message ? `Website estimate request (prefers ${lead.contactMethod || 'phone'}): ${lead.message}` : undefined,
+    seasons: { [season]: { installStatus: 'Confirmed - Needs to be Scheduled', firstContact: 'Confirmed' } },
+  })
+}
+
+// Gate code for a customer: their own, else their neighborhood's.
+export function gateFor(customer, gateCodes = []) {
+  if (customer.gateCode) return { code: customer.gateCode, source: 'customer' }
+  const n = customer.neighborhood?.trim().toLowerCase()
+  const g = n && gateCodes.find((x) => x.neighborhood?.trim().toLowerCase() === n)
+  return g ? { code: [g.code, g.alternative].filter(Boolean).join(' or '), notes: g.notes, source: g.neighborhood } : null
+}

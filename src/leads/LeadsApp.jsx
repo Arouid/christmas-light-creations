@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { business } from '../data/content'
-import { seasonYear } from '../lib/customers'
+import { leadToCustomer, seasonYear } from '../lib/customers'
 import CustomerDetail from './CustomerDetail'
 import CustomersView from './CustomersView'
+import GatesView from './GatesView'
 import ImportView from './ImportView'
 import LeadsView from './LeadsView'
 import SeasonView from './SeasonView'
+import ServiceView from './ServiceView'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
+import { useGateCodes, useServiceCalls } from './useStaffLists'
 
-const TABS = [['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['import', 'Import']]
+const TABS = [['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
   return <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">{children}</main>
@@ -20,6 +23,8 @@ const tabFromHash = () => TABS.find(([k]) => `#${k}` === window.location.hash)?.
 export default function LeadsApp() {
   const { user, leads, error, signIn, signOut, updateLead, demo } = useLeads()
   const customersApi = useCustomers(user)
+  const serviceApi = useServiceCalls(user)
+  const gatesApi = useGateCodes(user)
   const [tab, setTab] = useState(tabFromHash)
   const [openId, setOpenId] = useState(null)
   const [signInError, setSignInError] = useState(false)
@@ -46,7 +51,7 @@ export default function LeadsApp() {
     )
   }
 
-  if (error === 'not-staff' || customersApi.error === 'not-staff') {
+  if ([error, customersApi.error, serviceApi.error, gatesApi.error].includes('not-staff')) {
     return (
       <Screen>
         <h1 className="font-display text-2xl font-extrabold">Not on the staff list</h1>
@@ -59,6 +64,26 @@ export default function LeadsApp() {
   }
 
   const { customers } = customersApi
+  const gates = gatesApi.gates ?? []
+  const calls = serviceApi.calls ?? []
+  const listError = [customersApi.error, serviceApi.error, gatesApi.error].find((e) => e && e !== 'not-staff')
+
+  const openCustomer = (id) => { setOpenId(id); window.location.hash = '#customers' }
+
+  // Create the customer from the lead (or link the existing one with that name).
+  async function makeCustomer(lead) {
+    const fields = leadToCustomer(lead, season)
+    let id
+    try {
+      id = await customersApi.create(fields)
+    } catch (err) {
+      const existing = customers?.find((c) => c.fullName?.toLowerCase() === fields.fullName.toLowerCase())
+      if (!existing) throw err
+      id = existing.id
+    }
+    await updateLead(lead.id, { customerId: id })
+    return id
+  }
   const open = openId && customers?.find((c) => c.id === openId)
   const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
 
@@ -84,22 +109,31 @@ export default function LeadsApp() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 pb-16 pt-4">
-        {customersApi.error && customersApi.error !== 'not-staff' && (
-          <p className="mb-4 text-berry-500" role="alert">Couldn’t load customers: {customersApi.error}</p>
+        {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
+        {tab === 'leads' && (
+          <LeadsView leads={leads} error={error} onUpdate={updateLead} onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
         )}
-        {tab === 'leads' && <LeadsView leads={leads} error={error} onUpdate={updateLead} />}
         {tab === 'customers' && (customers
           ? <CustomersView customers={customers} season={season} onOpen={setOpenId} onCreate={customersApi.create} />
           : loading)}
         {tab === 'season' && (customers
           ? <SeasonView customers={customers} season={season} onOpen={setOpenId} onUpdate={customersApi.update} />
           : loading)}
+        {tab === 'service' && (customers && serviceApi.calls
+          ? <ServiceView calls={calls} customers={customers} gates={gates} onLog={serviceApi.log} onUpdate={serviceApi.update} onOpen={setOpenId} />
+          : loading)}
+        {tab === 'gates' && (gatesApi.gates
+          ? <GatesView gates={gates} onUpdate={gatesApi.update} onAdd={gatesApi.add} />
+          : loading)}
         {tab === 'import' && (customers
-          ? <ImportView existing={customers} onImport={customersApi.importMany} />
+          ? <ImportView existing={customers} onImport={customersApi.importMany} onImportGates={gatesApi.importMany} />
           : loading)}
       </main>
 
-      {open && <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)} />}
+      {open && (
+        <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
+          gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} />
+      )}
     </div>
   )
 }

@@ -68,3 +68,31 @@ test('season year: Oct–Dec is that year, Jan takedowns belong to the previous 
   assert.equal(seasonYear(new Date(2027, 0, 12)), '2026')
   assert.equal(customerId("Amanda Barnett-Guidry"), 'amanda-barnett-guidry')
 })
+
+import { buildGateCodes } from '../src/lib/importSheet.js'
+import { leadToCustomer, gateFor } from '../src/lib/customers.js'
+
+test('gate codes tab maps neighborhoods to codes', () => {
+  const g = buildGateCodes([['Neighborhood', 'Code', 'Alternative', 'Notes'], ['Example Lakes', '#2468'], ['Sample Cove', '16339', '55534', 'hit green button'], []])
+  assert.deepEqual(g.map((x) => x.id), ['example-lakes', 'sample-cove'])
+  assert.deepEqual(g[1].data, { neighborhood: 'Sample Cove', code: '16339', alternative: '55534', notes: 'hit green button' })
+  assert.equal('alternative' in g[0].data, false)
+})
+
+test('a lead becomes a customer ready to schedule, with no empty fields', () => {
+  const c = leadToCustomer({ id: 'L1', firstName: 'Test', lastName: 'Lead', email: 't@example.com', phone: '',
+    address: '1 Test St', city: 'Pearland', zip: '77581', contactMethod: 'Text', message: 'Roofline please' }, '2026')
+  assert.equal(c.fullName, 'Test Lead')
+  assert.equal(c.address, '1 Test St, Pearland TX 77581')
+  assert.equal('phone' in c, false, 'empty values are dropped (Firestore rejects undefined)')
+  assert.equal(c.seasons['2026'].installStatus, 'Confirmed - Needs to be Scheduled')
+  assert.match(c.notes, /prefers Text.*Roofline please/)
+  assert.equal(Object.values(c).includes(undefined), false)
+})
+
+test('gate code: own code wins, else the neighborhood code', () => {
+  const codes = [{ neighborhood: 'Example Lakes', code: '#2468', alternative: '1111' }]
+  assert.equal(gateFor({ gateCode: '9999', neighborhood: 'Example Lakes' }, codes).code, '9999')
+  assert.deepEqual(gateFor({ neighborhood: ' example lakes ' }, codes), { code: '#2468 or 1111', notes: undefined, source: 'Example Lakes' })
+  assert.equal(gateFor({ neighborhood: 'Nowhere' }, codes), null)
+})

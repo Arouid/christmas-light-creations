@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Phase 2 (demo data, 375px): Make customer links an existing same-name customer (count unchanged) and creates a new one with address/website note/2026 status; lead then shows "Customer record ✓"; Service: log call appears in To do, status Done stamps today and moves it to Done, card shows gate; customer page lists its calls; typing a known neighborhood shows that neighborhood's gate code and notes | Browser pane `/leads/?demo` + `npm test` (9 tests) |
 | 2026-10-08 | Real import: 114 customers in the app = 114 names on both Scheduling and Accounts tabs; statuses showing in list | Owner screenshot + Sheets read |
 | 2026-10-08 | Live rules: strangers refused on leads, staff and customers (10/10) | `npm run check:rules` |
 | 2026-10-08 | Staff app (demo data, 375px): Season board counts update on status change, area filter, "Ask" text prefilled; customer detail opens with gate code banner, sections; typing + Tab saves a text field ("Saved ✓"), dropdown saves; Import of made-up CSVs with a multi-line note: preview counts, 2026 rate / 2025 takedown payment placed right, app-edited gate code not overwritten, new customer added | Browser pane `/leads/?demo` + `npm test` (6 importer tests) |

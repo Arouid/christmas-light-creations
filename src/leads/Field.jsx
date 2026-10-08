@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { withOption } from '../lib/customers'
 
 const input = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base focus:border-glow-400 focus:outline-none'
 
 // Edit-in-place: text saves when the field loses focus, dropdowns save on change.
-export default function Field({ label, value, onSave, options, blankLabel = '—', rows, inputMode, className = '' }) {
+export default function Field({ label, value, onSave, options, blankLabel = '—', rows, inputMode, suggestions, className = '' }) {
+  const listId = useId()
   const current = value ?? ''
   const [draft, setDraft] = useState(current)
   const [seen, setSeen] = useState(current)
@@ -46,10 +47,11 @@ export default function Field({ label, value, onSave, options, blankLabel = '—
         <textarea value={draft} rows={rows} className={`${input} text-slate-100`}
           onChange={(e) => setDraft(e.target.value)} onBlur={() => commit(draft)} />
       ) : (
-        <input value={draft} inputMode={inputMode} className={`${input} text-slate-100`}
+        <input value={draft} inputMode={inputMode} list={suggestions ? listId : undefined} className={`${input} text-slate-100`}
           onChange={(e) => setDraft(e.target.value)} onBlur={() => commit(draft.trim())}
           onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }} />
       )}
+      {suggestions && <datalist id={listId}>{suggestions.map((s) => <option key={s} value={s} />)}</datalist>}
     </label>
   )
 }

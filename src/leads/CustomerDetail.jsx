@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import {
   BLANK_LABEL, FIRST_CONTACT, INSTALL_STATUSES, INSTALL_TYPES, INVOICE_STATUSES, PAID, PAYMENT_TYPES,
-  TAKEDOWN_STATUSES, getPath,
+  TAKEDOWN_STATUSES, gateFor, getPath,
 } from '../lib/customers'
 import Icon from '../components/Icon'
 import Field from './Field'
+import { LogCallForm, ServiceCallCard } from './ServiceView'
 import StreetViewPhoto from './StreetViewPhoto'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
@@ -49,14 +51,14 @@ const BILLING = {
     ['paymentType', 'Paid by', { options: PAYMENT_TYPES }], ['paymentDate', 'Payment date']],
 }
 
-function Grid({ customer, base, fields, onUpdate }) {
+function Grid({ customer, base, fields, onUpdate, suggestions = {} }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {fields.map(([key, label, opts = {}]) => {
         const path = base ? `${base}.${key}` : key
         return (
           <Field key={path} label={label} value={getPath(customer, path)} options={opts.options} blankLabel={opts.blankLabel}
-            rows={opts.rows} inputMode={opts.inputMode} className={opts.wide ? 'sm:col-span-2' : ''}
+            rows={opts.rows} inputMode={opts.inputMode} suggestions={suggestions[key]} className={opts.wide ? 'sm:col-span-2' : ''}
             onSave={(v) => onUpdate(customer.id, path, v)} />
         )
       })}
@@ -75,7 +77,11 @@ function Section({ title, children, open = true }) {
   )
 }
 
-export default function CustomerDetail({ customer, season, onUpdate, onClose }) {
+export default function CustomerDetail({ customer, season, onUpdate, onClose, gates = [], calls = [], onLogCall, onUpdateCall }) {
+  const [logging, setLogging] = useState(false)
+  const gate = gateFor(customer, gates)
+  const myCalls = calls.filter((c) => c.customerId === customer.id)
+  const neighborhoods = gates.map((g) => g.neighborhood).filter(Boolean)
   const phone = customer.phone?.replace(/[^\d+]/g, '')
   const seasons = Object.keys(customer.seasons ?? {}).concat(season).filter((y, i, a) => a.indexOf(y) === i).sort().reverse()
 
@@ -101,8 +107,11 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose }) 
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}`}>Map</a>
           )}
         </div>
-        {customer.gateCode && (
-          <p className="rounded-xl bg-glow-400/10 px-4 py-3 text-glow-300">Gate code: <strong className="text-lg">{customer.gateCode}</strong></p>
+        {gate && (
+          <p className="rounded-xl bg-glow-400/10 px-4 py-3 text-glow-300">
+            Gate code: <strong className="text-lg">{gate.code}</strong>
+            {gate.source !== 'customer' && <span className="block text-sm text-glow-300/80">{gate.source} neighborhood gate{gate.notes ? ` · ${gate.notes}` : ''}</span>}
+          </p>
         )}
         {customer.address && <StreetViewPhoto address={customer.address} />}
 
@@ -116,9 +125,20 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose }) 
           </Section>
         ))}
 
+        {onLogCall && (
+          <Section title={`Service calls (${myCalls.length})`} open={myCalls.some((c) => c.status === 'Open' || c.status === 'Scheduled')}>
+            {logging
+              ? <LogCallForm customer={customer} onLog={onLogCall} onDone={() => setLogging(false)} />
+              : <button type="button" onClick={() => setLogging(true)} className="w-full rounded-xl bg-white/10 py-2.5 font-semibold">+ Log service call</button>}
+            <ul className="space-y-3">
+              {myCalls.map((c) => <ServiceCallCard key={c.id} call={c} onUpdate={onUpdateCall} />)}
+            </ul>
+          </Section>
+        )}
+
         {GROUPS.map(([title, fields]) => (
           <Section key={title} title={title} open={title !== 'Account'}>
-            <Grid customer={customer} fields={fields} onUpdate={onUpdate} />
+            <Grid customer={customer} fields={fields} onUpdate={onUpdate} suggestions={{ neighborhood: neighborhoods }} />
           </Section>
         ))}
 

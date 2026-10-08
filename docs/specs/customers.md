@@ -38,6 +38,18 @@ All 4 staff can see and edit everything, including prices and payments. Nobody c
 4. Re-importing the same files changes nothing and creates no duplicates. (owner, count stays the same)
 5. A non-staff Google account cannot read or write `customers`. (`npm run check:rules`)
 
-## Not in Phase 1
+## Phase 2 (built 2026-10-08)
 
-Service calls log, gate codes by neighborhood, Lead → Customer, mass-email lists, route map, export. See the Phase 2/3 plan in the conversation of 2026-10-08.
+| Feature | Data |
+|---|---|
+| **Service** tab: log a call (customer + problem + details), To do / Done; Done stamps today's date; card shows address, gate code, Call/Text/Map | Firestore `serviceCalls/{auto}`: customerId, customerName, issue, details, received (YYYY-MM-DD), status Open/Scheduled/Done/Cancelled, completed, notes |
+| Each customer shows their service calls and a "Log service call" button | same |
+| **Gates** tab: neighborhood → code, alternative, notes; editable; add new | Firestore `gateCodes/{slug}`; imported from the sheet's Gate Codes tab |
+| A customer without their own gate code shows their neighborhood's code (name match, case-insensitive); Neighborhood field suggests known names | `gateFor()` in `src/lib/customers.js` |
+| **Make this a customer** on a lead: creates the customer (address, website note, current season "Confirmed - Needs to be Scheduled"), or links the existing customer with the same name; the lead then shows "Customer record ✓" | `leads.customerId`; `leadToCustomer()` |
+
+The sheet's Repairs/Warranty tab was empty, so nothing was imported for service calls.
+
+## Not built yet (Phase 3)
+
+Mass-email lists, route map per day, export to spreadsheet.

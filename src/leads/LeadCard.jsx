@@ -17,7 +17,39 @@ const when = (d) =>
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
 
-export default function LeadCard({ lead, onUpdate }) {
+function CustomerLink({ lead, onMakeCustomer, onOpenCustomer }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  if (lead.customerId) {
+    return (
+      <button type="button" onClick={() => onOpenCustomer(lead.customerId)}
+        className="w-full rounded-xl border border-emerald-400/30 bg-emerald-400/10 py-2.5 text-sm font-semibold text-emerald-300">
+        Customer record ✓ Open it
+      </button>
+    )
+  }
+  async function make() {
+    setBusy(true)
+    setError(null)
+    try {
+      onOpenCustomer(await onMakeCustomer(lead))
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+  return (
+    <div>
+      <button type="button" onClick={make} disabled={busy}
+        className="w-full rounded-xl bg-white/10 py-2.5 text-sm font-semibold disabled:opacity-50">
+        {busy ? 'Creating…' : 'Make this a customer'}
+      </button>
+      {error && <p className="mt-1 text-sm text-berry-500" role="alert">{error}</p>}
+    </div>
+  )
+}
+
+export default function LeadCard({ lead, onUpdate, onMakeCustomer, onOpenCustomer }) {
   const [open, setOpen] = useState(lead.status === 'new')
   const [notes, setNotes] = useState(lead.notes ?? '')
   const [saving, setSaving] = useState(false)
@@ -62,6 +94,7 @@ export default function LeadCard({ lead, onUpdate }) {
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}>Map</a>
           </div>
+          {onMakeCustomer && <CustomerLink lead={lead} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />}
           {lead.status === 'booked' && (
             <div className="rounded-xl border border-glow-400/30 bg-glow-400/5 p-3">
               <p className="text-sm text-slate-300">Booked! Ask for a Google review:</p>

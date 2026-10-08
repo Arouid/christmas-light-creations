@@ -1,0 +1,103 @@
+// Shared data access for the staff app: live collections, stamped writes and
+// imports. In demo mode (?demo in dev, or no Firebase config) the same calls
+// run against an in-memory copy of the sample data.
+import { useEffect, useState } from 'react'
+import { getFirebaseApp } from '../lib/firebase'
+import { setPath } from '../lib/customers'
+import { demoMode } from './demo'
+import { demoData } from './demoData'
+
+const demo = { data: structuredClone(demoData), listeners: new Set() }
+const demoList = (coll) => Object.entries(demo.data[coll] ?? {}).map(([id, d]) => ({ id, ...d }))
+function demoWrite(coll, id, fn) {
+  demo.data[coll] ??= {}
+  demo.data[coll][id] = fn(demo.data[coll][id])
+  demo.listeners.forEach((f) => f())
+}
+
+async function fire() {
+  const [fs, app] = await Promise.all([import('firebase/firestore'), getFirebaseApp()])
+  return { fs, db: fs.getFirestore(app) }
+}
+// firestore.rules requires every staff write to carry these.
+const stamp = (fs, user) => ({ updatedAt: fs.serverTimestamp(), updatedBy: user.email })
+
+// `sort` must be a stable (module-level) function.
+export function useLiveCollection(user, coll, sort) {
+  const [items, setItems] = useState(demoMode ? demoList(coll).sort(sort) : null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (demoMode) {
+      const refresh = () => setItems(demoList(coll).sort(sort))
+      demo.listeners.add(refresh)
+      return () => demo.listeners.delete(refresh)
+    }
+    if (!user) return
+    let unsub = () => {}
+    let cancelled = false
+    ;(async () => {
+      const { fs, db } = await fire()
+      if (cancelled) return
+      unsub = fs.onSnapshot(
+        fs.collection(db, coll),
+        (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(sort)),
+        (err) => setError(err.code === 'permission-denied' ? 'not-staff' : err.message),
+      )
+    })()
+    return () => { cancelled = true; unsub() }
+  }, [user, coll, sort])
+
+  return { items, error }
+}
+
+// path like "gateCode" or "seasons.2026.install.paid"
+export async function updateField(user, coll, id, path, value) {
+  if (demoMode) return demoWrite(coll, id, (d) => setPath(d ?? {}, path, value))
+  const { fs, db } = await fire()
+  await fs.updateDoc(fs.doc(db, coll, id), { [path]: value, ...stamp(fs, user) })
+}
+
+// New record with an automatic id; returns the id.
+export async function addRecord(user, coll, data) {
+  if (demoMode) {
+    const id = `demo-${Date.now()}`
+    demoWrite(coll, id, () => ({ ...data, updatedBy: user.email }))
+    return id
+  }
+  const { fs, db } = await fire()
+  const ref = await fs.addDoc(fs.collection(db, coll), { ...data, createdAt: fs.serverTimestamp(), ...stamp(fs, user) })
+  return ref.id
+}
+
+// New record with a chosen id; refuses to overwrite an existing one.
+export async function createRecord(user, coll, id, data) {
+  if (demoMode) {
+    if (demo.data[coll]?.[id]) throw new Error('already-exists')
+    demoWrite(coll, id, () => ({ ...data, updatedBy: user.email }))
+    return id
+  }
+  const { fs, db } = await fire()
+  const ref = fs.doc(db, coll, id)
+  if ((await fs.getDoc(ref)).exists()) throw new Error('already-exists')
+  await fs.setDoc(ref, { ...data, createdAt: fs.serverTimestamp(), ...stamp(fs, user) })
+  return id
+}
+
+// Merge-writes imported records; fields only set in the app are kept.
+export async function mergeMany(user, coll, records, onProgress) {
+  if (demoMode) {
+    records.forEach(({ id, data }) => demoWrite(coll, id, (d) => ({ ...d, ...data })))
+    onProgress?.(records.length)
+    return
+  }
+  const { fs, db } = await fire()
+  for (let i = 0; i < records.length; i += 400) {
+    const batch = fs.writeBatch(db)
+    records.slice(i, i + 400).forEach(({ id, data }) => batch.set(
+      fs.doc(db, coll, id), { ...data, importedAt: fs.serverTimestamp(), ...stamp(fs, user) }, { merge: true },
+    ))
+    await batch.commit()
+    onProgress?.(Math.min(i + 400, records.length))
+  }
+}

@@ -23,6 +23,8 @@ const cases = [
   ['Create with pre-filled notes', () => addDoc(collection(db, 'leads'), { ...valid, notes: 'hi' })],
   ['Write to staff list', () => addDoc(collection(db, 'staff'), { name: 'intruder' })],
   ['Public can read customers', () => getDocsFromServer(collection(db, 'customers'))],
+  ['Public can read service calls', () => getDocsFromServer(collection(db, 'serviceCalls'))],
+  ['Public can read gate codes', () => getDocsFromServer(collection(db, 'gateCodes'))],
   ['Public can add a customer', () => addDoc(collection(db, 'customers'), { fullName: 'Intruder', updatedAt: serverTimestamp(), updatedBy: 'x@example.com' })],
 ]
 

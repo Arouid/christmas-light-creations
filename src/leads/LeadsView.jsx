@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { LEAD_STATUSES, STATUS_LABELS } from '../lib/firebase'
 import LeadCard from './LeadCard'
 
-export default function LeadsView({ leads, error, onUpdate }) {
+export default function LeadsView({ leads, error, onUpdate, onMakeCustomer, onOpenCustomer }) {
   const [filter, setFilter] = useState('open')
   const [search, setSearch] = useState('')
 
@@ -39,7 +39,7 @@ export default function LeadsView({ leads, error, onUpdate }) {
       {leads === null && !error && <p className="mt-6 text-slate-400">Loading leads…</p>}
       {leads && shown.length === 0 && <p className="mt-6 text-slate-400">No leads here.</p>}
       <ul className="mt-3 space-y-3">
-        {shown.map((l) => <LeadCard key={l.id} lead={l} onUpdate={onUpdate} />)}
+        {shown.map((l) => <LeadCard key={l.id} lead={l} onUpdate={onUpdate} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />)}
       </ul>
     </>
   )

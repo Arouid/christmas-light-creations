@@ -42,7 +42,7 @@ service cloud.firestore {
 
       allow update: if isStaff()
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['status', 'notes', 'updatedAt', 'updatedBy'])
+             .hasOnly(['status', 'notes', 'updatedAt', 'updatedBy', 'customerId'])
         && request.resource.data.status in ['new', 'called', 'estimate-sent', 'booked', 'lost']
         && shortStr(request.resource.data.notes, 5000)
         && request.resource.data.updatedAt == request.time
@@ -60,6 +60,25 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time
         && request.resource.data.updatedBy == request.auth.token.email;
       allow delete: if false;
+    }
+
+    // Service calls and neighborhood gate codes: staff only, stamped writes.
+    match /serviceCalls/{callId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff()
+        && filledStr(request.resource.data.customerId, 200)
+        && request.resource.data.status in ['Open', 'Scheduled', 'Done', 'Cancelled']
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow delete: if false;
+    }
+
+    match /gateCodes/{gateId} {
+      allow read, delete: if isStaff();
+      allow create, update: if isStaff()
+        && filledStr(request.resource.data.neighborhood, 120)
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
     }
 
     // Staff list: one document per person, ID = their lowercase Google email.
