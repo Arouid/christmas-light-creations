@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Delete button next to Edit tab removes the custom tab and returns to Season; owner created a real tab ("addy") after publishing rules | Browser pane (demo) + owner |
 | 2026-10-08 | Custom tabs (demo data): sample tab shows its columns and filter summary; New tab with status + area + columns shows live match count, saves, appears in the tab bar and opens; rename and delete work (delete returns to Season); phone: cards, editor fits 375px | Browser pane `/leads/?demo` + `npm test` (13 tests) |
 | 2026-10-08 | INCIDENT: owner saw "Not on the staff list" on localhost because the new `views` list was refused (rules not yet published) and any refusal locked the app. Fixed: only leads/customers refusals mean no access; others show a warning | Owner screenshot |
 | 2026-10-08 | Staff app desktop (1440px, demo data): Customers and Season as sortable tables (City sort asc/desc), customer opens as a right side panel with the table visible, backdrop closes it; status dropdown in the Season table saves without opening the panel; Leads 2 columns, Service 3; no sideways scroll. Phone (375px) still shows the list, no table | Browser pane |

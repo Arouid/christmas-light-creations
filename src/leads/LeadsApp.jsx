@@ -90,8 +90,8 @@ export default function LeadsApp() {
     const id = await viewsApi.add(data)
     window.location.hash = `#view-${id}`
   }
-  async function deleteView() {
-    await viewsApi.remove(editing.id)
+  async function deleteView(id) {
+    await viewsApi.remove(id)
     setEditing(null)
     window.location.hash = '#season'
   }
@@ -153,7 +153,7 @@ export default function LeadsApp() {
           : loading)}
         {tab.startsWith('view-') && (!customers || !viewsApi.views ? loading : currentView
           ? <ViewTab view={currentView} customers={customers} season={season} gates={gates} onOpen={setOpenId}
-              onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} />
+              onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} onDelete={() => deleteView(currentView.id)} />
           : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
         {tab === 'service' && (customers && serviceApi.calls
           ? <ServiceView calls={calls} customers={customers} gates={gates} onLog={serviceApi.log} onUpdate={serviceApi.update} onOpen={setOpenId} />
@@ -167,7 +167,7 @@ export default function LeadsApp() {
       </main>
 
       {editing && customers && (
-        <ViewEditor view={editing} customers={customers} season={season} onSave={saveView} onDelete={deleteView} onClose={() => setEditing(null)} />
+        <ViewEditor view={editing} customers={customers} season={season} onSave={saveView} onDelete={() => deleteView(editing.id)} onClose={() => setEditing(null)} />
       )}
       {open && (
         <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
