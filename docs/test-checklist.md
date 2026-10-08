@@ -12,7 +12,7 @@
 | 12 | Change status / save notes as staff | Saves; other staff see it live; "Last changed by" shows | Ready to test |
 | 13 | Firestore rules reject bad writes (missing fields, status not `new`, public read) | Permission denied | Done: `npm run check:rules` (see verified log) |
 | 14 | Street View photo in an open lead card (after key is set) | House photo shows; tap opens Street View; "No Street View here" for addresses without imagery | Ready to test (key set) |
-| 6 | GitHub Pages deploy | Action goes green, site loads at the github.io URL | Blocked: no repo yet |
+| 6 | GitHub Pages deploy | Action goes green, site loads at the github.io URL | Done (see verified log) |
 | 7 | Custom domain + HTTPS after DNS switch | christmas-light-creations.com loads with padlock | Blocked: DNS not switched |
 | 8 | Old URLs redirect (/faq/, /photos/, /info/, /get-an-estimate/) | Lands on matching section | Not checked |
 | 9 | Photos still load after GoDaddy is cancelled | All images show | Should pass: images now in repo (see verified log) |
