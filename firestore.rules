@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// Customers can only ADD an estimate request. Only staff (an email listed in
+// the `staff` collection, signed in with Google) can read leads or change
+// their status and notes. Nobody can delete through the app.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isStaff() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/staff/$(request.auth.token.email.lower()));
+    }
+
+    function shortStr(v, max) {
+      return v is string && v.size() <= max;
+    }
+
+    function filledStr(v, max) {
+      return shortStr(v, max) && v.size() > 0;
+    }
+
+    match /leads/{leadId} {
+      allow create: if request.resource.data.keys().hasOnly([
+            'firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip',
+            'contactMethod', 'message', 'status', 'notes', 'createdAt'])
+        && filledStr(request.resource.data.firstName, 80)
+        && filledStr(request.resource.data.lastName, 80)
+        && filledStr(request.resource.data.email, 200)
+        && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && shortStr(request.resource.data.phone, 40)
+        && filledStr(request.resource.data.address, 200)
+        && shortStr(request.resource.data.city, 80)
+        && shortStr(request.resource.data.zip, 10)
+        && request.resource.data.contactMethod in ['Phone', 'Text', 'Email']
+        && filledStr(request.resource.data.message, 3000)
+        && request.resource.data.status == 'new'
+        && request.resource.data.notes == ''
+        && request.resource.data.createdAt == request.time;
+
+      allow read: if isStaff();
+
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'notes', 'updatedAt', 'updatedBy'])
+        && request.resource.data.status in ['new', 'called', 'estimate-sent', 'booked', 'lost']
+        && shortStr(request.resource.data.notes, 5000)
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+
+      allow delete: if false;
+    }
+
+    // Staff list: one document per person, ID = their lowercase Google email.
+    // Managed in the Firebase console only.
+    match /staff/{email} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+  }
+}

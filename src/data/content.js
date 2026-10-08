@@ -12,9 +12,6 @@ export const business = {
   since: 2011,
   homesServed: '250+',
   logo: '/images/clc-logo.png',
-  // Formspree (or similar) endpoint for the estimate form. Leave empty to show
-  // a "call or text us" fallback instead of the form submit.
-  formEndpoint: import.meta.env.VITE_FORM_ENDPOINT || '',
 }
 
 export const nav = [

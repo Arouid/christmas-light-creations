@@ -6,7 +6,8 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 
 - React 19 + Vite + Tailwind CSS 4 (`@tailwindcss/vite`), plain JavaScript (no TypeScript)
 - Lint: oxlint (`.oxlintrc.json`)
-- Static site, single page with anchored sections, no router
+- Static site: public page (`index.html`) + staff Leads page (`leads/index.html`), no router
+- Firebase (Firestore + Google Auth) for estimate requests; config in `src/lib/firebase.js`
 - Hosted on GitHub Pages, deployed by `.github/workflows/deploy.yml` on push to `main`; custom domain in `public/CNAME`; DNS at GoDaddy
 
 ## Commands
@@ -35,7 +36,9 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Keep the phone number (281-819-0163) one tap away on every screen.
 - Don't reword customer reviews; quote them as written.
 - Old WordPress URLs (`/faq/`, `/photos/`, `/info/`, `/get-an-estimate/`) must keep redirecting (`public/<path>/index.html`).
-- Estimate form posts to `VITE_FORM_ENDPOINT` (GitHub repo variable). With it unset, the form shows a call button.
+- Estimate form saves to Firestore `leads`; staff read and update them at `/leads/` (Google sign-in, allowlist in the `staff` collection). Access rules live in `firestore.rules`; any new lead field must be added there and in `LEAD_FIELDS` in `src/lib/firebase.js`. With Firebase not configured, the form shows a call button and `/leads/` shows sample data.
+- Load Firebase with dynamic `import()` only, so the public page stays light.
+- `/leads/` is `noindex` and disallowed in `robots.txt`; never link it from the public site.
 
 ## The user
 

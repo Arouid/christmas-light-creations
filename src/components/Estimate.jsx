@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { business, serviceAreas } from '../data/content'
+import { firebaseReady, submitLead } from '../lib/firebase'
 import Icon from './Icon'
 
 const field = 'mt-1.5 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-glow-400 focus:outline-none focus:ring-2 focus:ring-glow-400/30'
@@ -10,15 +11,14 @@ export default function Estimate() {
 
   async function onSubmit(e) {
     e.preventDefault()
-    if (!business.formEndpoint) return
+    if (!firebaseReady) return
+    const data = new FormData(e.currentTarget)
+    // Hidden field only bots fill in: pretend success, save nothing.
+    if (data.get('website')) return setStatus('sent')
     setStatus('sending')
     try {
-      const res = await fetch(business.formEndpoint, {
-        method: 'POST',
-        headers: { Accept: 'application/json' },
-        body: new FormData(e.currentTarget),
-      })
-      setStatus(res.ok ? 'sent' : 'error')
+      await submitLead(data)
+      setStatus('sent')
     } catch {
       setStatus('error')
     }
@@ -56,16 +56,16 @@ export default function Estimate() {
             </div>
           ) : (
             <form onSubmit={onSubmit} className="grid gap-5 sm:grid-cols-2">
-              <input type="hidden" name="_subject" value="New estimate request" />
-              <label className={label}>First name *<input required name="firstName" autoComplete="given-name" className={field} /></label>
-              <label className={label}>Last name *<input required name="lastName" autoComplete="family-name" className={field} /></label>
-              <label className={label}>Email *<input required type="email" name="email" autoComplete="email" className={field} /></label>
-              <label className={label}>Phone<input type="tel" name="phone" autoComplete="tel" className={field} /></label>
+              <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
+              <label className={label}>First name *<input required name="firstName" maxLength={80} autoComplete="given-name" className={field} /></label>
+              <label className={label}>Last name *<input required name="lastName" maxLength={80} autoComplete="family-name" className={field} /></label>
+              <label className={label}>Email *<input required type="email" name="email" maxLength={200} autoComplete="email" className={field} /></label>
+              <label className={label}>Phone<input type="tel" name="phone" maxLength={40} autoComplete="tel" className={field} /></label>
               <label className={`${label} sm:col-span-2`}>Street address *
-                <input required name="address" autoComplete="street-address" className={field} placeholder="We can’t estimate without it" />
+                <input required name="address" maxLength={200} autoComplete="street-address" className={field} placeholder="We can’t estimate without it" />
               </label>
-              <label className={label}>City<input name="city" autoComplete="address-level2" className={field} defaultValue="Pearland" /></label>
-              <label className={label}>ZIP<input name="zip" inputMode="numeric" autoComplete="postal-code" className={field} /></label>
+              <label className={label}>City<input name="city" maxLength={80} autoComplete="address-level2" className={field} defaultValue="Pearland" /></label>
+              <label className={label}>ZIP<input name="zip" inputMode="numeric" maxLength={10} autoComplete="postal-code" className={field} /></label>
               <fieldset className="sm:col-span-2">
                 <legend className={label}>Best way to reach you *</legend>
                 <div className="mt-2 flex gap-2">
@@ -80,11 +80,11 @@ export default function Estimate() {
                 </div>
               </fieldset>
               <label className={`${label} sm:col-span-2`}>How can we help? *
-                <textarea required name="message" rows={4} className={field} placeholder="Roofline, trees, walkways, colors…" />
+                <textarea required name="message" rows={4} maxLength={3000} className={field} placeholder="Roofline, trees, walkways, colors…" />
               </label>
 
               <div className="sm:col-span-2">
-                {business.formEndpoint ? (
+                {firebaseReady ? (
                   <button type="submit" disabled={status === 'sending'}
                     className="w-full rounded-full bg-glow-400 py-4 font-semibold text-night-950 shadow-[0_0_28px_-6px] shadow-glow-400 hover:bg-glow-300 disabled:opacity-60">
                     {status === 'sending' ? 'Sending…' : 'Request my free estimate'}
