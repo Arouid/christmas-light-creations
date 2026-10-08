@@ -38,7 +38,7 @@ export default function LeadsView({ leads, error, onUpdate, onMakeCustomer, onOp
       {error && <p className="mt-6 text-berry-500" role="alert">Couldn’t load leads: {error}</p>}
       {leads === null && !error && <p className="mt-6 text-slate-400">Loading leads…</p>}
       {leads && shown.length === 0 && <p className="mt-6 text-slate-400">No leads here.</p>}
-      <ul className="mt-3 space-y-3">
+      <ul className="mt-3 space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
         {shown.map((l) => <LeadCard key={l.id} lead={l} onUpdate={onUpdate} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />)}
       </ul>
     </>

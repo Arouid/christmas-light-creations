@@ -28,7 +28,7 @@ export default function GatesView({ gates, onUpdate, onAdd }) {
       <p className="mt-3 text-sm text-slate-400">
         A customer’s own gate code wins. If they don’t have one, their card shows the code for their <strong>Neighborhood</strong> when it matches a name here.
       </p>
-      <ul className="mt-3 space-y-3">
+      <ul className="mt-3 space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 xl:grid-cols-3">
         {shown.map((g) => (
           <li key={g.id} className="rounded-2xl border border-white/10 bg-night-900 p-4">
             <p className="font-semibold">{g.neighborhood}</p>
@@ -40,7 +40,7 @@ export default function GatesView({ gates, onUpdate, onAdd }) {
           </li>
         ))}
       </ul>
-      <form onSubmit={add} className="mt-4 grid grid-cols-[1fr_7rem] gap-2 rounded-2xl border border-white/10 bg-night-900 p-4">
+      <form onSubmit={add} className="mt-4 grid max-w-xl grid-cols-[1fr_7rem] gap-2 rounded-2xl border border-white/10 bg-night-900 p-4">
         <input name="neighborhood" required placeholder="New neighborhood" className={control} />
         <input name="code" required placeholder="Code" className={control} />
         <button className="col-span-2 rounded-full bg-glow-400 py-2.5 font-semibold text-night-950">Add gate code</button>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { BLANK_LABEL } from '../lib/customers'
+import DataTable from './DataTable'
 
 const input = 'block w-full rounded-xl border border-white/15 bg-night-900 px-4 py-3 text-base placeholder:text-slate-500'
 
@@ -61,7 +62,18 @@ export default function CustomersView({ customers, season, onOpen, onCreate }) {
       {adding && <AddCustomer onCreate={onCreate} onDone={(id) => { setAdding(false); if (id) onOpen(id) }} />}
 
       <p className="mt-4 text-sm text-slate-400">{shown.length} of {customers.length} customers</p>
-      <ul className="mt-2 divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-night-900">
+      <div className="mt-2 hidden lg:block">
+        <DataTable label="Customers" rows={shown} onRowClick={onOpen} columns={[
+          { key: 'name', label: 'Name', get: (c) => c.lastName ? `${c.lastName} ${c.firstName ?? ''}` : c.fullName, render: (c) => <span className="font-medium">{c.fullName}</span> },
+          { key: 'address', label: 'Address', get: (c) => c.address, className: 'max-w-xs truncate' },
+          { key: 'city', label: 'City', get: (c) => c.city },
+          { key: 'phone', label: 'Phone', get: (c) => c.phone, className: 'whitespace-nowrap' },
+          { key: 'area', label: 'Area', get: (c) => c.locationBlock, className: 'max-w-[14rem] truncate' },
+          { key: 'type', label: 'Type', get: (c) => c.installType?.replace(' Install', '') },
+          { key: 'status', label: `${season} status`, get: (c) => c.seasons?.[season]?.installStatus || BLANK_LABEL.installStatus },
+        ]} />
+      </div>
+      <ul className="mt-2 divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-night-900 lg:hidden">
         {shown.map((c) => {
           const status = c.seasons?.[season]?.installStatus
           return (

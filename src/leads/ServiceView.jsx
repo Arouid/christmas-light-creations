@@ -110,7 +110,7 @@ export default function ServiceView({ calls, customers, gates, onLog, onUpdate, 
     <>
       {logging
         ? <LogCallForm customers={customers} onLog={onLog} onDone={() => setLogging(false)} />
-        : <button type="button" onClick={() => setLogging(true)} className="w-full rounded-xl bg-glow-400 py-3 font-semibold text-night-950">+ Log a service call</button>}
+        : <button type="button" onClick={() => setLogging(true)} className="w-full rounded-xl lg:w-auto lg:px-6 bg-glow-400 py-3 font-semibold text-night-950">+ Log a service call</button>}
       <div className="mt-3 flex gap-2">
         {chips.map(([k, label, n]) => (
           <button key={k} type="button" onClick={() => setFilter(k)}
@@ -119,7 +119,7 @@ export default function ServiceView({ calls, customers, gates, onLog, onUpdate, 
           </button>
         ))}
       </div>
-      <ul className="mt-3 space-y-3">
+      <ul className="mt-3 space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0 xl:grid-cols-3">
         {shown.map((c) => (
           <ServiceCallCard key={c.id} call={c} customer={byId.get(c.customerId)} gates={gates} onUpdate={onUpdate} onOpen={onOpen} />
         ))}

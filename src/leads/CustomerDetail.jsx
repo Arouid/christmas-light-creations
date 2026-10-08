@@ -86,7 +86,9 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
   const seasons = Object.keys(customer.seasons ?? {}).concat(season).filter((y, i, a) => a.indexOf(y) === i).sort().reverse()
 
   return (
-    <div className="fixed inset-0 z-30 overflow-y-auto bg-night-950" role="dialog" aria-modal="true" aria-label={customer.fullName}>
+    <>
+    <div className="fixed inset-0 z-30 hidden bg-night-950/60 lg:block" onClick={onClose} aria-hidden="true" />
+    <div className="fixed inset-0 z-30 overflow-y-auto bg-night-950 lg:left-auto lg:w-[46rem] lg:border-l lg:border-white/10 lg:shadow-2xl" role="dialog" aria-modal="true" aria-label={customer.fullName}>
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-white/10 bg-night-950/95 px-4 py-3 backdrop-blur">
         <button type="button" onClick={onClose} className="rounded-full bg-white/10 p-2.5" aria-label="Back to list">
           <Icon name="left" className="size-5" />
@@ -145,5 +147,6 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
         {customer.updatedBy && <p className="text-xs text-slate-500">Last changed by {customer.updatedBy}</p>}
       </div>
     </div>
+    </>
   )
 }

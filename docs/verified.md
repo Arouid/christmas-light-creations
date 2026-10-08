@@ -4,6 +4,8 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Staff app desktop (1440px, demo data): Customers and Season as sortable tables (City sort asc/desc), customer opens as a right side panel with the table visible, backdrop closes it; status dropdown in the Season table saves without opening the panel; Leads 2 columns, Service 3; no sideways scroll. Phone (375px) still shows the list, no table | Browser pane |
+| 2026-10-08 | Owner: Google Business Profile website now https; Gates tab shows 16 neighborhoods | Owner |
 | 2026-10-08 | HTTPS live: https://christmas-light-creations.com/, /leads/ and /faq/ return 200; https://www redirects to the apex. Plain http not yet redirected (Enforce HTTPS pending) | curl |
 | 2026-10-08 | Updated rules live: strangers refused on service calls and gate codes too (12/12); owner imported Gate Codes CSV | `npm run check:rules` + owner |
 | 2026-10-08 | Phase 2 (demo data, 375px): Make customer links an existing same-name customer (count unchanged) and creates a new one with address/website note/2026 status; lead then shows "Customer record ✓"; Service: log call appears in To do, status Done stamps today and moves it to Done, card shows gate; customer page lists its calls; typing a known neighborhood shows that neighborhood's gate code and notes | Browser pane `/leads/?demo` + `npm test` (9 tests) |

@@ -91,14 +91,14 @@ export default function LeadsApp() {
     <div className="min-h-svh">
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <header className="sticky top-0 z-20 border-b border-white/10 bg-night-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 lg:max-w-7xl">
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
           <div className="flex min-w-0 items-center gap-3 text-sm">
             <span className="hidden truncate text-slate-400 sm:inline">{user.email}</span>
             {!demo && <button type="button" onClick={signOut} className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">Sign out</button>}
           </div>
         </div>
-        <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2" aria-label="Sections">
+        <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 lg:max-w-7xl" aria-label="Sections">
           {TABS.map(([k, label]) => (
             <a key={k} href={`#${k}`} aria-current={tab === k ? 'page' : undefined}
               className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${tab === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
@@ -108,7 +108,7 @@ export default function LeadsApp() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pb-16 pt-4">
+      <main className="mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl">
         {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />

@@ -30,6 +30,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 
 ## Site rules
 
+- Staff app on desktop (`lg:`): Customers and Season are sortable tables (`DataTable.jsx`), customer detail is a right side panel; phones keep lists and a full-screen detail.
 - Mobile first: design for phones, then scale up with `sm:`/`md:`/`lg:`. No horizontal scroll at 375px. Tap targets at least 44px.
 - All copy, photos, reviews and FAQ live in `src/data/content.js`. Components hold layout only.
 - Images live in the repo under `public/images/` (nothing loaded from the old WordPress CDN). Full-size originals go in `assets-source/`, which isn't shipped.

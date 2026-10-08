@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { business } from '../data/content'
 import { BLANK_LABEL, INSTALL_STATUSES, TAKEDOWN_STATUSES, withOption } from '../lib/customers'
 import Icon from '../components/Icon'
+import DataTable from './DataTable'
 
 const select = 'rounded-xl border border-white/15 bg-night-900 px-3 py-2.5 text-sm'
 
@@ -68,7 +69,31 @@ export default function SeasonView({ customers, season, onOpen, onUpdate }) {
         ))}
       </div>
 
-      <ul className="mt-2 space-y-2">
+      <div className="mt-2 hidden lg:block">
+        <DataTable label={`${mode}s ${season}`} rows={shown} onRowClick={onOpen} columns={[
+          { key: 'name', label: 'Name', get: (c) => c.fullName, render: (c) => <span className="font-medium">{c.fullName}</span> },
+          { key: 'area', label: 'Area', get: (c) => c.locationBlock, className: 'max-w-[14rem] truncate' },
+          { key: 'type', label: 'Type', get: (c) => c.installType?.replace(' Install', '') },
+          { key: 'week', label: 'Week of', get: (c) => c.seasons?.[season]?.weekOf, className: 'whitespace-nowrap' },
+          { key: 'day', label: 'Day', get: (c) => c.seasons?.[season]?.day },
+          { key: 'date', label: 'Date', get: (c) => c.seasons?.[season]?.plannedDate, className: 'whitespace-nowrap' },
+          { key: 'timeframe', label: 'Timeframe', get: (c) => c.seasons?.[season]?.timeframe, className: 'max-w-[12rem] truncate' },
+          { key: 'status', label: 'Status', get: (c) => statusOf(c) || blank, render: (c) => (
+            <select value={statusOf(c)} onClick={(e) => e.stopPropagation()} aria-label={`${mode} status for ${c.fullName}`}
+              onChange={(e) => onUpdate(c.id, `seasons.${season}.${key}`, e.target.value)} className={`${select} bg-night-950 py-1.5`}>
+              {withOption(list, statusOf(c)).map((o) => <option key={o} value={o}>{o || blank}</option>)}
+            </select>
+          ) },
+          { key: 'ask', label: '', get: () => '', render: (c) => {
+            const phone = c.phone?.replace(/[^\d+]/g, '')
+            return phone && mode === 'install' && ['', 'Not Confirmed'].includes(statusOf(c)) ? (
+              <a href={`sms:${phone}?&body=${encodeURIComponent(confirmText(c, season))}`} onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium"><Icon name="chat" className="size-3.5" /> Ask</a>
+            ) : null
+          } },
+        ]} />
+      </div>
+      <ul className="mt-2 space-y-2 lg:hidden">
         {shown.map((c) => {
           const s = c.seasons?.[season] ?? {}
           const phone = c.phone?.replace(/[^\d+]/g, '')
