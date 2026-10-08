@@ -9,3 +9,4 @@
 | 2026-10-08 | Estimate form posts to a form service (`VITE_FORM_ENDPOINT`); call button if unset | GitHub Pages can't process forms |
 | 2026-10-08 | Deploy via GitHub Actions on push to `main`, custom domain via `public/CNAME` | Leaving GoDaddy hosting |
 | 2026-10-08 | Review quote "Change and his crew" kept verbatim | Possible typo for "Chance", waiting on owner |
+| 2026-10-08 | Photos and logo copied into `public/images/`; logo shrunk 510 KB -> 12 KB; 1024px original in `assets-source/` | Site must survive cancelling GoDaddy; logo shows ~40px tall |

@@ -11,7 +11,7 @@ export const business = {
   city: 'Pearland, TX',
   since: 2011,
   homesServed: '250+',
-  logo: 'https://b2476798.assetcdn.net/2476798/wp-content/uploads/2024/10/CLC-logo-t.png',
+  logo: '/images/clc-logo.png',
   // Formspree (or similar) endpoint for the estimate form. Leave empty to show
   // a "call or text us" fallback instead of the form submit.
   formEndpoint: import.meta.env.VITE_FORM_ENDPOINT || '',
@@ -65,7 +65,7 @@ export const serviceCalls = ['Burned-out bulbs', 'Malfunctioning timers', 'Tripp
 export const steps = [
   {
     title: 'Free estimate',
-    body: 'We measure your roofline with a measuring wheel, about 30 minutes, no roof climbing. You don’t have to be home unless we need through a gate. Short on time? Send phone photos for a rough quote.',
+    body: 'We measure your roofline with a measuring wheel, about 30 minutes, no roof climbing. You don’t have to be home unless we need to get through a gate. Short on time? Send phone photos for a rough quote.',
   },
   {
     title: 'Installation',
@@ -102,29 +102,29 @@ export const testimonials = [
   },
 ]
 
-const cdn = 'https://b2476798.assetcdn.net/2476798/wp-content/uploads'
+const photo = (file) => `/images/gallery/${file}`
 export const gallery = [
-  { src: `${cdn}/2017/09/Classic-League-City.jpg`, alt: 'Classic white roofline lights in League City' },
-  { src: `${cdn}/2017/09/Colored-RW-Pearland.jpg`, alt: 'Red and white lights on a Pearland home' },
-  { src: `${cdn}/2017/06/Classic-Highland-Glen.jpg`, alt: 'Classic lights in Highland Glen' },
-  { src: `${cdn}/2017/06/Colored-LED-MULTI-Pearland.jpg`, alt: 'Multicolor LED lights in Pearland' },
-  { src: `${cdn}/2017/06/Classic-Silverlake.jpg`, alt: 'Classic lights in Silverlake' },
-  { src: `${cdn}/2017/06/Classic-West-Ranch.jpg`, alt: 'Classic lights in West Ranch' },
-  { src: `${cdn}/2017/06/Colored-LED-MULTI-Highland-Glen.jpg`, alt: 'Multicolor LED lights in Highland Glen' },
-  { src: `${cdn}/2017/06/Classic-2-Ivy-Front.jpg`, alt: 'Classic white lights, front view' },
-  { src: `${cdn}/2017/09/Classic-Highland-Glen-6.jpg`, alt: 'Classic roofline lights in Highland Glen' },
-  { src: `${cdn}/2017/06/Classic-Highland-Glen-3.jpg`, alt: 'Classic lights on a two-story home' },
-  { src: `${cdn}/2017/06/Classic-Highland-Glen-4.jpg`, alt: 'Classic lights with lit trees' },
-  { src: `${cdn}/2017/06/Classic-Highland-Glen-5.jpg`, alt: 'Classic white lights at dusk' },
-  { src: `${cdn}/2017/09/new2.jpg`, alt: 'Holiday lighting installation' },
-  { src: `${cdn}/2017/09/new3.jpg`, alt: 'Holiday lighting installation' },
-  { src: `${cdn}/2017/09/new4.jpg`, alt: 'Holiday lighting installation' },
-  { src: `${cdn}/2017/09/new-1.jpg`, alt: 'Holiday lighting installation' },
-  { src: `${cdn}/2017/06/Classic-Wally.jpg`, alt: 'Classic white lights' },
-  { src: `${cdn}/2017/06/lights.jpg`, alt: 'Lit roofline at night' },
-  { src: `${cdn}/2017/09/20161128_183305-1.jpg`, alt: 'Lit home at night' },
-  { src: `${cdn}/2017/09/20161128_183208.jpg`, alt: 'Lit home at night' },
-  { src: `${cdn}/2015/10/20141204_200327-2.jpg`, alt: 'Lit home at night' },
+  { src: photo('Classic-League-City.jpg'), alt: 'Classic white roofline lights in League City' },
+  { src: photo('Colored-RW-Pearland.jpg'), alt: 'Red and white lights on a Pearland home' },
+  { src: photo('Classic-Highland-Glen.jpg'), alt: 'Classic lights in Highland Glen' },
+  { src: photo('Colored-LED-MULTI-Pearland.jpg'), alt: 'Multicolor LED lights in Pearland' },
+  { src: photo('Classic-Silverlake.jpg'), alt: 'Classic lights in Silverlake' },
+  { src: photo('Classic-West-Ranch.jpg'), alt: 'Classic lights in West Ranch' },
+  { src: photo('Colored-LED-MULTI-Highland-Glen.jpg'), alt: 'Multicolor LED lights in Highland Glen' },
+  { src: photo('Classic-2-Ivy-Front.jpg'), alt: 'Classic white lights, front view' },
+  { src: photo('Classic-Highland-Glen-6.jpg'), alt: 'Classic roofline lights in Highland Glen' },
+  { src: photo('Classic-Highland-Glen-3.jpg'), alt: 'Classic lights on a two-story home' },
+  { src: photo('Classic-Highland-Glen-4.jpg'), alt: 'Classic lights with lit trees' },
+  { src: photo('Classic-Highland-Glen-5.jpg'), alt: 'Classic white lights at dusk' },
+  { src: photo('new2.jpg'), alt: 'Holiday lighting installation' },
+  { src: photo('new3.jpg'), alt: 'Holiday lighting installation' },
+  { src: photo('new4.jpg'), alt: 'Holiday lighting installation' },
+  { src: photo('new-1.jpg'), alt: 'Holiday lighting installation' },
+  { src: photo('Classic-Wally.jpg'), alt: 'Classic white lights' },
+  { src: photo('lights.jpg'), alt: 'Lit roofline at night' },
+  { src: photo('20161128_183305-1.jpg'), alt: 'Lit home at night' },
+  { src: photo('20161128_183208.jpg'), alt: 'Lit home at night' },
+  { src: photo('20141204_200327-2.jpg'), alt: 'Lit home at night' },
 ]
 
 export const faq = [

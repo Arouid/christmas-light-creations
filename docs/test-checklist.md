@@ -10,4 +10,4 @@
 | 6 | GitHub Pages deploy | Action goes green, site loads at the github.io URL | Blocked: no repo yet |
 | 7 | Custom domain + HTTPS after DNS switch | christmas-light-creations.com loads with padlock | Blocked: DNS not switched |
 | 8 | Old URLs redirect (/faq/, /photos/, /info/, /get-an-estimate/) | Lands on matching section | Not checked |
-| 9 | Photos still load after GoDaddy is cancelled | All images show | Blocked: photos still on WordPress CDN |
+| 9 | Photos still load after GoDaddy is cancelled | All images show | Should pass: images now in repo (see verified log) |
