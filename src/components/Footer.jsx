@@ -1,4 +1,4 @@
-import { business, nav } from '../data/content'
+import { business, currentYear, nav } from '../data/content'
 import Icon from './Icon'
 
 export default function Footer() {
@@ -18,7 +18,7 @@ export default function Footer() {
         </a>
       </div>
       <p className="mx-auto mt-10 max-w-6xl text-xs text-slate-500">
-        © {new Date().getFullYear()} {business.name} · {business.city}
+        © {currentYear} {business.name} · {business.city}
       </p>
     </footer>
   )

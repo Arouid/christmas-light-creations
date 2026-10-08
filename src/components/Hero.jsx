@@ -1,4 +1,4 @@
-import { business, gallery, serviceAreas } from '../data/content'
+import { business, currentYear, gallery, serviceAreas } from '../data/content'
 import Icon from './Icon'
 
 export default function Hero() {
@@ -9,7 +9,7 @@ export default function Hero() {
 
       <div className="mx-auto flex min-h-[88svh] max-w-6xl flex-col justify-end px-4 pb-14 pt-24 md:justify-center md:pb-24">
         <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-glow-400/30 bg-night-900/60 px-3 py-1 text-xs font-medium uppercase tracking-wider text-glow-300">
-          <span className="twinkle size-2 rounded-full bg-glow-400" /> Booking for the {new Date().getFullYear()} season
+          <span className="twinkle size-2 rounded-full bg-glow-400" /> Booking for the {currentYear} season
         </p>
         <h1 className="max-w-3xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl md:text-7xl">
           Holiday lights, <span className="text-glow-400 [text-shadow:0_0_28px_rgba(255,207,77,0.55)]">done for you.</span>
@@ -29,7 +29,7 @@ export default function Hero() {
 
         <dl className="mt-12 grid max-w-lg grid-cols-3 gap-4 border-t border-white/10 pt-6 text-center sm:text-left">
           {[
-            [`${new Date().getFullYear() - business.since}+`, 'years lighting homes'],
+            [`${currentYear - business.since}+`, 'years lighting homes'],
             [business.homesServed, 'homes each season'],
             ['$0', 'service calls'],
           ].map(([v, l]) => (

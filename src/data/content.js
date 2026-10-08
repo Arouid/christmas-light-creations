@@ -1,5 +1,7 @@
 // All site copy lives here so text can be edited without touching layout code.
 
+export const currentYear = new Date().getFullYear()
+
 export const business = {
   name: 'Christmas Light Creations',
   short: 'CLC',
