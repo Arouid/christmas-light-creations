@@ -11,6 +11,8 @@ export const business = {
   city: 'Pearland, TX',
   since: 2011,
   homesServed: '250+',
+  // Google review link for the main Business Profile (listing without a store code).
+  reviewLink: 'https://g.page/r/CWKRhzePqUvIEAI/review',
   logo: `${import.meta.env.BASE_URL}images/clc-logo.png`,
 }
 

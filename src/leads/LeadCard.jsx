@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { business } from '../data/content'
 import { LEAD_STATUSES, STATUS_LABELS } from '../lib/firebase'
 import Icon from '../components/Icon'
 import StreetViewPhoto from './StreetViewPhoto'
@@ -23,6 +24,7 @@ export default function LeadCard({ lead, onUpdate }) {
   const [saveError, setSaveError] = useState(false)
   const fullAddress = [lead.address, lead.city, 'TX', lead.zip].filter(Boolean).join(', ')
   const phoneDigits = lead.phone?.replace(/[^\d+]/g, '')
+  const reviewMessage = `Hi ${lead.firstName}, thanks for choosing ${business.name}! If you have a minute, a Google review really helps our family business: ${business.reviewLink}`
 
   async function save(changes) {
     setSaving(true)
@@ -60,6 +62,22 @@ export default function LeadCard({ lead, onUpdate }) {
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}>Map</a>
           </div>
+          {lead.status === 'booked' && (
+            <div className="rounded-xl border border-glow-400/30 bg-glow-400/5 p-3">
+              <p className="text-sm text-slate-300">Booked! Ask for a Google review:</p>
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:flex">
+                {phoneDigits && (
+                  <a className={action} href={`sms:${phoneDigits}?&body=${encodeURIComponent(reviewMessage)}`}>
+                    <Icon name="star" filled className="size-4 text-glow-400" /> Text review link
+                  </a>
+                )}
+                <a className={action}
+                  href={`mailto:${lead.email}?subject=${encodeURIComponent(`Thank you from ${business.name}`)}&body=${encodeURIComponent(reviewMessage)}`}>
+                  Email review link
+                </a>
+              </div>
+            </div>
+          )}
           <dl className="space-y-1 text-sm">
             <div><dt className="inline text-slate-400">Address: </dt><dd className="inline">{fullAddress}</dd></div>
             <div><dt className="inline text-slate-400">Email: </dt><dd className="inline break-all">{lead.email}</dd></div>

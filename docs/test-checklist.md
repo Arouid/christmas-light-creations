@@ -16,3 +16,4 @@
 | 7 | Custom domain + HTTPS after DNS switch | christmas-light-creations.com loads with padlock | Blocked: DNS not switched |
 | 8 | Old URLs redirect (/faq/, /photos/, /info/, /get-an-estimate/) | Lands on matching section | Not checked |
 | 9 | Photos still load after GoDaddy is cancelled | All images show | Should pass: images now in repo (see verified log) |
+| 15 | Mark a lead Booked, tap "Text review link" on a phone | Messages opens with the thank-you text and review link filled in | Not checked |

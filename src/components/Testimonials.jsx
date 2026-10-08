@@ -1,4 +1,4 @@
-import { testimonials } from '../data/content'
+import { business, testimonials } from '../data/content'
 import Icon from './Icon'
 import Section from './Section'
 
@@ -18,6 +18,13 @@ export default function Testimonials() {
           </li>
         ))}
       </ul>
+      <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+        <a href={business.reviewLink} target="_blank" rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-night-950 hover:bg-slate-100">
+          <Icon name="star" filled className="size-5 text-glow-500" /> Leave us a Google review
+        </a>
+        <p className="text-sm text-slate-400">Had us out this year? It helps a small family business a lot.</p>
+      </div>
     </Section>
   )
 }
