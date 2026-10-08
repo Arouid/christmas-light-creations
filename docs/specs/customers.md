@@ -54,6 +54,17 @@ The sheet's Repairs/Warranty tab was empty, so nothing was imported for service 
 
 "+ New tab" in the staff app's tab bar saves a named filter for all staff: Installs or Takedowns, statuses (none = all), areas, early/regular, week of, and which columns to show. Firestore `views/{auto}`; season "current" follows the calendar. Custom tabs sit between Season and Service; Edit tab / Delete this tab on each. Filtering is `matchesView()` in `src/lib/views.js` (tested).
 
+## Map wall (built 2026-10-08)
+
+Staff app opens on **Map**: full-screen dark Google map, glowing pins per customer colored by this season's install or takedown status, pulsing red pins for open service calls, white diamond for home base. HUD: clock, counts per status, "on map" count, open calls; filter by saved tab, installs/takedowns, area; service calls and satellite toggles; Fit all; Full screen (for a wall monitor). Clicking a pin: name, address, status, gate, miles from home base, Open customer / Directions / Street View.
+
+- Positions: `customers.geo = { lat, lng, exact, address }` (or `{ missing, address }`), from Google geocoding; "Put N addresses on the map" locates in bulk; editing an address re-locates it. Approximate matches are listed to fix typos.
+- Home base: Firestore `settings/app.homeBase` (staff-only; kept out of the public code on purpose), set on the Map.
+- Staff-only by design: a public map with customer pins would reveal which homes are empty in January.
+
 ## Not built yet (Phase 3)
+
+Sort-by-distance and route planner (math is in `src/lib/geo.js`, tested), mass-email lists, export.
+
 
 Mass-email lists, route map per day, export to spreadsheet.

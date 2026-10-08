@@ -10,7 +10,7 @@ const BASE = 'https://maps.googleapis.com/maps/api/streetview'
 // Geocoding from the browser has to go through the Maps JavaScript API: the
 // plain web-service endpoint refuses keys locked to websites.
 let mapsLoad
-function loadMaps() {
+export function loadMaps() {
   mapsLoad ??= new Promise((resolve, reject) => {
     const callback = '__clcMapsReady'
     window[callback] = () => resolve(window.google.maps)
@@ -30,7 +30,9 @@ function loadMaps() {
 // addresses come back as partial matches or as a street/city, not a house.
 const HOUSE_TYPES = ['street_address', 'premise', 'subpremise']
 
-async function locateHouse(address) {
+// Map position of an address. exact = Google matched a specific house,
+// not just the street or town (typos and made-up addresses aren't exact).
+export async function locateAddress(address) {
   const maps = await loadMaps()
   const { Geocoder } = await maps.importLibrary('geocoding')
   let results
@@ -41,8 +43,17 @@ async function locateHouse(address) {
     throw e
   }
   const r = results[0]
-  if (!r || r.partial_match || !r.types.some((t) => HOUSE_TYPES.includes(t))) return null
-  return { lat: r.geometry.location.lat(), lng: r.geometry.location.lng() }
+  if (!r) return null
+  return {
+    lat: r.geometry.location.lat(),
+    lng: r.geometry.location.lng(),
+    exact: !r.partial_match && r.types.some((t) => HOUSE_TYPES.includes(t)),
+  }
+}
+
+async function locateHouse(address) {
+  const found = await locateAddress(address)
+  return found?.exact ? found : null
 }
 
 // Compass direction from the camera to the house, so the photo faces it.

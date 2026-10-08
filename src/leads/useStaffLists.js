@@ -45,3 +45,15 @@ export function useViews(user) {
     remove: (id) => deleteRecord('views', id),
   }
 }
+
+const none = () => 0
+
+// Shared staff settings (one record, "app"): home base for distances and routes.
+export function useSettings(user) {
+  const { items, error } = useLiveCollection(user, 'settings', none)
+  return {
+    settings: items ? (items.find((i) => i.id === 'app') ?? {}) : null,
+    error,
+    save: (data) => saveRecord(user, 'settings', 'app', data),
+  }
+}

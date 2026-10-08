@@ -6,16 +6,17 @@ import CustomersView from './CustomersView'
 import GatesView from './GatesView'
 import ImportView from './ImportView'
 import LeadsView from './LeadsView'
+import MapView from './MapView'
 import SeasonView from './SeasonView'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
 import ViewTab from './ViewTab'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
-import { useGateCodes, useServiceCalls, useViews } from './useStaffLists'
+import { useGateCodes, useServiceCalls, useSettings, useViews } from './useStaffLists'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
-const BEFORE = [['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season']]
+const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season']]
 const AFTER = [['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
@@ -24,7 +25,7 @@ function Screen({ children }) {
 
 const tabFromHash = () => {
   const h = window.location.hash.slice(1)
-  return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'leads'
+  return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'map'
 }
 
 export default function LeadsApp() {
@@ -33,6 +34,7 @@ export default function LeadsApp() {
   const serviceApi = useServiceCalls(user)
   const gatesApi = useGateCodes(user)
   const viewsApi = useViews(user)
+  const settingsApi = useSettings(user)
   const [editing, setEditing] = useState(null) // null | {} (new) | view
   const [tab, setTab] = useState(tabFromHash)
   const [openId, setOpenId] = useState(null)
@@ -77,8 +79,8 @@ export default function LeadsApp() {
   const { customers } = customersApi
   const gates = gatesApi.gates ?? []
   const calls = serviceApi.calls ?? []
-  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error].find((e) => e && e !== 'not-staff')
-    ?? ([serviceApi.error, gatesApi.error, viewsApi.error].includes('not-staff')
+  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error].find((e) => e && e !== 'not-staff')
+    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error].includes('not-staff')
       ? 'part of the app was refused by the database. The security rules probably need publishing again (firestore.rules).'
       : null)
   const views = viewsApi.views ?? []
@@ -116,9 +118,9 @@ export default function LeadsApp() {
   const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
 
   return (
-    <div className="min-h-svh">
+    <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-night-950/90 backdrop-blur">
+      <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 lg:max-w-7xl">
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
           <div className="flex min-w-0 items-center gap-3 text-sm">
@@ -140,7 +142,16 @@ export default function LeadsApp() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl">
+      {tab === 'map' && (
+        <div className="relative min-h-0 flex-1">
+          {listError && <p className="absolute inset-x-0 top-0 z-10 bg-berry-600 px-4 py-1 text-sm" role="alert">Couldn’t load: {listError}</p>}
+          {customers && (serviceApi.calls || serviceApi.error) && (settingsApi.settings || settingsApi.error)
+            ? <MapView customers={customers} calls={calls} gates={gates} views={views} settings={settingsApi.settings ?? {}} season={season}
+                onOpen={setOpenId} onLocateAll={customersApi.locateAll} onSaveSettings={settingsApi.save} />
+            : <p className="p-6 text-slate-400">Loading map…</p>}
+        </div>
+      )}
+      <main className={tab === 'map' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl'}>
         {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />

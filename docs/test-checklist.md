@@ -25,3 +25,5 @@
 | 21 | Real service call logged on a phone | Shows on Service tab and the customer's page for all staff | Not checked |
 | 22 | Make customer from a real lead | Customer created, lead shows "Customer record ✓" | Not checked |
 | 23 | Publish rules with `views`, create a real custom tab | Tab appears for every staff member | Owner created one 2026-10-08; other staff not checked |
+| 24 | Publish rules (settings), set home base, "Put 114 addresses on the map" | ~114 pins; approximate list shows any typos | Not checked |
+| 25 | Map on a wall monitor, Full screen | HUD readable from across the room | Not checked |

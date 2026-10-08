@@ -28,6 +28,9 @@ const customers = [
   },
 ]
 
+const demoGeo = { 'sample-customer': [29.5605, -95.2650], 'test-homeowner': [29.5075, -95.0949], 'example-family': [29.5450, -95.3770] }
+customers.forEach((c) => { const g = demoGeo[c.id]; if (g) c.geo = { lat: g[0], lng: g[1], exact: true, address: c.address } })
+
 const byId = (list) => Object.fromEntries(list.map(({ id, ...d }) => [id, d]))
 
 export const demoData = {
@@ -38,6 +41,7 @@ export const demoData = {
     { id: 'demo-call-2', customerId: 'example-family', customerName: 'Example Family', issue: 'Tripped GFCI',
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
   ]),
+  settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 } } },
   views: byId([
     { id: 'demo-view-1', name: 'Needs scheduling', order: 1, mode: 'install', statuses: ['Confirmed - Needs to be Scheduled'],
       columns: ['name', 'area', 'phone', 'timeframe', 'status'] },

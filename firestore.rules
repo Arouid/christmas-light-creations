@@ -90,6 +90,15 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
+    // Shared staff settings (home base for distances and routes).
+    match /settings/{settingId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff()
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow delete: if false;
+    }
+
     // Staff list: one document per person, ID = their lowercase Google email.
     // Managed in the Firebase console only.
     match /staff/{email} {
