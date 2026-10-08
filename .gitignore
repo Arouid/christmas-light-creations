@@ -25,3 +25,4 @@ dist-ssr
 
 # Owner photo drop: originals may contain GPS location data, never commit
 photos-incoming/
+gift-wrap-incoming/
