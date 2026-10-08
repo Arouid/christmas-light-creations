@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
-import { firebaseReady, getFirebaseApp } from '../lib/firebase'
+import { getFirebaseApp } from '../lib/firebase'
+import { demoMode } from './demo'
 import { demoLeads } from './demoLeads'
 
 // Signed-in user + live list of leads. Without a Firebase config it runs on
 // sample data so the page can be previewed.
 export function useLeads() {
-  const [user, setUser] = useState(firebaseReady ? undefined : { email: 'demo@example.com' })
-  const [leads, setLeads] = useState(firebaseReady ? null : demoLeads)
+  const [user, setUser] = useState(demoMode ? { email: 'demo@example.com' } : undefined)
+  const [leads, setLeads] = useState(demoMode ? demoLeads : null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (!firebaseReady) return
+    if (demoMode) return
     let unsubLeads = () => {}
     let unsubAuth = () => {}
     let cancelled = false
@@ -49,14 +50,14 @@ export function useLeads() {
   }
 
   async function signOutUser() {
-    if (!firebaseReady) return
+    if (demoMode) return
     const app = await getFirebaseApp()
     const { getAuth, signOut } = await import('firebase/auth')
     await signOut(getAuth(app))
   }
 
   async function updateLead(id, changes) {
-    if (!firebaseReady) {
+    if (demoMode) {
       setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, ...changes } : l)))
       return
     }
@@ -69,5 +70,5 @@ export function useLeads() {
     })
   }
 
-  return { user, leads, error, signIn, signOut: signOutUser, updateLead, demo: !firebaseReady }
+  return { user, leads, error, signIn, signOut: signOutUser, updateLead, demo: demoMode }
 }

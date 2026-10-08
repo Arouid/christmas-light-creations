@@ -22,6 +22,8 @@ const cases = [
   ['Create with a bad email', () => addDoc(collection(db, 'leads'), { ...valid, email: 'not-an-email' })],
   ['Create with pre-filled notes', () => addDoc(collection(db, 'leads'), { ...valid, notes: 'hi' })],
   ['Write to staff list', () => addDoc(collection(db, 'staff'), { name: 'intruder' })],
+  ['Public can read customers', () => getDocsFromServer(collection(db, 'customers'))],
+  ['Public can add a customer', () => addDoc(collection(db, 'customers'), { fullName: 'Intruder', updatedAt: serverTimestamp(), updatedBy: 'x@example.com' })],
 ]
 
 // Offline writes queue forever instead of failing, so cap each attempt.

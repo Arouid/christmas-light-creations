@@ -51,6 +51,17 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Customer records (the old Google Sheet). Staff only; every change is
+    // stamped with who made it; nobody deletes through the app.
+    match /customers/{customerId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff()
+        && filledStr(request.resource.data.fullName, 200)
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow delete: if false;
+    }
+
     // Staff list: one document per person, ID = their lowercase Google email.
     // Managed in the Firebase console only.
     match /staff/{email} {

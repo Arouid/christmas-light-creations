@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Staff app (demo data, 375px): Season board counts update on status change, area filter, "Ask" text prefilled; customer detail opens with gate code banner, sections; typing + Tab saves a text field ("Saved ✓"), dropdown saves; Import of made-up CSVs with a multi-line note: preview counts, 2026 rate / 2025 takedown payment placed right, app-edited gate code not overwritten, new customer added | Browser pane `/leads/?demo` + `npm test` (6 importer tests) |
 | 2026-10-08 | DNS switched: @ has the 4 GitHub Pages A records (GoDaddy ns71 + Google/Cloudflare/Quad9 public DNS); http://christmas-light-creations.com serves the new site; www redirects to the apex | nslookup/Resolve-DnsName + curl |
 | 2026-10-08 | "Where we work" section shows all 17 towns in 3 groups at 375px, no sideways scroll; schema JSON valid with 17 areaServed | Browser pane + JSON parse |
 | 2026-10-08 | "Leave us a Google review" button shows under reviews at 375px, opens g.page review link (HTTP 302 to Google) in a new tab | Browser pane + curl |

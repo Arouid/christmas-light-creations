@@ -17,3 +17,7 @@
 | 8 | Old URLs redirect (/faq/, /photos/, /info/, /get-an-estimate/) | Lands on matching section | Not checked |
 | 9 | Photos still load after GoDaddy is cancelled | All images show | Should pass: images now in repo (see verified log) |
 | 15 | Mark a lead Booked, tap "Text review link" on a phone | Messages opens with the thank-you text and review link filled in | Not checked |
+| 16 | Import the real Scheduling + Accounts CSVs (signed in as staff) | ~119 customers; warnings list names on only one tab | Blocked: rules not republished yet |
+| 17 | Re-import the same files | Count unchanged, no duplicates | Not checked |
+| 18 | Two staff on phones: one changes a status on Season | Other sees it within seconds | Not checked |
+| 19 | Non-staff cannot read/write customers | `npm run check:rules` all refused | Blocked: rules not republished yet |

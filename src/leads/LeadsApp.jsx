@@ -1,31 +1,35 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { business } from '../data/content'
-import { LEAD_STATUSES, STATUS_LABELS } from '../lib/firebase'
-import LeadCard from './LeadCard'
+import { seasonYear } from '../lib/customers'
+import CustomerDetail from './CustomerDetail'
+import CustomersView from './CustomersView'
+import ImportView from './ImportView'
+import LeadsView from './LeadsView'
+import SeasonView from './SeasonView'
+import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
+
+const TABS = [['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['import', 'Import']]
 
 function Screen({ children }) {
   return <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">{children}</main>
 }
 
+const tabFromHash = () => TABS.find(([k]) => `#${k}` === window.location.hash)?.[0] ?? 'leads'
+
 export default function LeadsApp() {
   const { user, leads, error, signIn, signOut, updateLead, demo } = useLeads()
-  const [filter, setFilter] = useState('open')
-  const [search, setSearch] = useState('')
+  const customersApi = useCustomers(user)
+  const [tab, setTab] = useState(tabFromHash)
+  const [openId, setOpenId] = useState(null)
   const [signInError, setSignInError] = useState(false)
+  const season = seasonYear()
 
-  const counts = useMemo(() => {
-    const c = Object.fromEntries(LEAD_STATUSES.map((s) => [s, 0]))
-    leads?.forEach((l) => { c[l.status] = (c[l.status] ?? 0) + 1 })
-    return c
-  }, [leads])
-
-  const shown = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return (leads ?? []).filter((l) =>
-      (filter === 'all' || (filter === 'open' ? !['booked', 'lost'].includes(l.status) : l.status === filter))
-      && (!q || [l.firstName, l.lastName, l.city, l.address, l.phone, l.email].join(' ').toLowerCase().includes(q)))
-  }, [leads, filter, search])
+  useEffect(() => {
+    const onHash = () => setTab(tabFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
 
   if (user === undefined) return <Screen><p className="text-slate-400">Loading…</p></Screen>
 
@@ -33,7 +37,7 @@ export default function LeadsApp() {
     return (
       <Screen>
         <img src={business.logo} alt={business.name} className="h-16" />
-        <h1 className="font-display text-3xl font-extrabold">Leads</h1>
+        <h1 className="font-display text-3xl font-extrabold">Staff</h1>
         <p className="text-slate-400">Staff only. Sign in with the Google account your manager added.</p>
         <button type="button" onClick={() => signIn().catch(() => setSignInError(true))}
           className="w-full rounded-full bg-glow-400 py-3.5 font-semibold text-night-950">Sign in with Google</button>
@@ -42,7 +46,7 @@ export default function LeadsApp() {
     )
   }
 
-  if (error === 'not-staff') {
+  if (error === 'not-staff' || customersApi.error === 'not-staff') {
     return (
       <Screen>
         <h1 className="font-display text-2xl font-extrabold">Not on the staff list</h1>
@@ -54,45 +58,48 @@ export default function LeadsApp() {
     )
   }
 
-  const chips = [['open', 'Open', (counts.new ?? 0) + (counts.called ?? 0) + (counts['estimate-sent'] ?? 0)],
-    ...LEAD_STATUSES.map((s) => [s, STATUS_LABELS[s], counts[s]]), ['all', 'All', leads?.length ?? 0]]
+  const { customers } = customersApi
+  const open = openId && customers?.find((c) => c.id === openId)
+  const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
 
   return (
     <div className="min-h-svh">
-      {demo && (
-        <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">
-          Preview with sample data. Not connected to Firebase yet.
-        </p>
-      )}
-      <header className="sticky top-0 z-10 border-b border-white/10 bg-night-950/90 px-4 py-3 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
-          <h1 className="font-display text-2xl font-extrabold">Leads</h1>
-          <div className="flex items-center gap-3 text-sm">
+      {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-night-950/90 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3">
+          <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
+          <div className="flex min-w-0 items-center gap-3 text-sm">
             <span className="hidden truncate text-slate-400 sm:inline">{user.email}</span>
-            {!demo && <button type="button" onClick={signOut} className="rounded-full border border-white/20 px-3 py-1.5">Sign out</button>}
+            {!demo && <button type="button" onClick={signOut} className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">Sign out</button>}
           </div>
         </div>
+        <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2" aria-label="Sections">
+          {TABS.map(([k, label]) => (
+            <a key={k} href={`#${k}`} aria-current={tab === k ? 'page' : undefined}
+              className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${tab === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
+              {label}
+            </a>
+          ))}
+        </nav>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pb-12 pt-4">
-        <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, city, phone…"
-          className="block w-full rounded-xl border border-white/15 bg-night-900 px-4 py-3 text-base placeholder:text-slate-500" />
-        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-2" role="tablist" aria-label="Filter by status">
-          {chips.map(([key, label, n]) => (
-            <button key={key} type="button" role="tab" aria-selected={filter === key} onClick={() => setFilter(key)}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium ${filter === key ? 'bg-glow-400 text-night-950' : 'bg-white/10'}`}>
-              {label} <span className="opacity-70">{n}</span>
-            </button>
-          ))}
-        </div>
-
-        {error && error !== 'not-staff' && <p className="mt-6 text-berry-500" role="alert">Couldn’t load leads: {error}</p>}
-        {leads === null && !error && <p className="mt-6 text-slate-400">Loading leads…</p>}
-        {leads && shown.length === 0 && <p className="mt-6 text-slate-400">No leads here.</p>}
-        <ul className="mt-3 space-y-3">
-          {shown.map((l) => <LeadCard key={l.id} lead={l} onUpdate={updateLead} />)}
-        </ul>
+      <main className="mx-auto max-w-3xl px-4 pb-16 pt-4">
+        {customersApi.error && customersApi.error !== 'not-staff' && (
+          <p className="mb-4 text-berry-500" role="alert">Couldn’t load customers: {customersApi.error}</p>
+        )}
+        {tab === 'leads' && <LeadsView leads={leads} error={error} onUpdate={updateLead} />}
+        {tab === 'customers' && (customers
+          ? <CustomersView customers={customers} season={season} onOpen={setOpenId} onCreate={customersApi.create} />
+          : loading)}
+        {tab === 'season' && (customers
+          ? <SeasonView customers={customers} season={season} onOpen={setOpenId} onUpdate={customersApi.update} />
+          : loading)}
+        {tab === 'import' && (customers
+          ? <ImportView existing={customers} onImport={customersApi.importMany} />
+          : loading)}
       </main>
+
+      {open && <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)} />}
     </div>
   )
 }
