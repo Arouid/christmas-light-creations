@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { INSTALL_STATUSES, TAKEDOWN_STATUSES } from '../lib/customers'
 import { matchesView, statusKey } from '../lib/views'
+import BulkEmail from './BulkEmail'
 import SeasonResults from './SeasonResults'
 import { blankFor, select } from './ui'
 
@@ -31,7 +32,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
         ))}
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 lg:flex">
+      <div className="mt-3 grid grid-cols-2 gap-2 lg:flex lg:items-center">
         <select value={area} onChange={(e) => setArea(e.target.value)} className={select} aria-label="Location block">
           <option value="">All areas</option>
           {areas.map((a) => <option key={a}>{a}</option>)}
@@ -41,6 +42,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
           <option>Early Install</option>
           <option>Regular Install</option>
         </select>
+        <div className="col-span-2 lg:ml-auto"><BulkEmail rows={shown} season={season} /></div>
       </div>
 
       <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-2" aria-label="Filter by status">
@@ -58,7 +60,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
 
       <div className="mt-2">
         <SeasonResults rows={shown} mode={mode} season={season} gates={gates} onOpen={onOpen} onUpdate={onUpdate}
-          columns={['name', 'area', 'type', 'week', 'day', 'date', 'timeframe', 'status', 'ask']} />
+          columns={['name', 'area', 'type', 'week', 'day', 'date', 'timeframe', 'status', 'ask', 'review']} />
       </div>
     </>
   )

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { SERVICE_ISSUES, SERVICE_STATUSES, gateFor, todayISO } from '../lib/customers'
 import Icon from '../components/Icon'
 import Field from './Field'
+import { TextButton } from './Reach'
+import { textMessages } from '../lib/messages'
 
 const control = 'block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base'
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm font-medium'
@@ -85,7 +87,8 @@ export function ServiceCallCard({ call, customer, gates, onUpdate, onOpen }) {
           <p className="text-sm text-slate-400">{customer.address}{gate && <> · <span className="text-glow-300">gate {gate.code}</span></>}</p>
           <div className="flex flex-wrap gap-2">
             {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
-            {phone && <a className={action} href={`sms:${phone}`}><Icon name="chat" className="size-4" /> Text</a>}
+            <TextButton phone={customer.phone} className={action}
+              {...(call.status === 'Done' ? { label: 'Text: fixed + review', message: textMessages.repaired(customer) } : {})} />
             {customer.address && (
               <a className={action} target="_blank" rel="noreferrer"
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}`}>Map</a>

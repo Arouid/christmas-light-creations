@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import {
   BLANK_LABEL, FIRST_CONTACT, INSTALL_STATUSES, INSTALL_TYPES, INVOICE_STATUSES, PAID, PAYMENT_TYPES,
-  TAKEDOWN_STATUSES, gateFor, getPath,
+  TAKEDOWN_STATUSES, gateFor, getPath, todayISO,
 } from '../lib/customers'
+import { TEMPLATES, textMessages } from '../lib/messages'
 import Icon from '../components/Icon'
 import Field from './Field'
+import { EmailButton, TextButton } from './Reach'
 import { LogCallForm, ServiceCallCard } from './ServiceView'
 import StreetViewPhoto from './StreetViewPhoto'
 
@@ -82,6 +84,11 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
   const gate = gateFor(customer, gates)
   const myCalls = calls.filter((c) => c.customerId === customer.id)
   const neighborhoods = gates.map((g) => g.neighborhood).filter(Boolean)
+  // Most recent season whose install is done: the moment to ask for a review.
+  const reviewSeason = Object.keys(customer.seasons ?? {}).sort().reverse()
+    .find((y) => customer.seasons[y]?.installStatus === 'Install Completed')
+  const asked = reviewSeason && customer.seasons[reviewSeason].reviewAsked
+  const markAsked = () => onUpdate(customer.id, `seasons.${reviewSeason}.reviewAsked`, todayISO())
   const phone = customer.phone?.replace(/[^\d+]/g, '')
   const seasons = Object.keys(customer.seasons ?? {}).concat(season).filter((y, i, a) => a.indexOf(y) === i).sort().reverse()
 
@@ -102,8 +109,8 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
       <div className="mx-auto max-w-3xl space-y-4 px-4 pb-16 pt-4">
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
-          {phone && <a className={action} href={`sms:${phone}`}><Icon name="chat" className="size-4" /> Text</a>}
-          {customer.email && <a className={action} href={`mailto:${customer.email}`}>Email</a>}
+          <TextButton phone={customer.phone} className={action} />
+          <EmailButton to={customer.email} className={action} subject="Christmas Light Creations" body={TEMPLATES.custom.body(customer)} />
           {customer.address && (
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}`}>Map</a>
@@ -116,6 +123,20 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
           </p>
         )}
         {customer.address && <StreetViewPhoto address={customer.address} />}
+
+        {reviewSeason && (
+          <div className="rounded-xl border border-glow-400/30 bg-glow-400/5 p-3">
+            <p className="text-sm text-slate-300">
+              ★ {reviewSeason} install completed. Ask for a Google review
+              {asked && <span className="text-slate-400"> (asked {asked})</span>}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <TextButton phone={customer.phone} className={action} label="Text review link" message={textMessages.review(customer)} onSent={markAsked} />
+              <EmailButton to={customer.email} className={action} label="Email review link" onSent={markAsked}
+                subject={TEMPLATES.review.subject()} body={TEMPLATES.review.body(customer)} />
+            </div>
+          </div>
+        )}
 
         {seasons.map((y) => (
           <Section key={y} title={`${y} season`} open={y === season}>

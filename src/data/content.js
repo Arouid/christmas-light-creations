@@ -2,6 +2,9 @@
 
 export const currentYear = new Date().getFullYear()
 
+// Vite sets BASE_URL ('/' or the github.io sub-path); plain Node (tests) has none.
+const base = import.meta.env?.BASE_URL ?? '/'
+
 export const business = {
   name: 'Christmas Light Creations',
   short: 'CLC',
@@ -13,8 +16,11 @@ export const business = {
   homesServed: '250+',
   // Google review link for the main Business Profile (listing without a store code).
   reviewLink: 'https://g.page/r/CWKRhzePqUvIEAI/review',
-  logo: `${import.meta.env.BASE_URL}images/clc-logo.png`,
+  logo: `${base}images/clc-logo.png`,
 }
+
+// Estimate form: "How did you hear about us?" (shown on each lead to staff).
+export const HEARD_FROM = ['Google search', 'Google Maps / Business listing', 'Google ad', 'Facebook', 'Nextdoor', 'Saw your lights / yard sign', 'Friend or neighbor', 'Returning customer', 'Other']
 
 export const nav = [
   { label: 'Services', href: '#services' },
@@ -105,7 +111,7 @@ export const testimonials = [
   },
 ]
 
-const photo = (file) => `${import.meta.env.BASE_URL}images/gallery/${file}`
+const photo = (file) => `${base}images/gallery/${file}`
 export const gallery = [
   { src: photo('Classic-League-City.jpg'), alt: 'Classic white roofline lights in League City' },
   { src: photo('Colored-RW-Pearland.jpg'), alt: 'Red and white lights on a Pearland home' },

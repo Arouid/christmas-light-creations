@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { business } from '../data/content'
+import { HEARD_FROM, business } from '../data/content'
 import { firebaseReady, submitLead } from '../lib/firebase'
 import Icon from './Icon'
 
@@ -78,6 +78,12 @@ export default function Estimate() {
                   ))}
                 </div>
               </fieldset>
+              <label className={`${label} sm:col-span-2`}>How did you hear about us?
+                <select name="source" defaultValue="" className={field}>
+                  <option value="">Choose one (optional)</option>
+                  {HEARD_FROM.map((h) => <option key={h}>{h}</option>)}
+                </select>
+              </label>
               <label className={`${label} sm:col-span-2`}>How can we help? *
                 <textarea required name="message" rows={4} maxLength={3000} className={field} placeholder="Roofline, trees, walkways, colors…" />
               </label>

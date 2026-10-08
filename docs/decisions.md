@@ -22,3 +22,7 @@
 | 2026-10-08 | Added Dickinson and Clear Lake: 19 service areas (Google limit 20) | Owner serves them |
 | 2026-10-08 | Added Galveston: 20 service areas, at Google's limit | Owner serves it; any new town now means dropping one |
 | 2026-10-08 | GoDaddy Website Security (Sucuri) firewall disabled so @ can move; custom domain set in GitHub Pages; rebuild triggered so BASE_PATH becomes / | Firewall locked the @ A record; old build used the github.io sub-path |
+| 2026-10-08 | Texts go through Google Voice: app copies the message and opens the Voice conversation; staff paste and send. No bulk/automated texting | Voice has no official sending API and its terms forbid bulk texting; sms: links sent from staff personal numbers |
+| 2026-10-08 | Emails open Gmail compose as info@ (one-to-one and BCC bulk); automated email (auto-reply to estimate requests) waits on Firebase Blaze + SMTP credentials + SPF/DKIM/DMARC | No server today; deliverability needs domain auth first |
+| 2026-10-08 | Review asks only after "Install Completed" (customer page, Season/tab "Review" column), after a service call is Done, and on Booked leads; `seasons.<year>.reviewAsked` records the date | Ask at the happy moment, never twice |
+| 2026-10-08 | Skip Google Local Services Ads | No holiday-lighting category; misfiling risks suspension tied to the Business Profile |

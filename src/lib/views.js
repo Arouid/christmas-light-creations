@@ -4,7 +4,7 @@
 export const VIEW_COLUMNS = [
   ['name', 'Name'], ['area', 'Area'], ['type', 'Type'], ['phone', 'Phone'], ['address', 'Address'],
   ['city', 'City'], ['week', 'Week of'], ['day', 'Day'], ['date', 'Date'], ['timeframe', 'Timeframe'],
-  ['gate', 'Gate code'], ['notes', 'Scheduling notes'], ['status', 'Status'], ['ask', 'Ask button'],
+  ['gate', 'Gate code'], ['notes', 'Scheduling notes'], ['status', 'Status'], ['ask', 'Ask button'], ['review', 'Review ask'],
 ]
 
 export const DEFAULT_COLUMNS = ['name', 'area', 'type', 'week', 'day', 'date', 'status', 'ask']

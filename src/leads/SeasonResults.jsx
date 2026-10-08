@@ -1,14 +1,12 @@
-import { business } from '../data/content'
-import { INSTALL_STATUSES, TAKEDOWN_STATUSES, gateFor, withOption } from '../lib/customers'
+import { INSTALL_STATUSES, TAKEDOWN_STATUSES, gateFor, todayISO, withOption } from '../lib/customers'
+import { textMessages } from '../lib/messages'
 import { DEFAULT_COLUMNS, VIEW_COLUMNS, statusKey } from '../lib/views'
-import Icon from '../components/Icon'
 import DataTable from './DataTable'
+import { TextButton } from './Reach'
 import { blankFor, select } from './ui'
 
 const STATUS_LIST = { install: INSTALL_STATUSES, takedown: TAKEDOWN_STATUSES }
 
-const confirmText = (c, year) =>
-  `Hi ${c.firstName || 'there'}, this is ${business.name}! We're scheduling ${year} installs. Would you like your lights again this year? Reply YES and any timing preferences.`
 
 const sortByArea = (a, b) =>
   (a.locationBlock ?? '').localeCompare(b.locationBlock ?? '') || (a.fullName ?? '').localeCompare(b.fullName ?? '')
@@ -32,12 +30,13 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
       {withOption(list, statusOf(c)).map((o) => <option key={o} value={o}>{o || blank}</option>)}
     </select>
   )
-  const askLink = (c) => (
-    <a href={`sms:${phoneOf(c)}?&body=${encodeURIComponent(confirmText(c, season))}`} onClick={(e) => e.stopPropagation()}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium">
-      <Icon name="chat" className="size-3.5" /> Ask
-    </a>
-  )
+  const smallPill = 'inline-flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium'
+  const askLink = (c) => <TextButton phone={c.phone} label="Ask" className={smallPill} message={textMessages.confirm(c, season)} />
+  const reviewable = (c) => s(c).installStatus === 'Install Completed' && phoneOf(c)
+  const reviewLink = (c) => (s(c).reviewAsked
+    ? <span className="text-xs text-slate-500">asked {s(c).reviewAsked}</span>
+    : <TextButton phone={c.phone} label="★ Review" className={smallPill} message={textMessages.review(c)}
+        onSent={() => onUpdate(c.id, `seasons.${season}.reviewAsked`, todayISO())} />)
 
   const ALL = {
     name: { get: (c) => c.fullName, render: (c) => <span className="font-medium">{c.fullName}</span> },
@@ -54,9 +53,10 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
     notes: { get: (c) => s(c).schedulingNotes, className: 'max-w-xs truncate' },
     status: { get: (c) => statusOf(c) || blank, render: (c) => statusSelect(c, 'py-1.5') },
     ask: { get: () => '', render: (c) => (askable(c) ? askLink(c) : null) },
+    review: { get: (c) => s(c).reviewAsked ?? '', render: (c) => (reviewable(c) ? reviewLink(c) : null) },
   }
   const labels = Object.fromEntries(VIEW_COLUMNS)
-  const tableColumns = columns.filter((k) => ALL[k]).map((k) => ({ key: k, label: k === 'ask' ? '' : labels[k], ...ALL[k] }))
+  const tableColumns = columns.filter((k) => ALL[k]).map((k) => ({ key: k, label: k === 'ask' ? '' : k === 'review' ? 'Review' : labels[k], ...ALL[k] }))
 
   if (sorted.length === 0) return <p className="py-6 text-center text-slate-400">Nobody here.</p>
 
@@ -80,6 +80,7 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
                   {gate && <span className="block text-xs text-glow-300">Gate {gate.code}</span>}
                 </button>
                 {columns.includes('ask') && askable(c) && askLink(c)}
+                {columns.includes('review') && reviewable(c) && reviewLink(c)}
               </div>
               {columns.includes('status') && statusSelect(c, 'mt-2 w-full')}
             </li>

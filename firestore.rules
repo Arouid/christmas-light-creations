@@ -23,7 +23,7 @@ service cloud.firestore {
     match /leads/{leadId} {
       allow create: if request.resource.data.keys().hasOnly([
             'firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip',
-            'contactMethod', 'message', 'status', 'notes', 'createdAt'])
+            'contactMethod', 'message', 'source', 'status', 'notes', 'createdAt'])
         && filledStr(request.resource.data.firstName, 80)
         && filledStr(request.resource.data.lastName, 80)
         && filledStr(request.resource.data.email, 200)
@@ -34,6 +34,7 @@ service cloud.firestore {
         && shortStr(request.resource.data.zip, 10)
         && request.resource.data.contactMethod in ['Phone', 'Text', 'Email']
         && filledStr(request.resource.data.message, 3000)
+        && (!('source' in request.resource.data) || shortStr(request.resource.data.source, 60))
         && request.resource.data.status == 'new'
         && request.resource.data.notes == ''
         && request.resource.data.createdAt == request.time;

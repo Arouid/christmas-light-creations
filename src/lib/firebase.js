@@ -32,7 +32,7 @@ export async function getFirebaseApp() {
 }
 
 // Fields a customer may send; must match the create rule in firestore.rules.
-const LEAD_FIELDS = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip', 'contactMethod', 'message']
+const LEAD_FIELDS = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip', 'contactMethod', 'message', 'source']
 
 export async function submitLead(formData) {
   const [{ getFirestore, collection, addDoc, serverTimestamp }, fbApp] = await Promise.all([
