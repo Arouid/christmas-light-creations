@@ -19,3 +19,4 @@
 | 2026-10-08 | Google review link = main Business Profile (listing without store code); duplicate listing (store code 06048161972742367270) to be merged into it via Google support, not deleted | Duplicates likely caused the lost reviews; a merge can move reviews, a delete loses them |
 | 2026-10-08 | "Leave us a Google review" button on the site; "Text/Email review link" on Booked leads. No incentives offered for reviews | Rebuild reviews from ~250 repeat customers; incentives break Google policy |
 | 2026-10-08 | One master service-area list of 17 towns (`serviceAreaGroups` in content.js), identical to the Google Business Profile; shown in a "Where we work" section and in the schema `areaServed` | Consistency between site and profile; Google caps profiles at 20 areas |
+| 2026-10-08 | Added Dickinson and Clear Lake: 19 service areas (Google limit 20) | Owner serves them |
