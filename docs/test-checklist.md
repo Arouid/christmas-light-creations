@@ -13,7 +13,7 @@
 | 13 | Firestore rules reject bad writes (missing fields, status not `new`, public read) | Permission denied | Done: `npm run check:rules` (see verified log) |
 | 14 | Street View photo in an open lead card (after key is set) | House photo shows; tap opens Street View; "No Street View here" for addresses without imagery | Ready to test (key set) |
 | 6 | GitHub Pages deploy | Action goes green, site loads at the github.io URL | Done (see verified log) |
-| 7 | Custom domain + HTTPS after DNS switch | christmas-light-creations.com loads with padlock | DNS switched; waiting on GitHub certificate |
+| 7 | Custom domain + HTTPS after DNS switch | christmas-light-creations.com loads with padlock | Certificate issued 2026-10-08; tick Enforce HTTPS |
 | 8 | Old URLs redirect (/faq/, /photos/, /info/, /get-an-estimate/) | Lands on matching section | Not checked |
 | 9 | Photos still load after GoDaddy is cancelled | All images show | Should pass: images now in repo (see verified log) |
 | 15 | Mark a lead Booked, tap "Text review link" on a phone | Messages opens with the thank-you text and review link filled in | Not checked |
