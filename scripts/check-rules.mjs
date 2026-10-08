@@ -24,10 +24,15 @@ const cases = [
   ['Write to staff list', () => addDoc(collection(db, 'staff'), { name: 'intruder' })],
 ]
 
+// Offline writes queue forever instead of failing, so cap each attempt.
+const withTimeout = (p) => Promise.race([
+  p, new Promise((_, reject) => setTimeout(() => reject({ code: 'no answer from server in 15s' }), 15000)),
+])
+
 let failed = 0
 for (const [name, run] of cases) {
   try {
-    await run()
+    await withTimeout(run())
     failed++
     console.log(`FAIL  ${name}: was ALLOWED`)
   } catch (e) {

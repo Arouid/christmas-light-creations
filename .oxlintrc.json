@@ -6,5 +6,8 @@
     "no-undef": "error",
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  "overrides": [
+    { "files": ["scripts/**", "*.config.js"], "env": { "node": true } }
+  ]
 }
