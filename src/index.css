@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-night-950: #050b1a;
+  --color-night-900: #0a1530;
+  --color-night-800: #12214a;
+  --color-night-700: #1c2f63;
+  --color-glow-300: #ffe08a;
+  --color-glow-400: #ffcf4d;
+  --color-glow-500: #f5b81c;
+  --color-berry-500: #d7263d;
+  --color-berry-600: #b51d31;
+  --color-pine-500: #1f8a5b;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 4.5rem;
+}
+
+body {
+  @apply bg-night-950 text-slate-100 font-sans antialiased;
+}
+
+/* String of bulbs used as a section divider */
+.bulb-string {
+  background-image: radial-gradient(circle at 50% 60%, var(--bulb, #ffcf4d) 0 5px, transparent 6px);
+  background-size: 36px 18px;
+  height: 18px;
+  filter: drop-shadow(0 0 6px rgba(255, 207, 77, 0.7));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .twinkle { animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 50% { opacity: 0.55; } }
+}
