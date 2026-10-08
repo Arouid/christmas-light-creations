@@ -5,6 +5,7 @@ import HowItWorks from './components/HowItWorks'
 import Gallery from './components/Gallery'
 import Testimonials from './components/Testimonials'
 import Faq from './components/Faq'
+import ServiceAreas from './components/ServiceAreas'
 import Estimate from './components/Estimate'
 import Footer from './components/Footer'
 import MobileCta from './components/MobileCta'
@@ -19,6 +20,7 @@ export default function App() {
         <HowItWorks />
         <Gallery />
         <Testimonials />
+        <ServiceAreas />
         <Faq />
         <Estimate />
       </main>

@@ -23,10 +23,14 @@ export const nav = [
   { label: 'FAQ', href: '#faq' },
 ]
 
-export const serviceAreas = [
-  'Pearland', 'Friendswood', 'Manvel', 'Alvin', 'League City',
-  'Kemah', 'Texas City', 'Santa Fe',
+// Must match the service areas on the Google Business Profile (max 20 there).
+export const serviceAreaGroups = [
+  { region: 'Pearland side', towns: ['Pearland', 'Friendswood', 'Brookside Village', 'League City', 'Webster'] },
+  { region: 'Bay side', towns: ['Pasadena', 'Deer Park', 'La Porte', 'Seabrook', 'El Lago', 'Kemah'] },
+  { region: 'Galveston County & south', towns: ['Alvin', 'Manvel', 'Santa Fe', 'Texas City', 'Bacliff', 'San Leon'] },
 ]
+
+export const serviceAreas = serviceAreaGroups.flatMap((g) => g.towns)
 
 export const highlights = [
   {

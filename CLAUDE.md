@@ -34,6 +34,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Colors come from the theme tokens in `src/index.css` (`night`, `glow`, `berry`, `pine`). Fonts: Fraunces (display), Inter (body).
 - No tracking or analytics scripts, no cookie banners.
 - Keep the phone number (281-819-0163) one tap away on every screen.
+- Service areas: `serviceAreaGroups` in content.js and `areaServed` in index.html must match the Google Business Profile's service areas exactly.
 - Don't reword customer reviews; quote them as written.
 - Old WordPress URLs (`/faq/`, `/photos/`, `/info/`, `/get-an-estimate/`) must keep redirecting (`public/<path>/index.html`).
 - Estimate form saves to Firestore `leads`; staff read and update them at `/leads/` (Google sign-in, allowlist in the `staff` collection). Access rules live in `firestore.rules`; any new lead field must be added there and in `LEAD_FIELDS` in `src/lib/firebase.js`. With Firebase not configured, the form shows a call button and `/leads/` shows sample data.

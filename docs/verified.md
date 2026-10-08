@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | "Where we work" section shows all 17 towns in 3 groups at 375px, no sideways scroll; schema JSON valid with 17 areaServed | Browser pane + JSON parse |
 | 2026-10-08 | "Leave us a Google review" button shows under reviews at 375px, opens g.page review link (HTTP 302 to Google) in a new tab | Browser pane + curl |
 | 2026-10-08 | Live on GitHub Pages at arouid.github.io/christmas-light-creations/: page renders at 375px, styles load, all 24 images load (HTTP 200), no console errors, form shows the submit button | Browser pane + curl |
 | 2026-10-08 | Address check: "1 Test Street, Pearland" now returns "Address not found"; owner's real home address returns a photo with the camera facing the house | Browser pane on localhost, `findStreetView()` + rendered photo |

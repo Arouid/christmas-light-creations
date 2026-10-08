@@ -1,0 +1,23 @@
+import { business, serviceAreaGroups } from '../data/content'
+import Section from './Section'
+
+export default function ServiceAreas() {
+  return (
+    <Section id="areas" eyebrow="Service area" title="Where we work."
+      intro="Holiday lighting installation across Pearland, the Bay Area and south Houston.">
+      <div className="grid gap-4 md:grid-cols-3">
+        {serviceAreaGroups.map((g) => (
+          <div key={g.region} className="rounded-2xl border border-white/10 bg-night-900 p-6">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-glow-400">{g.region}</h3>
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {g.towns.map((t) => <li key={t} className="rounded-full bg-white/5 px-3 py-1.5 text-sm">{t}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <p className="mt-6 text-slate-300">
+        Don’t see your town? <a href={business.phoneHref} className="font-semibold text-glow-300 underline-offset-4 hover:underline">Call {business.phone}</a>, we may still come out.
+      </p>
+    </Section>
+  )
+}

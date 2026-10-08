@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { business, serviceAreas } from '../data/content'
+import { business } from '../data/content'
 import { firebaseReady, submitLead } from '../lib/firebase'
 import Icon from './Icon'
 
@@ -42,7 +42,6 @@ export default function Estimate() {
               <Icon name="chat" className="size-5" /> Text us
             </a>
           </div>
-          <p className="mt-8 text-sm text-slate-400">Serving {serviceAreas.join(', ')} and nearby.</p>
         </div>
 
         <div className="rounded-3xl border border-white/10 bg-night-900 p-6 md:p-8">
