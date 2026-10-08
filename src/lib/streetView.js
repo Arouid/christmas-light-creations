@@ -1,6 +1,6 @@
 // Google Maps API key for the Street View Static API. Public by design:
 // lock it in Google Cloud to this site's domains and to Street View only.
-export const MAPS_KEY = ''
+export const MAPS_KEY = 'AIzaSyA0JukeFR0g2kSfyR0JrJB8yjO88LjWQjc'
 
 export const streetViewReady = Boolean(MAPS_KEY)
 

@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Street View key works from localhost and christmas-light-creations.com, refused from other sites; photo endpoint returns a JPEG | curl with Referer headers against a public Pearland address |
 | 2026-10-08 | Live Firestore rules refuse all 8 bad attempts (public read of leads/staff, wrong status, extra field, no address, bad email, pre-filled notes, staff write) | `npm run check:rules` against clc-leads-site |
 | 2026-10-08 | Real form submit saves a lead to Firestore (proves custom rules are published; default rules would refuse) and shows "Thanks, we got it!" | Browser pane, localhost, TEST lead "TEST Delete Me" |
 | 2026-10-08 | `/leads/` with sample data at phone width: list, status change updates counts, search + filters, no sideways scroll | Browser pane, 375px |
