@@ -7,7 +7,7 @@
 | 3 | Tap "Text us" on a real phone | Messages opens to 281-819-0163 | Not checked |
 | 4 | Gallery: tap a photo, swipe arrows, close | Full-screen viewer, next/prev, closes | Not checked |
 | 5 | Estimate form submits | "Thanks, we got it!" and the lead appears at /leads/ within seconds | Done locally (see verified log); recheck on live domain |
-| 10 | Staff sign-in at /leads/ (Google) on a phone | List loads | Ready to test |
+| 10 | Staff sign-in at /leads/ (Google) on a phone | List loads | Done on desktop Chrome; phone not yet |
 | 11 | Non-staff Google account at /leads/ | "Not on the staff list" with their email, no data | Ready to test |
 | 12 | Change status / save notes as staff | Saves; other staff see it live; "Last changed by" shows | Ready to test |
 | 13 | Firestore rules reject bad writes (missing fields, status not `new`, public read) | Permission denied | Done: `npm run check:rules` (see verified log) |
