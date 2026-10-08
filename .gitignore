@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Owner photo drop: originals may contain GPS location data, never commit
+photos-incoming/

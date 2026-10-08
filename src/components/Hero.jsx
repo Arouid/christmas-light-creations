@@ -4,8 +4,10 @@ import Icon from './Icon'
 export default function Hero() {
   return (
     <section id="top" className="relative isolate overflow-hidden pt-16">
-      <img src={gallery[0].src} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-45" fetchPriority="high" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-night-950/70 via-night-950/60 to-night-950" />
+      <img src={gallery[0].src} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover object-[65%_center] opacity-60 md:opacity-90" fetchPriority="high" />
+      {/* Phones: darken evenly for the text. Desktop: dark behind the text on the left, house shows on the right. */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-night-950/70 via-night-950/55 to-night-950 md:bg-gradient-to-r md:from-night-950 md:via-night-950/70 md:to-night-950/10" />
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-night-950 to-transparent" />
 
       <div className="mx-auto flex min-h-[88svh] max-w-6xl flex-col justify-end px-4 pb-14 pt-24 md:justify-center md:pb-24">
         <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-glow-400/30 bg-night-900/60 px-3 py-1 text-xs font-medium uppercase tracking-wider text-glow-300">
