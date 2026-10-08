@@ -14,3 +14,4 @@
 | 2026-10-08 | Firestore rules: public can only create (validated fields, status `new`), staff can read and change only status/notes, nobody deletes via the app | Keep customer data private and stop junk writes |
 | 2026-10-08 | Honeypot field on the form; App Check not yet | Cheap spam filter now; add App Check if spam shows up |
 | 2026-10-08 | Street View photo on each lead card (Street View Static API, key in `src/lib/streetView.js`, locked to the domain + that API). Free metadata call first; photo only loads when a card is open | Staff see the roofline before calling; keeps billed photo loads low |
+| 2026-10-08 | Geocode the lead address first (Maps JavaScript API Geocoder) and only show a photo for an exact house match; aim the camera at the house | Google returns a guessed nearby photo for typos/made-up addresses. The Geocoding web endpoint refuses website-locked keys, so it goes through the JS API |

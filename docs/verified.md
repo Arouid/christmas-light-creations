@@ -4,8 +4,9 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Address check: "1 Test Street, Pearland" now returns "Address not found"; owner's real home address returns a photo with the camera facing the house | Browser pane on localhost, `findStreetView()` + rendered photo |
 | 2026-10-08 | Staff Google sign-in (exatrum@gmail.com) on /leads/ shows the TEST lead with counts; Street View photo renders in the open card | Owner, Chrome, localhost (screenshot) |
-| 2026-10-08 | KNOWN ISSUE: a made-up address ("1 Test Street, Pearland") still got a photo of some nearby warehouse; Google guesses rather than failing | Same screenshot |
+| 2026-10-08 | ~~KNOWN ISSUE: made-up address got a photo of a nearby warehouse~~ fixed, see next entry | Same screenshot |
 | 2026-10-08 | Street View key works from localhost and christmas-light-creations.com, refused from other sites; photo endpoint returns a JPEG | curl with Referer headers against a public Pearland address |
 | 2026-10-08 | Live Firestore rules refuse all 8 bad attempts (public read of leads/staff, wrong status, extra field, no address, bad email, pre-filled notes, staff write) | `npm run check:rules` against clc-leads-site |
 | 2026-10-08 | Real form submit saves a lead to Firestore (proves custom rules are published; default rules would refuse) and shows "Thanks, we got it!" | Browser pane, localhost, TEST lead "TEST Delete Me" |

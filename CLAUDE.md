@@ -38,6 +38,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Old WordPress URLs (`/faq/`, `/photos/`, `/info/`, `/get-an-estimate/`) must keep redirecting (`public/<path>/index.html`).
 - Estimate form saves to Firestore `leads`; staff read and update them at `/leads/` (Google sign-in, allowlist in the `staff` collection). Access rules live in `firestore.rules`; any new lead field must be added there and in `LEAD_FIELDS` in `src/lib/firebase.js`. With Firebase not configured, the form shows a call button and `/leads/` shows sample data.
 - Load Firebase with dynamic `import()` only, so the public page stays light.
+- Street View on lead cards: `src/lib/streetView.js`. The Maps key is locked to the site's domains + localhost:5173 and to Maps JavaScript, Geocoding and Street View Static APIs (Google Cloud, project clc-leads-site).
 - `/leads/` is `noindex` and disallowed in `robots.txt`; never link it from the public site.
 
 ## The user
