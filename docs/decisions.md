@@ -13,3 +13,4 @@
 | 2026-10-08 | Estimate requests saved to Firebase Firestore; staff list at `/leads/` with status + notes; Google sign-in; staff allowlist in a `staff` collection | Owner wants a list for ~3 sales people; Firebase free tier doesn't pause in the off-season (Supabase's does) |
 | 2026-10-08 | Firestore rules: public can only create (validated fields, status `new`), staff can read and change only status/notes, nobody deletes via the app | Keep customer data private and stop junk writes |
 | 2026-10-08 | Honeypot field on the form; App Check not yet | Cheap spam filter now; add App Check if spam shows up |
+| 2026-10-08 | Street View photo on each lead card (Street View Static API, key in `src/lib/streetView.js`, locked to the domain + that API). Free metadata call first; photo only loads when a card is open | Staff see the roofline before calling; keeps billed photo loads low |

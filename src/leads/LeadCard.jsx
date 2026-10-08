@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { LEAD_STATUSES, STATUS_LABELS } from '../lib/firebase'
 import Icon from '../components/Icon'
+import StreetViewPhoto from './StreetViewPhoto'
 
 const statusColor = {
   new: 'bg-glow-400 text-night-950',
@@ -50,6 +51,7 @@ export default function LeadCard({ lead, onUpdate }) {
 
       {open && (
         <div className="space-y-4 border-t border-white/10 p-4">
+          <StreetViewPhoto address={fullAddress} />
           <p className="text-sm text-slate-400">Prefers: <span className="font-medium text-slate-200">{lead.contactMethod}</span></p>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {phoneDigits && <a className={action} href={`tel:${phoneDigits}`}><Icon name="phone" className="size-4" /> Call</a>}
