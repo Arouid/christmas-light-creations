@@ -21,3 +21,4 @@
 | 2026-10-08 | One master service-area list of 17 towns (`serviceAreaGroups` in content.js), identical to the Google Business Profile; shown in a "Where we work" section and in the schema `areaServed` | Consistency between site and profile; Google caps profiles at 20 areas |
 | 2026-10-08 | Added Dickinson and Clear Lake: 19 service areas (Google limit 20) | Owner serves them |
 | 2026-10-08 | Added Galveston: 20 service areas, at Google's limit | Owner serves it; any new town now means dropping one |
+| 2026-10-08 | GoDaddy Website Security (Sucuri) firewall disabled so @ can move; custom domain set in GitHub Pages; rebuild triggered so BASE_PATH becomes / | Firewall locked the @ A record; old build used the github.io sub-path |
