@@ -21,6 +21,6 @@
 | 17 | Re-import the same files | Count unchanged, no duplicates | Not checked |
 | 18 | Two staff on phones: one changes a status on Season | Other sees it within seconds | Not checked |
 | 19 | Non-staff cannot read/write customers | `npm run check:rules` all refused | Done 2026-10-08 |
-| 20 | Publish updated rules, then import the Gate Codes CSV | 16 neighborhoods on Gates tab | Blocked: rules not republished |
+| 20 | Publish updated rules, then import the Gate Codes CSV | 16 neighborhoods on Gates tab | Imported by owner 2026-10-08 (count not yet confirmed) |
 | 21 | Real service call logged on a phone | Shows on Service tab and the customer's page for all staff | Not checked |
 | 22 | Make customer from a real lead | Customer created, lead shows "Customer record ✓" | Not checked |
