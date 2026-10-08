@@ -8,6 +8,8 @@ import ImportView from './ImportView'
 import LeadsView from './LeadsView'
 import MapView from './MapView'
 import SeasonView from './SeasonView'
+import SettingsPanel from './SettingsPanel'
+import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
 import ViewTab from './ViewTab'
@@ -39,6 +41,8 @@ export default function LeadsApp() {
   const [tab, setTab] = useState(tabFromHash)
   const [openId, setOpenId] = useState(null)
   const [signInError, setSignInError] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [textFrom, setTextFrom] = useState(getTextFrom)
   const season = seasonYear()
 
   useEffect(() => {
@@ -117,7 +121,10 @@ export default function LeadsApp() {
   const open = openId && customers?.find((c) => c.id === openId)
   const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
 
+  const voiceAccount = textFrom === 'own' ? '' : (settingsApi.settings?.voiceAccount ?? '')
+
   return (
+    <VoiceAccount.Provider value={voiceAccount}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
@@ -125,6 +132,8 @@ export default function LeadsApp() {
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
           <div className="flex min-w-0 items-center gap-3 text-sm">
             <span className="hidden truncate text-slate-400 sm:inline">{user.email}</span>
+            <button type="button" onClick={() => setShowSettings(true)} aria-label="Settings" title="Settings"
+              className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">⚙</button>
             {!demo && <button type="button" onClick={signOut} className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">Sign out</button>}
           </div>
         </div>
@@ -184,6 +193,11 @@ export default function LeadsApp() {
         <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} />
       )}
+      {showSettings && (
+        <SettingsPanel settings={settingsApi.settings ?? {}} onSave={settingsApi.save} textFrom={textFrom}
+          onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
+      )}
     </div>
+    </VoiceAccount.Provider>
   )
 }

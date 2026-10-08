@@ -7,6 +7,7 @@ test('phone numbers become +1 format for Google Voice', () => {
   assert.equal(e164('1-281-819-0163'), '+12818190163')
   assert.equal(e164(''), '')
   assert.equal(voiceUrl('281-819-0163'), 'https://voice.google.com/u/0/messages?itemId=t.%2B12818190163')
+  assert.equal(voiceUrl('2818190163', 'biz@example.com'), 'https://voice.google.com/u/biz%40example.com/messages?itemId=t.%2B12818190163')
 })
 
 test('Gmail compose opens from the business account with fields filled', () => {

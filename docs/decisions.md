@@ -26,3 +26,4 @@
 | 2026-10-08 | Emails open Gmail compose as info@ (one-to-one and BCC bulk); automated email (auto-reply to estimate requests) waits on Firebase Blaze + SMTP credentials + SPF/DKIM/DMARC | No server today; deliverability needs domain auth first |
 | 2026-10-08 | Review asks only after "Install Completed" (customer page, Season/tab "Review" column), after a service call is Done, and on Booked leads; `seasons.<year>.reviewAsked` records the date | Ask at the happy moment, never twice |
 | 2026-10-08 | Skip Google Local Services Ads | No holiday-lighting category; misfiling risks suspension tied to the Business Profile |
+| 2026-10-08 | Business Voice account is a staff-only setting (`settings/app.voiceAccount`), not in code; each device can switch Text to "my own Google Voice" (Katie has her own number) | The staff page code is public; per-person numbers |

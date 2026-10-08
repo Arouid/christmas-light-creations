@@ -39,8 +39,10 @@ export function e164(phone) {
   return d ? `+${d}` : ''
 }
 
-// Opens the Google Voice conversation with this number (web and app).
-export const voiceUrl = (phone) => `https://voice.google.com/u/0/messages?itemId=t.${encodeURIComponent(e164(phone))}`
+// Opens the Google Voice conversation with this number. `account` picks which
+// signed-in Google account's Voice number to use; empty = the browser's first.
+export const voiceUrl = (phone, account = '') =>
+  `https://voice.google.com/u/${account ? encodeURIComponent(account) : '0'}/messages?itemId=t.${encodeURIComponent(e164(phone))}`
 
 // Gmail compose window from the business account.
 export function gmailUrl({ to = '', bcc = '', subject = '', body = '' }) {

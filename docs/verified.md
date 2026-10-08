@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Settings (⚙): saving a Voice account makes Text open voice.google.com/u/<account>/…; "My own Google Voice" on this device makes it open /u/0/…; choice stored per device | Browser pane (demo, fake account) |
 | 2026-10-08 | Messaging (demo data, 1440px): Text/Ask buttons open voice.google.com/u/0/messages?itemId=t.<number> (copy message first); "Email these N" opens Gmail compose at /mail/u/info@christmas-light-creations.com/ with BCC + template; customer with a completed install shows the review box and records "asked <date>" after Text review link. Not verified: that Google Voice actually opens the right conversation for a signed-in staff member | Browser pane (window.open intercepted) + `npm test` (20) |
 | 2026-10-08 | Map wall (demo data, 1440px + 375px): tiles load with the night style (fetched tile + zoomed screenshot show blue roads and town names), pins for customers/home/open call, call pin card shows gate + "1.3 mi from home base" + actions, Takedowns filter and service-call toggle change the pins; phone: no sideways scroll | Browser pane + network entries |
 | 2026-10-08 | Delete button next to Edit tab removes the custom tab and returns to Season; owner created a real tab ("addy") after publishing rules | Browser pane (demo) + owner |
