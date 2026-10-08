@@ -11,7 +11,7 @@ export const business = {
   city: 'Pearland, TX',
   since: 2011,
   homesServed: '250+',
-  logo: '/images/clc-logo.png',
+  logo: `${import.meta.env.BASE_URL}images/clc-logo.png`,
 }
 
 export const nav = [
@@ -99,7 +99,7 @@ export const testimonials = [
   },
 ]
 
-const photo = (file) => `/images/gallery/${file}`
+const photo = (file) => `${import.meta.env.BASE_URL}images/gallery/${file}`
 export const gallery = [
   { src: photo('Classic-League-City.jpg'), alt: 'Classic white roofline lights in League City' },
   { src: photo('Colored-RW-Pearland.jpg'), alt: 'Red and white lights on a Pearland home' },
