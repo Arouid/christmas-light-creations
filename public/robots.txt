@@ -1,2 +1,4 @@
 User-agent: *
 Disallow: /leads/
+
+Sitemap: https://christmas-light-creations.com/sitemap.xml

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-areas.mjs",
     "lint": "oxlint --deny-warnings",
     "preview": "vite preview",
     "check": "npm run lint && npm test && npm run build",
