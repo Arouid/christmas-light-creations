@@ -83,7 +83,7 @@ function AlertEmails({ settings, onSave }) {
 // Defaults for new proposals: deposit, takedown %, who countersigns, and the
 // contract terms (owner + attorney to finish every [TO FILL IN]).
 function ProposalDefaults({ settings, onSave }) {
-  const [terms, setTerms] = useState(settings.proposalTerms || DEFAULT_TERMS)
+  const [terms, setTerms] = useState(settings.proposalTerms && !settings.proposalTerms.includes(FILL_IN) ? settings.proposalTerms : DEFAULT_TERMS)
   const [msg, setMsg] = useState(null)
   const num = (k) => (e) => onSave({ [k]: e.target.value === '' ? null : Number(e.target.value) })
   return (

@@ -1,7 +1,8 @@
 // Default contract terms (editable in staff Settings). Plain language, built
-// from CLC's published policies. NOT legal advice: the owner (ideally with a
-// Texas attorney) must review it and fill in every [TO FILL IN] before use;
-// proposals can't be sent while any remain.
+// from CLC's published policies and the owner's choices (2026-10-09: deposit
+// non-refundable; if CLC can't install by Dec 1 the customer may choose a
+// refund; standard limited liability). NOT legal advice: a Texas attorney
+// should review it. Any [TO FILL IN] left in terms blocks sending.
 
 export const FILL_IN = '[TO FILL IN'
 
@@ -17,8 +18,8 @@ export const DEFAULT_TERMS = `1. The work. {business} will provide and install t
 
 6. Takedown and ownership. Takedown starts January 3 and is finished by January 13. Once paid in full, the lights and materials are yours: we label, wrap and bin them for you to keep. Re-installing them in a future season is 50% of the original install price ({nextYear} for this design).
 
-7. Cancellation and refunds. [TO FILL IN: what happens to the deposit if the customer cancels before install, and any refund policy.]
+7. Cancellation and refunds. Your deposit holds your install date and is non-refundable if you cancel after signing. If we have to cancel or reschedule your install (for example, because of weather), we will first offer you a new install date. If we cannot complete your install by December 1, you may choose a full refund of your deposit instead, starting December 1.
 
-8. Damage and liability. We carry liability insurance. [TO FILL IN: wording about damage to property and limits of liability, reviewed by an attorney.]
+8. Damage and liability. We carry liability insurance and take care around your home. If we damage your property while doing this work, we will repair it or pay for the repair. We are not responsible for problems that existed before our work (such as outlets, GFCIs, wiring, roofing, shingles, gutters or trim already in poor condition); for damage caused by weather, power outages or surges, animals, or other events beyond our control; or for items we were not told about (such as buried lines, sprinkler heads or fragile decorations). Except for damage caused by our negligence, our total liability under this agreement is limited to the amount you paid us under it.
 
 9. Electronic signature. By signing electronically you agree that your electronic signature is the legal equivalent of your handwritten signature on this agreement, and that you may save or print a copy.`

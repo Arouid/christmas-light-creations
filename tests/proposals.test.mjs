@@ -32,8 +32,10 @@ test('terms placeholders fill from the proposal', () => {
 test('can’t send with missing pieces or unfinished terms', () => {
   const p = base()
   assert.deepEqual(sendProblems(p), ['contract terms'])
-  p.terms = DEFAULT_TERMS
+  p.terms = 'Refunds: [TO FILL IN: policy]'
   assert.deepEqual(sendProblems(p), ['the contract terms still marked [TO FILL IN]'])
+  p.terms = DEFAULT_TERMS
+  assert.deepEqual(sendProblems(p), [], 'the default terms are finished')
   p.terms = 'All good.'
   assert.deepEqual(sendProblems(p), [])
 })

@@ -228,7 +228,8 @@ export default function ProposalsPanel({ owner }) {
   async function create() {
     setBusy(true)
     const latest = designs?.[0]
-    const terms = settings.proposalTerms || DEFAULT_TERMS
+    // Saved terms that were never finished fall back to the current default.
+    const terms = settings.proposalTerms && !settings.proposalTerms.includes(FILL_IN) ? settings.proposalTerms : DEFAULT_TERMS
     const p = {
       ...newProposal({
         customer: { name: owner.name, email: owner.email, phone: owner.phone, address: owner.address },
