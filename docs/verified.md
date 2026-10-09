@@ -88,4 +88,4 @@ What was actually checked working, and how. Newest first.
 
 ## 2026-10-09 PayPal Live deposit
 
-- Owner paid a real deposit on a proposal to himself after the Live switch; payment went through (owner report). Refund done by owner in PayPal.
+- Owner paid a real deposit on a proposal to himself after the Live switch; payment went through (owner report). Refund of the test payment left to the owner (PayPal → Activity).
