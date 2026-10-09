@@ -1,6 +1,6 @@
 # To-do
 
-Open items for the website, staff app and accounts. Newest decisions are in `decisions.md`, things checked working in `verified.md`. Updated 2026-10-08.
+Open items for the website, staff app and accounts. Newest decisions are in `decisions.md`, things checked working in `verified.md`. Updated 2026-10-09.
 
 ## Waiting on Scott / staff
 
@@ -33,6 +33,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 31 | **Customer accounts** (/account/): (a) ~~deploy functions, rules, push~~ done 2026-10-09; (b) ~~turn on Email link sign-in~~ done 2026-10-09; (c) check the site is an authorized domain; then (d) on your phone try both **Sign in with Google** and an emailed link for your own email, see your test proposals, pay an open balance | (b) Firebase console → Authentication → Sign-in method → Email/Password → enable **Email link (passwordless sign-in)** → Save (turn on Email/Password too if asked; passwords are never used). (c) Authentication → Settings → Authorized domains: `christmas-light-creations.com` listed. **Rules change (new `customerLogins` list, staff read only)**: OK, then Claude publishes and runs `npm run check:rules`. Until then the "Customer login" line on Accounts stays hidden; nothing else is affected |
 | 32 | **Add-ons / yearly price** (live since 2026-10-09). In the staff app: Accounts → "Add-on notes to check" → for each customer confirm the drafts, set Original rate (first-year full price) where missing, and tick "Customer can see this" once the breakdown and that customer's Seasons (amount + paid) are right | No rules change needed |
 | 33 | **Contract terms in ⚙ Settings**: if your saved terms still say "Takedown and storage, {removal}, is due at removal", replace that sentence with "Takedown in January: {takedownCost}." (shows the amount, or "Free" when takedown is $0; the built-in default already does) | Staff app → ⚙ Settings → Contract terms → edit → save |
+| 34 | **Security review follow-ups** (`docs/security-review.md`, local only: not in git because the repo is public): (a) OK to deploy the USD payment fix: `npx --yes firebase-tools@14.11.0 deploy --only functions:createDepositOrder,functions:captureDepositOrder --non-interactive`; (b) OK/no to rules changes A–D (signature must be a picture, staff = Google only, no hand-typed payments, sandbox-delete only if nothing paid live); (c) decide on App Check against form spam | Claude does each after your OK, then reruns `npm run test:rules` + `npm run check:rules` |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked
@@ -47,6 +48,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | G | Auto-reply email to website estimate requests | Needs Firebase extension + Gmail App Password; email auth DNS is done |
 | I | "Customer login" link on the public site (footer) once accounts are tested | /account/ is noindex; a footer link is fine |
 | J | Subscriptions (PayPal Subscriptions, enabled on the Live app) on the account page | Account is keyed by verified email; spec first |
+| K | Security follow-ups after #34: check the PayPal order before capturing; transaction around marking paid; lowercase email field so `sendAccountLink` stops reading every proposal; CSP meta on /proposal/ and /account/ | `docs/security-review.md` risks 2, 7, 8, 10 |
 | H | Privacy page (the form collects personal info) | |
 
 ## Dated reminders

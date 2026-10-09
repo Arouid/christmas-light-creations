@@ -28,3 +28,6 @@ photos-incoming/
 gift-wrap-incoming/
 # Old WordPress backup from GoDaddy: contains customer data, never commit
 old-site-backup/
+
+# Security review: lists open weak spots; the repo is public, so keep it local
+docs/security-review.md

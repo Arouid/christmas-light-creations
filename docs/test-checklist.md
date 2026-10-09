@@ -42,3 +42,5 @@
 | 37 | Customer with only a customer record (no proposal) asks for a sign-in link | Link arrives; account shows name/address and (if allowed) yearly price | Ready to test (live) |
 | 31 | Account link opened on a different device | Asks for the email, then signs in | Not checked |
 | 32 | Account link requested for an email with no proposal | Same "Check your email" message, no email sent | Not checked |
+| 38 | After deploying the USD fix: pay a small real balance on a test proposal from another PayPal/Venmo/card | Paid ✓ recorded, staff email arrives | Not checked |
+| 39 | Live functions refuse fake calls (myAccount without sign-in → unauthenticated; createDepositOrder with an unknown token → not-found; wrong part → invalid-argument) | Refused | Not checked (blocked in the 2026-10-09 review session) |

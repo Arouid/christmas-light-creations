@@ -6,7 +6,20 @@
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": ["node_modules", "*.local", "*.log"]
+      "ignore": [
+        "node_modules",
+        "*.local",
+        "*.log"
+      ]
     }
-  ]
+  ],
+  "emulators": {
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8080
+    },
+    "ui": {
+      "enabled": false
+    }
+  }
 }

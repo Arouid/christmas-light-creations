@@ -26,6 +26,7 @@ import nodemailer from 'nodemailer'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { captureOrder, createOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
+import { PART_LABEL, captureProblem, customIdFor, payableProblem } from './payments.js'
 import { EMAIL_RE, accountSummary, accountUrl, addOnFromProposal, byNewest, customerForAccount, emailsOf, loginRecord, normEmail, providerName, shownInAccount } from './account.js'
 
 initializeApp()
@@ -58,24 +59,15 @@ export const newLeadAlert = onDocumentCreated(
 
 // ---- Payments (deposit, install balance, takedown) --------------------------
 
-const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown' }
-const customIdFor = (token, part) => (part === 'deposit' ? token : `${token}:${part}`)
-
-// The deposit is payable once signed; the balance and takedown only after
-// staff ask for them (requests.<part> set in the staff app).
+// Payable rules (signed, requested, not yet paid, something due) live in payments.js.
 async function payableProposal(token, part = 'deposit') {
-  if (typeof token !== 'string' || token.length < 16) throw new HttpsError('invalid-argument', 'Bad link')
+  if (typeof token !== 'string' || token.length < 16 || token.includes('/')) throw new HttpsError('invalid-argument', 'Bad link')
   if (!PARTS.includes(part)) throw new HttpsError('invalid-argument', 'Unknown payment')
   const ref = getFirestore().doc(`proposals/${token}`)
-  const snap = await ref.get()
-  if (!snap.exists) throw new HttpsError('not-found', 'Proposal not found')
-  const p = snap.data()
-  if (!['signed', 'countersigned'].includes(p.status)) throw new HttpsError('failed-precondition', 'Sign the proposal first')
-  if (part !== 'deposit' && p.requests?.[part] !== true) throw new HttpsError('failed-precondition', 'This payment isn’t due yet')
-  if (paymentOf(p, part)?.status === 'paid') throw new HttpsError('already-exists', `${PART_LABEL[part]} already paid`)
-  const amount = partCents(p, part)
-  if (amount <= 0) throw new HttpsError('failed-precondition', 'Nothing due')
-  return { ref, p, amount }
+  const p = (await ref.get()).data()
+  const problem = payableProblem(p, part)
+  if (problem) throw new HttpsError(...problem)
+  return { ref, p, amount: partCents(p, part) }
 }
 const paypalCfg = () => ({ env: PAYPAL_ENV.value(), clientId: PAYPAL_CLIENT_ID.value(), secret: PAYPAL_SECRET.value() })
 
@@ -104,14 +96,14 @@ export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', s
   const part = req.data?.part ?? 'deposit'
   const { ref, amount } = await payableProposal(token, part)
   const result = await captureOrder(paypalCfg(), String(req.data?.orderId ?? ''))
-  const unit = result.purchase_units?.[0]
-  const capture = unit?.payments?.captures?.[0]
-  const paidCents = Math.round(Number(capture?.amount?.value ?? 0) * 100)
-  // Only accept a completed capture for this proposal, this part and the full amount.
-  if (result.status !== 'COMPLETED' || capture?.status !== 'COMPLETED' || unit?.custom_id !== customIdFor(token, part) || paidCents !== amount) {
-    logger.error('Payment capture mismatch', { token, part, status: result.status, paidCents, amount })
+  const capture = result.purchase_units?.[0]?.payments?.captures?.[0]
+  // Only accept a completed USD capture for this proposal, this part and the full amount.
+  const mismatch = captureProblem(result, { customId: customIdFor(token, part), amount })
+  if (mismatch) {
+    logger.error('Payment capture mismatch', { token, part, status: result.status, ...mismatch, amount })
     throw new HttpsError('failed-precondition', 'Payment could not be confirmed. Please call us.')
   }
+  const paidCents = amount
   const record = {
     status: 'paid', amount: paidCents, orderId: result.id, captureId: capture.id,
     payerEmail: result.payer?.email_address ?? null, env: PAYPAL_ENV.value(), paidAt: FieldValue.serverTimestamp(),
