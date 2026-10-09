@@ -20,7 +20,7 @@ const styles = [...mainHtml.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+\.c
 function page(a) {
   const url = `${SITE}/${pagePath(a)}`
   const title = `Christmas Light Installation in ${a.name}, TX | ${business.name}`
-  const description = `Professional Christmas light installation, free service calls and January removal in ${a.towns.slice(0, 4).join(', ')}. ${a.homes} homes on our list. Free estimates: ${business.phone}.`
+  const description = `Professional Christmas light installation, free service calls and January removal in ${a.towns.slice(0, 4).join(', ')}. Family-owned since ${business.since}. Free estimates: ${business.phone}.`
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -68,7 +68,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
       <h1 class="max-w-3xl font-display text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">Christmas lights, installed in ${esc(a.name)}.</h1>
       <p class="mt-5 max-w-2xl text-lg text-slate-300">${esc(a.intro)}</p>
       <dl class="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-white/10 pt-6">
-        <div><dt class="sr-only">Homes</dt><dd class="font-display text-3xl font-extrabold text-glow-300">${esc(a.homes)}</dd><dd class="text-sm text-slate-400">homes in this area</dd></div>
+        <div><dt class="sr-only">Estimates</dt><dd class="font-display text-3xl font-extrabold text-glow-300">Free</dd><dd class="text-sm text-slate-400">estimates, no need to be home</dd></div>
         <div><dt class="sr-only">Since</dt><dd class="font-display text-3xl font-extrabold text-glow-300">${business.since}</dd><dd class="text-sm text-slate-400">family-owned since</dd></div>
         <div><dt class="sr-only">Service calls</dt><dd class="font-display text-3xl font-extrabold text-glow-300">$0</dd><dd class="text-sm text-slate-400">service calls</dd></div>
       </dl>
