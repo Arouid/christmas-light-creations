@@ -62,3 +62,5 @@
 - 2026-10-09 Proposal fingerprint: sent proposals showed "changed after it was sent" because Firestore returns map fields (customer) in sorted key order. canonical() now uses a fixed field order (PROPOSAL_VERSION 2); proposals sent before this must be re-sent (Revise → Send).
 
 - 2026-10-09 Deleting test/junk (owner approved; replaces 'nobody deletes via the app' for these cases only): leads can be deleted only after being marked status `spam` ("Spam / test", hidden from Open/All); proposals can be deleted when draft, void and never signed, or paid in sandbox. Signed or really-paid proposals and customers still can't be deleted. Staff can void a signed proposal that isn't really paid; voided ones hide behind "Show voided". Enforced in firestore.rules and mirrored by canDeleteProposal/canVoidProposal.
+
+- 2026-10-09 PayPal Live: live app "CLC Website" (Client ID BAAUFNwM…tWr4, public) in src/lib/paypal.js and functions/.env (PAYPAL_ENV=live); live secret = PAYPAL_SECRET v6. Payouts permission unchecked (app only receives money); Invoicing API is denied on Live and not needed (balance/takedown can use the same Orders flow).
