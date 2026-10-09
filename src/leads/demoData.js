@@ -5,7 +5,8 @@ const customers = [
     phone: '555-0101', email: 'sample@example.com', address: '123 Example St Pearland, TX 77581', city: 'Pearland',
     neighborhood: 'Example Lakes', gateCode: '1234', locationBlock: 'Pearland - East side of 35', installType: 'Early Install',
     lightColor: 'Warm white', takedownNotes: 'Left side windows: 2 zip ties.\nRight side: 3 zip ties.',
-    since: '2016', normalPaymentMethod: 'PayPal', priceNotes: 'Added 8 windows in 2023.',
+    since: '2016', normalPaymentMethod: 'PayPal', priceNotes: 'Added 8 windows in 2023.', originalRate: '$680.00',
+    installHistory: 'Original install 2016 $680\n2023: 8 windows $240; 2025 small arch by the walkway',
     seasons: {
       2026: { installStatus: 'Install Scheduled', firstContact: 'Confirmed', weekOf: 'Oct 11-17', day: 'Thursday', plannedDate: 'Oct 15',
         install: { rate: '$460.00', discount: '10%', discountReason: 'Early Install', total: '$414.00' }, takedown: { rate: '150' } },

@@ -43,6 +43,25 @@ export function accountSummary(token, p) {
   }
 }
 
+// A signed add-on proposal → the add-on entry recorded on the customer:
+// undiscounted install items (the yearly price is based on list prices).
+export function addOnFromProposal(token, p) {
+  const install = (p.items ?? []).filter((i) => i.due !== 'removal')
+  const sub = install.reduce((t, i) => t + Math.round((Number(i.qty) || 0) * Math.round((Number(i.rate) || 0) * 100)), 0)
+  const what = install.map((i) => i.label).filter(Boolean).join(', ') || p.title || 'Add-on'
+  return { id: `p-${token.slice(0, 8)}`, season: String(p.season ?? ''), what, price: sub / 100, source: 'proposal', token }
+}
+
+// Customer records whose email field (may hold several) includes this email.
+export const emailsOf = (field) => String(field ?? '').toLowerCase().split(/[\s,;/]+/).filter((e) => e.includes('@'))
+
+// What a customer may see of their own customer record: the yearly-price
+// inputs, and only once staff ticked "Customer can see this".
+export function customerForAccount(c) {
+  if (!c?.priceShown) return null
+  return { originalRate: c.originalRate ?? '', since: c.since ?? '', addOns: (c.addOns ?? []).map(({ season, what, price }) => ({ season, what, price })) }
+}
+
 // Staff see when a customer last signed in (customerLogins/{email}, written
 // only by the server). authTime = when that sign-in happened (token
 // auth_time), so reopening the page later doesn't count as a new sign-in.

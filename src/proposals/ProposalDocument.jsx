@@ -96,7 +96,9 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
 
       <section className="grid gap-2 text-sm sm:grid-cols-2">
         {p.timer && <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Timer: </span>{p.timer}</p>}
-        <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Next season re-install: </span>{fmt(t.nextYear)} ({p.reinstallPct ?? 50}% of this install)</p>
+        {p.kind === 'addon'
+          ? <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Your yearly price from next season: </span>goes up by {fmt(t.nextYear)} ({p.reinstallPct ?? 50}% of this add-on{p.reinstallBasis === 'list' ? ', before discount' : ''})</p>
+          : <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Next season re-install: </span>{fmt(t.nextYear)} ({p.reinstallPct ?? 50}% of this install{p.reinstallBasis === 'list' ? ', before discount' : ''})</p>}
       </section>
 
       {p.notes && <section><h2 className="mb-1 font-semibold">Notes</h2><p className="whitespace-pre-wrap text-slate-300 print:text-black">{p.notes}</p></section>}

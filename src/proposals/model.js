@@ -30,8 +30,10 @@ export function totals(p) {
   const discount = Math.round((installSub * (Number(p.discountPct) || 0)) / 100)
   const install = installSub - discount
   const deposit = Math.round((install * (Number(p.depositPct) || 0)) / 100)
-  // Next season: re-installing the same lights (CLC: 50% of the original install).
-  const nextYear = Math.round((install * (p.reinstallPct ?? 50)) / 100)
+  // Next season: re-installing the same lights (CLC: 50% of the original
+  // install). New proposals use the undiscounted price (reinstallBasis 'list',
+  // owner 2026-10-09); older ones keep the after-discount math they were signed with.
+  const nextYear = Math.round(((p.reinstallBasis === 'list' ? installSub : install) * (p.reinstallPct ?? 50)) / 100)
   return { installSub, discount, install, removal, total: install + removal, deposit, dueAtInstall: install - deposit, dueAtRemoval: removal, nextYear }
 }
 
@@ -82,6 +84,7 @@ export function newProposal({ customer = {}, items = [], depositPct = 50, discou
     notes: '',
     timer: '',
     reinstallPct: 50,
+    reinstallBasis: 'list',
     terms,
     status: 'draft',
   }
@@ -120,6 +123,9 @@ export function canonical(p) {
     discountPct: Number(p.discountPct) || 0, depositPct: Number(p.depositPct) || 0,
     totals: [t.install, t.removal, t.total, t.deposit],
     notes: p.notes ?? '', timer: p.timer ?? '', reinstallPct: p.reinstallPct ?? 50, terms: p.terms ?? '', design: p.designImageHash ?? null,
+    // Added 2026-10-09; only present on newer proposals, so older fingerprints don't change.
+    ...(p.reinstallBasis ? { reinstallBasis: p.reinstallBasis } : {}),
+    ...(p.kind ? { kind: p.kind } : {}),
   })
 }
 

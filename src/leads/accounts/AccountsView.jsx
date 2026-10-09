@@ -3,7 +3,9 @@ import { buildIndex, searchAccounts } from '../../lib/accountSearch'
 import { gateFor } from '../../lib/customers'
 import { money, parseMoney } from '../../lib/discounts'
 import { findCustomer } from '../../lib/oldEstimates'
+import { needsAddOnCheck } from '../../lib/addOns'
 import { getCustomerLogin, loginLine } from '../../lib/customerLogins'
+import AddOnsPanel from './AddOnsPanel'
 import Icon from '../../components/Icon'
 import { demoMode } from '../demo'
 import AddToRoute from '../AddToRoute'
@@ -107,6 +109,25 @@ function SeasonRows({ customer }) {
   )
 }
 
+// Customers whose old "Install / add-on history" text hasn't been turned
+// into add-on entries yet (docs/specs/add-ons.md).
+function AddOnChecks({ customers, open }) {
+  const todo = (customers ?? []).filter(needsAddOnCheck)
+  if (!todo.length) return null
+  return (
+    <details className="mt-8 rounded-2xl border border-white/10 bg-night-900">
+      <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Add-on notes to check ({todo.length})</summary>
+      <ul className="divide-y divide-white/5 border-t border-white/10">
+        {todo.map((c) => (
+          <li key={c.id}><button type="button" onClick={() => open(`customer:${c.id}`)} className="block min-h-11 w-full px-4 py-2 text-left text-sm hover:bg-white/5">
+            <span className="font-medium">{c.fullName}</span> <span className="block truncate text-slate-400">{c.installHistory}</span>
+          </button></li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
 function Header({ name, kind, address, lines, loginEmail, children }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-night-900">
@@ -164,6 +185,7 @@ function CustomerAccount({ c, leads, past, calls, gates, season, user, onOpenCus
         <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>
       </Header>
       <Section title="Seasons"><SeasonRows customer={c} /></Section>
+      <Section title="💲 Yearly price & add-ons" open={needsAddOnCheck(c)}><AddOnsPanel customer={c} user={user} /></Section>
       {c.notes && <Section title="Notes"><p className="whitespace-pre-wrap text-sm text-slate-300">{c.notes}</p></Section>}
       <Section title={`Service calls (${myCalls.length})`} open={myCalls.some((x) => x.status === 'Open' || x.status === 'Scheduled')}>
         {myCalls.length ? (
@@ -261,6 +283,7 @@ export default function AccountsView({ customers, leads = [], past = [], calls =
         <h1 className="mb-6 text-center font-display text-4xl font-extrabold">Accounts</h1>
         <SearchBox index={index} autoFocus onPick={open} />
         <p className="mt-4 text-center text-sm text-slate-400">{customers.length} customers · {leads.filter((x) => !x.customerId).length} website leads · {past.length} past requests</p>
+        <AddOnChecks customers={customers} open={open} />
         {recent.length > 0 && (
           <div className="mt-8">
             <p className="mb-2 text-xs uppercase tracking-wider text-slate-400">Recently viewed</p>

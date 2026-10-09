@@ -35,15 +35,17 @@ export const saveProposal = (user, token, data) => saveRecord(user, 'proposals',
 // Send: freeze the terms (placeholders filled), fingerprint the exact content,
 // copy the design images where the customer's page can read them.
 export async function sendProposal(user, token, proposal, business) {
-  const terms = fillTerms(proposal.termsTemplate ?? proposal.terms, termVars(proposal, business))
-  const final = { ...proposal, terms, termsText: terms }
+  // Sent from now on: next-season price from the undiscounted install (owner 2026-10-09).
+  const withBasis = { ...proposal, reinstallBasis: proposal.reinstallBasis ?? 'list' }
+  const terms = fillTerms(withBasis.termsTemplate ?? withBasis.terms, termVars(withBasis, business))
+  const final = { ...withBasis, terms, termsText: terms }
   const hash = await docHash(final)
   if (proposal.designId) {
     const [render, photo] = await Promise.all([loadDesignRender(proposal.designId), loadDesignPhoto(proposal.designId)])
     if (render) await saveRecord(user, 'proposalFiles', `${token}-render`, { dataUrl: render })
     if (photo) await saveRecord(user, 'proposalFiles', `${token}-photo`, { dataUrl: photo })
   }
-  await saveProposal(user, token, { terms, termsText: terms, docHash: hash, status: 'sent', sentAt: new Date().toISOString() })
+  await saveProposal(user, token, { reinstallBasis: withBasis.reinstallBasis, terms, termsText: terms, docHash: hash, status: 'sent', sentAt: new Date().toISOString() })
   return hash
 }
 

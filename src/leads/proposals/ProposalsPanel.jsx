@@ -209,6 +209,12 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
               <label className="block text-sm text-slate-400">Timer schedule (optional)
                 <input value={d.timer ?? ''} onChange={(e) => set({ timer: e.target.value })} placeholder="e.g. On 5:30 PM, off 11:30 PM" className={field} />
               </label>
+              {owner.type === 'customer' && (
+                <label className="flex min-h-11 items-center gap-3 text-sm">
+                  <input type="checkbox" className="size-5" checked={d.kind === 'addon'} onChange={(e) => set({ kind: e.target.checked ? 'addon' : null })} />
+                  <span>Add-on to their existing lights <span className="text-slate-400">(when signed, it’s added to their yearly price: +{d.reinstallPct ?? 50}% of the undiscounted install from next season)</span></span>
+                </label>
+              )}
               <label className="block text-sm text-slate-400">Notes for the customer (optional)
                 <textarea value={d.notes ?? ''} onChange={(e) => set({ notes: e.target.value })} rows={2} className={field} />
               </label>

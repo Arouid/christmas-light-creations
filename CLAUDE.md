@@ -50,7 +50,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Street View on lead cards: `src/lib/streetView.js`. The Maps key is locked to the site's domains + localhost:5173 and to Maps JavaScript, Geocoding and Street View Static APIs (Google Cloud, project clc-leads-site).
 - Staff app at `/leads/` has tabs Leads / Customers / Season / Import (spec: `docs/specs/customers.md`). Customers live in Firestore `customers`; ids are name slugs so re-imports update. Use `/leads/?demo` in dev to check the UI with sample data (no sign-in). Importer mapping is pure (`src/lib/importSheet.js`) and tested in `tests/`.
 - `/leads/` is `noindex` and disallowed in `robots.txt`; never link it from the public site.
-- Customer accounts at `/account/` (noindex, robots-disallowed): Google or email-link sign-in (never grants staff access); data only via the `myAccount` function (proposals whose customer.email matches the verified email, any case), payments via the same PayPal callables. `myAccount` also records sign-ins in `customerLogins/{email}` (server-only writes, staff read) for the Accounts page. `/account/?demo` in dev shows sample data.
+- Customer accounts at `/account/` (noindex, robots-disallowed): Google or email-link sign-in (never grants staff access); data only via the `myAccount` function (proposals whose customer.email matches the verified email, any case), payments via the same PayPal callables. `myAccount` also records sign-ins in `customerLogins/{email}` (server-only writes, staff read) for the Accounts page, and returns the yearly-price breakdown (`src/lib/addOns.js`, spec `docs/specs/add-ons.md`) only when staff set `priceShown`. `/account/?demo` in dev shows sample data.
 
 ## The user
 

@@ -3,6 +3,8 @@ import { business } from '../data/content'
 import DepositPanel from '../proposal/DepositPanel.jsx'
 import { PART_LABEL, STATUS_LABEL, fmt } from '../proposals/model.js'
 import Icon from '../components/Icon'
+import { REINSTALL_PCT, yearlyPrice } from '../lib/addOns'
+import { seasonYear } from '../lib/customers'
 
 // The customer's own account: /account/ (sign in with Google or an emailed
 // link, no password). Lists every proposal sent to their email, what's paid and what's
@@ -179,7 +181,7 @@ function Notice({ title, text, action }) {
 
 function Account({ data, reload, logOut }) {
   const list = data.proposals ?? []
-  const me = list[0]?.customer
+  const me = list[0]?.customer ?? data.customer
   const owed = list.flatMap((p) => p.parts.filter((x) => x.state === 'due')).reduce((t, x) => t + x.amount, 0)
   return (
     <div className="space-y-6">
@@ -188,7 +190,8 @@ function Account({ data, reload, logOut }) {
         {me?.address && <p className="text-slate-300">{me.address}</p>}
         <p className="text-sm text-slate-400">Signed in as {data.email}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
-      {!list.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
+      {data.price && <YearlyPrice price={data.price} />}
+      {!list.length && !data.customer && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
       {list.length > 0 && (
         <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
           {owed ? `Due now: ${fmt(owed)}` : 'You’re all paid up. Thank you!'}
@@ -200,6 +203,41 @@ function Account({ data, reload, logOut }) {
         {call}
       </div>
     </div>
+  )
+}
+
+// How the yearly re-install price is built (docs/specs/add-ons.md). Only the
+// current yearly price: no lifetime totals (owner's request).
+function YearlyPrice({ price }) {
+  const y = yearlyPrice(price, seasonYear())
+  if (y.yearlyCents == null) return null
+  return (
+    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">Your yearly price</h2>
+      <p className="text-sm text-slate-300">You own your lights. Each year we put them back up for {REINSTALL_PCT}% of what they first cost. Anything you add is charged in full the year it’s added, then also at {REINSTALL_PCT}% every year after.</p>
+      <table className="w-full text-left text-sm">
+        <tbody>
+          <tr>
+            <td className="py-2 pr-2">Re-install of your original lights{y.since ? ` (${y.since})` : ''}<span className="block text-xs text-slate-400">{REINSTALL_PCT}% of {fmt(y.originalCents)}</span></td>
+            <td className="py-2 text-right tabular-nums">{fmt(y.baseCents)}</td>
+          </tr>
+          {y.lines.map((l, i) => (
+            <tr key={i} className="border-t border-white/10">
+              <td className="py-2 pr-2">＋ {l.what}<span className="block text-xs text-slate-400">added {l.season} · {REINSTALL_PCT}% of {fmt(l.priceCents)}</span></td>
+              <td className="py-2 text-right tabular-nums">{fmt(l.addsCents)}</td>
+            </tr>
+          ))}
+          <tr className="border-t border-white/20 font-semibold">
+            <td className="py-2">Yearly price, {y.season} season</td>
+            <td className="py-2 text-right tabular-nums">{fmt(y.yearlyCents)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p className="text-xs text-slate-400">Before any discount (like early install). Takedown & storage is separate.</p>
+      {y.thisSeason.map((l, i) => (
+        <p key={i} className="rounded-2xl bg-white/5 px-4 py-2 text-sm">New this season: {l.what} ({fmt(l.priceCents)}, charged in full this year). From next season it adds {fmt(l.addsCents)} a year.</p>
+      ))}
+    </section>
   )
 }
 

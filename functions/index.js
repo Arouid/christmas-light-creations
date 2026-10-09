@@ -26,7 +26,7 @@ import nodemailer from 'nodemailer'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { captureOrder, createOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
-import { EMAIL_RE, accountSummary, accountUrl, byNewest, loginRecord, normEmail, providerName, shownInAccount } from './account.js'
+import { EMAIL_RE, accountSummary, accountUrl, addOnFromProposal, byNewest, customerForAccount, emailsOf, loginRecord, normEmail, providerName, shownInAccount } from './account.js'
 
 initializeApp()
 const REGION = 'us-south1'
@@ -120,6 +120,19 @@ export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', s
   return { paid: true }
 })
 
+// Adds the signed add-on to customers/{id}.addOns once (by proposal token).
+async function recordAddOn(customerId, token, p) {
+  const db = getFirestore()
+  const ref = db.doc(`customers/${customerId}`)
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref)
+    if (!snap.exists) return
+    const list = snap.get('addOns') ?? []
+    if (list.some((a) => a.token === token)) return
+    tx.update(ref, { addOns: [...list, addOnFromProposal(token, p)], updatedAt: FieldValue.serverTimestamp(), updatedBy: 'website (signed add-on proposal)' })
+  })
+}
+
 // ---- Emails when a proposal is signed or paid -------------------------------
 
 export const proposalChanged = onDocumentUpdated({ document: 'proposals/{token}', secrets: [SMTP_PASSWORD], region: REGION }, async (event) => {
@@ -139,6 +152,10 @@ export const proposalChanged = onDocumentUpdated({ document: 'proposals/{token}'
         subject: 'Your signed Christmas light agreement',
         text: `Hi ${first},\n\nThank you for choosing Christmas Light Creations! Your signed agreement is here any time (save or print it as a PDF):\n${link}\n\nWe'll be in touch to confirm your install date.\n\nThank you,\nChristmas Light Creations\n281-819-0163`,
       })
+    }
+    // An add-on proposal raises the yearly price from next season: record it on the customer.
+    if (after.kind === 'addon' && after.ownerType === 'customer' && after.ownerId) {
+      await recordAddOn(after.ownerId, token, after).catch((e) => logger.error('recordAddOn', e))
     }
     if (staff.length) await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `Signed: ${name} accepted their proposal`, text: `${name} (${after.customer?.address ?? ''}) signed their proposal.\nCountersign it in the staff app: ${SITE}/leads/\n\nCustomer view: ${link}` })
   }
@@ -160,14 +177,20 @@ async function proposalTokensFor(email) {
   return snap.docs.filter((d) => normEmail(d.get('customer.email')) === email).map((d) => d.id)
 }
 
+// Customer records (old sheet + staff app) listing this email.
+async function customersFor(email) {
+  const snap = await getFirestore().collection('customers').select('email').get()
+  return snap.docs.filter((d) => emailsOf(d.get('email')).includes(email)).map((d) => d.id)
+}
+
 // Emails a one-time sign-in link from info@, but only to an email that has a
-// proposal. The answer is the same either way, so nobody can test whether an
+// proposal or a customer record. The answer is the same either way, so nobody can test whether an
 // address is a customer. At most one link a minute, 5 a day, per email.
 export const sendAccountLink = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
   const email = normEmail(req.data?.email)
   if (!EMAIL_RE.test(email) || email.length > 200) throw new HttpsError('invalid-argument', 'Please enter a valid email')
-  const tokens = await proposalTokensFor(email)
-  if (!tokens.length) { logger.info('Account link asked for an email with no proposals'); return { ok: true } }
+  const [tokens, customerIds] = await Promise.all([proposalTokensFor(email), customersFor(email)])
+  if (!tokens.length && !customerIds.length) { logger.info('Account link asked for an unknown email'); return { ok: true } }
 
   // Server-only bookkeeping (no client rule matches accountLinks, so browsers can't read it).
   const limitRef = getFirestore().doc(`accountLinks/${encodeURIComponent(email)}`)
@@ -221,5 +244,10 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const tokens = await proposalTokensFor(email)
   const docs = tokens.length ? await db.getAll(...tokens.map((t) => db.doc(`proposals/${t}`)), { fieldMask: ['status', 'title', 'season', 'customer', 'items', 'discountPct', 'depositPct', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt'] }) : []
   const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data())).sort(byNewest)
-  return { email, proposals }
+  // Yearly price breakdown from their customer record, once staff allow it.
+  const ids = await customersFor(email)
+  const recs = ids.length ? await db.getAll(...ids.map((id) => db.doc(`customers/${id}`)), { fieldMask: ['fullName', 'address', 'since', 'originalRate', 'addOns', 'priceShown'] }) : []
+  const rec = recs.map((d) => d.data()).find(Boolean)
+  const price = recs.map((d) => customerForAccount(d.data())).find(Boolean) ?? null
+  return { email, proposals, price, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
 })
