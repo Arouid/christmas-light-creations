@@ -1,5 +1,5 @@
-// A day's install route as one message for the installer: numbered stops with
-// what they need at each house, plus Google Maps links for the whole loop.
+// Route helpers: which installs are planned for a day, and the message sent
+// to the installer (stops with arrival times, the app link, Maps links).
 import { monthDay } from './discounts.js'
 
 // Customers whose planned install date this season is the given day.
@@ -11,24 +11,24 @@ export function installsOn(customers, season, day) {
 
 const clean = (s) => String(s ?? '').replace(/\s+/g, ' ').trim()
 
-// stops: [{ customer, gate }]; links: from loopLinks()
-export function routeMessage({ day, kind = 'Install', stops, links, totalMiles, season, homeAddress }) {
-  const date = new Date(`${day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-  const lines = [`${kind} route, ${date}: ${stops.length} stop${stops.length === 1 ? '' : 's'}${totalMiles ? `, about ${Math.round(totalMiles)} mi` : ''}`, '']
-  stops.forEach(({ customer: c, gate }, i) => {
-    const s = c.seasons?.[season] ?? {}
-    const extra = [
-      c.phone && `📞 ${clean(c.phone)}`,
-      gate && `Gate ${clean(gate)}`,
-      s.timeframe && `⏰ ${clean(s.timeframe)}`,
-    ].filter(Boolean).join(' · ')
-    lines.push(`${i + 1}. ${clean(c.fullName)}`, `   ${clean(c.address)}`)
-    if (extra) lines.push(`   ${extra}`)
-    const notes = [s.addOn, s.schedulingNotes].map(clean).filter(Boolean).join(' / ')
-    if (notes) lines.push(`   Notes: ${notes}`)
+// Message for a saved route (stops in driving order with arrival times).
+// rows: from timeline(); appUrl: the installer screen in the staff app.
+export function routeSheet({ route, rows, homeAt, links, appUrl, clock }) {
+  const date = new Date(`${route.day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  const live = rows.filter((s) => s.status !== 'skipped' && s.status !== 'done')
+  const lines = [`Route ${date}${route.name ? ` (${route.name})` : ''}: ${live.length} stop${live.length === 1 ? '' : 's'}, leave ${clock(toMinutes(route.startTime))}, back ≈ ${clock(homeAt)}`, '']
+  if (appUrl) lines.push(`Open in the CLC app (navigate, gate codes, mark done): ${appUrl}`, '')
+  live.forEach((s, i) => {
+    lines.push(`${i + 1}. ${clean(s.name)}${s.eta != null ? ` · ≈ ${clock(s.eta)}` : ''}`, `   ${clean(s.address)}`)
+    const extra = [s.phone && `📞 ${clean(s.phone)}`, s.gate && `Gate ${clean(s.gate)}`, `${s.minutes} min`].filter(Boolean).join(' · ')
+    lines.push(`   ${extra}`)
+    if (clean(s.notes)) lines.push(`   Notes: ${clean(s.notes)}`)
   })
-  lines.push('', links.length === 1 ? 'Directions (starts and ends at the shop):' : 'Directions (open in order; ends back at the shop):')
-  links.forEach((l) => lines.push(links.length === 1 ? l.url : `Stops ${l.from}–${l.to}${l === links.at(-1) ? ' + home' : ''}: ${l.url}`))
-  if (homeAddress) lines.push('', `Home base: ${clean(homeAddress)}`)
+  if (links?.length) {
+    lines.push('', 'Whole route in Google Maps:')
+    links.forEach((l) => lines.push(links.length === 1 ? l.url : `Stops ${l.from}–${l.to}${l === links.at(-1) ? ' + home' : ''}: ${l.url}`))
+  }
   return lines.join('\n')
 }
+
+const toMinutes = (hhmm) => { const [h, m] = String(hhmm || '08:00').split(':').map(Number); return h * 60 + (m || 0) }

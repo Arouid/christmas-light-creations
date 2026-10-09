@@ -5,6 +5,7 @@ import {
 } from '../lib/customers'
 import { textMessages } from '../lib/messages'
 import ComposeEmail from './ComposeEmail'
+import AddToRoute from './AddToRoute'
 import Icon from '../components/Icon'
 import Field from './Field'
 import { TextButton } from './Reach'
@@ -114,6 +115,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
           {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
           <TextButton phone={customer.phone} className={action} />
           <ComposeEmail person={customer} season={season} className={action} />
+          <AddToRoute customers={[customer]} className={action} />
           {customer.address && (
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}`}>Map</a>

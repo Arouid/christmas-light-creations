@@ -123,6 +123,18 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
+    // Service routes: a day's stops (snapshots of customer name, address,
+    // phone, gate code, notes) with their status. Staff only.
+    match /routes/{routeId} {
+      allow read, delete: if isStaff();
+      allow create, update: if isStaff()
+        && request.resource.data.day is string
+        && request.resource.data.stops is list
+        && request.resource.data.stops.size() <= 60
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+    }
+
     // Shared staff settings (home base for distances and routes).
     match /settings/{settingId} {
       allow read: if isStaff();

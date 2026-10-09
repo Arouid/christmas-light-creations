@@ -3,6 +3,7 @@ import { INSTALL_STATUSES, TAKEDOWN_STATUSES } from '../lib/customers'
 import { matchesView, statusKey } from '../lib/views'
 import { suggestDiscount } from '../lib/discounts'
 import BulkEmail from './BulkEmail'
+import AddToRoute from './AddToRoute'
 import { useDiscountSchedule } from './discountContext'
 import SeasonResults from './SeasonResults'
 import { blankFor, select } from './ui'
@@ -77,6 +78,8 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
         <div className="col-span-2 flex flex-wrap gap-2 lg:ml-auto">
           <ApplyDiscounts customers={customers} season={season} onUpdate={onUpdate} />
           <BulkEmail rows={shown} season={season} onUpdate={onUpdate} />
+          <AddToRoute customers={shown} defaultKind={mode === 'takedown' ? 'takedown' : 'install'} label={`＋ Route these ${shown.length}`}
+            className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold" />
         </div>
       </div>
 

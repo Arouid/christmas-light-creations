@@ -16,7 +16,10 @@ import { mergeTemplates } from '../lib/emailTemplates'
 import EmailsView from './EmailsView'
 import PastRequestsView from './PastRequestsView'
 import SignsView from './SignsView'
-import RouteView from './RouteView'
+import RoutesView from './RoutesView'
+import { RoutesContext } from './routesContext'
+import { stopFromCustomer, DEFAULT_MINUTES } from '../lib/router'
+import { gateFor } from '../lib/customers'
 import { EmailTemplates } from './templatesContext'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
@@ -24,10 +27,10 @@ import ViewTab from './ViewTab'
 import { mergeMany } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
-import { useGateCodes, usePastRequests, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
+import { useGateCodes, usePastRequests, useRoutes, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
-const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Route']]
+const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
 const AFTER = [['signs', 'Signs'], ['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
@@ -36,7 +39,12 @@ function Screen({ children }) {
 
 const tabFromHash = () => {
   const h = window.location.hash.slice(1)
+  if (h.startsWith('route-')) return 'route' // #route-<id> (installer) or #route-<id>~edit
   return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'map'
+}
+const routeFromHash = () => {
+  const m = window.location.hash.match(/^#route-([^~]+)(~edit)?$/)
+  return m ? { id: m[1], mode: m[2] ? 'edit' : 'drive' } : { id: null, mode: null }
 }
 
 export default function LeadsApp() {
@@ -48,8 +56,10 @@ export default function LeadsApp() {
   const settingsApi = useSettings(user)
   const pastApi = usePastRequests(user)
   const signsApi = useSigns(user)
+  const routesApi = useRoutes(user)
   const [editing, setEditing] = useState(null) // null | {} (new) | view
   const [tab, setTab] = useState(tabFromHash)
+  const [routeOpen, setRouteOpen] = useState(routeFromHash)
   const [openId, setOpenId] = useState(null)
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -57,7 +67,7 @@ export default function LeadsApp() {
   const season = seasonYear()
 
   useEffect(() => {
-    const onHash = () => setTab(tabFromHash())
+    const onHash = () => { setTab(tabFromHash()); setRouteOpen(routeFromHash()) }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -94,8 +104,8 @@ export default function LeadsApp() {
   const { customers } = customersApi
   const gates = gatesApi.gates ?? []
   const calls = serviceApi.calls ?? []
-  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error].find((e) => e && e !== 'not-staff')
-    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error].includes('not-staff')
+  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error, routesApi.error].find((e) => e && e !== 'not-staff')
+    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error, routesApi.error].includes('not-staff')
       ? 'part of the app was refused by the database. The security rules probably need publishing again (firestore.rules).'
       : null)
   const views = viewsApi.views ?? []
@@ -150,12 +160,30 @@ export default function LeadsApp() {
   const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
 
   const templates = mergeTemplates(settingsApi.settings?.emailTemplates)
+  // ＋ Route from any customer card or list: append to a route, or start one for a day.
+  const routesCtx = {
+    routes: routesApi.routes,
+    addCustomers: async (target, list, kind) => {
+      const minutes = settingsApi.settings?.stopMinutes ?? DEFAULT_MINUTES
+      const toStops = (have) => list.filter((c) => !have.has(c.id)).map((c) => stopFromCustomer(c, kind, gateFor(c, gates)?.code, minutes))
+      if (typeof target === 'string') {
+        const r = routesApi.routes?.find((x) => x.id === target)
+        const add = toStops(new Set((r?.stops ?? []).map((s) => s.customerId)))
+        if (add.length) await routesApi.save(target, { stops: [...(r?.stops ?? []), ...add] })
+        return { added: add.length, id: target }
+      }
+      const add = toStops(new Set())
+      const id = await routesApi.create({ day: target.day, status: 'draft', startTime: '08:00', stops: add, home: settingsApi.settings?.homeBase ?? null })
+      return { added: add.length, id }
+    },
+  }
   const voiceAccount = textFrom === 'own' ? '' : (settingsApi.settings?.voiceAccount ?? '')
 
   return (
     <VoiceAccount.Provider value={voiceAccount}>
     <DiscountSchedule.Provider value={settingsApi.settings?.discountSchedule ?? DEFAULT_SCHEDULE}>
     <EmailTemplates.Provider value={templates}>
+    <RoutesContext.Provider value={routesCtx}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
@@ -207,8 +235,9 @@ export default function LeadsApp() {
               onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} onDelete={() => deleteView(currentView.id)} />
           : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
         {tab === 'route' && (customers && (settingsApi.settings || settingsApi.error)
-          ? <RouteView customers={customers} gates={gates} season={season} settings={settingsApi.settings ?? {}} onSaveSettings={settingsApi.save}
-              onLocateAll={customersApi.locateAll} onOpen={setOpenId} />
+          ? <RoutesView api={routesApi} openId={routeOpen.id} mode={routeOpen.mode} customers={customers} gates={gates} season={season}
+              settings={settingsApi.settings ?? {}} onOpenCustomer={setOpenId} onUpdateCustomer={customersApi.update}
+              onOpen={(id, mode) => { window.location.hash = id ? `#route-${id}${mode === 'edit' ? '~edit' : ''}` : '#route' }} />
           : loading)}
         {tab === 'signs' && (customers && (signsApi.drops || signsApi.error)
           ? <SignsView drops={signsApi.error === 'not-staff' ? [] : signsApi.drops} error={signsApi.error === 'not-staff' ? null : signsApi.error}
@@ -248,6 +277,7 @@ export default function LeadsApp() {
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
       )}
     </div>
+    </RoutesContext.Provider>
     </EmailTemplates.Provider>
     </DiscountSchedule.Provider>
     </VoiceAccount.Provider>

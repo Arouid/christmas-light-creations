@@ -83,3 +83,17 @@ export function useSigns(user) {
     remove: (id) => deleteRecord('signs', id),
   }
 }
+
+const byDayDesc = (a, b) => String(b.day ?? '').localeCompare(String(a.day ?? ''))
+
+// Service routes (see lib/router.js). Stops are an array on the route, saved whole.
+export function useRoutes(user) {
+  const { items, error } = useLiveCollection(user, 'routes', byDayDesc)
+  return {
+    routes: items,
+    error,
+    create: (data) => addRecord(user, 'routes', data),
+    save: (id, data) => saveRecord(user, 'routes', id, data),
+    remove: (id) => deleteRecord('routes', id),
+  }
+}
