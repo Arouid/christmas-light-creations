@@ -29,7 +29,7 @@ export const STATUS_LABELS = {
 // → Security → reCAPTCHA (score-based, no checkbox). Empty = App Check off.
 // On localhost a debug token is printed in the console instead; register it
 // in Firebase console → App Check → Apps → ⋮ → Manage debug tokens.
-export const APP_CHECK_SITE_KEY = ''
+export const APP_CHECK_SITE_KEY = '6Le6IuctAAAAAG-n1sS8J5Gjg-IvFXnnHqgI9uxR'
 
 let appPromise
 export function getFirebaseApp() {
