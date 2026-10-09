@@ -7,9 +7,9 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | # | Task | Notes |
 |---|---|---|
 | 1 | **Export Lacie's old Google Voice data** (texts, calls, voicemails) | takeout.google.com signed in as Lacie → Deselect all → Voice → .zip → put it in `old-site-backup/`. Then Claude matches it to customers and builds the import file. |
-| 3 | Google Admin → Authenticate email → **Start authentication** (DKIM) | DNS records are live already |
 | 4 | **Voice account setup**: record a new voicemail greeting; add linked numbers if calls should ring cells | voice.google.com as clc.voicemail.01 |
 | 5 | **Each staff phone/computer**: sign into clc.voicemail.01 (Voice app + browser) | Katie: ⚙ "My own Google Voice number" if she uses hers |
+| 3 | **Confirm DKIM works**: send an email from info@ to any Gmail → open it → ⋮ → Show original → SPF, DKIM, DMARC all say PASS | Started 2026-10-08 |
 | 6 | **Test Text button** end to end (copy number → Send new message → paste → send) | First real test after the number moved |
 | 7 | **Review campaign** to last year's customers | Season tab → ✉ Email these → Review request, or ★ Review texts |
 | 8 | Skim `old-site-backup/past-estimate-requests-likely-real.csv` (~1,172 past requests) for a "we'd still love to light your home" email | Remove junk and current customers first |
