@@ -9,6 +9,7 @@ import LeadsView from './LeadsView'
 import MapView from './MapView'
 import SeasonView from './SeasonView'
 import SettingsPanel from './SettingsPanel'
+import InstallApp from './InstallApp'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
 import { DiscountSchedule } from './discountContext'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
@@ -63,6 +64,7 @@ export default function LeadsApp() {
   const [openId, setOpenId] = useState(null)
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const season = seasonYear()
 
@@ -186,6 +188,11 @@ export default function LeadsApp() {
     <RoutesContext.Provider value={routesCtx}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
+      {!installHidden && (
+        <div className="md:hidden">
+          <InstallApp compact onDismiss={() => { setInstallHidden(true); try { localStorage.setItem('clcInstallHidden', '1') } catch { /* fine */ } }} />
+        </div>
+      )}
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 lg:max-w-7xl">
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>

@@ -45,8 +45,21 @@ export function useLeads() {
 
   async function signIn() {
     const app = await getFirebaseApp()
-    const { getAuth, GoogleAuthProvider, signInWithPopup } = await import('firebase/auth')
-    await signInWithPopup(getAuth(app), new GoogleAuthProvider())
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth')
+    const auth = getAuth(app)
+    const provider = new GoogleAuthProvider()
+    provider.setCustomParameters({ prompt: 'select_account' })
+    try {
+      await signInWithPopup(auth, provider)
+    } catch (err) {
+      // The installed app (home-screen mode) can't always open a popup:
+      // fall back to a full-page Google sign-in that returns here.
+      if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'].includes(err?.code)) {
+        await signInWithRedirect(auth, provider)
+      } else {
+        throw err
+      }
+    }
   }
 
   async function signOutUser() {

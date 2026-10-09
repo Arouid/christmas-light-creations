@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import HomeBase from './HomeBase'
+import InstallApp from './InstallApp'
 
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100'
 const box = 'space-y-2 rounded-2xl border border-white/10 bg-night-950 p-4'
@@ -95,6 +96,8 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
           <h2 className="font-display text-2xl font-extrabold">Settings</h2>
           <button type="button" onClick={onClose} className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold">Done</button>
         </div>
+
+        <div className={box}><InstallApp /></div>
 
         <AlertEmails settings={settings} onSave={onSave} />
 

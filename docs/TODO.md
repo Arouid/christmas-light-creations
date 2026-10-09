@@ -25,6 +25,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 21 | **Republish Firestore rules** again (new `routes` list) | Firebase console → Rules → paste `firestore.rules` → Publish |
 | 23 | Add each installer's Google email to the Firestore `staff` list so they can open their route link | Firebase console → Firestore → staff → add document (id = their email) |
 | 24 | **Google Cloud free trial ends ~Jan 6, 2027** ($300 credit, 90 days from Oct 8): upgrade to a full account before then (by ~Dec 20) or Maps, Street View, drive times and alert emails can stop | console.cloud.google.com → banner → Upgrade |
+| 25 | **Install CLC Staff on each phone** and sign in once: iPhone Safari → Share → Add to Home Screen; Android Chrome → Install app. Tell Claude if sign-in fails inside the iPhone app | staff app link: christmas-light-creations.com/leads/ |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked
