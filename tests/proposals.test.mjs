@@ -81,3 +81,19 @@ test('fingerprint ignores field order and missing customer fields (Firestore sor
   assert.equal(await docHash(p), await docHash(fromDb))
   assert.notEqual(await docHash(p), await docHash({ ...p, customer: { ...p.customer, address: '2 Elm St' } }))
 })
+
+test('payments: deposit once signed; balance and takedown only after staff ask; never twice', async () => {
+  const { isPayable, partAmount } = await import('../src/proposals/model.js')
+  const p = newProposal({ items: [newItem('Lights', 100, 'ft', 4.5), newItem('Takedown', 1, '', 150, 'removal')], depositPct: 50 })
+  assert.equal(isPayable(p, 'deposit'), false, 'not before signing')
+  p.status = 'signed'
+  assert.equal(isPayable(p, 'deposit'), true)
+  assert.equal(isPayable(p, 'balance'), false, 'balance waits for staff')
+  p.requests = { balance: true }
+  assert.equal(isPayable(p, 'balance'), true)
+  assert.equal(partAmount(p, 'balance'), 22500)
+  assert.equal(partAmount(p, 'takedown'), 15000)
+  p.payments = { balance: { status: 'paid', amount: 22500 } }
+  assert.equal(isPayable(p, 'balance'), false, 'not twice')
+  assert.equal(isPayable(p, 'takedown'), false)
+})

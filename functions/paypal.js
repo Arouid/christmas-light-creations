@@ -26,9 +26,10 @@ async function call(env, clientId, secret, path, body) {
 }
 
 // One deposit order for one proposal (custom_id ties the payment to it).
-export const createOrder = (cfg, { token, amount, description }) => call(cfg.env, cfg.clientId, cfg.secret, '/v2/checkout/orders', {
+// customId ties the payment to one proposal and part (deposit: just the token).
+export const createOrder = (cfg, { token, customId = token, amount, description }) => call(cfg.env, cfg.clientId, cfg.secret, '/v2/checkout/orders', {
   intent: 'CAPTURE',
-  purchase_units: [{ reference_id: token, custom_id: token, description: description.slice(0, 120), amount: { currency_code: 'USD', value: amount } }],
+  purchase_units: [{ reference_id: token, custom_id: customId, description: description.slice(0, 120), amount: { currency_code: 'USD', value: amount } }],
   // No payment_source: the PayPal buttons on the page offer PayPal, Venmo and cards.
   application_context: { brand_name: 'Christmas Light Creations', shipping_preference: 'NO_SHIPPING', user_action: 'PAY_NOW' },
 })

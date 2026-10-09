@@ -35,6 +35,22 @@ export function totals(p) {
   return { installSub, discount, install, removal, total: install + removal, deposit, dueAtInstall: install - deposit, dueAtRemoval: removal, nextYear }
 }
 
+// The three payments on a proposal (same as functions/proposalMath.js): the
+// deposit at signing, the rest of the install when it's done, and takedown /
+// storage at removal. Balance and takedown are payable once staff ask
+// (requests.<part>); payments are recorded only by the server.
+export const PAY_PARTS = ['deposit', 'balance', 'takedown']
+export const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown & storage' }
+export const paymentOf = (p, part) => (part === 'deposit' ? p.deposit : p.payments?.[part])
+export function partAmount(p, part) {
+  const t = totals(p)
+  return part === 'deposit' ? t.deposit : part === 'balance' ? t.dueAtInstall : t.dueAtRemoval
+}
+export function isPayable(p, part) {
+  const signed = p.status === 'signed' || p.status === 'countersigned'
+  return signed && partAmount(p, part) > 0 && paymentOf(p, part)?.status !== 'paid' && (part === 'deposit' || p.requests?.[part] === true)
+}
+
 // Takedown & storage: a % of the install with a minimum (CLC's form: 15% of
 // total, minimum $150), due at removal.
 export function takedownItem(installCents, pct = 15, minDollars = 150) {

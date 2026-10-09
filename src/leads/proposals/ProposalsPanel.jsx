@@ -3,7 +3,7 @@ import { business } from '../../data/content'
 import { gmailUrl } from '../../lib/messages'
 import ProposalDocument from '../../proposals/ProposalDocument.jsx'
 import SignaturePad from '../../proposals/SignaturePad.jsx'
-import { STATUS_LABEL, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, sendProblems, takedownItem, termVars, totals } from '../../proposals/model.js'
+import { PAY_PARTS, PART_LABEL, STATUS_LABEL, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, partAmount, paymentOf, sendProblems, takedownItem, termVars, totals } from '../../proposals/model.js'
 import { DEFAULT_TERMS, FILL_IN } from '../../proposals/terms.js'
 import { COLOR_SETS, STYLES, normalize } from '../../designer/model.js'
 import { designStats } from '../../designer/stats.js'
@@ -35,6 +35,58 @@ function designItems(d, settings) {
     details: `${STYLES[s.style]?.label ?? s.style}, ${setName(s.colors)}`,
   }))
   return itemsFromDesign({ lines, takedownPct: settings.takedownPct ?? 15, takedownMin: settings.takedownMin ?? 150 })
+}
+
+// " · paid in full" / " · deposit, install balance paid" for the list.
+function paidSummary(x) {
+  const due = PAY_PARTS.filter((part) => partAmount(x, part) > 0)
+  const paid = due.filter((part) => paymentOf(x, part)?.status === 'paid')
+  if (!paid.length) return ''
+  const test = paid.some((part) => paymentOf(x, part).env === 'sandbox') ? ' (test)' : ''
+  return paid.length === due.length ? ` · paid in full${test}` : ` · ${paid.map((part) => PART_LABEL[part].toLowerCase()).join(', ')} paid${test}`
+}
+
+// Deposit, install balance and takedown on a signed proposal. The balance and
+// takedown show a Pay button on the customer's page once staff ask for them.
+const ASK_TEXT = {
+  balance: (first, amount, link) => `Hi ${first}, your Christmas lights are up! Thank you for choosing ${business.name}. You can pay the install balance of ${amount} here: ${link}`,
+  takedown: (first, amount, link) => `Hi ${first}, your lights are down, labeled and stored for next year. You can pay ${amount} for takedown & storage here: ${link}`,
+}
+function Payments({ p, first, link, onAsk }) {
+  return (
+    <div className="space-y-2 rounded-2xl border border-white/10 p-4">
+      <p className="font-semibold">Payments</p>
+      <ul className="divide-y divide-white/5">
+        {PAY_PARTS.filter((part) => partAmount(p, part) > 0).map((part) => {
+          const pay = paymentOf(p, part)
+          const asked = part === 'deposit' || p.requests?.[part] === true
+          const amount = fmt(partAmount(p, part))
+          const message = ASK_TEXT[part]?.(first, amount, link)
+          return (
+            <li key={part} className="space-y-2 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span>{PART_LABEL[part]} · <span className="tabular-nums">{amount}</span></span>
+                {pay?.status === 'paid'
+                  ? <span className="text-sm font-semibold text-emerald-300">paid ✓{pay.env === 'sandbox' ? ' (test)' : ''}</span>
+                  : <span className="text-sm text-slate-400">{asked ? 'Pay button is on their page' : 'Not asked yet'}</span>}
+              </div>
+              {part !== 'deposit' && pay?.status !== 'paid' && (
+                <div className="flex flex-wrap gap-2">
+                  {asked
+                    ? <>
+                        <TextButton phone={p.customer?.phone} message={message} label="Text it" className={btn} />
+                        {p.customer?.email && <a href={gmailUrl({ to: p.customer.email, subject: `${PART_LABEL[part]}: ${business.name}`, body: message })} target="_blank" rel="noreferrer" className={btn}>Email it</a>}
+                        <button type="button" onClick={() => onAsk(part, false)} className={`${btn} text-slate-400`}>Take back</button>
+                      </>
+                    : <button type="button" onClick={() => onAsk(part, true)} className={btn}>Ask for {part === 'balance' ? 'install balance' : 'takedown payment'}</button>}
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
 }
 
 function Editor({ token, p, owner, designs, settings, user, onClose }) {
@@ -210,6 +262,9 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
             <a href={link} target="_blank" rel="noreferrer" className={btn}>Open signed copy (print / PDF)</a>
           </div>
         )}
+        {['signed', 'countersigned'].includes(live.status) && (
+          <Payments p={p} first={first} link={link} onAsk={(part, on) => run('Saving…', () => saveProposal(user, token, { requests: { [part]: on } }))} />
+        )}
         {(canVoidProposal(live) || canDeleteProposal(live)) && (
           <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
             {canVoidProposal(live) && <button type="button" onClick={voidIt} className={`${btn} text-slate-400`}>Void</button>}
@@ -273,7 +328,7 @@ export default function ProposalsPanel({ owner }) {
               <button type="button" onClick={() => setOpen(x.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-white/5">
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{x.title}{x.season ? ` · ${x.season}` : ''}</span>
-                  <span className="block text-xs text-slate-400">{fmt(totals(x).total)}{x.deposit?.status === 'paid' ? ` · deposit paid${x.deposit.env === 'sandbox' ? ' (test)' : ''}` : ''} · {x.status === 'draft' ? `saved ${when(x.savedAt)}` : x.signedAt ? `signed ${when(x.signedAt)}` : `sent ${when(x.sentAt)}`}</span>
+                  <span className="block text-xs text-slate-400">{fmt(totals(x).total)}{paidSummary(x)} · {x.status === 'draft' ? `saved ${when(x.savedAt)}` : x.signedAt ? `signed ${when(x.signedAt)}` : `sent ${when(x.sentAt)}`}</span>
                 </span>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[x.status]}`}>{STATUS_LABEL[x.status]}</span>
               </button>

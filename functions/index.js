@@ -22,7 +22,7 @@ import { logger } from 'firebase-functions'
 import nodemailer from 'nodemailer'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { captureOrder, createOrder } from './paypal.js'
-import { depositCents, dollars } from './proposalMath.js'
+import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 
 initializeApp()
 const REGION = 'us-south1'
@@ -52,30 +52,40 @@ export const newLeadAlert = onDocumentCreated(
   },
 )
 
-// ---- Deposits ---------------------------------------------------------------
+// ---- Payments (deposit, install balance, takedown) --------------------------
 
-async function payableProposal(token) {
+const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown & storage' }
+const customIdFor = (token, part) => (part === 'deposit' ? token : `${token}:${part}`)
+
+// The deposit is payable once signed; the balance and takedown only after
+// staff ask for them (requests.<part> set in the staff app).
+async function payableProposal(token, part = 'deposit') {
   if (typeof token !== 'string' || token.length < 16) throw new HttpsError('invalid-argument', 'Bad link')
+  if (!PARTS.includes(part)) throw new HttpsError('invalid-argument', 'Unknown payment')
   const ref = getFirestore().doc(`proposals/${token}`)
   const snap = await ref.get()
   if (!snap.exists) throw new HttpsError('not-found', 'Proposal not found')
   const p = snap.data()
   if (!['signed', 'countersigned'].includes(p.status)) throw new HttpsError('failed-precondition', 'Sign the proposal first')
-  if (p.deposit?.status === 'paid') throw new HttpsError('already-exists', 'Deposit already paid')
-  const amount = depositCents(p)
-  if (amount <= 0) throw new HttpsError('failed-precondition', 'No deposit due')
+  if (part !== 'deposit' && p.requests?.[part] !== true) throw new HttpsError('failed-precondition', 'This payment isn’t due yet')
+  if (paymentOf(p, part)?.status === 'paid') throw new HttpsError('already-exists', `${PART_LABEL[part]} already paid`)
+  const amount = partCents(p, part)
+  if (amount <= 0) throw new HttpsError('failed-precondition', 'Nothing due')
   return { ref, p, amount }
 }
 const paypalCfg = () => ({ env: PAYPAL_ENV.value(), clientId: PAYPAL_CLIENT_ID.value(), secret: PAYPAL_SECRET.value() })
 
 // invoker 'public': customers aren't signed in; each call checks the proposal and amount itself.
+// Names kept from when they only took deposits; `part` defaults to 'deposit'.
 export const createDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
-  const { p, amount } = await payableProposal(req.data?.token)
+  const part = req.data?.part ?? 'deposit'
+  const { p, amount } = await payableProposal(req.data?.token, part)
   try {
     const order = await createOrder(paypalCfg(), {
       token: req.data.token,
+      customId: customIdFor(req.data.token, part),
       amount: dollars(amount),
-      description: `Deposit: ${p.title ?? 'Christmas lighting'} for ${p.customer?.address ?? ''}`,
+      description: `${PART_LABEL[part]}: ${p.title ?? 'Christmas lighting'} for ${p.customer?.address ?? ''}`,
     })
     return { orderId: order.id }
   } catch (e) {
@@ -87,22 +97,22 @@ export const createDepositOrder = onCall({ region: REGION, invoker: 'public', se
 
 export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
   const token = req.data?.token
-  const { ref, amount } = await payableProposal(token)
+  const part = req.data?.part ?? 'deposit'
+  const { ref, amount } = await payableProposal(token, part)
   const result = await captureOrder(paypalCfg(), String(req.data?.orderId ?? ''))
   const unit = result.purchase_units?.[0]
   const capture = unit?.payments?.captures?.[0]
   const paidCents = Math.round(Number(capture?.amount?.value ?? 0) * 100)
-  // Only accept a completed capture for this proposal and the full amount.
-  if (result.status !== 'COMPLETED' || capture?.status !== 'COMPLETED' || unit?.custom_id !== token || paidCents !== amount) {
-    logger.error('Deposit capture mismatch', { token, status: result.status, paidCents, amount })
+  // Only accept a completed capture for this proposal, this part and the full amount.
+  if (result.status !== 'COMPLETED' || capture?.status !== 'COMPLETED' || unit?.custom_id !== customIdFor(token, part) || paidCents !== amount) {
+    logger.error('Payment capture mismatch', { token, part, status: result.status, paidCents, amount })
     throw new HttpsError('failed-precondition', 'Payment could not be confirmed. Please call us.')
   }
-  await ref.update({
-    deposit: {
-      status: 'paid', amount: paidCents, orderId: result.id, captureId: capture.id,
-      payerEmail: result.payer?.email_address ?? null, env: PAYPAL_ENV.value(), paidAt: FieldValue.serverTimestamp(),
-    },
-  })
+  const record = {
+    status: 'paid', amount: paidCents, orderId: result.id, captureId: capture.id,
+    payerEmail: result.payer?.email_address ?? null, env: PAYPAL_ENV.value(), paidAt: FieldValue.serverTimestamp(),
+  }
+  await ref.update(part === 'deposit' ? { deposit: record } : { [`payments.${part}`]: record })
   return { paid: true }
 })
 
@@ -129,7 +139,10 @@ export const proposalChanged = onDocumentUpdated({ document: 'proposals/{token}'
     if (staff.length) await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `Signed: ${name} accepted their proposal`, text: `${name} (${after.customer?.address ?? ''}) signed their proposal.\nCountersign it in the staff app: ${SITE}/leads/\n\nCustomer view: ${link}` })
   }
 
-  if (before.deposit?.status !== 'paid' && after.deposit?.status === 'paid' && staff.length) {
-    await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `Deposit paid: ${name} ($${dollars(after.deposit.amount)})`, text: `${name} paid the $${dollars(after.deposit.amount)} deposit by PayPal${after.deposit.env === 'sandbox' ? ' (TEST payment, sandbox)' : ''}.\nPayPal order ${after.deposit.orderId}.\n\nCustomer view: ${link}` })
+  for (const part of PARTS) {
+    const was = paymentOf(before, part)
+    const now = paymentOf(after, part)
+    if (was?.status === 'paid' || now?.status !== 'paid' || !staff.length) continue
+    await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `${PART_LABEL[part]} paid: ${name} ($${dollars(now.amount)})`, text: `${name} paid the $${dollars(now.amount)} ${PART_LABEL[part].toLowerCase()} by PayPal${now.env === 'sandbox' ? ' (TEST payment, sandbox)' : ''}.\nPayPal order ${now.orderId}.\n\nCustomer view: ${link}` })
   }
 })

@@ -89,3 +89,9 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-09 PayPal Live deposit
 
 - Owner paid a real deposit on a proposal to himself after the Live switch; payment went through (owner report). Refund of the test payment left to the owner (PayPal → Activity).
+
+## 2026-10-09 Balance / takedown payments
+
+- Demo `/proposal/?demo=balance` at 375px: "Pay your install balance: $267.30" panel with PayPal buttons, "Deposit paid ✓" line, no horizontal scroll.
+- Functions deployed; unknown part answers INVALID_ARGUMENT. 81 tests incl. server/page amount parity for all three parts.
+- Not yet checked: staff Payments box on a real signed proposal; a real balance payment.

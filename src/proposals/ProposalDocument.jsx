@@ -22,6 +22,12 @@ function BeforeAfter({ render, photo }) {
 
 // The proposal as the customer reads, signs and prints it. Presentational
 // only: data in, nothing saved here.
+// "· paid ✓" after a payment-schedule line once the server recorded it.
+function Paid({ pay }) {
+  if (pay?.status !== 'paid') return null
+  return <span className="font-semibold text-emerald-400 print:text-black"> · paid ✓{pay.env === 'sandbox' ? ' (test)' : ''}</span>
+}
+
 export default function ProposalDocument({ proposal: p, images = {}, business = {} }) {
   const t = totals(p)
   const items = p.items ?? []
@@ -79,12 +85,12 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
         <div className="divide-y divide-white/10 rounded-2xl border border-white/10 px-4 print:border-black/20">
           {t.deposit > 0 && (
             <div className={row}>
-              <span>Deposit when you sign ({p.depositPct}% of the install){p.deposit?.status === 'paid' && <span className="font-semibold text-emerald-400 print:text-black"> · paid ✓{p.deposit.env === 'sandbox' ? ' (test)' : ''}</span>}</span>
+              <span>Deposit when you sign ({p.depositPct}% of the install)<Paid pay={p.deposit} /></span>
               <span className="tabular-nums">{fmt(t.deposit)}</span>
             </div>
           )}
-          <div className={row}><span>When installation is complete</span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
-          {t.dueAtRemoval > 0 && <div className={row}><span>At takedown in January</span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>}
+          <div className={row}><span>When installation is complete<Paid pay={p.payments?.balance} /></span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
+          {t.dueAtRemoval > 0 && <div className={row}><span>At takedown in January<Paid pay={p.payments?.takedown} /></span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>}
         </div>
       </section>
 

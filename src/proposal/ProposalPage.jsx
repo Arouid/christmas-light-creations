@@ -3,11 +3,14 @@ import { business } from '../data/content'
 import ProposalDocument from '../proposals/ProposalDocument.jsx'
 import SignPanel from '../proposals/SignPanel.jsx'
 import DepositPanel from './DepositPanel.jsx'
-import { docHash, fmt, totals } from '../proposals/model.js'
+import { PART_LABEL, PAY_PARTS, docHash, fmt, isPayable, partAmount, paymentOf } from '../proposals/model.js'
 import Icon from '../components/Icon'
 
 // The customer's proposal page: /proposal/?t=<token> (link sent by text/email).
 // Dev preview with sample data: /proposal/?demo
+const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown & storage' }
+const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down, labeling and storing them.' }
+
 const q = new URLSearchParams(window.location.search)
 const token = q.get('t') ?? ''
 const demo = import.meta.env.DEV && q.has('demo')
@@ -16,7 +19,11 @@ const BIZ = { name: business.name, phone: business.phone, email: 'info@christmas
 
 async function loadDemo() {
   const { DEMO_PROPOSAL } = await import('./demoProposal.js')
-  return { p: { ...DEMO_PROPOSAL, docHash: await docHash(DEMO_PROPOSAL) }, images: {} }
+  // ?demo=balance: signed, deposit paid, install balance asked for.
+  const later = q.get('demo') === 'balance'
+    ? { status: 'countersigned', deposit: { status: 'paid', amount: 74925, env: 'sandbox' }, requests: { balance: true } }
+    : {}
+  return { p: { ...DEMO_PROPOSAL, ...later, docHash: await docHash(DEMO_PROPOSAL) }, images: {} }
 }
 
 export default function ProposalPage() {
@@ -73,8 +80,9 @@ export default function ProposalPage() {
   const { p, images } = state
   const open = p.status === 'sent' || p.status === 'viewed'
   const signed = p.status === 'signed' || p.status === 'countersigned'
-  const deposit = totals(p).deposit
-  const depositDue = signed && deposit > 0 && p.deposit?.status !== 'paid'
+  const depositDue = isPayable(p, 'deposit')
+  const due = PAY_PARTS.filter((part) => isPayable(p, part))
+  const paid = PAY_PARTS.filter((part) => paymentOf(p, part)?.status === 'paid')
   return (
     <main className="px-4 pb-24 pt-6 print:p-0">
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm print:hidden">Preview with sample data</p>}
@@ -88,8 +96,14 @@ export default function ProposalPage() {
           <button type="button" onClick={() => window.print()} className="rounded-full bg-white px-5 py-3 font-semibold text-night-950">Save or print a copy (PDF)</button>
         </div>
       )}
-      {depositDue && <div className="mx-auto mb-6 max-w-3xl"><DepositPanel token={token} amountLabel={fmt(deposit)} onPaid={() => load(false)} /></div>}
-      {p.deposit?.status === 'paid' && <p className="mx-auto mb-6 max-w-3xl rounded-2xl bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-300 print:hidden">Deposit paid ✓ {fmt(p.deposit.amount)}. Thank you!</p>}
+      {due.map((part) => (
+        <div key={part} className="mx-auto mb-6 max-w-3xl">
+          <DepositPanel token={token} part={part} title={PAY_TITLE[part]} note={PAY_NOTE[part]} amountLabel={fmt(partAmount(p, part))} onPaid={() => load(false)} />
+        </div>
+      ))}
+      {paid.map((part) => (
+        <p key={part} className="mx-auto mb-3 max-w-3xl rounded-2xl bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-300 print:hidden">{PART_LABEL[part]} paid ✓ {fmt(paymentOf(p, part).amount)}. Thank you!</p>
+      ))}
       <ProposalDocument proposal={p} images={images} business={BIZ} />
       <div className="mx-auto mt-8 max-w-3xl space-y-4">
         {open && state.intact !== false && <SignPanel expectedName={p.customer?.name ?? ''} onSign={sign} />}
