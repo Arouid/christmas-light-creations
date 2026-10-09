@@ -3,6 +3,7 @@ import { business } from '../data/content'
 import DepositPanel from '../proposal/DepositPanel.jsx'
 import { PART_LABEL, STATUS_LABEL, fmt } from '../proposals/model.js'
 import Icon from '../components/Icon'
+import RecaptchaNote from '../components/RecaptchaNote'
 import { REINSTALL_PCT, yearlyPrice } from '../lib/addOns'
 import { seasonYear } from '../lib/customers'
 
@@ -119,6 +120,7 @@ export default function AccountPage() {
       </header>
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data</p>}
       <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} reload={load} logOut={logOut} />
+      <RecaptchaNote className="mt-10" />
     </main>
   )
 }

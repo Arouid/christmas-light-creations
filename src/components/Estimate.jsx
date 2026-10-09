@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { HEARD_FROM, business } from '../data/content'
-import { firebaseReady, submitLead } from '../lib/firebase'
+import { firebaseReady, getFirebaseApp, submitLead } from '../lib/firebase'
 import { signCode, signSource } from '../lib/sign'
 import Icon from './Icon'
+import RecaptchaNote from './RecaptchaNote'
 
 const field = 'mt-1.5 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-glow-400 focus:outline-none focus:ring-2 focus:ring-glow-400/30'
 const label = 'block text-sm font-medium text-slate-300'
@@ -56,7 +57,8 @@ export default function Estimate() {
               <p className="mt-2 text-slate-400">We’ll be in touch soon. Need us sooner? Call {business.phone}.</p>
             </div>
           ) : (
-            <form onSubmit={onSubmit} className="grid gap-5 sm:grid-cols-2">
+            // Load Firebase (and the anti-spam check) once someone starts filling in the form.
+            <form onSubmit={onSubmit} onFocus={() => { if (firebaseReady) getFirebaseApp().catch(() => {}) }} className="grid gap-5 sm:grid-cols-2">
               <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
               <label className={label}>First name *<input required name="firstName" maxLength={80} autoComplete="given-name" className={field} /></label>
               <label className={label}>Last name *<input required name="lastName" maxLength={80} autoComplete="family-name" className={field} /></label>
@@ -102,6 +104,7 @@ export default function Estimate() {
                     Call {business.phone} for your estimate
                   </a>
                 )}
+                <RecaptchaNote className="mt-3" />
                 {status === 'error' && (
                   <p className="mt-3 text-center text-sm text-berry-500" role="alert">
                     Something went wrong. Please call or text {business.phone}.

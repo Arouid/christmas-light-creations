@@ -44,3 +44,5 @@
 | 32 | Account link requested for an email with no proposal | Same "Check your email" message, no email sent | Not checked |
 | 38 | After deploying the USD fix: pay a small real balance on a test proposal from another PayPal/Venmo/card | Paid ✓ recorded, staff email arrives | Not checked |
 | 39 | Live functions refuse fake calls (myAccount without sign-in → unauthenticated; createDepositOrder with an unknown token → not-found; wrong part → invalid-argument) | Refused | Not checked (blocked in the 2026-10-09 review session) |
+| 40 | After the reCAPTCHA key is added: send a test estimate request from a phone | Request arrives; small "protected by reCAPTCHA" line under the button; no badge covering the call bar | Not checked |
+| 41 | App Check metrics after ~3 days (Firebase console → App Check → APIs) | Nearly all Firestore/Functions requests "verified" before enforcing | Not checked |

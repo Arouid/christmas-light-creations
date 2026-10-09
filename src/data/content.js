@@ -193,3 +193,12 @@ export const faq = [
     ],
   },
 ]
+
+// Shown under forms when App Check (reCAPTCHA) is on; Google's badge is hidden
+// in index.css, and their terms ask for this line instead.
+export const recaptchaNote = {
+  before: 'This site is protected by reCAPTCHA and the Google ',
+  privacy: 'https://policies.google.com/privacy',
+  terms: 'https://policies.google.com/terms',
+  after: ' apply.',
+}

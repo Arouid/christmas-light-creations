@@ -24,13 +24,26 @@ export const STATUS_LABELS = {
   spam: 'Spam / test',
 }
 
-let app
-export async function getFirebaseApp() {
-  if (!app) {
+// App Check (anti-spam): proves requests come from our pages, not a script.
+// reCAPTCHA Enterprise site key (public by design), from Google Cloud console
+// → Security → reCAPTCHA (score-based, no checkbox). Empty = App Check off.
+// On localhost a debug token is printed in the console instead; register it
+// in Firebase console → App Check → Apps → ⋮ → Manage debug tokens.
+export const APP_CHECK_SITE_KEY = ''
+
+let appPromise
+export function getFirebaseApp() {
+  appPromise ??= (async () => {
     const { initializeApp } = await import('firebase/app')
-    app = initializeApp(firebaseConfig)
-  }
-  return app
+    const app = initializeApp(firebaseConfig)
+    if (APP_CHECK_SITE_KEY) {
+      const { initializeAppCheck, ReCaptchaEnterpriseProvider } = await import('firebase/app-check')
+      if (import.meta.env.DEV) globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = true
+      initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(APP_CHECK_SITE_KEY), isTokenAutoRefreshEnabled: true })
+    }
+    return app
+  })()
+  return appPromise
 }
 
 // Fields a customer may send; must match the create rule in firestore.rules.

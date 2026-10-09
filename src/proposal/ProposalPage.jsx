@@ -5,6 +5,7 @@ import SignPanel from '../proposals/SignPanel.jsx'
 import DepositPanel from './DepositPanel.jsx'
 import { PART_LABEL, PAY_PARTS, docHash, fmt, isPayable, partAmount, paymentOf } from '../proposals/model.js'
 import Icon from '../components/Icon'
+import RecaptchaNote from '../components/RecaptchaNote'
 
 // The customer's proposal page: /proposal/?t=<token> (link sent by text/email).
 // Dev preview with sample data: /proposal/?demo
@@ -112,6 +113,7 @@ export default function ProposalPage() {
           <span className="text-slate-400">Questions? We’re happy to adjust anything.</span>
           {call}
         </div>
+        <RecaptchaNote />
       </div>
     </main>
   )

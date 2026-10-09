@@ -39,7 +39,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - All copy, photos, reviews and FAQ live in `src/data/content.js`. Components hold layout only.
 - Images live in the repo under `public/images/` (nothing loaded from the old WordPress CDN). Full-size originals go in `assets-source/`, which isn't shipped.
 - Colors come from the theme tokens in `src/index.css` (`night`, `glow`, `berry`, `pine`). Fonts: Fraunces (display), Inter (body).
-- No tracking or analytics scripts, no cookie banners.
+- No tracking or analytics scripts, no cookie banners. One exception (owner, 2026-10-09): reCAPTCHA Enterprise for Firebase App Check (anti-spam), loaded only with Firebase (`APP_CHECK_SITE_KEY` in `src/lib/firebase.js`); badge hidden, `RecaptchaNote` shown instead.
 - Keep the phone number (281-819-0163) one tap away on every screen.
 - Service areas: `serviceAreaGroups` in content.js and `areaServed` in index.html must match the Google Business Profile's service areas exactly.
 - Don't reword customer reviews; quote them as written.

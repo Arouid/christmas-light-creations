@@ -63,3 +63,9 @@ body {
     100% { box-shadow: 0 0 0 18px transparent, 0 0 10px 2px var(--c); }
   }
 }
+
+/* reCAPTCHA (App Check): its floating badge would cover the phone bar on
+   mobile; the required notice is shown as text instead (recaptchaNote). */
+.grecaptcha-badge {
+  visibility: hidden;
+}

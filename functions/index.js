@@ -37,6 +37,10 @@ const PAYPAL_CLIENT_ID = defineString('PAYPAL_CLIENT_ID')
 const PAYPAL_ENV = defineString('PAYPAL_ENV', { default: 'sandbox' })
 const FROM = 'info@christmas-light-creations.com'
 const SITE = 'https://christmas-light-creations.com'
+// App Check (reCAPTCHA): refuse calls that don't come from our pages. Turn on
+// only after the site has sent App Check tokens for a few days (Firebase
+// console → App Check → APIs → metrics show ~100% verified), then deploy.
+const ENFORCE_APP_CHECK = false
 
 const mailer = () => nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: FROM, pass: SMTP_PASSWORD.value() } })
 const staffEmails = async () => alertRecipients((await getFirestore().doc('settings/app').get()).data())
@@ -73,7 +77,7 @@ const paypalCfg = () => ({ env: PAYPAL_ENV.value(), clientId: PAYPAL_CLIENT_ID.v
 
 // invoker 'public': customers aren't signed in; each call checks the proposal and amount itself.
 // Names kept from when they only took deposits; `part` defaults to 'deposit'.
-export const createDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+export const createDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const part = req.data?.part ?? 'deposit'
   const { p, amount } = await payableProposal(req.data?.token, part)
   try {
@@ -91,7 +95,7 @@ export const createDepositOrder = onCall({ region: REGION, invoker: 'public', se
   }
 })
 
-export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const token = req.data?.token
   const part = req.data?.part ?? 'deposit'
   const { ref, amount } = await payableProposal(token, part)
@@ -178,7 +182,7 @@ async function customersFor(email) {
 // Emails a one-time sign-in link from info@, but only to an email that has a
 // proposal or a customer record. The answer is the same either way, so nobody can test whether an
 // address is a customer. At most one link a minute, 5 a day, per email.
-export const sendAccountLink = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+export const sendAccountLink = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const email = normEmail(req.data?.email)
   if (!EMAIL_RE.test(email) || email.length > 200) throw new HttpsError('invalid-argument', 'Please enter a valid email')
   const [tokens, customerIds] = await Promise.all([proposalTokensFor(email), customersFor(email)])
@@ -228,7 +232,7 @@ async function recordLogin(db, email, token) {
 // The signed-in customer's proposals with what's paid and what's due. Only
 // for a verified email (email-link sign-in always is); payment amounts come
 // from the stored proposals, same as the payment functions.
-export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const email = normEmail(req.auth?.token?.email)
   if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
   const db = getFirestore()
