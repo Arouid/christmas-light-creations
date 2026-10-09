@@ -25,6 +25,7 @@ import { stopFromCustomer, DEFAULT_MINUTES } from '../lib/router'
 import { gateFor } from '../lib/customers'
 import { EmailTemplates } from './templatesContext'
 import ServiceView from './ServiceView'
+import UnmatchedMessages from './UnmatchedMessages'
 import ViewEditor from './ViewEditor'
 import ViewTab from './ViewTab'
 import { mergeMany } from './staffStore'
@@ -241,6 +242,7 @@ export default function LeadsApp() {
               onOpenCustomer={setOpenId} onMakeLeadCustomer={makeCustomer}
               onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
           : loading)}
+        {tab === 'leads' && user && <UnmatchedMessages user={user} customers={customers} />}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onDelete={deleteLead}onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
         )}

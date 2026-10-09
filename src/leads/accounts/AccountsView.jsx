@@ -196,7 +196,7 @@ function CustomerAccount({ c, leads, past, calls, gates, season, user, onOpenCus
       </Section>
       <Section title="🎨 Light designs" open={false}><DesignsPanel owner={{ type: 'customer', id: c.id, name: c.fullName, address: c.address }} /></Section>
       <Section title="📝 Proposals & contracts" open={false}><ProposalsPanel owner={{ type: 'customer', id: c.id, name: c.fullName, address: c.address, email: c.email, phone: c.phone, installType: c.installType }} /></Section>
-      <Section title="Text & call history" open={false}><TextHistory user={user} customerId={c.id} /></Section>
+      <Section title="Text & email history" open={false}><TextHistory user={user} customerId={c.id} /></Section>
       {(myLeads.length > 0 || myPast.length > 0) && (
         <Section title="Website requests" open={false}>
           <ul className="space-y-2 text-sm">
@@ -209,7 +209,7 @@ function CustomerAccount({ c, leads, past, calls, gates, season, user, onOpenCus
   )
 }
 
-function LeadAccount({ l, season, onMakeCustomer, onOpenAccount }) {
+function LeadAccount({ l, season, user, onMakeCustomer, onOpenAccount }) {
   const address = [l.address, l.city, 'TX', l.zip].filter(Boolean).join(', ')
   const name = `${l.firstName ?? ''} ${l.lastName ?? ''}`.trim()
   const phone = String(l.phone ?? '').replace(/\D/g, '')
@@ -226,6 +226,7 @@ function LeadAccount({ l, season, onMakeCustomer, onOpenAccount }) {
       {l.message && <Section title="Their request"><p className="whitespace-pre-wrap text-sm text-slate-300">{l.message}</p>{l.notes && <p className="mt-2 text-sm text-slate-400">Notes: {l.notes}</p>}</Section>}
       <Section title="🎨 Light designs" open={false}><DesignsPanel owner={{ type: 'lead', id: l.id, name, address }} /></Section>
       <Section title="📝 Proposals & contracts" open={false}><ProposalsPanel owner={{ type: 'lead', id: l.id, name, address, email: l.email, phone: l.phone }} /></Section>
+      <Section title="Text & email history" open={false}><TextHistory user={user} field="leadId" value={l.id} /></Section>
     </div>
   )
 }
@@ -303,7 +304,7 @@ export default function AccountsView({ customers, leads = [], past = [], calls =
         <div className="flex-1"><SearchBox index={index} compact onPick={open} /></div>
       </div>
       {c ? <CustomerAccount c={c} leads={leads} past={past} calls={calls} gates={gates} season={season} user={user} onOpenCustomer={onOpenCustomer} />
-        : l ? <LeadAccount l={l} season={season} onMakeCustomer={onMakeLeadCustomer} onOpenAccount={open} />
+        : l ? <LeadAccount l={l} season={season} user={user} onMakeCustomer={onMakeLeadCustomer} onOpenAccount={open} />
           : p ? <PastAccount p={p} onMakeCustomer={onMakePastCustomer} onOpenAccount={open} />
             : <p className="text-slate-400">{entry === undefined && customers ? 'This account isn’t loaded yet, or it was removed.' : 'Loading…'}</p>}
     </div>

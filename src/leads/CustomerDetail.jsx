@@ -173,7 +173,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
           </Section>
         )}
 
-        <Section title="Text & call history" open={false}>
+        <Section title="Text & email history" open={false}>
           <TextHistory user={user} customerId={customer.id} />
         </Section>
 

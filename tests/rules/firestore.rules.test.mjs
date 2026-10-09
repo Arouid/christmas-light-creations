@@ -120,6 +120,17 @@ describe('staff', () => {
     await assertSucceeds(deleteDoc(doc(db, 'leads', 'spam1')))
     for (const c of ['customers', 'serviceCalls', 'messages', 'pastRequests', 'settings']) await assertFails(deleteDoc(doc(db, c, 'x1')))
   })
+  test('synced messages: staff link an unmatched one to a customer or dismiss it', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'messages', 'gv-1'), { unmatched: true, direction: 'in', kind: 'text', phone: '+15550100101', source: 'voice-email' })
+    })
+    const db = as.staff()
+    await assertFails(updateDoc(doc(db, 'messages', 'gv-1'), { unmatched: false, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'messages', 'gv-1'), { dismissed: true, ...stamp('someone@else.com') }))
+    await assertSucceeds(updateDoc(doc(db, 'messages', 'gv-1'), { dismissed: true, ...stamp() }))
+    await assertSucceeds(updateDoc(doc(db, 'messages', 'gv-1'), { customerId: 'pat-test', unmatched: false, dismissed: false, ...stamp() }))
+    await assertFails(setDoc(doc(db, 'messages', 'new-unlinked'), { direction: 'in', dismissed: true, ...stamp() }))
+  })
   test('lead updates: only status/notes/link fields, known statuses', async () => {
     const db = as.staff()
     await assertSucceeds(updateDoc(doc(db, 'leads', 'x1'), { status: 'called', notes: 'ok', ...stamp() }))

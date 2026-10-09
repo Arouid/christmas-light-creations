@@ -63,6 +63,13 @@ export const demoData = {
     { id: 'demo-msg-1', customerId: 'sample-customer', phone: '+15550101', kind: 'text', direction: 'out', at: '2025-11-18T17:05:00Z', text: 'Hi! This is Christmas Light Creations. We can install Thursday Nov 20 in the evening. Does that work?' },
     { id: 'demo-msg-2', customerId: 'sample-customer', phone: '+15550101', kind: 'text', direction: 'in', at: '2025-11-18T17:12:00Z', text: 'Thursday works, gate code is the same as last year.' },
     { id: 'demo-msg-3', customerId: 'sample-customer', phone: '+15550101', kind: 'voicemail', direction: 'in', at: '2025-12-12T01:40:00Z', text: 'Hey, the left side of the garage went out tonight.', duration: '0:21' },
+    { id: 'em-demo-1-sample-customer', customerId: 'sample-customer', email: 'sample@example.com', kind: 'email', direction: 'in', source: 'gmail', at: hoursAgo(5),
+      subject: 'Re: Your 2026 install', text: 'Thursday evening is perfect, thanks! Same gate code as last year.\n\nAlso, could you add the small tree by the mailbox this year? We bought a new one and it is about six feet tall, right next to the driveway. Let me know what that would cost and whether you can do it the same day as the install. Thanks again for everything last season.' },
+    { id: 'em-demo-2-sample-customer', customerId: 'sample-customer', email: 'sample@example.com', kind: 'email', direction: 'out', source: 'gmail', at: hoursAgo(3),
+      subject: 'Re: Your 2026 install', text: 'Hi Sample, yes we can add the tree the same day. It adds $45 this year.' },
+    { id: 'gv-demo-lead', leadId: 'demo-2', phone: '+15550102', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(20), text: 'Hi, I sent the form on your website. Do you do roofline only?' },
+    { id: 'gv-demo-unmatched-1', unmatched: true, phone: '+15550100166', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(2), text: 'Hi! Saw your sign on Broadway. How much for a one story house?' },
+    { id: 'gv-demo-unmatched-2', unmatched: true, phone: '+15550100177', kind: 'voicemail', direction: 'in', source: 'voice-email', at: hoursAgo(9), text: 'Hi, this is about getting lights put up on our house in Silverlake. Please call me back.' },
   ]),
   views: byId([
     { id: 'demo-view-1', name: 'Needs scheduling', order: 1, mode: 'install', statuses: ['Confirmed - Needs to be Scheduled'],

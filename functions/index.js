@@ -10,29 +10,36 @@
 //   tells staff when a proposal is signed or a deposit is paid.
 // - sendAccountLink / myAccount: customer accounts at /account/ (email-link
 //   sign-in; the account lists proposals sent to that verified email).
+// - messageSync: receives Google Voice notification emails and customer
+//   emails from the Apps Script in info@ (scripts/apps-script/messageSync.gs)
+//   and files them in customer history (docs/specs/message-sync.md).
 //
 // Secrets (set with `firebase functions:secrets:set`, never in code):
 //   SMTP_PASSWORD  app password for info@ (Google Workspace SMTP)
 //   PAYPAL_SECRET  PayPal app secret (sandbox or live, matching PAYPAL_ENV)
+//   MESSAGE_SYNC_KEY  shared key with the info@ Apps Script (Script Properties)
 // Plain settings in functions/.env: PAYPAL_CLIENT_ID, PAYPAL_ENV.
 import { initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { FieldValue, getFirestore } from 'firebase-admin/firestore'
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore'
-import { HttpsError, onCall } from 'firebase-functions/v2/https'
+import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https'
 import { defineSecret, defineString } from 'firebase-functions/params'
 import { logger } from 'firebase-functions'
 import nodemailer from 'nodemailer'
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { captureOrder, createOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, payableProblem } from './payments.js'
+import { badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
 import { EMAIL_RE, accountSummary, accountUrl, addOnFromProposal, byNewest, customerForAccount, emailsOf, loginRecord, normEmail, providerName, shownInAccount } from './account.js'
 
 initializeApp()
 const REGION = 'us-south1'
 const SMTP_PASSWORD = defineSecret('SMTP_PASSWORD')
 const PAYPAL_SECRET = defineSecret('PAYPAL_SECRET')
+const MESSAGE_SYNC_KEY = defineSecret('MESSAGE_SYNC_KEY')
 const PAYPAL_CLIENT_ID = defineString('PAYPAL_CLIENT_ID')
 const PAYPAL_ENV = defineString('PAYPAL_ENV', { default: 'sandbox' })
 const FROM = 'info@christmas-light-creations.com'
@@ -248,4 +255,58 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const season = String(now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1) // same as src/lib/customers.js seasonYear (server clock is UTC; fine for a July 1 cutover)
   const price = recs.map((d) => customerForAccount(d.data(), season)).find(Boolean) ?? null
   return { email, proposals, price, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+})
+
+// ---- Message sync (Voice notifications + customer emails → history) ---------
+
+// Constant-time key check (hashing first makes the lengths equal).
+const sameKey = (a, b) => {
+  const h = (s) => createHash('sha256').update(String(s ?? '')).digest()
+  return Boolean(a) && Boolean(b) && timingSafeEqual(h(a), h(b))
+}
+
+// Called every 5 minutes by the Apps Script in info@ with new emails. Entries
+// are only created (fixed ids), so re-sends are harmless and never undo staff
+// edits. Logs counts and reasons only: no message text, numbers or addresses.
+export const messageSync = onRequest({ region: REGION, invoker: 'public', secrets: [MESSAGE_SYNC_KEY], maxInstances: 2, timeoutSeconds: 120 }, async (req, res) => {
+  if (req.method !== 'POST') { res.status(405).end(); return }
+  if (!sameKey(req.get('x-clc-sync-key'), MESSAGE_SYNC_KEY.value())) {
+    logger.warn('messageSync: wrong or missing key')
+    res.status(401).end()
+    return
+  }
+  const problem = badBatch(req.body)
+  if (problem) { res.status(400).json({ ok: false, error: problem }); return }
+
+  const db = getFirestore()
+  const events = req.body.items.map(parseItem)
+  const needDir = events.some((e) => !e.skip)
+  const [cust, leads] = needDir
+    ? await Promise.all([db.collection('customers').select('phone', 'email').get(), db.collection('leads').select('phone', 'email', 'customerId').get()])
+    : [{ docs: [] }, { docs: [] }]
+  const dir = buildDirectory(cust.docs.map((d) => ({ id: d.id, ...d.data() })), leads.docs.map((d) => ({ id: d.id, ...d.data() })))
+
+  const count = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0 }
+  const results = []
+  for (const [i, event] of events.entries()) {
+    const gmailId = String(req.body.items[i]?.gmailId ?? '')
+    const docs = event.skip ? [] : docsFor(event, dir)
+    if (req.body.dryRun === true) { results.push({ gmailId, ...dryRunSummary(event, docs) }); continue }
+    if (event.skip) { count.skipped++; results.push({ gmailId, status: 'skipped', reason: event.skip }); continue }
+    if (!docs.length) { count.dropped++; results.push({ gmailId, status: 'dropped', reason: 'no-match' }); continue }
+    let status = 'duplicate'
+    for (const { id, data } of docs) {
+      try {
+        await db.doc(`messages/${id}`).create({ ...data, syncedAt: FieldValue.serverTimestamp() })
+        status = 'saved'
+        if (data.unmatched) count.unmatched++
+      } catch (e) {
+        if (e.code !== 6) throw e // 6 = ALREADY_EXISTS
+      }
+    }
+    count[status]++
+    results.push({ gmailId, status })
+  }
+  logger.info('messageSync', { items: events.length, dryRun: req.body.dryRun === true, ...count, reasons: events.filter((e) => e.skip).map((e) => e.skip) })
+  res.json({ ok: true, ...count, results })
 })

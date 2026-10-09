@@ -96,12 +96,19 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
-    // Past texts/calls/voicemails imported from the old Google Voice account.
-    // History: staff can read and (re-)import; nobody deletes.
+    // Customer history: texts/calls/voicemails/emails, imported from Voice
+    // Takeout by staff or written by the server (messageSync). Staff can read,
+    // (re-)import, link an unmatched one to a customer or dismiss it; nobody deletes.
     match /messages/{messageId} {
       allow read: if isStaff();
-      allow create, update: if isStaff()
+      allow create: if isStaff()
         && filledStr(request.resource.data.customerId, 200)
+        && request.resource.data.direction in ['in', 'out']
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow update: if isStaff()
+        && (('customerId' in request.resource.data && filledStr(request.resource.data.customerId, 200))
+          || request.resource.data.get('dismissed', false) == true)
         && request.resource.data.direction in ['in', 'out']
         && request.resource.data.updatedAt == request.time
         && request.resource.data.updatedBy == request.auth.token.email;
