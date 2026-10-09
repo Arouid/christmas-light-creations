@@ -50,6 +50,34 @@ function DiscountSchedule({ settings, onSave }) {
   )
 }
 
+// Who gets an email the moment a website estimate request comes in
+// (functions/index.js reads settings/app.alertEmails).
+function AlertEmails({ settings, onSave }) {
+  const [text, setText] = useState((settings.alertEmails ?? []).join('\n'))
+  const [msg, setMsg] = useState(null)
+  async function save() {
+    const list = [...new Set(text.split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter(Boolean))]
+    const bad = list.filter((e) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))
+    if (bad.length) return setMsg(`Not an email: ${bad.join(', ')}`)
+    await onSave({ alertEmails: list })
+    setText(list.join('\n'))
+    setMsg('Saved ✓')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">New-request alerts</p>
+      <p className="text-sm text-slate-400">
+        These emails get a message the moment someone asks for an estimate on the website. Use the Gmail on your phone so it pops up as a notification. One per line.
+      </p>
+      <textarea value={text} rows={3} onChange={(e) => { setText(e.target.value); setMsg(null) }} className={field} placeholder="name@gmail.com" />
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={save} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950">Save</button>
+        {msg && <span className={`text-sm ${msg.startsWith('Saved') ? 'text-emerald-400' : 'text-berry-500'}`}>{msg}</span>}
+      </div>
+    </div>
+  )
+}
+
 export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, onClose }) {
   const [account, setAccount] = useState(settings.voiceAccount ?? '')
   const [saved, setSaved] = useState(false)
@@ -67,6 +95,8 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
           <h2 className="font-display text-2xl font-extrabold">Settings</h2>
           <button type="button" onClick={onClose} className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold">Done</button>
         </div>
+
+        <AlertEmails settings={settings} onSave={onSave} />
 
         <form onSubmit={saveAccount} className={box}>
           <p className="font-semibold">Business texting (Google Voice)</p>

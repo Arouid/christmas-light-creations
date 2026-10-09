@@ -8,6 +8,6 @@
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
   },
   "overrides": [
-    { "files": ["scripts/**", "*.config.js"], "env": { "node": true } }
+    { "files": ["scripts/**", "functions/**", "*.config.js"], "env": { "node": true } }
   ]
 }
