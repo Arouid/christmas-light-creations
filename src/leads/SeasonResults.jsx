@@ -60,13 +60,42 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
 
   if (sorted.length === 0) return <p className="py-6 text-center text-slate-400">Nobody here.</p>
 
+  // Early installs are the first rush of the season, so they get their own section.
+  const groups = [
+    ['⭐ Early installs', sorted.filter((c) => c.installType === 'Early Install')],
+    ['Regular installs', sorted.filter((c) => c.installType === 'Regular Install')],
+    ['Install type not set', sorted.filter((c) => c.installType !== 'Early Install' && c.installType !== 'Regular Install')],
+  ].filter(([, list]) => list.length)
+
   return (
-    <>
-      <div className="hidden lg:block">
-        <DataTable label={`${mode}s ${season}`} rows={sorted} onRowClick={onOpen} columns={tableColumns} />
-      </div>
+    <div className="space-y-6">
+      {groups.map(([title, list]) => (
+        <section key={title} aria-label={title}>
+          <h3 className={`mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider ${title.startsWith('⭐') ? 'text-glow-300' : 'text-slate-400'}`}>
+            {title} <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-slate-200">{list.length}</span>
+          </h3>
+          {group(list)}
+        </section>
+      ))}
+    </div>
+  )
+
+  // Plain render helpers (not components), so tables keep their sort state.
+  function group(list) {
+    return (
+      <>
+        <div className="hidden lg:block">
+          <DataTable label={`${mode}s ${season}`} rows={list} onRowClick={onOpen} columns={tableColumns} />
+        </div>
+        {groupCards(list)}
+      </>
+    )
+  }
+
+  function groupCards(list) {
+    return (
       <ul className="space-y-2 lg:hidden">
-        {sorted.map((c) => {
+        {list.map((c) => {
           const when = [s(c).weekOf, s(c).day, s(c).plannedDate].filter(Boolean).join(' · ')
           const gate = columns.includes('gate') && gateFor(c, gates)
           return (
@@ -87,6 +116,6 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
           )
         })}
       </ul>
-    </>
-  )
+    )
+  }
 }
