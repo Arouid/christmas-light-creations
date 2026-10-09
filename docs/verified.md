@@ -85,3 +85,7 @@ What was actually checked working, and how. Newest first.
 - Marking a lead Spam / test moves it out of Open and All into its own chip; "Delete for good" (44px) removes it after confirm.
 - New draft proposal shows Delete; deleting closes the editor. No horizontal scroll.
 - Rules published via CLI; anonymous check: all refused as expected. Live staff delete not yet tried.
+
+## 2026-10-09 PayPal Live deposit
+
+- Owner paid a real deposit on a proposal to himself after the Live switch; payment went through (owner report). Refund done by owner in PayPal.
