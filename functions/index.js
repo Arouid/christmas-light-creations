@@ -26,7 +26,7 @@ import nodemailer from 'nodemailer'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { captureOrder, createOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
-import { EMAIL_RE, accountSummary, accountUrl, byNewest, normEmail, shownInAccount } from './account.js'
+import { EMAIL_RE, accountSummary, accountUrl, byNewest, loginRecord, normEmail, providerName, shownInAccount } from './account.js'
 
 initializeApp()
 const REGION = 'us-south1'
@@ -196,14 +196,29 @@ Christmas Light Creations
   return { ok: true }
 })
 
+// For staff (Accounts page): first and last sign-in per email. Times are
+// stored as Firestore timestamps; compared as milliseconds.
+async function recordLogin(db, email, token) {
+  if (email.includes('/')) return
+  const ref = db.doc(`customerLogins/${email}`)
+  await db.runTransaction(async (tx) => {
+    const prev = (await tx.get(ref)).data()
+    const ms = (t) => (t?.toMillis ? t.toMillis() : null)
+    const rec = loginRecord(prev && { firstAt: ms(prev.firstAt), lastAt: ms(prev.lastAt), provider: prev.provider },
+      { email, authTime: Number(token.auth_time) * 1000, provider: providerName(token.firebase?.sign_in_provider) })
+    tx.set(ref, { ...rec, firstAt: new Date(rec.firstAt), lastAt: new Date(rec.lastAt) })
+  })
+}
+
 // The signed-in customer's proposals with what's paid and what's due. Only
 // for a verified email (email-link sign-in always is); payment amounts come
 // from the stored proposals, same as the payment functions.
 export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'] }, async (req) => {
   const email = normEmail(req.auth?.token?.email)
   if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
-  const tokens = await proposalTokensFor(email)
   const db = getFirestore()
+  await recordLogin(db, email, req.auth.token).catch((e) => logger.warn('recordLogin', e))
+  const tokens = await proposalTokensFor(email)
   const docs = tokens.length ? await db.getAll(...tokens.map((t) => db.doc(`proposals/${t}`)), { fieldMask: ['status', 'title', 'season', 'customer', 'items', 'discountPct', 'depositPct', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt'] }) : []
   const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data())).sort(byNewest)
   return { email, proposals }

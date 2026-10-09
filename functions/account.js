@@ -43,5 +43,16 @@ export function accountSummary(token, p) {
   }
 }
 
+// Staff see when a customer last signed in (customerLogins/{email}, written
+// only by the server). authTime = when that sign-in happened (token
+// auth_time), so reopening the page later doesn't count as a new sign-in.
+export function loginRecord(prev, { email, authTime, provider }) {
+  const first = prev?.firstAt && prev.firstAt < authTime ? prev.firstAt : authTime
+  const last = prev?.lastAt && prev.lastAt > authTime ? prev.lastAt : authTime
+  return { email, firstAt: first, lastAt: last, provider: last === authTime ? provider : prev?.provider ?? provider }
+}
+const PROVIDER = { 'google.com': 'Google', password: 'email link', emailLink: 'email link' }
+export const providerName = (p) => PROVIDER[p] ?? p ?? ''
+
 // Newest first (signed or sent date).
 export const byNewest = (a, b) => String(b.signedAt ?? b.sentAt ?? '').localeCompare(String(a.signedAt ?? a.sentAt ?? ''))

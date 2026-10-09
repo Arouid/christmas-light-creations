@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Staff Accounts: "Customer login: last signed in Oct 12, 2:40 PM · first Oct 10 (Google)" line under contact details at 375px, no overflow, no console errors (demo data); login-record merge tested | Browser pane `/leads/?demo#accounts` + `npm test` |
 | 2026-10-09 | Account sign-in screen with Sign in with Google + email link renders at 375px, no horizontal scroll, no console errors | Browser pane `/account/` |
 | 2026-10-09 | Customer account page: demo account (2 proposals, paid / due now / not due yet, Due now total, Pay panel, agreement link) and the sign-in screen render at 375px with no horizontal scroll and no console errors; account math tests (case-insensitive email, continue URL locked to the site, drafts/void hidden, due states match the proposal page) | Browser pane `/account/?demo` and `/account/` + `npm test` |
 | 2026-10-08 | Early discount (demo): Oct 15 at $460 with 10% on file → suggests 15% → $391.00; Apply saves discount, reason, total; bulk button disappears when all match; Settings schedule shows Oct 15–21 15% / Oct 22–31 10% and saves edits. Season lists split into Early / Regular / not set sections, sort survives status changes | Browser pane + `npm test` (26) |

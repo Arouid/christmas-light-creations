@@ -36,5 +36,6 @@
 | 32 | Publish rules (messages), import the Voice history JSON | Customers show their past texts/calls | Waiting on Takeout export |
 | 30 | Customer account: request a link at /account/ for an email on a proposal, open it on a phone | Email from info@ arrives; link signs in; proposals listed with paid / due; Pay shows PayPal buttons for amounts due | Waiting: functions deploy + Email link enabled (TODO #31) |
 | 33 | Sign in with Google at /account/ (Gmail on a proposal, then one that isn't) | Proposals listed; other account shows "No proposals under this email"; /leads/ still says not on staff list | Waiting: functions deploy |
+| 34 | Staff Accounts page after a customer signs in | "Customer login: last signed in <date, time> · first <date> (Google/email link)"; others "never" | Waiting: deploy + rules |
 | 31 | Account link opened on a different device | Asks for the email, then signs in | Not checked |
 | 32 | Account link requested for an email with no proposal | Same "Check your email" message, no email sent | Not checked |

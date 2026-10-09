@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { accountSummary, accountUrl, normEmail, shownInAccount } from '../functions/account.js'
+import { accountSummary, accountUrl, loginRecord, normEmail, providerName, shownInAccount } from '../functions/account.js'
 import { itemsFromDesign, newProposal, partAmount } from '../src/proposals/model.js'
 
 const base = () => ({ ...newProposal({ customer: { name: 'Pat', email: 'Pat@Example.com' }, items: itemsFromDesign({ feet: 100, pricePerFoot: 5 }), depositPct: 50 }), status: 'signed' })
@@ -32,4 +32,16 @@ test('what is due follows the payment rules and the page math', () => {
   assert.deepEqual(states(s), { deposit: 'paid', balance: 'due', takedown: 'due' })
   for (const x of s.parts) assert.equal(x.amount, partAmount(p, x.part))
   assert.deepEqual(states(accountSummary('t', { ...paid, items: p.items.filter((i) => i.due !== 'removal') })).takedown, 'none')
+})
+
+test('login record keeps the first sign-in and the latest one', () => {
+  const a = loginRecord(undefined, { email: 'pat@example.com', authTime: 1000, provider: 'Google' })
+  assert.deepEqual(a, { email: 'pat@example.com', firstAt: 1000, lastAt: 1000, provider: 'Google' })
+  const b = loginRecord(a, { email: 'pat@example.com', authTime: 5000, provider: 'email link' })
+  assert.deepEqual([b.firstAt, b.lastAt, b.provider], [1000, 5000, 'email link'])
+  // An older session reopening the page doesn't move "last" back.
+  const c = loginRecord(b, { email: 'pat@example.com', authTime: 3000, provider: 'Google' })
+  assert.deepEqual([c.firstAt, c.lastAt, c.provider], [1000, 5000, 'email link'])
+  assert.equal(providerName('google.com'), 'Google')
+  assert.equal(providerName('password'), 'email link')
 })

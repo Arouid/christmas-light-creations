@@ -203,6 +203,13 @@ service cloud.firestore {
       allow delete: if isStaff();
     }
 
+    // When customers signed in to their own account (/account/): one doc per
+    // lowercase email, written only by the server (myAccount). Staff read only.
+    match /customerLogins/{email} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+
     // Shared staff settings (home base for distances and routes).
     match /settings/{settingId} {
       allow read: if isStaff();
