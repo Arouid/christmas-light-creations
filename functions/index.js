@@ -246,8 +246,10 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data())).sort(byNewest)
   // Yearly price breakdown from their customer record, once staff allow it.
   const ids = await customersFor(email)
-  const recs = ids.length ? await db.getAll(...ids.map((id) => db.doc(`customers/${id}`)), { fieldMask: ['fullName', 'address', 'since', 'originalRate', 'addOns', 'priceShown'] }) : []
+  const recs = ids.length ? await db.getAll(...ids.map((id) => db.doc(`customers/${id}`)), { fieldMask: ['fullName', 'address', 'since', 'originalRate', 'addOns', 'priceShown', 'seasons'] }) : []
   const rec = recs.map((d) => d.data()).find(Boolean)
-  const price = recs.map((d) => customerForAccount(d.data())).find(Boolean) ?? null
+  const now = new Date()
+  const season = String(now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1) // same as src/lib/customers.js seasonYear (server clock is UTC; fine for a July 1 cutover)
+  const price = recs.map((d) => customerForAccount(d.data(), season)).find(Boolean) ?? null
   return { email, proposals, price, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
 })

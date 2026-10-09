@@ -55,11 +55,35 @@ export function addOnFromProposal(token, p) {
 // Customer records whose email field (may hold several) includes this email.
 export const emailsOf = (field) => String(field ?? '').toLowerCase().split(/[\s,;/]+/).filter((e) => e.includes('@'))
 
+// Season billing (text from the sheet/staff app) → what the customer paid,
+// per season, newest first. No totals across years (owner's request). Past
+// seasons always; the current one only once something is marked paid.
+const moneyCents = (v) => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return Number.isFinite(n) ? Math.round(n * 100) : null }
+function billLine(b, amountKeys) {
+  if (!b) return null
+  const amount = amountKeys.map((k) => moneyCents(b[k])).find((x) => x != null) ?? null
+  const paid = String(b.paid ?? '').trim()
+  const state = /^yes$/i.test(paid) ? 'paid' : /^no takedown cost$/i.test(paid) || /no takedown cost/i.test(b.invoice ?? '') ? 'free' : /^no$/i.test(paid) ? 'unpaid' : ''
+  if (amount == null && !state) return null
+  return { amount, state, by: state === 'paid' ? String(b.paymentType ?? '') : '', date: state === 'paid' ? String(b.paymentDate ?? '') : '' }
+}
+export function paymentHistory(seasons, current) {
+  return Object.entries(seasons ?? {})
+    .map(([season, s]) => ({ season, install: billLine(s?.install, ['total', 'rate']), takedown: billLine(s?.takedown, ['total', 'rate']) }))
+    .filter((h) => (h.install || h.takedown) && (h.season < String(current) || (h.season === String(current) && [h.install, h.takedown].some((x) => x?.state === 'paid'))))
+    .sort((a, b) => b.season.localeCompare(a.season))
+}
+
 // What a customer may see of their own customer record: the yearly-price
-// inputs, and only once staff ticked "Customer can see this".
-export function customerForAccount(c) {
+// inputs and what they paid each season, only once staff ticked
+// "Customer can see this".
+export function customerForAccount(c, current) {
   if (!c?.priceShown) return null
-  return { originalRate: c.originalRate ?? '', since: c.since ?? '', addOns: (c.addOns ?? []).map(({ season, what, price }) => ({ season, what, price })) }
+  return {
+    originalRate: c.originalRate ?? '', since: c.since ?? '',
+    addOns: (c.addOns ?? []).map(({ season, what, price }) => ({ season, what, price })),
+    history: paymentHistory(c.seasons, current),
+  }
 }
 
 // Staff see when a customer last signed in (customerLogins/{email}, written

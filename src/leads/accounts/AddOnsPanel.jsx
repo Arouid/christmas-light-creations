@@ -82,8 +82,8 @@ export default function AddOnsPanel({ customer: c, user }) {
       )}
 
       <label className="flex min-h-11 items-center gap-3">
-        <input type="checkbox" className="size-5" checked={Boolean(c.priceShown)} disabled={y.yearlyCents == null} onChange={(e) => save('priceShown', e.target.checked)} />
-        <span>Customer can see this breakdown on their account{y.yearlyCents == null ? ' (needs Original rate)' : ''}</span>
+        <input type="checkbox" className="size-5" checked={Boolean(c.priceShown)} onChange={(e) => save('priceShown', e.target.checked)} />
+        <span>Customer can see this on their account: yearly price{y.yearlyCents == null ? ' (once Original rate is set)' : ''} and what they paid each season (Seasons above)</span>
       </label>
     </div>
   )

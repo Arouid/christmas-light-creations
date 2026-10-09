@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { draftsFromText, needsAddOnCheck, yearlyPrice } from '../src/lib/addOns.js'
-import { addOnFromProposal, customerForAccount, emailsOf } from '../functions/account.js'
+import { addOnFromProposal, customerForAccount, emailsOf, paymentHistory } from '../functions/account.js'
 import { canonical, newItem, newProposal, totals } from '../src/proposals/model.js'
 
 const cust = {
@@ -51,8 +51,24 @@ test('next-season price: new proposals undiscounted, older ones unchanged', () =
 
 test('customer account sees the price only after staff allow it, and only price inputs', () => {
   assert.equal(customerForAccount({ ...cust, priceShown: false }), null)
-  assert.deepEqual(customerForAccount({ ...cust, priceShown: true, notes: 'staff only', gateCode: '1234' }), {
-    originalRate: '$680.00', since: '2016', addOns: [{ season: '2023', what: '8 windows', price: 240 }, { season: '2026', what: 'Arch', price: 300 }],
+  assert.deepEqual(customerForAccount({ ...cust, priceShown: true, notes: 'staff only', gateCode: '1234' }, '2026'), {
+    originalRate: '$680.00', since: '2016', addOns: [{ season: '2023', what: '8 windows', price: 240 }, { season: '2026', what: 'Arch', price: 300 }], history: [],
   })
   assert.deepEqual(emailsOf('Pat@Example.com, pat.work@example.com'), ['pat@example.com', 'pat.work@example.com'])
+})
+
+test('payment history: per season, newest first, no current season until paid', () => {
+  const seasons = {
+    2026: { install: { rate: '$460.00', total: '$414.00' }, takedown: { rate: '150' } },
+    2025: { install: { invoice: 'PP Invoice Sent', paid: 'Yes', paymentType: 'PayPal', paymentDate: '11/26/2025' },
+      takedown: { paid: 'No Takedown Cost' } },
+    2024: { install: { total: '$400', paid: 'yes', paymentType: 'Zelle', paymentDate: '12/1/2024', discountReason: 'staff note' }, takedown: { rate: '150', paid: 'No' } },
+    2023: { installStatus: 'Install Completed' },
+  }
+  assert.deepEqual(paymentHistory(seasons, '2026'), [
+    { season: '2025', install: { amount: null, state: 'paid', by: 'PayPal', date: '11/26/2025' }, takedown: { amount: null, state: 'free', by: '', date: '' } },
+    { season: '2024', install: { amount: 40000, state: 'paid', by: 'Zelle', date: '12/1/2024' }, takedown: { amount: 15000, state: 'unpaid', by: '', date: '' } },
+  ])
+  const paidNow = { ...seasons, 2026: { install: { total: '$414.00', paid: 'Yes', paymentType: 'PayPal', paymentDate: '10/20/2026' } } }
+  assert.equal(paymentHistory(paidNow, '2026')[0].season, '2026')
 })

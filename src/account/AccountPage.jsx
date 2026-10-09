@@ -198,6 +198,7 @@ function Account({ data, reload, logOut }) {
         </p>
       )}
       {list.map((p) => <ProposalCard key={p.token} p={p} reload={reload} />)}
+      {data.price?.history?.length > 0 && <PaymentHistory history={data.price.history} />}
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-slate-400">Questions about your lights or a bill?</span>
         {call}
@@ -237,6 +238,34 @@ function YearlyPrice({ price }) {
       {y.thisSeason.map((l, i) => (
         <p key={i} className="rounded-2xl bg-white/5 px-4 py-2 text-sm">New this season: {l.what} ({fmt(l.priceCents)}, charged in full this year). From next season it adds {fmt(l.addsCents)} a year.</p>
       ))}
+    </section>
+  )
+}
+
+// What they paid, season by season (from our records, incl. years before the
+// website). No grand total on purpose.
+const PAID_TEXT = { paid: 'Paid ✓', free: 'No charge', unpaid: 'Not paid yet' }
+const PAID_CLASS = { paid: 'text-emerald-300', free: 'text-slate-400', unpaid: 'text-glow-300', '': 'text-slate-400' }
+function PaymentHistory({ history }) {
+  const row = (label, b) => b && (
+    <div className="py-1">
+      <span className="flex justify-between gap-3"><span>{label}</span>{b.amount != null && <span className="tabular-nums">{fmt(b.amount)}</span>}</span>
+      <span className={`block ${PAID_CLASS[b.state]}`}>{PAID_TEXT[b.state] ?? ''}{b.by || b.date ? <span className="text-slate-400"> {[b.by, b.date].filter(Boolean).join(', ')}</span> : null}</span>
+    </div>
+  )
+  return (
+    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">What you’ve paid</h2>
+      <ul className="divide-y divide-white/10 text-sm">
+        {history.map((h) => (
+          <li key={h.season} className="py-2">
+            <p className="font-semibold">{h.season} season</p>
+            {row('Lights up', h.install)}
+            {row('Takedown & storage', h.takedown)}
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-slate-400">Something look off? Call or text us and we’ll check it.</p>
     </section>
   )
 }
