@@ -90,3 +90,24 @@ test('editing a line: pins first, then the line between pins (for bending)', () 
   assert.equal(hitOnStrand(pts, [50, 50], 8), null)
   assert.deepEqual(strandCenter(pts).map(Math.round), [67, 33])
 })
+
+import { addGap, gapFraction, inGap } from '../src/designer/geometry.js'
+import { strandBulbs } from '../src/designer/stats.js'
+
+test('erasing a section: gaps merge, bulbs and feet drop, colors keep their order', () => {
+  assert.deepEqual(addGap([[0.1, 0.2]], 0.15, 0.3), [[0.1, 0.3]])
+  assert.deepEqual(addGap([[0.5, 0.6]], 0.1, 0.2), [[0.1, 0.2], [0.5, 0.6]])
+  assert.equal(inGap([[0.1, 0.3]], 0.2), true)
+  assert.ok(Math.abs(gapFraction([[0.1, 0.3], [0.5, 0.6]]) - 0.3) < 1e-9)
+
+  const d = newDesign({ width: 1200, height: 800 })
+  d.scale = { pxPerFt: 10 }
+  const s = { ...newStrand('c9', ['red', 'cool']), points: [[0, 0], [200, 0]] } // 20 ft, 21 bulbs
+  d.strands.push(s)
+  assert.equal(designStats(d).bulbs, 21)
+  s.gaps = [[0.4, 0.6]] // erase the middle 4 ft (5 bulbs at 8..12 ft)
+  const lit = strandBulbs(s, d)
+  assert.equal(lit.length, 16)
+  assert.equal(Math.round(designStats(d).feet), 16)
+  assert.deepEqual(lit.slice(7, 9).map((b) => [b.i, bulbColor(s, b.i)]), [[7, 'cool'], [13, 'cool']], 'bulb after the gap keeps its place in the pattern')
+})

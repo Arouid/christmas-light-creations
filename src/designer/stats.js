@@ -1,6 +1,6 @@
 // What a design adds up to: feet of lights, bulbs per color, a ballpark price.
-import { length } from './geometry.js'
-import { COLORS, pxPerFoot } from './model.js'
+import { gapFraction, inGap, length, sampleAlong } from './geometry.js'
+import { COLORS, STYLES, pxPerFoot } from './model.js'
 
 // Color of the i-th bulb: colors repeat in groups (groupSize 2 = 2 red, 2 white…).
 export function bulbColor(strand, i) {
@@ -9,25 +9,30 @@ export function bulbColor(strand, i) {
   return colors[Math.floor(i / g) % colors.length]
 }
 
+// Lit feet: erased sections don't count (no bulbs installed there).
 export function strandFeet(strand, design) {
-  return length(strand.points) / pxPerFoot(design)
+  return (length(strand.points) * (1 - gapFraction(strand.gaps))) / pxPerFoot(design)
+}
+
+// The bulbs actually drawn on a strand (same positions the renderer uses),
+// each with its original index so color patterns don't shift around gaps.
+export function strandBulbs(strand, design) {
+  const ppf = pxPerFoot(design)
+  const step = Math.max(2, ((strand.spacingIn || STYLES[strand.style]?.spacingIn || 12) / 12) * ppf)
+  const L = length(strand.points) || 1
+  return sampleAlong(strand.points, step, Boolean(strand.shape))
+    .map((p, i) => ({ ...p, i }))
+    .filter((p) => !inGap(strand.gaps, p.s / L))
 }
 
 export function designStats(design) {
+  const byColor = {}
   const perStrand = design.strands.map((s) => {
-    const feet = strandFeet(s, design)
-    // Closed shapes end where they start: no extra bulb at the end.
-    const bulbs = s.points.length > 1 ? Math.floor((feet * 12) / (s.spacingIn || 12)) + (s.shape ? 0 : 1) : 0
-    return { id: s.id, feet, bulbs }
+    const lit = s.points.length > 1 ? strandBulbs(s, design) : []
+    lit.forEach((b) => { const c = bulbColor(s, b.i); byColor[c] = (byColor[c] ?? 0) + 1 })
+    return { id: s.id, feet: strandFeet(s, design), bulbs: lit.length }
   })
   const feet = perStrand.reduce((t, s) => t + s.feet, 0)
-  const byColor = {}
-  design.strands.forEach((s, k) => {
-    for (let i = 0; i < perStrand[k].bulbs; i++) {
-      const c = bulbColor(s, i)
-      byColor[c] = (byColor[c] ?? 0) + 1
-    }
-  })
   const price = design.pricePerFoot ? Math.round(feet * design.pricePerFoot) : null
   return {
     perStrand,

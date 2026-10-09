@@ -1,9 +1,9 @@
 // Draws a design onto a canvas 2D context sized to the photo's natural pixels:
 // the photo, a night tint, glowing bulbs, decorations, and (in the editor)
 // handles. Browser only (uses canvas).
-import { MOVE_HANDLE_OFFSET, boxCorners, sampleAlong, shapePoints, strandCenter } from './geometry.js'
+import { MOVE_HANDLE_OFFSET, boxCorners, shapePoints, strandCenter } from './geometry.js'
 import { COLORS, STYLES, DECORATIONS, pxPerFoot } from './model.js'
-import { bulbColor } from './stats.js'
+import { bulbColor, strandBulbs } from './stats.js'
 
 // Glow sprites are cached per color and size: drawing hundreds of gradients
 // per frame is slow, stamping images is fast.
@@ -79,8 +79,13 @@ function drawWash(ctx, design, night) {
     g.lineWidth = ppf * (s.style === 'icicle' ? 2.2 : 1.6) * (s.size || 1)
     g.beginPath()
     // Slightly below the line: eave lights mostly light the wall under them.
+    // Follows the lit bulbs only, so erased sections throw no glow.
     const drop = ppf * (s.style === 'icicle' ? 0.9 : 0.35)
-    s.points.forEach(([x, y], i) => (i ? g.lineTo(x, y + drop) : g.moveTo(x, y + drop)))
+    const lit = strandBulbs(s, design)
+    lit.forEach((p, k) => {
+      if (k && p.i === lit[k - 1].i + 1) g.lineTo(p.x, p.y + drop)
+      else { g.moveTo(p.x, p.y + drop); g.lineTo(p.x + 0.1, p.y + drop) }
+    })
     g.stroke()
   }
   g.filter = 'none'
@@ -101,22 +106,23 @@ function stamp(ctx, hex, x, y, r, night) {
 function drawStrand(ctx, strand, design, night) {
   const ppf = pxPerFoot(design)
   const st = STYLES[strand.style] ?? STYLES.c9
-  const step = Math.max(2, ((strand.spacingIn || st.spacingIn) / 12) * ppf)
   // Drawn a bit larger than true size: a lit bulb looks bigger than it is.
   const r = Math.max(1.5, (st.size / 12) * ppf * 0.7 * (strand.size || 1))
-  const pts = sampleAlong(strand.points, step, Boolean(strand.shape))
+  const pts = strandBulbs(strand, design) // skips erased sections
   // Wire: faint dark line under the bulbs (reads as the cord in daylight).
   if (night < 0.9 && strand.style !== 'permanent') {
     ctx.save()
     ctx.globalCompositeOperation = 'source-over'
     ctx.strokeStyle = `rgba(20,30,20,${0.5 * (1 - night)})`
     ctx.lineWidth = Math.max(1, r * 0.35)
+    // Cord between neighbouring bulbs only, so erased sections show no cord.
     ctx.beginPath()
-    strand.points.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)))
+    pts.forEach((p, k) => (k && p.i === pts[k - 1].i + 1 ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)))
     ctx.stroke()
     ctx.restore()
   }
-  pts.forEach((p, i) => {
+  pts.forEach((p) => {
+    const i = p.i
     const hex = COLORS[bulbColor(strand, i)]?.hex ?? '#ffcf70'
     if (strand.style === 'icicle') {
       // Drops of varying length hanging straight down.
@@ -226,7 +232,7 @@ export function renderDesign(ctx, design, img, opts = {}) {
   ctx.restore()
 }
 
-function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx }) {
+function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx, brush }) {
   // One screen pixel in photo pixels, so handles stay the same size when zoomed.
   const u = pxPerScreenPx ?? Math.max(design.photo.width, design.photo.height) / 900
   const line = (pts, color, w, dash) => {
@@ -263,6 +269,10 @@ function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, d
     if (d.id === selectedId) dot([d.x, d.y], '#ffcf4d', 8)
   }
   if (draftShape) line(shapePoints(draftShape), 'rgba(110,231,255,0.95)', 2.5)
+  if (brush) {
+    ctx.setLineDash([4 * u, 3 * u]); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5 * u
+    ctx.beginPath(); ctx.arc(brush.x, brush.y, brush.r, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([])
+  }
   if (draft?.length) {
     line(draft, 'rgba(110,231,255,0.95)', 2.5)
     draft.forEach((p) => dot(p, '#6ee7ff', 6))

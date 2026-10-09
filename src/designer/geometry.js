@@ -10,11 +10,13 @@ export function length(points) {
 }
 
 // Points every `step` pixels along the line, starting at the first point.
-// Each comes with its direction (unit vector) for drawing icicles etc.
+// Each comes with its direction (unit vector) for drawing icicles etc. and
+// its distance along the line (s).
 export function sampleAlong(points, step, closed = false) {
   if (points.length < 2 || !(step > 0)) return points.length === 1 ? [{ x: points[0][0], y: points[0][1], dx: 1, dy: 0 }] : []
   const out = []
   let carry = 0 // distance into the current segment where the next bulb goes
+  let before = 0 // path length before the current segment
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1]
     const b = points[i]
@@ -24,10 +26,12 @@ export function sampleAlong(points, step, closed = false) {
     const dy = (b[1] - a[1]) / seg
     let t = carry
     while (t <= seg + 1e-9) {
-      out.push({ x: a[0] + dx * t, y: a[1] + dy * t, dx, dy })
+      // s = distance along the whole line (used for erased sections)
+      out.push({ x: a[0] + dx * t, y: a[1] + dy * t, dx, dy, s: before + t })
       t += step
     }
     carry = t - seg
+    before += seg
   }
   // Closed outline: don't put a second bulb on top of the first.
   if (closed && out.length > 1 && dist([out[0].x, out[0].y], [out.at(-1).x, out.at(-1).y]) < step / 2) out.pop()
@@ -111,3 +115,20 @@ export function hitOnStrand(points, p, tol) {
   }
   return best
 }
+
+// Erased sections ("gaps") are stored per strand as [from, to] fractions of
+// the line's length, so they stay put when the line is moved or bent a little.
+export const inGap = (gaps, frac) => (gaps ?? []).some(([a, b]) => frac >= a && frac <= b)
+
+// Add a gap and merge overlapping ones.
+export function addGap(gaps, a, b) {
+  const all = [...(gaps ?? []), [Math.max(0, Math.min(a, b)), Math.min(1, Math.max(a, b))]].sort((x, y) => x[0] - y[0])
+  const out = []
+  for (const g of all) {
+    const last = out.at(-1)
+    if (last && g[0] <= last[1] + 1e-6) last[1] = Math.max(last[1], g[1])
+    else out.push([...g])
+  }
+  return out
+}
+export const gapFraction = (gaps) => (gaps ?? []).reduce((t, [a, b]) => t + (b - a), 0)

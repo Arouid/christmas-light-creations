@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MOVE_HANDLE_OFFSET, boxCorners, boxFrom, dist, hitOnStrand, hitStrand, shapePoints, strandCenter } from './geometry.js'
+import { MOVE_HANDLE_OFFSET, addGap, boxCorners, boxFrom, dist, hitOnStrand, hitStrand, length, shapePoints, strandCenter } from './geometry.js'
 import { loadImage } from './image.js'
 import { COLORS, COLOR_SETS, DECORATIONS, STYLES, newDecoration, newDesign, newStrand, normalize, pxPerFoot } from './model.js'
 import { renderDesign } from './render.js'
-import { designStats, scaleFrom } from './stats.js'
+import { designStats, scaleFrom, strandBulbs } from './stats.js'
 
 const btn = 'rounded-full px-3 py-2 text-sm font-semibold'
 const off = `${btn} bg-white/10 hover:bg-white/15`
 const on = `${btn} bg-glow-400 text-night-950`
-const TOOLS = [['select', '👆 Select'], ['draw', '✏️ Lights'], ['rect', '▭ Rectangle'], ['oval', '◯ Oval'], ['decor', '🎀 Decorate'], ['measure', '📏 Measure']]
+const TOOLS = [['select', '👆 Select'], ['draw', '✏️ Lights'], ['rect', '▭ Rectangle'], ['oval', '◯ Oval'], ['erase', '🧽 Erase'], ['decor', '🎀 Decorate'], ['measure', '📏 Measure']]
 // Common things to measure from, so setting the scale is two taps.
 const MEASURE_PRESETS = [['Double garage door', 16], ['Single garage door', 8], ['Front door', 3]]
 const TAP_SLOP = 10 // screen px a finger can wander and still count as a tap
@@ -41,6 +41,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   const [measure, setMeasure] = useState(null) // { a, b }
   const [feetInput, setFeetInput] = useState('')
   const [showHistory, setShowHistory] = useState(false)
+  const [brushPx, setBrushPx] = useState(22) // eraser size in screen pixels
+  const [brush, setBrush] = useState(null) // eraser ring position (photo px)
   const [busy, setBusy] = useState(null)
   // View: fit size of the photo in the viewport, plus zoom and pan.
   const [fit, setFit] = useState({ w: 0, h: 0, cw: 0, ch: 0 })
@@ -73,8 +75,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   useEffect(() => {
     const c = canvas.current
     if (!c || !img) return
-    renderDesign(c.getContext('2d'), shown, img, { before, handles: !before, selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx })
-  }, [shown, img, before, selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx])
+    renderDesign(c.getContext('2d'), shown, img, { before, handles: !before, selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx, brush: brush && { ...brush, r: brushPx * pxPerScreenPx } })
+  }, [shown, img, before, selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx, brush, brushPx])
 
   const stats = useMemo(() => designStats(design), [design])
   const commit = (next, label) => {
@@ -152,6 +154,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     if (tool === 'draw' || tool === 'decor') { gesture.current = { kind: 'tap', ...start }; return }
     if (tool === 'rect' || tool === 'oval') { gesture.current = { kind: 'newShape', ...start }; return }
     if (tool === 'measure') { setMeasure({ a: p, b: p }); gesture.current = { kind: 'measure', ...start }; return }
+    if (tool === 'erase') { setBrush({ x: p[0], y: p[1] }); const n = eraseAt(design, p); setLive(n === design ? null : n); gesture.current = { kind: 'erase', ...start }; return }
 
     // Select. The selected item's own handles come first:
     //   shape corners -> resize; move handle -> move all; pin -> move that pin;
@@ -182,6 +185,25 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       return
     }
     gesture.current = { kind: 'pan', deselect: true, ...start }
+  }
+
+  // Eraser: every bulb under the brush gets a gap around it (half a spacing
+  // each side), so it disappears and its footage no longer counts.
+  function eraseAt(base, p) {
+    const r = brushPx * pxPerScreenPx
+    const ppf = pxPerFoot(base)
+    let changed = false
+    const next = { ...base, strands: base.strands.map((st) => {
+      const L = length(st.points)
+      if (!L) return st
+      const half = ((st.spacingIn || 12) / 12) * ppf / 2
+      let gaps = st.gaps
+      for (const b of strandBulbs(st, base)) {
+        if (dist([b.x, b.y], p) <= r) { gaps = addGap(gaps, (b.s - half) / L, (b.s + half) / L); changed = true }
+      }
+      return gaps === st.gaps ? st : { ...st, gaps }
+    }) }
+    return changed ? next : base
   }
 
   // Bend: on the first real drag, put a new pin into the line where it was grabbed.
@@ -218,6 +240,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       return
     }
     const p = toImg(e.clientX, e.clientY)
+    if (g.kind === 'erase') { setBrush({ x: p[0], y: p[1] }); setLive((l) => { const base = l ?? design; const n = eraseAt(base, p); return n === base ? l : n }); return }
     if (g.kind === 'measure') return setMeasure((m) => ({ ...m, b: p }))
     if (g.kind === 'newShape') { if (moved) setDraftShape({ type: tool, ...boxFrom(g.p, p, lockShape) }); return }
     if (g.kind === 'select') return
@@ -249,6 +272,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     if (!g) return
     if (g.kind === 'pinch') { if (pointers.current.size === 0) gesture.current = null; return }
     gesture.current = null
+    if (g.kind === 'erase') { setBrush(null); if (live) commit(live, 'Erased lights'); return }
     if (g.kind === 'tap') {
       if (tool === 'draw') setDraft((d) => [...d, g.p])
       if (tool === 'decor') {
@@ -365,7 +389,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
 
       <div ref={box} className="relative min-h-0 flex-1 touch-none select-none overflow-hidden"
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
-        style={{ cursor: tool === 'select' ? 'default' : 'crosshair' }}>
+        style={{ cursor: tool === 'select' ? 'default' : tool === 'erase' ? 'cell' : 'crosshair' }}
+        onPointerLeave={() => setBrush(null)}>
         <div className="absolute left-0 top-0 origin-top-left" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})`, width: fit.w, height: fit.h }}>
           <canvas ref={canvas} width={photo.width} height={photo.height} className="block h-full w-full" />
         </div>
@@ -421,6 +446,12 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
             </div>
           </div>
         )}
+        {tool === 'erase' && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-slate-400">Rub over the bulbs to remove (e.g. in front of a tree trunk). Zoom in for small spots.</span>
+            <label className="flex items-center gap-1.5">Brush<input type="range" min="8" max="60" step="2" value={brushPx} onChange={(e) => setBrushPx(Number(e.target.value))} /></label>
+          </div>
+        )}
         {tool === 'decor' && (
           <div className="flex flex-wrap items-center gap-1.5">
             {Object.entries(DECORATIONS).map(([k, v]) => <button key={k} type="button" onClick={() => setDecor(k)} className={decor === k ? on : off}>{v.label}</button>)}
@@ -465,6 +496,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
                   </label>
                   <span className="text-slate-400">{Math.round(stats.perStrand.find((s) => s.id === selStrand.id)?.feet ?? 0)} ft</span>
                   <span className="ml-auto flex gap-1.5">
+                    {selStrand.gaps?.length > 0 && <button type="button" onClick={() => patchStrand('Restored erased lights', { gaps: [] })} className={off}>Restore erased lights</button>}
                     {!selStrand.shape && selectedPoint != null && <button type="button" onClick={deletePin} className={`${off} text-berry-500`}>Delete pin</button>}
                     <button type="button" onClick={removeSelected} className={`${off} text-berry-500`}>Delete {selStrand.shape ? 'shape' : 'strand'}</button>
                   </span>
