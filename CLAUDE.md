@@ -28,6 +28,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - While the dev server runs, write `src/` files with the Write/Edit tools, not shell redirection (`cat > file`): Vite can read the file mid-write and keep serving a broken module ("does not provide an export named …") until restarted.
 - Check framework APIs (React, Vite, Tailwind 4, GitHub Pages) against their current docs, not memory.
 - Keep `docs/TODO.md` current: add new open items, remove finished ones.
+- Tailwind buttons: never add a second `bg-…` to a shared class string (`${btn} bg-glow-400`); the first one can win and the button shows the wrong color. Keep a shape-only class and add exactly one background per button.
 - Log what was actually checked in `docs/verified.md` (dated); keep unverified items in `docs/test-checklist.md`; record decisions in `docs/decisions.md`.
 
 ## Site rules

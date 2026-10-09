@@ -16,6 +16,7 @@ import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import { mergeTemplates } from '../lib/emailTemplates'
 import EmailsView from './EmailsView'
 import PastRequestsView from './PastRequestsView'
+import AccountsView from './accounts/AccountsView'
 import SignsView from './SignsView'
 import RoutesView from './RoutesView'
 import { RoutesContext } from './routesContext'
@@ -32,7 +33,7 @@ import { useLeads } from './useLeads'
 import { useGateCodes, usePastRequests, useRoutes, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
-const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
+const BEFORE = [['map', 'Map'], ['accounts', 'Accounts'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
 const AFTER = [['signs', 'Signs'], ['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
@@ -42,6 +43,7 @@ function Screen({ children }) {
 const tabFromHash = () => {
   const h = window.location.hash.slice(1)
   if (h.startsWith('route-')) return 'route' // #route-<id> (installer) or #route-<id>~edit
+  if (h.startsWith('accounts/')) return 'accounts' // #accounts/<kind>/<id>
   return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'map'
 }
 const routeFromHash = () => {
@@ -234,6 +236,11 @@ export default function LeadsApp() {
       )}
       <main className={tab === 'map' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl'}>
         {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
+        {tab === 'accounts' && (customers
+          ? <AccountsView customers={customers} leads={leads ?? []} past={pastApi.error ? [] : pastApi.requests ?? []} calls={calls} gates={gates} season={season} user={user}
+              onOpenCustomer={setOpenId} onMakeLeadCustomer={makeCustomer}
+              onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
+          : loading)}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
         )}
