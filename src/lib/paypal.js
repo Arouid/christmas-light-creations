@@ -2,8 +2,8 @@
 // by design (it identifies the PayPal app; the secret stays in Firebase).
 // env must match functions/.env PAYPAL_ENV. Empty client ID = no Pay button.
 export const PAYPAL = {
-  env: 'sandbox', // 'sandbox' while testing with fake money, then 'live'
-  clientId: 'BAArFFioPE6C7wD4d1SLSYYeBdS9Wj9PtNO03pfibSOMBTnUSFfWn62_k3ZikJUzIQUZTWhEVzs3n14Pk8', // sandbox app "CLC Website"
+  env: 'live', // real money since 2026-10-09 (sandbox app: BAArFFio…4Pk8)
+  clientId: 'BAAUFNwM2lOnzVGOQGWi2FyPBl-fK7iWmUQZyjkFl3bbdoX2iM2aZQargoSjKXfVm7uFcSaSDfe2G8tWr4', // live app "CLC Website"
 }
 
 let sdk
