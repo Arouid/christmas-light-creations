@@ -4,31 +4,45 @@
 // Rule (owner, 2026-10-09): everything from UNDISCOUNTED prices. Yearly price
 // = 50% of the original first-year price + 50% of each add-on added in an
 // earlier season. An add-on is billed in full the season it's added.
+// 50% is only the default (owner: "things are a little more nuanced"):
+//   customer.reinstallBase   re-install price per year, instead of 50% of original
+//   entry.adds               per-year amount for one add-on, instead of 50% of its price
+//   entry.kind 'change'      any other price change (+ or −) from its season on
 import { parseMoney } from './discounts.js'
 
 export const REINSTALL_PCT = 50
 const cents = (dollars) => Math.round((Number(dollars) || 0) * 100)
 const half = (c) => Math.round((c * REINSTALL_PCT) / 100)
+export const isSet = (v) => v !== undefined && v !== null && String(v).trim() !== '' && Number.isFinite(Number(v))
 
 let seq = 0
 export const addOnId = () => `a${Date.now().toString(36)}${(seq++).toString(36)}`
 
+const line = (a) => {
+  const priceCents = cents(a.price)
+  const custom = isSet(a.adds)
+  return { ...a, kind: a.kind === 'change' ? 'change' : 'addon', priceCents, custom, addsCents: custom ? cents(a.adds) : half(priceCents) }
+}
+
 // Amounts in cents. `season` = the season being priced (e.g. '2026').
 export function yearlyPrice(customer, season) {
+  const s = String(season)
   const originalCents = parseMoney(customer?.originalRate) == null ? null : cents(parseMoney(customer.originalRate))
-  const list = (customer?.addOns ?? []).filter((a) => a && a.season && cents(a.price) > 0)
-    .toSorted((a, b) => String(a.season).localeCompare(String(b.season)))
-  const earlier = list.filter((a) => String(a.season) < String(season))
-  const lines = earlier.map((a) => ({ ...a, priceCents: cents(a.price), addsCents: half(cents(a.price)) }))
-  const base = originalCents == null ? null : half(originalCents)
+  const list = (customer?.addOns ?? []).filter((a) => a && a.season && (cents(a.price) > 0 || isSet(a.adds)))
+    .map(line).toSorted((a, b) => String(a.season).localeCompare(String(b.season)))
+  // Add-ons count from the season after they're added; price changes from their own season.
+  const lines = list.filter((a) => (a.kind === 'change' ? String(a.season) <= s : String(a.season) < s))
+  const baseCustom = isSet(customer?.reinstallBase)
+  const base = baseCustom ? cents(customer.reinstallBase) : originalCents == null ? null : half(originalCents)
   return {
-    season: String(season),
+    season: s,
     originalCents,
     since: customer?.since ?? '',
     baseCents: base,
+    baseCustom,
     lines,
     // Added this season: billed in full now, raises the price from next season.
-    thisSeason: list.filter((a) => String(a.season) === String(season)).map((a) => ({ ...a, priceCents: cents(a.price), addsCents: half(cents(a.price)) })),
+    thisSeason: list.filter((a) => a.kind === 'addon' && String(a.season) === s),
     yearlyCents: base == null ? null : base + lines.reduce((t, l) => t + l.addsCents, 0),
   }
 }

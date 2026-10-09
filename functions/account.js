@@ -81,8 +81,8 @@ export function paymentHistory(seasons, current) {
 export function customerForAccount(c, current) {
   if (!c?.priceShown) return null
   return {
-    originalRate: c.originalRate ?? '', since: c.since ?? '',
-    addOns: (c.addOns ?? []).map(({ season, what, price }) => ({ season, what, price })),
+    originalRate: c.originalRate ?? '', since: c.since ?? '', reinstallBase: c.reinstallBase ?? null,
+    addOns: (c.addOns ?? []).map(({ season, what, price, adds, kind }) => ({ season, what, price: price ?? null, adds: adds ?? null, kind: kind ?? 'addon' })),
     history: paymentHistory(c.seasons, current),
   }
 }

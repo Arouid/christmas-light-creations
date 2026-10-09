@@ -85,6 +85,21 @@ function Section({ title, children, open = true }) {
   )
 }
 
+// A season that isn't on file yet (e.g. from before the sheet), so its
+// install and takedown prices and payments can be typed in.
+function AddPastSeason({ have, onAdd }) {
+  const [y, setY] = useState('')
+  const ok = /^20\d\d$/.test(y) && !have.includes(y)
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <input value={y} onChange={(e) => setY(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" placeholder="Year" aria-label="Season year to add"
+        className="min-h-11 w-24 rounded-lg border border-white/15 bg-night-950 px-3 py-2 text-sm" />
+      <button type="button" disabled={!ok} onClick={() => { onAdd(y); setY('') }} className="min-h-11 rounded-full bg-white/10 px-4 py-2 text-sm font-medium disabled:opacity-40">＋ Add a past season</button>
+      {have.includes(y) && <span className="text-sm text-slate-400">{y} is already listed above.</span>}
+    </div>
+  )
+}
+
 export default function CustomerDetail({ customer, season, onUpdate, onClose, gates = [], calls = [], onLogCall, onUpdateCall, user }) {
   const [logging, setLogging] = useState(false)
   const gate = gateFor(customer, gates)
@@ -161,6 +176,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             <Grid customer={customer} base={`seasons.${y}.takedown`} fields={BILLING.takedown} onUpdate={onUpdate} />
           </Section>
         ))}
+        <AddPastSeason have={seasons} onAdd={(y) => onUpdate(customer.id, `seasons.${y}`, { addedByHand: true })} />
 
         {onLogCall && (
           <Section title={`Service calls (${myCalls.length})`} open={myCalls.some((c) => c.status === 'Open' || c.status === 'Scheduled')}>

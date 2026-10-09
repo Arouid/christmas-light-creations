@@ -211,23 +211,24 @@ function Account({ data, reload, logOut }) {
 
 // How the yearly re-install price is built (docs/specs/add-ons.md). Only the
 // current yearly price: no lifetime totals (owner's request).
+const signed = (c) => (c < 0 ? `−${fmt(-c)}` : `+${fmt(c)}`)
 function YearlyPrice({ price }) {
   const y = yearlyPrice(price, seasonYear())
   if (y.yearlyCents == null) return null
   return (
     <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Your yearly price</h2>
-      <p className="text-sm text-slate-300">You own your lights. Each year we put them back up for {REINSTALL_PCT}% of what they first cost. Anything you add is charged in full the year it’s added, then also at {REINSTALL_PCT}% every year after.</p>
+      <p className="text-sm text-slate-300">You own your lights. Each year we put them back up for less than they first cost (usually {REINSTALL_PCT}%). Anything you add is charged in full the year it’s added, then adds to the yearly price after that.</p>
       <table className="w-full text-left text-sm">
         <tbody>
           <tr>
-            <td className="py-2 pr-2">Re-install of your original lights{y.since ? ` (${y.since})` : ''}<span className="block text-xs text-slate-400">{REINSTALL_PCT}% of {fmt(y.originalCents)}</span></td>
+            <td className="py-2 pr-2">Re-install of your original lights{y.since ? ` (${y.since})` : ''}{!y.baseCustom && <span className="block text-xs text-slate-400">{REINSTALL_PCT}% of {fmt(y.originalCents)}</span>}</td>
             <td className="py-2 text-right tabular-nums">{fmt(y.baseCents)}</td>
           </tr>
           {y.lines.map((l, i) => (
             <tr key={i} className="border-t border-white/10">
-              <td className="py-2 pr-2">＋ {l.what}<span className="block text-xs text-slate-400">added {l.season} · {REINSTALL_PCT}% of {fmt(l.priceCents)}</span></td>
-              <td className="py-2 text-right tabular-nums">{fmt(l.addsCents)}</td>
+              <td className="py-2 pr-2">{l.kind === 'change' ? l.what : `＋ ${l.what}`}<span className="block text-xs text-slate-400">{l.kind === 'change' ? `price change from ${l.season}` : `added ${l.season}${l.custom ? '' : ` · ${REINSTALL_PCT}% of ${fmt(l.priceCents)}`}`}</span></td>
+              <td className="py-2 text-right tabular-nums">{signed(l.addsCents)}</td>
             </tr>
           ))}
           <tr className="border-t border-white/20 font-semibold">
@@ -238,7 +239,7 @@ function YearlyPrice({ price }) {
       </table>
       <p className="text-xs text-slate-400">Before any discount (like early install).</p>
       {y.thisSeason.map((l, i) => (
-        <p key={i} className="rounded-2xl bg-white/5 px-4 py-2 text-sm">New this season: {l.what} ({fmt(l.priceCents)}, charged in full this year). From next season it adds {fmt(l.addsCents)} a year.</p>
+        <p key={i} className="rounded-2xl bg-white/5 px-4 py-2 text-sm">New this season: {l.what}{l.priceCents ? ` (${fmt(l.priceCents)}, charged in full this year)` : ''}. From next season it adds {fmt(l.addsCents)} a year.</p>
       ))}
     </section>
   )

@@ -52,7 +52,8 @@ test('next-season price: new proposals undiscounted, older ones unchanged', () =
 test('customer account sees the price only after staff allow it, and only price inputs', () => {
   assert.equal(customerForAccount({ ...cust, priceShown: false }), null)
   assert.deepEqual(customerForAccount({ ...cust, priceShown: true, notes: 'staff only', gateCode: '1234' }, '2026'), {
-    originalRate: '$680.00', since: '2016', addOns: [{ season: '2023', what: '8 windows', price: 240 }, { season: '2026', what: 'Arch', price: 300 }], history: [],
+    originalRate: '$680.00', since: '2016', reinstallBase: null, history: [],
+    addOns: [{ season: '2023', what: '8 windows', price: 240, adds: null, kind: 'addon' }, { season: '2026', what: 'Arch', price: 300, adds: null, kind: 'addon' }],
   })
   assert.deepEqual(emailsOf('Pat@Example.com, pat.work@example.com'), ['pat@example.com', 'pat.work@example.com'])
 })
@@ -85,4 +86,24 @@ test('takedown included in the install (Settings 0% / $0): no takedown charge, s
   const { termVars } = await import('../src/proposals/model.js')
   assert.equal(termVars(p).takedownCost, 'Free')
   assert.equal(paymentHistory({ 2025: { takedown: { rate: '$0', paid: '' } } }, '2026')[0].takedown.state, 'free')
+})
+
+test('50% is only the default: re-install, per-add-on amounts and price changes can be set by hand', () => {
+  const c = {
+    originalRate: '$680', reinstallBase: 300,
+    addOns: [
+      { id: 'a', season: '2023', what: 'Windows', price: 240, adds: 100 }, // not 50%
+      { id: 'b', season: '2024', what: 'Bushes', price: 200 }, // 50% default
+      { id: 'c', kind: 'change', season: '2025', what: 'Price increase', adds: 40 },
+      { id: 'd', kind: 'change', season: '2026', what: 'Loyalty', adds: -25 }, // counts from its own season
+      { id: 'e', kind: 'change', season: '2027', what: 'Future', adds: 10 },
+    ],
+  }
+  const y = yearlyPrice(c, '2026')
+  assert.equal(y.baseCents, 30000)
+  assert.equal(y.baseCustom, true)
+  assert.deepEqual(y.lines.map((l) => [l.id, l.addsCents, l.custom]), [['a', 10000, true], ['b', 10000, false], ['c', 4000, true], ['d', -2500, true]])
+  assert.equal(y.yearlyCents, 30000 + 10000 + 10000 + 4000 - 2500)
+  // Re-install price alone (no original rate on file) is enough.
+  assert.equal(yearlyPrice({ reinstallBase: '450' }, '2026').yearlyCents, 45000)
 })
