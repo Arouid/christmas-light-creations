@@ -149,3 +149,14 @@ export async function deleteRecord(coll, id) {
   const { fs, db } = await fire()
   await fs.deleteDoc(fs.doc(db, coll, id))
 }
+
+// One record, read once (e.g. a design's photo). null if it doesn't exist.
+export async function getRecord(coll, id) {
+  if (demoMode) {
+    const d = demo.data[coll]?.[id]
+    return d ? { id, ...d } : null
+  }
+  const { fs, db } = await fire()
+  const snap = await fs.getDoc(fs.doc(db, coll, id))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
+}

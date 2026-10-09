@@ -31,6 +31,8 @@ const cases = [
   ['Public can read past requests', () => getDocsFromServer(collection(db, 'pastRequests'))],
   ['Public can read signs', () => getDocsFromServer(collection(db, 'signs'))],
   ['Public can read routes', () => getDocsFromServer(collection(db, 'routes'))],
+  ['Public can read designs', () => getDocsFromServer(collection(db, 'designs'))],
+  ['Public can read design images', () => getDocsFromServer(collection(db, 'designFiles'))],
   ['Public can add a customer', () => addDoc(collection(db, 'customers'), { fullName: 'Intruder', updatedAt: serverTimestamp(), updatedBy: 'x@example.com' })],
 ]
 

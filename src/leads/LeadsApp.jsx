@@ -19,6 +19,7 @@ import PastRequestsView from './PastRequestsView'
 import SignsView from './SignsView'
 import RoutesView from './RoutesView'
 import { RoutesContext } from './routesContext'
+import { StaffContext } from './staffContext'
 import { stopFromCustomer, DEFAULT_MINUTES } from '../lib/router'
 import { gateFor } from '../lib/customers'
 import { EmailTemplates } from './templatesContext'
@@ -190,6 +191,7 @@ export default function LeadsApp() {
     <DiscountSchedule.Provider value={settingsApi.settings?.discountSchedule ?? DEFAULT_SCHEDULE}>
     <EmailTemplates.Provider value={templates}>
     <RoutesContext.Provider value={routesCtx}>
+    <StaffContext.Provider value={{ user, settings: settingsApi.settings ?? {} }}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       {!installHidden && (
@@ -288,6 +290,7 @@ export default function LeadsApp() {
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
       )}
     </div>
+    </StaffContext.Provider>
     </RoutesContext.Provider>
     </EmailTemplates.Provider>
     </DiscountSchedule.Provider>

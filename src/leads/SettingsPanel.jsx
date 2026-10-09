@@ -123,6 +123,14 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
           <p className="text-xs text-slate-500">Saved on this phone or computer only. Each staff member picks their own.</p>
         </div>
 
+        <div className={box}>
+          <p className="font-semibold">Light designer</p>
+          <label className="block text-sm text-slate-400">Price per foot (new designs start with this; bulbs every 12")
+            <input type="number" min="0" step="0.25" defaultValue={settings.designPricePerFoot ?? ''} placeholder="e.g. 4.50"
+              onBlur={(e) => onSave({ designPricePerFoot: e.target.value ? Number(e.target.value) : null })} className={field} />
+          </label>
+        </div>
+
         <DiscountSchedule settings={settings} onSave={onSave} />
 
         <div className={box}>

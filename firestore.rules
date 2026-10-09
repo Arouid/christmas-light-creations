@@ -135,6 +135,25 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
+    // Light designs (designer JSON + small preview) for a customer or lead,
+    // and their large images (photo, finished render) as separate docs.
+    match /designs/{designId} {
+      allow read, delete: if isStaff();
+      allow create, update: if isStaff()
+        && filledStr(request.resource.data.ownerId, 200)
+        && request.resource.data.designJson is string
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+    }
+    match /designFiles/{fileId} {
+      allow read, delete: if isStaff();
+      allow create, update: if isStaff()
+        && request.resource.data.dataUrl is string
+        && request.resource.data.dataUrl.size() < 1040000
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+    }
+
     // Shared staff settings (home base for distances and routes).
     match /settings/{settingId} {
       allow read: if isStaff();

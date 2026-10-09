@@ -4,6 +4,7 @@ import { leadToCustomer, seasonYear } from '../lib/customers'
 import Icon from '../components/Icon'
 import ComposeEmail from './ComposeEmail'
 import StreetViewPhoto from './StreetViewPhoto'
+import DesignsPanel from './designs/DesignsPanel'
 import { TextButton } from './Reach'
 import { textMessages } from '../lib/messages'
 
@@ -88,6 +89,7 @@ export default function LeadCard({ lead, onUpdate, onMakeCustomer, onOpenCustome
       {open && (
         <div className="space-y-4 border-t border-white/10 p-4">
           <StreetViewPhoto address={fullAddress} />
+          <DesignsPanel owner={{ type: 'lead', id: lead.id, name: `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim(), address: fullAddress }} />
           <p className="text-sm text-slate-400">
             Prefers: <span className="font-medium text-slate-200">{lead.contactMethod}</span>
             {lead.source && <> · Heard from: <span className="font-medium text-slate-200">{lead.source}</span></>}
