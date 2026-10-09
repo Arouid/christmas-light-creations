@@ -10,6 +10,8 @@ import MapView from './MapView'
 import SeasonView from './SeasonView'
 import SettingsPanel from './SettingsPanel'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
+import { DiscountSchedule } from './discountContext'
+import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
 import ViewTab from './ViewTab'
@@ -126,6 +128,7 @@ export default function LeadsApp() {
 
   return (
     <VoiceAccount.Provider value={voiceAccount}>
+    <DiscountSchedule.Provider value={settingsApi.settings?.discountSchedule ?? DEFAULT_SCHEDULE}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
@@ -200,6 +203,7 @@ export default function LeadsApp() {
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
       )}
     </div>
+    </DiscountSchedule.Provider>
     </VoiceAccount.Provider>
   )
 }

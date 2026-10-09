@@ -10,6 +10,7 @@ import { EmailButton, TextButton } from './Reach'
 import { LogCallForm, ServiceCallCard } from './ServiceView'
 import StreetViewPhoto from './StreetViewPhoto'
 import TextHistory from './TextHistory'
+import DiscountSuggestion from './DiscountSuggestion'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
 
@@ -143,6 +144,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
           <Section key={y} title={`${y} season`} open={y === season}>
             <Grid customer={customer} base={`seasons.${y}`} fields={SEASON} onUpdate={onUpdate} />
             <h3 className="pt-2 text-sm font-semibold uppercase tracking-wider text-glow-400">Install billing</h3>
+            <DiscountSuggestion customer={customer} year={y} onUpdate={onUpdate} />
             <Grid customer={customer} base={`seasons.${y}.install`} fields={BILLING.install} onUpdate={onUpdate} />
             <h3 className="pt-2 text-sm font-semibold uppercase tracking-wider text-glow-400">Takedown billing</h3>
             <Grid customer={customer} base={`seasons.${y}.takedown`} fields={BILLING.takedown} onUpdate={onUpdate} />

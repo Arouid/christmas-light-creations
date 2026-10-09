@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Early discount (demo): Oct 15 at $460 with 10% on file → suggests 15% → $391.00; Apply saves discount, reason, total; bulk button disappears when all match; Settings schedule shows Oct 15–21 15% / Oct 22–31 10% and saves edits. Season lists split into Early / Regular / not set sections, sort survives status changes | Browser pane + `npm test` (26) |
 | 2026-10-08 | Email placeholders: key of 23, click inserts at cursor, values filled per customer, warning when a customer lacks a used value | Browser pane (demo) + `npm test` (22) |
 | 2026-10-08 | One-by-one email queue (demo): 3 queued, personalized greeting, Gmail draft to one address, progress, skip, done count; reopening skips already-sent | Browser pane `/leads/?demo` |
 | 2026-10-08 | Email from info@ to Gmail: SPF PASS, DKIM PASS (d=christmas-light-creations.com), DMARC PASS | Owner screenshot of "Show original" |

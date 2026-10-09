@@ -1,9 +1,41 @@
 import { useMemo, useState } from 'react'
 import { INSTALL_STATUSES, TAKEDOWN_STATUSES } from '../lib/customers'
 import { matchesView, statusKey } from '../lib/views'
+import { suggestDiscount } from '../lib/discounts'
 import BulkEmail from './BulkEmail'
+import { useDiscountSchedule } from './discountContext'
 import SeasonResults from './SeasonResults'
 import { blankFor, select } from './ui'
+
+// Bring every customer's early-install discount and total in line with their
+// install date (Settings schedule). Special rates are left alone.
+function ApplyDiscounts({ customers, season, onUpdate }) {
+  const schedule = useDiscountSchedule()
+  const [busy, setBusy] = useState(null)
+  const changes = customers.map((c) => [c, suggestDiscount(c.seasons?.[season], schedule)]).filter(([, s]) => s)
+  if (!changes.length && busy === null) return null
+  if (busy === 'done') return <span className="self-center text-sm text-emerald-400">Discounts updated ✓</span>
+
+  async function run() {
+    const lines = changes.slice(0, 12).map(([c, s]) => `${c.fullName}: ${s.discount} → ${s.total}`).join('\n')
+    if (!window.confirm(`Update ${changes.length} customers' early-install discount and total?\n\n${lines}${changes.length > 12 ? '\n…' : ''}`)) return
+    for (const [i, [c, s]] of changes.entries()) {
+      setBusy(`${i + 1}/${changes.length}`)
+      const base = `seasons.${season}.install`
+      await onUpdate(c.id, `${base}.discount`, s.discount)
+      await onUpdate(c.id, `${base}.discountReason`, s.discountReason)
+      await onUpdate(c.id, `${base}.total`, s.total)
+    }
+    setBusy('done')
+  }
+
+  return (
+    <button type="button" onClick={run} disabled={!!busy}
+      className="rounded-full border border-glow-400/40 px-4 py-2 text-sm font-semibold text-glow-300 disabled:opacity-60">
+      {busy ? `Updating… ${busy}` : `% Apply early-install discounts (${changes.length})`}
+    </button>
+  )
+}
 
 export default function SeasonView({ customers, season, gates, onOpen, onUpdate }) {
   const [mode, setMode] = useState('install')
@@ -42,7 +74,10 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
           <option>Early Install</option>
           <option>Regular Install</option>
         </select>
-        <div className="col-span-2 lg:ml-auto"><BulkEmail rows={shown} season={season} onUpdate={onUpdate} /></div>
+        <div className="col-span-2 flex flex-wrap gap-2 lg:ml-auto">
+          <ApplyDiscounts customers={customers} season={season} onUpdate={onUpdate} />
+          <BulkEmail rows={shown} season={season} onUpdate={onUpdate} />
+        </div>
       </div>
 
       <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-2" aria-label="Filter by status">
