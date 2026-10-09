@@ -22,7 +22,7 @@ export const business = {
 // In memory of the owner's brother and business partner. The owner's own
 // words; don't edit them. The section stays hidden until `name` is filled in.
 export const memorial = {
-  name: '',
+  name: 'Bradley Medel',
   words: 'My brother and my business partner. We worked side by side since we were kids who thought we were adults. Every job I’ve ever had, and for the last ten years, you’ve been right there next to me. Every home, every scorching October, and freezing January we were out there building this business. You were my part of home and I just wish this wasn’t the last job we’ll do together.',
 }
 
