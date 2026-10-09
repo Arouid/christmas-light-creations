@@ -6,6 +6,7 @@ import { installsOn, routeSheet } from '../lib/route'
 import { DEFAULT_MINUTES, STOP_KINDS, carryOver, clock, estimateMatrix, legsKey, newStopId, optimizeLoop, stopFromCustomer, timeline, withLegs } from '../lib/router'
 import { drivingMatrix } from '../lib/routesApi'
 import { locateAddress } from '../lib/streetView'
+import CustomerPicker from './CustomerPicker'
 import RouteDrive from './RouteDrive'
 
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100'
@@ -18,12 +19,13 @@ const STATUS = { draft: 'Draft', sent: 'Sent', done: 'Done' }
 const appLink = (id) => `${window.location.origin}${window.location.pathname}#route-${id}`
 
 // Office view of one route: stops, order, timing, send to the installer.
-function RouteEditor({ route, customers, gates, season, settings, carry, onSave, onSaveOther, onRemove, onDrive, onBack, onOpenCustomer }) {
+function RouteEditor({ route, routes, customers, gates, season, settings, carry, onSave, onSaveOther, onRemove, onDrive, onBack, onOpenCustomer }) {
   const [search, setSearch] = useState('')
   const [address, setAddress] = useState('')
   const [busy, setBusy] = useState(null)
   const [to, setTo] = useState('')
   const [copied, setCopied] = useState(false)
+  const [picking, setPicking] = useState(false)
   const stops = route.stops ?? []
   const home = route.home ?? settings.homeBase
   const fresh = route.legsKey === legsKey(stops)
@@ -174,6 +176,7 @@ function RouteEditor({ route, customers, gates, season, settings, carry, onSave,
               </ul>
             </div>
           )}
+          <button type="button" onClick={() => setPicking(true)} className={`${btn} w-full py-3`}>📋 Pick from customer list</button>
           <label className="block text-sm text-slate-400">Add a customer
             <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name or street" className={field} />
           </label>
@@ -218,6 +221,11 @@ function RouteEditor({ route, customers, gates, season, settings, carry, onSave,
         </div>
       )}
 
+      {picking && (
+        <CustomerPicker customers={customers} season={season} home={home} routes={routes} routeId={route.id}
+          onStops={new Set(stops.map((s) => s.customerId).filter(Boolean))} onAdd={addCustomers} onClose={() => setPicking(false)} />
+      )}
+
       {!stops.some((s) => s.status === 'done') && (
         <button type="button" onClick={() => window.confirm('Delete this route? Customers aren’t affected.') && onRemove()} className="text-sm text-slate-400 underline">Delete route</button>
       )}
@@ -251,7 +259,7 @@ export default function RoutesView({ api, openId, mode, customers, gates, season
   }
   if (route) {
     return (
-      <RouteEditor route={route} customers={customers} gates={gates} season={season} settings={settings} carry={carry.filter((s) => s.fromRoute !== route.id)}
+      <RouteEditor route={route} routes={routes} customers={customers} gates={gates} season={season} settings={settings} carry={carry.filter((s) => s.fromRoute !== route.id)}
         onSave={save(route.id)} onSaveOther={saveOtherStop} onRemove={async () => { await api.remove(route.id); onOpen(null) }}
         onDrive={() => onOpen(route.id, 'drive')} onBack={() => onOpen(null)} onOpenCustomer={onOpenCustomer} />
     )
