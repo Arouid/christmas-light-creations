@@ -76,3 +76,6 @@ What was actually checked working, and how. Newest first.
 - Fixes found on the way: Firestore map key order broke the fingerprint; PAYPAL_SECRET paste only took 1 character (set from a file instead, v5); captureDepositOrder had no public invoker after its failed first create (owner set it in Cloud Run).
 - Both deposit callables answer an unknown token with NOT_FOUND (curl).
 - Not yet checked: signed/paid emails to customer and staff (needs alert emails in Settings).
+
+- 2026-10-09 New-request alert email arrived after re-setting SMTP_PASSWORD from a file (the prompt paste had cut it short). Alert list set in Settings (2 addresses). Signed/deposit-paid emails use the same mailer; not yet seen live.
+- Tip for secrets on this PC: hidden-prompt paste keeps 1 character, and the app terminal's Temp folder isn't visible to the Firebase CLI. Use clipboard -> `$HOME\name.txt` -> `--data-file`.
