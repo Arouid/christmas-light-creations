@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Firebase Auth: Email/Password provider enabled with Email link (passwordless) switched on, Google still enabled; Identity Platform upgrade (SMS MFA) not taken | Owner screenshots of Sign-in method |
 | 2026-10-09 | Staff Accounts: "Customer login: last signed in Oct 12, 2:40 PM · first Oct 10 (Google)" line under contact details at 375px, no overflow, no console errors (demo data); login-record merge tested | Browser pane `/leads/?demo#accounts` + `npm test` |
 | 2026-10-09 | Account sign-in screen with Sign in with Google + email link renders at 375px, no horizontal scroll, no console errors | Browser pane `/account/` |
 | 2026-10-09 | Customer account page: demo account (2 proposals, paid / due now / not due yet, Due now total, Pay panel, agreement link) and the sign-in screen render at 375px with no horizontal scroll and no console errors; account math tests (case-insensitive email, continue URL locked to the site, drafts/void hidden, due states match the proposal page) | Browser pane `/account/?demo` and `/account/` + `npm test` |
