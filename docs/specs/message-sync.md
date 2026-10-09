@@ -1,6 +1,6 @@
 # Message sync (texts, voicemails, missed calls, emails → customer history)
 
-Status: built 2026-10-09, not yet deployed (owner steps in `docs/TODO.md`). Owner: Scott (Finess).
+Status: function and rules deployed 2026-10-09; Apps Script setup pending (owner steps in `docs/TODO.md` #36). Owner: Scott (Finess).
 
 ## The problem
 
@@ -67,7 +67,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 
 ## Contract
 
-**Apps Script → function**: `POST https://us-south1-clc-leads-site.cloudfunctions.net/messageSync`, header `x-clc-sync-key`, JSON body:
+**Apps Script → function**: `POST https://messagesync-77t3pogapq-vp.a.run.app`, header `x-clc-sync-key`, JSON body:
 
 ```json
 { "dryRun": false,

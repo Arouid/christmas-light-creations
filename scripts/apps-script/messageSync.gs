@@ -13,7 +13,7 @@
  *  1. script.google.com → New project → name it "CLC message sync".
  *     Delete the sample code, paste this whole file, Save.
  *  2. Project Settings (gear) → Script Properties → Add:
- *       SYNC_URL = https://us-south1-clc-leads-site.cloudfunctions.net/messageSync
+ *       SYNC_URL = https://messagesync-77t3pogapq-vp.a.run.app
  *       SYNC_KEY = the same key you gave `firebase functions:secrets:set MESSAGE_SYNC_KEY`
  *  3. Editor → choose function `testSync` → Run. Allow the permissions
  *     (read Gmail, connect to an external service). The log lists the last
