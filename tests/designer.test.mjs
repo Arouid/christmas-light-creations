@@ -78,3 +78,15 @@ test('shape strands: feet from the outline, bulbs without the closing duplicate'
   assert.equal(st.bulbs, 12)
   assert.equal(normalize(d).strands[0].points.length, 5, 'outline rebuilt from the box on load')
 })
+
+import { hitOnStrand, strandCenter } from '../src/designer/geometry.js'
+
+test('editing a line: pins first, then the line between pins (for bending)', () => {
+  const pts = [[0, 0], [100, 0], [100, 100]]
+  assert.deepEqual(hitOnStrand(pts, [101, 2], 8), { pointIndex: 1, d: Math.hypot(1, 2) })
+  const bend = hitOnStrand(pts, [50, 4], 8)
+  assert.equal(bend.segment, 1, 'between pin 0 and pin 1: a new pin goes in at index 1')
+  assert.deepEqual(bend.at, [50, 0])
+  assert.equal(hitOnStrand(pts, [50, 50], 8), null)
+  assert.deepEqual(strandCenter(pts).map(Math.round), [67, 33])
+})

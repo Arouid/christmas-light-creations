@@ -1,7 +1,7 @@
 // Draws a design onto a canvas 2D context sized to the photo's natural pixels:
 // the photo, a night tint, glowing bulbs, decorations, and (in the editor)
 // handles. Browser only (uses canvas).
-import { boxCorners, sampleAlong, shapePoints } from './geometry.js'
+import { MOVE_HANDLE_OFFSET, boxCorners, sampleAlong, shapePoints, strandCenter } from './geometry.js'
 import { COLORS, STYLES, DECORATIONS, pxPerFoot } from './model.js'
 import { bulbColor } from './stats.js'
 
@@ -226,7 +226,7 @@ export function renderDesign(ctx, design, img, opts = {}) {
   ctx.restore()
 }
 
-function drawHandles(ctx, design, { selectedId, draft, measure, draftShape, pxPerScreenPx }) {
+function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx }) {
   // One screen pixel in photo pixels, so handles stay the same size when zoomed.
   const u = pxPerScreenPx ?? Math.max(design.photo.width, design.photo.height) / 900
   const line = (pts, color, w, dash) => {
@@ -245,7 +245,19 @@ function drawHandles(ctx, design, { selectedId, draft, measure, draftShape, pxPe
     if (sel && s.shape) {
       line([...boxCorners(s.shape), boxCorners(s.shape)[0]], 'rgba(255,207,77,0.6)', 1.2, true)
       boxCorners(s.shape).forEach((p) => dot(p, '#ffcf4d', 8))
-    } else if (sel) s.points.forEach((p) => dot(p, '#ffcf4d', 7))
+    } else if (sel) {
+      s.points.forEach((p, i) => (i === selectedPoint ? dot(p, '#ff5fb4', 10) : dot(p, '#ffcf4d', 7)))
+      // Move-all handle: a ring with a dot in the middle of the pins.
+      const [cx, cy] = strandCenter(s.points, MOVE_HANDLE_OFFSET * u)
+      ctx.setLineDash([])
+      ctx.fillStyle = 'rgba(5,11,26,0.75)'
+      ctx.strokeStyle = '#ffcf4d'
+      ctx.lineWidth = 2 * u
+      ctx.beginPath(); ctx.arc(cx, cy, 13 * u, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
+      ctx.beginPath()
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { ctx.moveTo(cx + dx * 4 * u, cy + dy * 4 * u); ctx.lineTo(cx + dx * 9 * u, cy + dy * 9 * u) }
+      ctx.stroke()
+    }
   }
   for (const d of design.decorations) {
     if (d.id === selectedId) dot([d.x, d.y], '#ffcf4d', 8)

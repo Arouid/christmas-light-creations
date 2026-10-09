@@ -91,3 +91,23 @@ export function boxFrom(a, b, lock = false) {
 
 // The 4 corners of a shape's box, for resize handles (clockwise from top-left).
 export const boxCorners = ({ x, y, w, h }) => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
+
+// Where a selected strand's "move all" handle sits: the middle of its pins,
+// pushed `below` pixels down so it never covers a pin or the line.
+export function strandCenter(points, below = 0) {
+  const n = points.length || 1
+  return [points.reduce((s, p) => s + p[0], 0) / n, points.reduce((s, p) => s + p[1], 0) / n + below]
+}
+export const MOVE_HANDLE_OFFSET = 34 // screen pixels below the middle of the pins
+
+// For one strand: is p on a pin (index) or on the line between pins i-1 and i?
+export function hitOnStrand(points, p, tol) {
+  let best = null
+  points.forEach((pt, i) => { const d = dist(p, pt); if (d <= tol && (!best || d < best.d)) best = { pointIndex: i, d } })
+  if (best) return best
+  for (let i = 1; i < points.length; i++) {
+    const { d, q } = toSegment(p, points[i - 1], points[i])
+    if (d <= tol && (!best || d < best.d)) best = { segment: i, at: q, d }
+  }
+  return best
+}

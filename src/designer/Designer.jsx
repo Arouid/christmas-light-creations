@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { boxCorners, boxFrom, dist, hitStrand, shapePoints } from './geometry.js'
+import { MOVE_HANDLE_OFFSET, boxCorners, boxFrom, dist, hitOnStrand, hitStrand, shapePoints, strandCenter } from './geometry.js'
 import { loadImage } from './image.js'
 import { COLORS, COLOR_SETS, DECORATIONS, STYLES, newDecoration, newDesign, newStrand, normalize, pxPerFoot } from './model.js'
 import { renderDesign } from './render.js'
@@ -32,7 +32,9 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   const [draft, setDraft] = useState([])
   const [draftShape, setDraftShape] = useState(null)
   const [lockShape, setLockShape] = useState(false)
-  const [selectedId, setSelectedId] = useState(null)
+  const [selectedId, setSelectedIdRaw] = useState(null)
+  const [selectedPoint, setSelectedPoint] = useState(null) // pin index on the selected line
+  const setSelectedId = (id) => { setSelectedIdRaw(id); if (id !== selectedId) setSelectedPoint(null) }
   const [pen, setPen] = useState({ style: 'c9', colors: ['warm'], groupSize: 1 })
   const [decor, setDecor] = useState('wreath')
   const [before, setBefore] = useState(false)
@@ -71,8 +73,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   useEffect(() => {
     const c = canvas.current
     if (!c || !img) return
-    renderDesign(c.getContext('2d'), shown, img, { before, handles: !before, selectedId, draft, measure, draftShape, pxPerScreenPx })
-  }, [shown, img, before, selectedId, draft, measure, draftShape, pxPerScreenPx])
+    renderDesign(c.getContext('2d'), shown, img, { before, handles: !before, selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx })
+  }, [shown, img, before, selectedId, selectedPoint, draft, measure, draftShape, pxPerScreenPx])
 
   const stats = useMemo(() => designStats(design), [design])
   const commit = (next, label) => {
@@ -112,6 +114,20 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     return () => el.removeEventListener('wheel', onWheel)
   }, [])
 
+  // Keyboard (computers): Delete/Backspace removes the selected pin or item,
+  // Escape deselects or finishes the line being drawn, Ctrl+Z / Ctrl+Y undo/redo.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (/^(input|textarea|select)$/i.test(e.target?.tagName ?? '')) return
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { e.preventDefault(); if (selectedPoint != null) deletePin(); else removeSelected() }
+      else if (e.key === 'Escape') { if (draft.length) finishStrand(); else setSelectedId(null) }
+      else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo() }
+      else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   // ---- Pointer handling -------------------------------------------------
   function toImg(clientX, clientY) {
     const r = canvas.current.getBoundingClientRect()
@@ -137,10 +153,20 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     if (tool === 'rect' || tool === 'oval') { gesture.current = { kind: 'newShape', ...start }; return }
     if (tool === 'measure') { setMeasure({ a: p, b: p }); gesture.current = { kind: 'measure', ...start }; return }
 
-    // Select: shape corner handles, decorations, strand points, lines; else pan.
+    // Select. The selected item's own handles come first:
+    //   shape corners -> resize; move handle -> move all; pin -> move that pin;
+    //   line between pins -> bend (a new pin is added where you grab).
     if (selStrand?.shape) {
       const i = boxCorners(selStrand.shape).findIndex((c) => dist(c, p) <= tol())
       if (i >= 0) { gesture.current = { kind: 'resize', id: selStrand.id, fixed: boxCorners(selStrand.shape)[(i + 2) % 4], ...start }; return }
+    } else if (selStrand) {
+      const on = hitOnStrand(selStrand.points, p, tol())
+      if (on?.pointIndex == null && dist(strandCenter(selStrand.points, MOVE_HANDLE_OFFSET * pxPerScreenPx), p) <= tol() * 1.2) {
+        gesture.current = { kind: 'move', id: selStrand.id, orig: structuredClone(selStrand), ...start }
+        return
+      }
+      if (on?.pointIndex != null) { setSelectedPoint(on.pointIndex); gesture.current = { kind: 'point', id: selStrand.id, i: on.pointIndex, ...start }; return }
+      if (on?.segment != null) { setSelectedPoint(null); gesture.current = { kind: 'bend', id: selStrand.id, seg: on.segment, at: on.at, ...start }; return }
     }
     const ppf = pxPerFoot(design)
     const dec = [...design.decorations].reverse().find((d) => dist(p, [d.x, d.y]) <= Math.max(tol(), ((DECORATIONS[d.type]?.sizeFt ?? 2) * ppf * (d.size || 1)) / 2))
@@ -149,12 +175,23 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     if (hit) {
       const s = design.strands.find((x) => x.id === hit.id)
       setSelectedId(hit.id)
-      gesture.current = hit.pointIndex != null && !s.shape
-        ? { kind: 'point', id: hit.id, i: hit.pointIndex, ...start }
-        : { kind: 'move', id: hit.id, orig: structuredClone(s), ...start }
+      if (s.shape) { gesture.current = { kind: 'move', id: hit.id, orig: structuredClone(s), ...start }; return }
+      // A different line: select it; grabbing one of its pins moves just that pin.
+      setSelectedPoint(hit.pointIndex ?? null)
+      gesture.current = hit.pointIndex != null ? { kind: 'point', id: hit.id, i: hit.pointIndex, ...start } : { kind: 'select', ...start }
       return
     }
     gesture.current = { kind: 'pan', deselect: true, ...start }
+  }
+
+  // Bend: on the first real drag, put a new pin into the line where it was grabbed.
+  function bendInsert(g, next) {
+    const s = next.strands.find((x) => x.id === g.id)
+    s.points.splice(g.seg, 0, g.at)
+    g.kind = 'point'
+    g.i = g.seg
+    g.bent = true
+    setSelectedPoint(g.seg)
   }
 
   function move(e) {
@@ -183,9 +220,12 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     const p = toImg(e.clientX, e.clientY)
     if (g.kind === 'measure') return setMeasure((m) => ({ ...m, b: p }))
     if (g.kind === 'newShape') { if (moved) setDraftShape({ type: tool, ...boxFrom(g.p, p, lockShape) }); return }
+    if (g.kind === 'select') return
     if (!moved && !g.moved) return
     g.moved = true
     const next = structuredClone(design)
+    if (g.kind === 'bend') bendInsert(g, next)
+    else if (g.bent) next.strands.find((s) => s.id === g.id).points.splice(g.i, 0, p) // keep the pin added on the first move
     if (g.kind === 'point') next.strands.find((s) => s.id === g.id).points[g.i] = p
     if (g.kind === 'move') {
       const s = next.strands.find((x) => x.id === g.id)
@@ -230,8 +270,9 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       return
     }
     if (g.moved && live) {
-      const what = g.kind === 'decor' ? 'decoration' : g.kind === 'point' ? 'point' : g.kind === 'resize' ? 'shape size' : 'strand'
-      commit(live, g.kind === 'resize' ? 'Resized shape' : `Moved ${what}`)
+      const label = g.bent ? 'Bent the line (added a pin)' : g.kind === 'resize' ? 'Resized shape' : g.kind === 'point' ? 'Moved a pin'
+        : g.kind === 'decor' ? 'Moved decoration' : 'Moved whole strand'
+      commit(live, label)
     } else setLive(null)
   }
 
@@ -258,6 +299,12 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     const what = selStrand ? strandLabel(selStrand) : DECORATIONS[selDecor?.type]?.label.toLowerCase() ?? 'item'
     update(`Deleted ${what}`, (x) => { x.strands = x.strands.filter((s) => s.id !== selectedId); x.decorations = x.decorations.filter((d) => d.id !== selectedId); return x })
     setSelectedId(null)
+  }
+  function deletePin() {
+    if (!selStrand || selectedPoint == null) return
+    if (selStrand.points.length <= 2) return removeSelected() // a line needs 2 pins
+    update('Deleted a pin', (x) => { x.strands.find((st) => st.id === selectedId).points.splice(selectedPoint, 1); return x })
+    setSelectedPoint(null)
   }
   const setPenColors = (colors) => { setPen((p) => ({ ...p, colors })); if (selStrand) patchStrand(`Colors: ${colorName(colors)}`, { colors }) }
   // Switching tools clears the selection, so color picks apply to what you
@@ -380,7 +427,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
             <span className="text-slate-400">Tap the photo to place it.</span>
           </div>
         )}
-        {tool === 'select' && !selStrand && !selDecor && <p className="text-slate-400">Tap a strand, shape or decoration to move, resize or change it. Drag empty space to move around the photo.</p>}
+        {tool === 'select' && !selStrand && !selDecor && <p className="text-slate-400">Tap a strand, shape or decoration to change it. Drag empty space to move around the photo.</p>}
+        {tool === 'select' && selStrand && !selStrand.shape && <p className="text-slate-400">Drag a pin to move just that pin · drag the line between pins to bend it · drag ✥ to move the whole strand.</p>}
 
         {editing && (
           <div className="space-y-2 rounded-xl bg-white/5 p-2">
@@ -416,7 +464,10 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
                       onPointerUp={(e) => patchStrand('Changed bulb size', { size: Number(e.target.value) })} />
                   </label>
                   <span className="text-slate-400">{Math.round(stats.perStrand.find((s) => s.id === selStrand.id)?.feet ?? 0)} ft</span>
-                  <button type="button" onClick={removeSelected} className={`${off} ml-auto text-berry-500`}>Delete</button>
+                  <span className="ml-auto flex gap-1.5">
+                    {!selStrand.shape && selectedPoint != null && <button type="button" onClick={deletePin} className={`${off} text-berry-500`}>Delete pin</button>}
+                    <button type="button" onClick={removeSelected} className={`${off} text-berry-500`}>Delete {selStrand.shape ? 'shape' : 'strand'}</button>
+                  </span>
                 </>
               )}
             </div>
