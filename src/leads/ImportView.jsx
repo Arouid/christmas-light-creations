@@ -1,11 +1,21 @@
 import { useState } from 'react'
 import { buildCustomers, buildGateCodes } from '../lib/importSheet'
+import { cleanRow, mergePeople } from '../lib/oldEstimates'
 
 async function readCsv(file) {
   const { default: Papa } = await import('papaparse')
   const { data, errors } = Papa.parse(await file.text(), { skipEmptyLines: false })
   if (errors.length && !data.length) throw new Error(`Couldn't read ${file.name}: ${errors[0].message}`)
   return data
+}
+
+// Old website export: one row per form entry, with a header row.
+async function readPastRequests(file) {
+  const { default: Papa } = await import('papaparse')
+  const { data } = Papa.parse((await file.text()).replace(/^﻿/, ''), { header: true, skipEmptyLines: true })
+  const kept = data.map(cleanRow).filter(Boolean)
+  const people = mergePeople(kept)
+  return { rows: data.length, kept: kept.length, records: people.map(({ id, ...rest }) => ({ id, data: rest })) }
 }
 
 const fileInput = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-900 px-3 py-3 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-slate-100'
@@ -15,9 +25,10 @@ const FILES = [
   ['accounts', 'Accounts tab (.csv)'],
   ['gates', 'Gate Codes tab (.csv), optional'],
   ['messages', 'Text history (.json, made by Claude from the Voice export), optional'],
+  ['past', 'Old website estimate requests (past-requests-all.csv from old-site-backup), optional'],
 ]
 
-export default function ImportView({ existing, onImport, onImportGates, onImportMessages }) {
+export default function ImportView({ existing, onImport, onImportGates, onImportMessages, onImportPast }) {
   const [files, setFiles] = useState({})
   const [preview, setPreview] = useState(null)
   const [error, setError] = useState(null)
@@ -44,7 +55,8 @@ export default function ImportView({ existing, onImport, onImportGates, onImport
         p.messageCustomers = new Set(list.map((m) => m.data.customerId)).size
         p.messageSkipped = (parsed.messages ?? []).length - list.length
       }
-      if (p.customers || p.gates || p.messages) setPreview(p)
+      if (next.past) p.past = await readPastRequests(next.past)
+      if (p.customers || p.gates || p.messages || p.past) setPreview(p)
     } catch (err) {
       setError(err.message)
     }
@@ -56,6 +68,7 @@ export default function ImportView({ existing, onImport, onImportGates, onImport
       if (preview.customers) await onImport(preview.customers, setProgress)
       if (preview.gates) await onImportGates(preview.gates)
       if (preview.messages) await onImportMessages(preview.messages, setProgress)
+      if (preview.past) await onImportPast(preview.past.records, setProgress)
       setProgress('done')
     } catch (err) {
       setError(err.message)
@@ -80,7 +93,7 @@ export default function ImportView({ existing, onImport, onImportGates, onImport
 
       {FILES.map(([key, label]) => (
         <label key={key} className="block text-sm text-slate-400">{label}
-          <input type="file" accept=".csv,text/csv" className={fileInput} onChange={(e) => check({ ...files, [key]: e.target.files[0] })} />
+          <input type="file" accept={key === 'messages' ? '.json,application/json' : '.csv,text/csv'} className={fileInput} onChange={(e) => check({ ...files, [key]: e.target.files[0] })} />
         </label>
       ))}
 
@@ -99,6 +112,11 @@ export default function ImportView({ existing, onImport, onImportGates, onImport
           {preview.messages && (
             <p><strong>{preview.messages.length}</strong> past texts and calls for <strong>{preview.messageCustomers}</strong> customers
               {preview.messageSkipped > 0 && <span className="text-slate-400"> ({preview.messageSkipped} skipped: customer not in the app)</span>}.</p>
+          )}
+          {preview.past && (
+            <p><strong>{preview.past.records.length}</strong> people from the old website’s estimate requests
+              <span className="text-slate-400"> ({preview.past.rows} entries: {preview.past.rows - preview.past.kept} spam/junk dropped, repeat requests merged)</span>.
+              They go to the <strong>Past requests</strong> tab, not Customers.</p>
           )}
           {warnings.length > 0 && (
             <details className="text-sm">

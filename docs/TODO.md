@@ -12,13 +12,15 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 3 | Change info@'s sender name from "CustomerService" to "Christmas Light Creations" | Gmail ⚙ → Accounts → Send mail as → edit info |
 | 6 | **Test Text button** end to end (copy number → Send new message → paste → send) | First real test after the number moved |
 | 7 | **Review campaign** to last year's customers | Season tab → ✉ Email these → Review request, or ★ Review texts |
-| 8 | Skim `old-site-backup/past-estimate-requests-likely-real.csv` (~1,172 past requests) for a "we'd still love to light your home" email | Remove junk and current customers first |
 | 9 | Watch for **Google support's reply** on merging the duplicate Business Profile | Don't edit/remove either listing until then |
 | 10 | Business Profile: photos (10+), services list, description, special hours | Text drafted in chat 2026-10-08 |
 | 11 | **Gift wrapping** answers | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/` |
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
 | 14 | Delete the TEST lead in Firestore → leads | |
+| 16 | **Republish Firestore rules** (new `pastRequests` list), then Import → pick `old-site-backup/past-requests-all.csv` | Firebase console → Firestore → Rules → paste `firestore.rules` → Publish |
+| 17 | **Reply to David Lauriano** (Oct 7 request via the old site; its email to you failed): La Marque, wants an itemized quote to remove/replace 3 Govee permanent light systems for an insurance claim | Past requests tab (shown first, red note) |
+| 18 | Optional, before GoDaddy hosting ends Nov 7: download the old site's `wp-config.php` and the `WP Cost Estimation` plugin folder (File Manager) so Claude can try to unlock 1,202 encrypted price-calculator requests | Put them in `old-site-backup/` |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked

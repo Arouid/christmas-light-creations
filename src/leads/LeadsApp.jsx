@@ -14,6 +14,7 @@ import { DiscountSchedule } from './discountContext'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import { mergeTemplates } from '../lib/emailTemplates'
 import EmailsView from './EmailsView'
+import PastRequestsView from './PastRequestsView'
 import { EmailTemplates } from './templatesContext'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
@@ -21,11 +22,11 @@ import ViewTab from './ViewTab'
 import { mergeMany } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
-import { useGateCodes, useServiceCalls, useSettings, useViews } from './useStaffLists'
+import { useGateCodes, usePastRequests, useServiceCalls, useSettings, useViews } from './useStaffLists'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
 const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season']]
-const AFTER = [['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
+const AFTER = [['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
   return <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">{children}</main>
@@ -43,6 +44,7 @@ export default function LeadsApp() {
   const gatesApi = useGateCodes(user)
   const viewsApi = useViews(user)
   const settingsApi = useSettings(user)
+  const pastApi = usePastRequests(user)
   const [editing, setEditing] = useState(null) // null | {} (new) | view
   const [tab, setTab] = useState(tabFromHash)
   const [openId, setOpenId] = useState(null)
@@ -89,8 +91,8 @@ export default function LeadsApp() {
   const { customers } = customersApi
   const gates = gatesApi.gates ?? []
   const calls = serviceApi.calls ?? []
-  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error].find((e) => e && e !== 'not-staff')
-    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error].includes('not-staff')
+  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error].find((e) => e && e !== 'not-staff')
+    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error].includes('not-staff')
       ? 'part of the app was refused by the database. The security rules probably need publishing again (firestore.rules).'
       : null)
   const views = viewsApi.views ?? []
@@ -123,6 +125,23 @@ export default function LeadsApp() {
     }
     await updateLead(lead.id, { customerId: id })
     return id
+  }
+  // Past website request -> customer (or link the existing one with that name).
+  async function makePastCustomer(r) {
+    const last = r.requests?.at(-1)
+    const fields = Object.fromEntries(Object.entries({
+      fullName: r.fullName, firstName: r.firstName, lastName: r.lastName, email: r.email, phone: r.phone,
+      address: [r.address, r.city].filter(Boolean).join(', '), city: r.city, since: season,
+      notes: `Old website estimate request (${r.lastAsked})${last?.message ? `: ${last.message}` : ''}`,
+      seasons: { [season]: { installStatus: 'Confirmed - Needs to be Scheduled', firstContact: 'Confirmed' } },
+    }).filter(([, v]) => v))
+    try {
+      return await customersApi.create(fields)
+    } catch (err) {
+      const existing = customers?.find((c) => c.fullName?.toLowerCase() === fields.fullName.toLowerCase())
+      if (!existing) throw err
+      return existing.id
+    }
   }
   const open = openId && customers?.find((c) => c.id === openId)
   const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
@@ -184,6 +203,10 @@ export default function LeadsApp() {
           ? <ViewTab view={currentView} customers={customers} season={season} gates={gates} onOpen={setOpenId}
               onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} onDelete={() => deleteView(currentView.id)} />
           : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
+        {tab === 'past' && (customers
+          ? <PastRequestsView requests={pastApi.error === 'not-staff' ? [] : pastApi.requests} error={pastApi.error === 'not-staff' ? null : pastApi.error}
+              customers={customers} season={season} onUpdate={pastApi.update} onMakeCustomer={makePastCustomer} onOpenCustomer={openCustomer} />
+          : loading)}
         {tab === 'emails' && (customers
           ? <EmailsView saved={settingsApi.settings?.emailTemplates ?? []} onSave={settingsApi.save}
               customers={customers} season={season} onUpdate={customersApi.update} />
@@ -196,7 +219,8 @@ export default function LeadsApp() {
           : loading)}
         {tab === 'import' && (customers
           ? <ImportView existing={customers} onImport={customersApi.importMany} onImportGates={gatesApi.importMany}
-              onImportMessages={(records, onProgress) => mergeMany(user, 'messages', records, onProgress)} />
+              onImportMessages={(records, onProgress) => mergeMany(user, 'messages', records, onProgress)}
+              onImportPast={pastApi.importMany} />
           : loading)}
       </main>
 

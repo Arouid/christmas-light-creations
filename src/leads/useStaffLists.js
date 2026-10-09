@@ -57,3 +57,15 @@ export function useSettings(user) {
     save: (data) => saveRecord(user, 'settings', 'app', data),
   }
 }
+
+const newestAsked = (a, b) => (b.lastAsked ?? '').localeCompare(a.lastAsked ?? '')
+
+export function usePastRequests(user) {
+  const { items, error } = useLiveCollection(user, 'pastRequests', newestAsked)
+  return {
+    requests: items,
+    error,
+    update: (id, path, value) => updateField(user, 'pastRequests', id, path, value),
+    importMany: (records, onProgress) => mergeMany(user, 'pastRequests', records, onProgress),
+  }
+}

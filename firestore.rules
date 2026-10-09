@@ -103,6 +103,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Past estimate requests from the old website (imported once), worked as
+    // a call/email list. Staff read, import and update; nobody deletes.
+    match /pastRequests/{requestId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff()
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow delete: if false;
+    }
+
     // Shared staff settings (home base for distances and routes).
     match /settings/{settingId} {
       allow read: if isStaff();

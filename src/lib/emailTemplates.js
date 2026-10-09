@@ -27,6 +27,18 @@ export const STOCK_TEMPLATES = [
     body: `Hi {first},\n\nJust checking in on the estimate we sent for {address}. Any questions we can answer?\n\nThe schedule fills up fast once November hits, so if you'd like your lights up in time, reply here or call or text us at {businessPhone}.${sign}`,
   },
   {
+    id: 'winback', group: 'Estimates', label: 'Still want lights? (past requests)',
+    when: 'People who asked on the old website years ago (Past requests tab).',
+    subject: 'Still thinking about Christmas lights?',
+    body: `Hi {first},
+
+Back in {asked} you asked {business} about putting up Christmas lights. We'd still love to light up your home!
+
+We're booking {season} installs now. Estimates are free: we measure your roofline in about 30 minutes, no roof climbing, and you don't need to be home. Installs done by October 31st get 10% off.
+
+Just reply to this email, or call or text {businessPhone}. If you're all set, no worries, and Merry Christmas!${sign}`,
+  },
+  {
     id: 'reinstall', group: 'Booking', label: 'Re-install invite',
     when: 'Late summer/fall, to returning customers.',
     subject: 'Your {season} Christmas lights',
