@@ -148,13 +148,15 @@ const REDIRECTS = {
   'portfolio': '#gallery', 'christmas-light-designs': '#gallery',
   'led-or-incandescent': '#faq', 'spt-cable-whats-the-difference': '#faq', 'get-help': '#faq',
   'about-us': '', 'christmas-light-creations': '', 'thank-you': '',
+  // Typed from a road sign (QR codes carry their own ?sign=corner).
+  'sign': '?sign=typed', 'signs': '?sign=typed', 'lights': '?sign=typed',
 }
 for (const [from, to] of Object.entries(REDIRECTS)) {
   const target = `${base}${to}`
   const dir = new URL(`${from}/`, dist)
   await mkdir(dir, { recursive: true })
   await writeFile(new URL('index.html', dir), `<!doctype html><meta charset="utf-8"><title>Moved</title>`
-    + `<link rel="canonical" href="${SITE}/${to.startsWith('#') ? '' : to}"><meta name="robots" content="noindex">`
+    + `<link rel="canonical" href="${SITE}/${/^[#?]/.test(to) ? '' : to}"><meta name="robots" content="noindex">`
     + `<meta http-equiv="refresh" content="0; url=${target}"><script>location.replace(${JSON.stringify(target)})</script>`
     + `<a href="${target}">Continue to Christmas Light Creations</a>
 `)

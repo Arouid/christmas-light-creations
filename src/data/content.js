@@ -11,6 +11,9 @@ export const business = {
   phone: '281-819-0163',
   phoneHref: 'tel:+12818190163',
   smsHref: 'sms:+12818190163',
+  // Text with a message already typed ("?&body=" works on both iPhone and Android).
+  smsWith: (body) => `sms:+12818190163?&body=${encodeURIComponent(body)}`,
+  signText: 'Hi! I saw your sign. I’d like a free Christmas light estimate for my home at: ',
   city: 'Pearland, TX',
   since: 2011,
   homesServed: '250+',
@@ -28,7 +31,7 @@ export const memorial = {
 }
 
 // Estimate form: "How did you hear about us?" (shown on each lead to staff).
-export const HEARD_FROM = ['Google search', 'Google Maps / Business listing', 'Google ad', 'Facebook', 'Nextdoor', 'Saw your lights / yard sign', 'Friend or neighbor', 'Returning customer', 'Other']
+export const HEARD_FROM = ['Road sign', 'Google search', 'Google Maps / Business listing', 'Google ad', 'Facebook', 'Nextdoor', 'Saw your lights / yard sign', 'Friend or neighbor', 'Returning customer', 'Other']
 
 export const nav = [
   { label: 'Services', href: '#services' },

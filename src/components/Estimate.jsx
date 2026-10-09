@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { HEARD_FROM, business } from '../data/content'
 import { firebaseReady, submitLead } from '../lib/firebase'
+import { signCode, signSource } from '../lib/sign'
 import Icon from './Icon'
 
 const field = 'mt-1.5 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-glow-400 focus:outline-none focus:ring-2 focus:ring-glow-400/30'
@@ -8,6 +9,7 @@ const label = 'block text-sm font-medium text-slate-300'
 
 export default function Estimate() {
   const [status, setStatus] = useState('idle') // idle | sending | sent | error
+  const [sign] = useState(signCode)
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -79,9 +81,10 @@ export default function Estimate() {
                 </div>
               </fieldset>
               <label className={`${label} sm:col-span-2`}>How did you hear about us?
-                <select name="source" defaultValue="" className={field}>
+                <select name="source" defaultValue={sign ? signSource(sign) : ''} className={field}>
                   <option value="">Choose one (optional)</option>
-                  {HEARD_FROM.map((h) => <option key={h}>{h}</option>)}
+                  {sign && <option value={signSource(sign)}>Road sign</option>}
+                  {HEARD_FROM.filter((h) => !(sign && h === 'Road sign')).map((h) => <option key={h}>{h}</option>)}
                 </select>
               </label>
               <label className={`${label} sm:col-span-2`}>How can we help? *
