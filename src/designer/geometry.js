@@ -11,7 +11,7 @@ export function length(points) {
 
 // Points every `step` pixels along the line, starting at the first point.
 // Each comes with its direction (unit vector) for drawing icicles etc.
-export function sampleAlong(points, step) {
+export function sampleAlong(points, step, closed = false) {
   if (points.length < 2 || !(step > 0)) return points.length === 1 ? [{ x: points[0][0], y: points[0][1], dx: 1, dy: 0 }] : []
   const out = []
   let carry = 0 // distance into the current segment where the next bulb goes
@@ -29,6 +29,8 @@ export function sampleAlong(points, step) {
     }
     carry = t - seg
   }
+  // Closed outline: don't put a second bulb on top of the first.
+  if (closed && out.length > 1 && dist([out[0].x, out[0].y], [out.at(-1).x, out.at(-1).y]) < step / 2) out.pop()
   return out
 }
 
@@ -60,3 +62,32 @@ export function hitStrand(strands, p, tol) {
   }
   return best
 }
+
+// Shapes (rectangles, ovals) are stored as a box and turned into a closed
+// outline for drawing bulbs: { type: 'rect' | 'oval', x, y, w, h }.
+export function shapePoints(shape) {
+  const { x, y, w, h } = shape
+  if (shape.type === 'rect') return [[x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]]
+  const n = 72
+  const cx = x + w / 2
+  const cy = y + h / 2
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2 // start at the top
+    return [cx + (w / 2) * Math.cos(a), cy + (h / 2) * Math.sin(a)]
+  })
+}
+
+// Box from two corner points; `lock` keeps it square (or a circle).
+export function boxFrom(a, b, lock = false) {
+  let w = b[0] - a[0]
+  let h = b[1] - a[1]
+  if (lock) {
+    const s = Math.max(Math.abs(w), Math.abs(h))
+    w = Math.sign(w || 1) * s
+    h = Math.sign(h || 1) * s
+  }
+  return { x: Math.min(a[0], a[0] + w), y: Math.min(a[1], a[1] + h), w: Math.abs(w), h: Math.abs(h) }
+}
+
+// The 4 corners of a shape's box, for resize handles (clockwise from top-left).
+export const boxCorners = ({ x, y, w, h }) => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]

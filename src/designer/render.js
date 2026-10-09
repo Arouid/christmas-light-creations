@@ -1,7 +1,7 @@
 // Draws a design onto a canvas 2D context sized to the photo's natural pixels:
 // the photo, a night tint, glowing bulbs, decorations, and (in the editor)
 // handles. Browser only (uses canvas).
-import { sampleAlong } from './geometry.js'
+import { boxCorners, sampleAlong, shapePoints } from './geometry.js'
 import { COLORS, STYLES, DECORATIONS, pxPerFoot } from './model.js'
 import { bulbColor } from './stats.js'
 
@@ -104,7 +104,7 @@ function drawStrand(ctx, strand, design, night) {
   const step = Math.max(2, ((strand.spacingIn || st.spacingIn) / 12) * ppf)
   // Drawn a bit larger than true size: a lit bulb looks bigger than it is.
   const r = Math.max(1.5, (st.size / 12) * ppf * 0.7 * (strand.size || 1))
-  const pts = sampleAlong(strand.points, step)
+  const pts = sampleAlong(strand.points, step, Boolean(strand.shape))
   // Wire: faint dark line under the bulbs (reads as the cord in daylight).
   if (night < 0.9 && strand.style !== 'permanent') {
     ctx.save()
@@ -226,8 +226,9 @@ export function renderDesign(ctx, design, img, opts = {}) {
   ctx.restore()
 }
 
-function drawHandles(ctx, design, { selectedId, draft, measure }) {
-  const u = Math.max(design.photo.width, design.photo.height) / 900 // ~1 screen px at typical size
+function drawHandles(ctx, design, { selectedId, draft, measure, draftShape, pxPerScreenPx }) {
+  // One screen pixel in photo pixels, so handles stay the same size when zoomed.
+  const u = pxPerScreenPx ?? Math.max(design.photo.width, design.photo.height) / 900
   const line = (pts, color, w, dash) => {
     if (pts.length < 2) return
     ctx.setLineDash(dash ? [6 * u, 5 * u] : [])
@@ -241,11 +242,15 @@ function drawHandles(ctx, design, { selectedId, draft, measure }) {
   for (const s of design.strands) {
     const sel = s.id === selectedId
     line(s.points, sel ? 'rgba(255,207,77,0.95)' : 'rgba(255,255,255,0.35)', sel ? 2.5 : 1.2, !sel)
-    if (sel) s.points.forEach((p) => dot(p, '#ffcf4d', 7))
+    if (sel && s.shape) {
+      line([...boxCorners(s.shape), boxCorners(s.shape)[0]], 'rgba(255,207,77,0.6)', 1.2, true)
+      boxCorners(s.shape).forEach((p) => dot(p, '#ffcf4d', 8))
+    } else if (sel) s.points.forEach((p) => dot(p, '#ffcf4d', 7))
   }
   for (const d of design.decorations) {
     if (d.id === selectedId) dot([d.x, d.y], '#ffcf4d', 8)
   }
+  if (draftShape) line(shapePoints(draftShape), 'rgba(110,231,255,0.95)', 2.5)
   if (draft?.length) {
     line(draft, 'rgba(110,231,255,0.95)', 2.5)
     draft.forEach((p) => dot(p, '#6ee7ff', 6))

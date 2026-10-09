@@ -1,3 +1,5 @@
+import { shapePoints } from './geometry.js'
+
 // Design data model for the light designer. A design is plain JSON, so it can
 // be saved anywhere (Firestore here, a file or another app later).
 //
@@ -86,7 +88,8 @@ export function normalize(d) {
     strands: (d?.strands ?? []).map((s) => ({
       ...newStrand(s.style, s.colors),
       ...s,
-      points: (s.points ?? []).filter((p) => Number.isFinite(p?.[0]) && Number.isFinite(p?.[1])),
+      // Shapes rebuild their outline from the box; lines keep their points.
+      points: s.shape ? shapePoints(s.shape) : (s.points ?? []).filter((p) => Number.isFinite(p?.[0]) && Number.isFinite(p?.[1])),
     })),
     decorations: d?.decorations ?? [],
   }

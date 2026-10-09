@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { dist, hitStrand } from './geometry.js'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { boxCorners, boxFrom, dist, hitStrand, shapePoints } from './geometry.js'
 import { loadImage } from './image.js'
 import { COLORS, COLOR_SETS, DECORATIONS, STYLES, newDecoration, newDesign, newStrand, normalize, pxPerFoot } from './model.js'
 import { renderDesign } from './render.js'
@@ -8,119 +8,261 @@ import { designStats, scaleFrom } from './stats.js'
 const btn = 'rounded-full px-3 py-2 text-sm font-semibold'
 const off = `${btn} bg-white/10 hover:bg-white/15`
 const on = `${btn} bg-glow-400 text-night-950`
-const TOOLS = [['select', '👆 Select'], ['draw', '✏️ Lights'], ['decor', '🎀 Decorate'], ['measure', '📏 Measure']]
+const TOOLS = [['select', '👆 Select'], ['draw', '✏️ Lights'], ['rect', '▭ Rectangle'], ['oval', '◯ Oval'], ['decor', '🎀 Decorate'], ['measure', '📏 Measure']]
+// Common things to measure from, so setting the scale is two taps.
+const MEASURE_PRESETS = [['Double garage door', 16], ['Single garage door', 8], ['Front door', 3]]
+const TAP_SLOP = 10 // screen px a finger can wander and still count as a tap
+const colorName = (list) => Object.entries(COLOR_SETS).find(([, v]) => v.join() === list.join())?.[0] ?? 'custom colors'
 
 // The light designer: draw lights on a house photo, measure, export.
 // Standalone: give it a photo and (optionally) a saved design; it calls
-// onSave(design, { blob }) and onClose(). No app/database code in here.
+// onSave(design, { blob, stats }) and onClose(). No app/database code here.
 export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose }) {
   const canvas = useRef(null)
+  const box = useRef(null) // the viewport the photo is zoomed/panned inside
   const [img, setImg] = useState(null)
-  const [hist, setHist] = useState(() => ({ list: [initial ? normalize(initial) : newDesign({ width: photo.width, height: photo.height, pricePerFoot: defaults.pricePerFoot ?? null })], at: 0 }))
-  const design = hist.list[hist.at]
-  const [live, setLive] = useState(null) // design while dragging (not in history yet)
+  const [hist, setHist] = useState(() => ({
+    list: [{ d: initial ? normalize(initial) : newDesign({ width: photo.width, height: photo.height, pricePerFoot: defaults.pricePerFoot ?? null }), label: initial ? 'Opened' : 'New design' }],
+    at: 0,
+  }))
+  const design = hist.list[hist.at].d
+  const [live, setLive] = useState(null) // design mid-drag (not in history yet)
   const shown = live ?? design
   const [tool, setTool] = useState(design.strands.length ? 'select' : 'draw')
   const [draft, setDraft] = useState([])
+  const [draftShape, setDraftShape] = useState(null)
+  const [lockShape, setLockShape] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
   const [pen, setPen] = useState({ style: 'c9', colors: ['warm'], groupSize: 1 })
   const [decor, setDecor] = useState('wreath')
   const [before, setBefore] = useState(false)
   const [measure, setMeasure] = useState(null) // { a, b }
   const [feetInput, setFeetInput] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
   const [busy, setBusy] = useState(null)
-  const drag = useRef(null)
+  // View: fit size of the photo in the viewport, plus zoom and pan.
+  const [fit, setFit] = useState({ w: 0, h: 0, cw: 0, ch: 0 })
+  const [view, setView] = useState({ z: 1, x: 0, y: 0 })
+  const pointers = useRef(new Map())
+  const gesture = useRef(null)
 
   useEffect(() => { loadImage(photo.src).then(setImg).catch(() => setBusy('Couldn’t load the photo.')) }, [photo.src])
 
+  // Fit the photo to the viewport (and re-fit when the screen size changes).
+  const refit = useCallback(() => {
+    const el = box.current
+    if (!el) return
+    const cw = el.clientWidth
+    const ch = el.clientHeight
+    const k = Math.min(cw / photo.width, ch / photo.height)
+    const w = photo.width * k
+    const h = photo.height * k
+    setFit({ w, h, cw, ch })
+    setView({ z: 1, x: (cw - w) / 2, y: (ch - h) / 2 })
+  }, [photo.width, photo.height])
+  useEffect(() => {
+    refit()
+    const ro = new ResizeObserver(refit)
+    ro.observe(box.current)
+    return () => ro.disconnect()
+  }, [refit])
+
+  const pxPerScreenPx = fit.w ? photo.width / (fit.w * view.z) : 1
   useEffect(() => {
     const c = canvas.current
     if (!c || !img) return
-    renderDesign(c.getContext('2d'), shown, img, { before, handles: !before, selectedId, draft, measure: measure && { ...measure } })
-  }, [shown, img, before, selectedId, draft, measure])
+    renderDesign(c.getContext('2d'), shown, img, { before, handles: !before, selectedId, draft, measure, draftShape, pxPerScreenPx })
+  }, [shown, img, before, selectedId, draft, measure, draftShape, pxPerScreenPx])
 
   const stats = useMemo(() => designStats(design), [design])
-  const commit = (next) => { setHist((h) => ({ list: [...h.list.slice(0, h.at + 1), next].slice(-60), at: Math.min(h.at + 1, 59) })); setLive(null) }
-  const update = (fn) => commit(fn(structuredClone(design)))
+  const commit = (next, label) => {
+    setHist((h) => {
+      const list = [...h.list.slice(0, h.at + 1), { d: next, label }].slice(-80)
+      return { list, at: list.length - 1 }
+    })
+    setLive(null)
+  }
+  const update = (label, fn) => commit(fn(structuredClone(design)), label)
   const undo = () => setHist((h) => ({ ...h, at: Math.max(0, h.at - 1) }))
   const redo = () => setHist((h) => ({ ...h, at: Math.min(h.list.length - 1, h.at + 1) }))
 
   const selStrand = design.strands.find((s) => s.id === selectedId)
   const selDecor = design.decorations.find((d) => d.id === selectedId)
+  const strandLabel = (s) => `${s.shape ? (s.shape.type === 'rect' ? 'rectangle' : 'oval') : 'strand'} (${STYLES[s.style]?.label ?? s.style}, ${colorName(s.colors)})`
 
-  function toImg(e) {
-    const r = canvas.current.getBoundingClientRect()
-    return [((e.clientX - r.left) * design.photo.width) / r.width, ((e.clientY - r.top) * design.photo.height) / r.height]
+  // ---- Zoom & pan -------------------------------------------------------
+  const zoomAt = (clientX, clientY, z) => {
+    const r = box.current.getBoundingClientRect()
+    setView((v) => {
+      const nz = Math.max(1, Math.min(8, z(v.z)))
+      const px = (clientX - r.left - v.x) / v.z
+      const py = (clientY - r.top - v.y) / v.z
+      return { z: nz, x: clientX - r.left - px * nz, y: clientY - r.top - py * nz }
+    })
   }
-  const tol = () => (14 * design.photo.width) / canvas.current.getBoundingClientRect().width
+  const zoomButton = (k) => { const r = box.current.getBoundingClientRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, (z) => z * k) }
+  useEffect(() => {
+    const el = box.current
+    const onWheel = (e) => {
+      e.preventDefault()
+      // Trackpad pinch arrives as ctrl+wheel; a mouse wheel zooms too.
+      zoomAt(e.clientX, e.clientY, (z) => z * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)))
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
+
+  // ---- Pointer handling -------------------------------------------------
+  function toImg(clientX, clientY) {
+    const r = canvas.current.getBoundingClientRect()
+    return [((clientX - r.left) * photo.width) / r.width, ((clientY - r.top) * photo.height) / r.height]
+  }
+  const tol = () => 16 * pxPerScreenPx
 
   function down(e) {
-    // Ignore taps before the photo has a size on screen (would give NaN points).
-    if (before || !img || !canvas.current.getBoundingClientRect().width) return
-    canvas.current.setPointerCapture(e.pointerId)
-    const p = toImg(e)
-    if (tool === 'draw') return setDraft((d) => [...d, p])
-    if (tool === 'measure') { setMeasure({ a: p, b: p }); drag.current = { kind: 'measure' }; return }
-    if (tool === 'decor') {
-      const d = newDecoration(decor, p[0], p[1])
-      update((x) => { x.decorations.push(d); return x })
-      setSelectedId(d.id)
-      setTool('select')
+    if (before || !img || !fit.w) return
+    try { box.current.setPointerCapture(e.pointerId) } catch { /* synthetic events */ }
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (pointers.current.size === 2) {
+      // Second finger: pinch/pan. Abandon whatever the first finger started.
+      const [a, b] = [...pointers.current.values()]
+      gesture.current = { kind: 'pinch', d0: Math.hypot(b.x - a.x, b.y - a.y), m0: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, v0: view }
+      setLive(null); setDraftShape(null)
       return
     }
-    // Select: decorations first (on top), then strand handles, then lines.
+    if (pointers.current.size > 2) return
+    const p = toImg(e.clientX, e.clientY)
+    const start = { sx: e.clientX, sy: e.clientY, p, v0: view }
+    if (tool === 'draw' || tool === 'decor') { gesture.current = { kind: 'tap', ...start }; return }
+    if (tool === 'rect' || tool === 'oval') { gesture.current = { kind: 'newShape', ...start }; return }
+    if (tool === 'measure') { setMeasure({ a: p, b: p }); gesture.current = { kind: 'measure', ...start }; return }
+
+    // Select: shape corner handles, decorations, strand points, lines; else pan.
+    if (selStrand?.shape) {
+      const i = boxCorners(selStrand.shape).findIndex((c) => dist(c, p) <= tol())
+      if (i >= 0) { gesture.current = { kind: 'resize', id: selStrand.id, fixed: boxCorners(selStrand.shape)[(i + 2) % 4], ...start }; return }
+    }
     const ppf = pxPerFoot(design)
-    const dec = [...design.decorations].reverse().find((d) => dist(p, [d.x, d.y]) <= ((DECORATIONS[d.type]?.sizeFt ?? 2) * ppf * (d.size || 1)) / 2)
-    if (dec) { setSelectedId(dec.id); drag.current = { kind: 'decor', id: dec.id, from: p, orig: [dec.x, dec.y] }; return }
+    const dec = [...design.decorations].reverse().find((d) => dist(p, [d.x, d.y]) <= Math.max(tol(), ((DECORATIONS[d.type]?.sizeFt ?? 2) * ppf * (d.size || 1)) / 2))
+    if (dec) { setSelectedId(dec.id); gesture.current = { kind: 'decor', id: dec.id, orig: [dec.x, dec.y], ...start }; return }
     const hit = hitStrand(design.strands, p, tol())
-    if (!hit) return setSelectedId(null)
-    setSelectedId(hit.id)
-    const s = design.strands.find((x) => x.id === hit.id)
-    drag.current = hit.pointIndex != null ? { kind: 'point', id: hit.id, i: hit.pointIndex } : { kind: 'strand', id: hit.id, from: p, orig: s.points }
+    if (hit) {
+      const s = design.strands.find((x) => x.id === hit.id)
+      setSelectedId(hit.id)
+      gesture.current = hit.pointIndex != null && !s.shape
+        ? { kind: 'point', id: hit.id, i: hit.pointIndex, ...start }
+        : { kind: 'move', id: hit.id, orig: structuredClone(s), ...start }
+      return
+    }
+    gesture.current = { kind: 'pan', deselect: true, ...start }
   }
 
   function move(e) {
-    const g = drag.current
+    if (!pointers.current.has(e.pointerId)) return
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    const g = gesture.current
     if (!g) return
-    const p = toImg(e)
+    if (g.kind === 'pinch') {
+      const [a, b] = [...pointers.current.values()]
+      if (!b) return
+      const d = Math.hypot(b.x - a.x, b.y - a.y)
+      const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+      const r = box.current.getBoundingClientRect()
+      const nz = Math.max(1, Math.min(8, g.v0.z * (d / g.d0)))
+      const px = (g.m0.x - r.left - g.v0.x) / g.v0.z
+      const py = (g.m0.y - r.top - g.v0.y) / g.v0.z
+      setView({ z: nz, x: m.x - r.left - px * nz, y: m.y - r.top - py * nz })
+      return
+    }
+    const moved = Math.hypot(e.clientX - g.sx, e.clientY - g.sy) > TAP_SLOP
+    if (g.kind === 'tap' || g.kind === 'pan') {
+      // One finger dragging where a tap was expected: pan the photo.
+      if (moved || g.kind === 'pan') { g.kind = 'pan'; g.panned = g.panned || moved; setView({ ...g.v0, x: g.v0.x + e.clientX - g.sx, y: g.v0.y + e.clientY - g.sy }) }
+      return
+    }
+    const p = toImg(e.clientX, e.clientY)
     if (g.kind === 'measure') return setMeasure((m) => ({ ...m, b: p }))
+    if (g.kind === 'newShape') { if (moved) setDraftShape({ type: tool, ...boxFrom(g.p, p, lockShape) }); return }
+    if (!moved && !g.moved) return
+    g.moved = true
     const next = structuredClone(design)
     if (g.kind === 'point') next.strands.find((s) => s.id === g.id).points[g.i] = p
-    if (g.kind === 'strand') next.strands.find((s) => s.id === g.id).points = g.orig.map(([x, y]) => [x + p[0] - g.from[0], y + p[1] - g.from[1]])
-    if (g.kind === 'decor') { const d = next.decorations.find((x) => x.id === g.id); d.x = g.orig[0] + p[0] - g.from[0]; d.y = g.orig[1] + p[1] - g.from[1] }
-    g.moved = true
+    if (g.kind === 'move') {
+      const s = next.strands.find((x) => x.id === g.id)
+      const dx = p[0] - g.p[0]
+      const dy = p[1] - g.p[1]
+      if (s.shape) { s.shape = { ...g.orig.shape, x: g.orig.shape.x + dx, y: g.orig.shape.y + dy }; s.points = shapePoints(s.shape) }
+      else s.points = g.orig.points.map(([x, y]) => [x + dx, y + dy])
+    }
+    if (g.kind === 'resize') {
+      const s = next.strands.find((x) => x.id === g.id)
+      s.shape = { ...s.shape, ...boxFrom(g.fixed, p, s.shape.lock) }
+      s.points = shapePoints(s.shape)
+    }
+    if (g.kind === 'decor') { const d = next.decorations.find((x) => x.id === g.id); d.x = g.orig[0] + p[0] - g.p[0]; d.y = g.orig[1] + p[1] - g.p[1] }
     setLive(next)
   }
 
-  function up() {
-    const g = drag.current
-    drag.current = null
+  function up(e) {
+    pointers.current.delete(e.pointerId)
+    const g = gesture.current
     if (!g) return
+    if (g.kind === 'pinch') { if (pointers.current.size === 0) gesture.current = null; return }
+    gesture.current = null
+    if (g.kind === 'tap') {
+      if (tool === 'draw') setDraft((d) => [...d, g.p])
+      if (tool === 'decor') {
+        const d = newDecoration(decor, g.p[0], g.p[1])
+        update(`Added ${DECORATIONS[decor].label.toLowerCase()}`, (x) => { x.decorations.push(d); return x })
+        setSelectedId(d.id)
+      }
+      return
+    }
+    if (g.kind === 'pan') { if (g.deselect && !g.panned) setSelectedId(null); return }
     if (g.kind === 'measure') return
-    if (g.moved && live) commit(live)
-    else setLive(null)
+    if (g.kind === 'newShape') {
+      const shape = draftShape
+      setDraftShape(null)
+      if (!shape || shape.w < 4 * pxPerScreenPx || shape.h < 4 * pxPerScreenPx) return
+      const s = { ...newStrand(pen.style, pen.colors), groupSize: pen.groupSize, shape: { ...shape, lock: lockShape }, points: shapePoints(shape) }
+      update(`Added ${strandLabel(s)}`, (x) => { x.strands.push(s); return x })
+      setSelectedId(s.id)
+      return
+    }
+    if (g.moved && live) {
+      const what = g.kind === 'decor' ? 'decoration' : g.kind === 'point' ? 'point' : g.kind === 'resize' ? 'shape size' : 'strand'
+      commit(live, g.kind === 'resize' ? 'Resized shape' : `Moved ${what}`)
+    } else setLive(null)
   }
 
+  // ---- Actions ----------------------------------------------------------
   function finishStrand() {
     if (draft.length >= 2) {
       const s = { ...newStrand(pen.style, pen.colors), groupSize: pen.groupSize, points: draft }
-      update((x) => { x.strands.push(s); return x })
+      update(`Added ${strandLabel(s)}`, (x) => { x.strands.push(s); return x })
     }
     setDraft([])
   }
-  function applyMeasure() {
-    const scale = measure && scaleFrom(measure.a, measure.b, Number(feetInput))
-    if (!scale) return setBusy('Draw a line over something you know, then type its length in feet.')
-    update((x) => { x.scale = scale; return x })
+  function applyMeasure(feet) {
+    const scale = measure && scaleFrom(measure.a, measure.b, Number(feet))
+    if (!scale || dist(measure.a, measure.b) < 4) return setBusy('First drag across something you know (end to end), then pick or type its length.')
+    update(`Set scale (${feet} ft)`, (x) => { x.scale = scale; return x })
     setMeasure(null)
     setFeetInput('')
     setBusy(null)
     setTool('select')
   }
-  const patchStrand = (p) => update((x) => { Object.assign(x.strands.find((s) => s.id === selectedId), p); return x })
-  const patchDecor = (p) => update((x) => { Object.assign(x.decorations.find((d) => d.id === selectedId), p); return x })
-  const removeSelected = () => { update((x) => { x.strands = x.strands.filter((s) => s.id !== selectedId); x.decorations = x.decorations.filter((d) => d.id !== selectedId); return x }); setSelectedId(null) }
-  const setPenColors = (colors) => { setPen((p) => ({ ...p, colors })); if (selStrand) patchStrand({ colors }) }
+  const patchStrand = (label, p) => update(label, (x) => { Object.assign(x.strands.find((s) => s.id === selectedId), p); return x })
+  const patchDecor = (label, p) => update(label, (x) => { Object.assign(x.decorations.find((d) => d.id === selectedId), p); return x })
+  function removeSelected() {
+    const what = selStrand ? strandLabel(selStrand) : DECORATIONS[selDecor?.type]?.label.toLowerCase() ?? 'item'
+    update(`Deleted ${what}`, (x) => { x.strands = x.strands.filter((s) => s.id !== selectedId); x.decorations = x.decorations.filter((d) => d.id !== selectedId); return x })
+    setSelectedId(null)
+  }
+  const setPenColors = (colors) => { setPen((p) => ({ ...p, colors })); if (selStrand) patchStrand(`Colors: ${colorName(colors)}`, { colors }) }
+  // Switching tools clears the selection, so color picks apply to what you
+  // draw next, not to the last thing you drew.
+  const pickTool = (k) => { if (draft.length) finishStrand(); setTool(k); setMeasure(null); setDraftShape(null); if (k !== 'select') setSelectedId(null) }
 
   async function exportBlob() {
     const c = document.createElement('canvas')
@@ -151,37 +293,59 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       await onSave?.(design, { blob: await exportBlob(), stats })
       setBusy('Saved ✓')
       setTimeout(() => setBusy(null), 1500)
-    } catch (e) {
-      setBusy(`Couldn’t save: ${e.message}`)
+    } catch (err) {
+      setBusy(`Couldn’t save: ${err.message}`)
     }
   }
 
-  const colorKey = (list) => Object.entries(COLOR_SETS).find(([, v]) => v.join() === list.join())?.[0]
-  const editing = selStrand ?? (tool === 'draw' ? pen : null)
+  const editing = selStrand ?? (['draw', 'rect', 'oval'].includes(tool) ? pen : null)
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-night-950" role="dialog" aria-modal="true" aria-label={title}>
       <header className="flex flex-wrap items-center gap-2 border-b border-white/10 px-3 py-2">
-        <button type="button" onClick={onClose} className={off}>✕</button>
+        <button type="button" onClick={onClose} className={off} aria-label="Close designer">✕</button>
         <p className="min-w-0 flex-1 truncate font-semibold">{title}</p>
         <button type="button" onClick={undo} disabled={hist.at === 0} className={`${off} disabled:opacity-30`} aria-label="Undo">↶</button>
         <button type="button" onClick={redo} disabled={hist.at >= hist.list.length - 1} className={`${off} disabled:opacity-30`} aria-label="Redo">↷</button>
+        <button type="button" onClick={() => setShowHistory((v) => !v)} className={showHistory ? on : off}>History</button>
         <button type="button" onClick={download} className={off}>⬇ Image</button>
         {onSave && <button type="button" onClick={save} className={on}>Save</button>}
       </header>
 
-      <div className="flex flex-wrap gap-1.5 border-b border-white/10 px-3 py-2">
-        {TOOLS.map(([k, label]) => (
-          <button key={k} type="button" onClick={() => { if (draft.length) finishStrand(); setTool(k); setMeasure(null) }} className={tool === k ? on : off}>{label}</button>
-        ))}
-        <button type="button" onPointerDown={() => setBefore(true)} onPointerUp={() => setBefore(false)} onPointerLeave={() => setBefore(false)} className={`${off} ml-auto`}>Hold: before</button>
+      <div className="flex gap-1.5 overflow-x-auto border-b border-white/10 px-3 py-2">
+        {TOOLS.map(([k, label]) => <button key={k} type="button" onClick={() => pickTool(k)} className={`${tool === k ? on : off} shrink-0`}>{label}</button>)}
       </div>
 
-      <div className="relative min-h-0 flex-1 overflow-auto">
-        <canvas ref={canvas} width={design.photo.width} height={design.photo.height}
-          onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
-          className="mx-auto block h-auto max-h-full w-auto max-w-full touch-none select-none" style={{ cursor: tool === 'select' ? 'default' : 'crosshair' }} />
+      <div ref={box} className="relative min-h-0 flex-1 touch-none select-none overflow-hidden"
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+        style={{ cursor: tool === 'select' ? 'default' : 'crosshair' }}>
+        <div className="absolute left-0 top-0 origin-top-left" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})`, width: fit.w, height: fit.h }}>
+          <canvas ref={canvas} width={photo.width} height={photo.height} className="block h-full w-full" />
+        </div>
         {!img && <p className="absolute inset-0 grid place-items-center text-slate-400">Loading photo…</p>}
+        <div className="absolute bottom-2 right-2 flex flex-col gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
+          <button type="button" onClick={() => zoomButton(1.5)} className="grid size-10 place-items-center rounded-full bg-night-900/90 text-lg font-bold" aria-label="Zoom in">+</button>
+          <button type="button" onClick={() => zoomButton(1 / 1.5)} className="grid size-10 place-items-center rounded-full bg-night-900/90 text-lg font-bold" aria-label="Zoom out">−</button>
+          <button type="button" onClick={refit} className="grid size-10 place-items-center rounded-full bg-night-900/90 text-xs font-bold" aria-label="Fit photo">Fit</button>
+        </div>
+        <button type="button" onPointerDown={(e) => { e.stopPropagation(); setBefore(true) }} onPointerUp={() => setBefore(false)} onPointerLeave={() => setBefore(false)}
+          className="absolute bottom-2 left-2 rounded-full bg-night-900/90 px-3 py-2 text-sm font-semibold">Hold: before</button>
+
+        {showHistory && (
+          <div className="absolute right-2 top-2 max-h-[80%] w-64 overflow-y-auto rounded-2xl border border-white/10 bg-night-900/95 p-2 text-sm shadow-xl" onPointerDown={(e) => e.stopPropagation()}>
+            <p className="px-2 pb-1 text-xs uppercase tracking-wider text-slate-400">Tap a step to go back to it</p>
+            <ol>
+              {hist.list.map((h, i) => ({ h, i })).reverse().map(({ h, i }) => (
+                <li key={i}>
+                  <button type="button" onClick={() => { setHist((x) => ({ ...x, at: i })); setSelectedId(null); setLive(null) }}
+                    className={`w-full rounded-lg px-2 py-1.5 text-left ${i === hist.at ? 'bg-glow-400 text-night-950' : i > hist.at ? 'text-slate-500 line-through' : 'hover:bg-white/10'}`}>
+                    {h.label}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
       </div>
 
       <div className="max-h-[42vh] space-y-2 overflow-y-auto border-t border-white/10 px-3 py-2 text-sm">
@@ -189,16 +353,25 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
 
         {tool === 'draw' && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-slate-400">{draft.length ? `${draft.length} points: keep tapping along the roofline.` : 'Tap along a roofline, corner to corner.'}</span>
+            <span className="text-slate-400">{draft.length ? `${draft.length} points: keep tapping along the roofline.` : 'Tap along a roofline, corner to corner. Two fingers to zoom.'}</span>
             {draft.length > 0 && <button type="button" onClick={() => setDraft((d) => d.slice(0, -1))} className={off}>Undo point</button>}
             <button type="button" onClick={finishStrand} disabled={draft.length < 2} className={`${on} disabled:opacity-40`}>Done with this strand</button>
           </div>
         )}
+        {(tool === 'rect' || tool === 'oval') && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-slate-400">Drag from corner to corner{tool === 'oval' ? ' (around a round window or wreath)' : ' (around a window or door)'}.</span>
+            <label className="flex items-center gap-1.5"><input type="checkbox" checked={lockShape} onChange={(e) => setLockShape(e.target.checked)} /> Keep {tool === 'rect' ? 'square' : 'circle'}</label>
+          </div>
+        )}
         {tool === 'measure' && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-slate-400">Drag across something you know (garage door ≈ 16 ft, front door ≈ 3 ft), then:</span>
-            <input value={feetInput} onChange={(e) => setFeetInput(e.target.value)} inputMode="decimal" placeholder="feet" className="w-20 rounded-lg border border-white/15 bg-night-900 px-2 py-1.5" />
-            <button type="button" onClick={applyMeasure} className={on}>Set scale</button>
+          <div className="space-y-2">
+            <p className="text-slate-400">Drag across something you know, end to end. Then pick what it is:</p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {MEASURE_PRESETS.map(([label, ft]) => <button key={label} type="button" onClick={() => applyMeasure(ft)} disabled={!measure} className={`${off} disabled:opacity-40`}>{label} ({ft} ft)</button>)}
+              <input value={feetInput} onChange={(e) => setFeetInput(e.target.value)} inputMode="decimal" placeholder="other ft" className="w-24 rounded-lg border border-white/15 bg-night-900 px-2 py-1.5" />
+              <button type="button" onClick={() => applyMeasure(feetInput)} disabled={!measure || !feetInput} className={`${on} disabled:opacity-40`}>Set</button>
+            </div>
           </div>
         )}
         {tool === 'decor' && (
@@ -207,26 +380,28 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
             <span className="text-slate-400">Tap the photo to place it.</span>
           </div>
         )}
+        {tool === 'select' && !selStrand && !selDecor && <p className="text-slate-400">Tap a strand, shape or decoration to move, resize or change it. Drag empty space to move around the photo.</p>}
 
         {editing && (
           <div className="space-y-2 rounded-xl bg-white/5 p-2">
+            {selStrand && <p className="font-semibold capitalize">{strandLabel(selStrand)}</p>}
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(STYLES).map(([k, v]) => (
-                <button key={k} type="button" onClick={() => { setPen((p) => ({ ...p, style: k })); if (selStrand) patchStrand({ style: k, spacingIn: v.spacingIn }) }}
+                <button key={k} type="button" onClick={() => { setPen((p) => ({ ...p, style: k })); if (selStrand) patchStrand(`Style: ${v.label}`, { style: k, spacingIn: v.spacingIn }) }}
                   className={(selStrand?.style ?? pen.style) === k ? on : off}>{v.label}</button>
               ))}
             </div>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(COLOR_SETS).map(([name, list]) => (
                 <button key={name} type="button" onClick={() => setPenColors(list)}
-                  className={`${colorKey(editing.colors) === name ? on : off} inline-flex items-center gap-1.5 capitalize`}>
+                  className={`${colorName(editing.colors) === name ? on : off} inline-flex items-center gap-1.5 capitalize`}>
                   <span className="flex">{list.map((c) => <span key={c} className="size-3 rounded-full border border-black/40" style={{ background: COLORS[c].hex }} />)}</span>{name}
                 </button>
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <label className="flex items-center gap-1.5">Pattern
-                <select value={editing.groupSize ?? 1} onChange={(e) => { const g = Number(e.target.value); setPen((p) => ({ ...p, groupSize: g })); if (selStrand) patchStrand({ groupSize: g }) }}
+                <select value={editing.groupSize ?? 1} onChange={(e) => { const g = Number(e.target.value); setPen((p) => ({ ...p, groupSize: g })); if (selStrand) patchStrand(`Pattern ${g}×${g}`, { groupSize: g }) }}
                   className="rounded-lg border border-white/15 bg-night-900 px-2 py-1">
                   {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}×{n}</option>)}
                 </select>
@@ -234,13 +409,14 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
               {selStrand && (
                 <>
                   <label className="flex items-center gap-1.5">Spacing
-                    <input type="number" min="2" max="24" value={selStrand.spacingIn} onChange={(e) => patchStrand({ spacingIn: Number(e.target.value) || 12 })} className="w-16 rounded-lg border border-white/15 bg-night-900 px-2 py-1" />in
+                    <input type="number" min="2" max="24" value={selStrand.spacingIn} onChange={(e) => patchStrand('Changed spacing', { spacingIn: Number(e.target.value) || 12 })} className="w-16 rounded-lg border border-white/15 bg-night-900 px-2 py-1" />in
                   </label>
                   <label className="flex items-center gap-1.5">Bulb size
-                    <input type="range" min="0.5" max="2.5" step="0.1" value={selStrand.size} onChange={(e) => patchStrand({ size: Number(e.target.value) })} />
+                    <input type="range" min="0.5" max="2.5" step="0.1" value={selStrand.size} onChange={(e) => setLive({ ...design, strands: design.strands.map((s) => (s.id === selectedId ? { ...s, size: Number(e.target.value) } : s)) })}
+                      onPointerUp={(e) => patchStrand('Changed bulb size', { size: Number(e.target.value) })} />
                   </label>
                   <span className="text-slate-400">{Math.round(stats.perStrand.find((s) => s.id === selStrand.id)?.feet ?? 0)} ft</span>
-                  <button type="button" onClick={removeSelected} className={`${off} ml-auto text-berry-500`}>Delete strand</button>
+                  <button type="button" onClick={removeSelected} className={`${off} ml-auto text-berry-500`}>Delete</button>
                 </>
               )}
             </div>
@@ -249,19 +425,19 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
         {selDecor && (
           <div className="flex flex-wrap items-center gap-3 rounded-xl bg-white/5 p-2">
             <span className="font-semibold">{DECORATIONS[selDecor.type]?.label}</span>
-            <label className="flex items-center gap-1.5">Size<input type="range" min="0.3" max="3" step="0.1" value={selDecor.size} onChange={(e) => patchDecor({ size: Number(e.target.value) })} /></label>
-            <label className="flex items-center gap-1.5">Turn<input type="range" min="-45" max="45" step="1" value={selDecor.rotation} onChange={(e) => patchDecor({ rotation: Number(e.target.value) })} /></label>
+            <label className="flex items-center gap-1.5">Size<input type="range" min="0.3" max="3" step="0.1" value={selDecor.size} onChange={(e) => patchDecor('Resized decoration', { size: Number(e.target.value) })} /></label>
+            <label className="flex items-center gap-1.5">Turn<input type="range" min="-45" max="45" step="1" value={selDecor.rotation} onChange={(e) => patchDecor('Turned decoration', { rotation: Number(e.target.value) })} /></label>
             <button type="button" onClick={removeSelected} className={`${off} ml-auto text-berry-500`}>Delete</button>
           </div>
         )}
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <label className="flex items-center gap-2">🌙 Night
-            <input type="range" min="0" max="1" step="0.05" value={design.night} onChange={(e) => setLive({ ...design, night: Number(e.target.value) })} onPointerUp={(e) => commit({ ...design, night: Number(e.target.value) })} />
+            <input type="range" min="0" max="1" step="0.05" value={shown.night} onChange={(e) => setLive({ ...design, night: Number(e.target.value) })} onPointerUp={(e) => commit({ ...design, night: Number(e.target.value) }, 'Changed night level')} />
           </label>
-          <span><strong>{stats.measured ? '' : '≈ '}{Math.round(stats.feet)} ft</strong> · {stats.bulbs} bulbs{stats.measured ? '' : <span className="text-glow-300"> (tap 📏 Measure for real feet)</span>}</span>
+          <span><strong>{stats.measured ? '' : '≈ '}{Math.round(stats.feet)} ft</strong> · {stats.bulbs} bulbs{stats.measured ? '' : <span className="text-glow-300"> (📏 Measure for real feet)</span>}</span>
           <label className="flex items-center gap-1.5">$/ft
-            <input type="number" min="0" step="0.25" value={design.pricePerFoot ?? ''} onChange={(e) => update((x) => { x.pricePerFoot = e.target.value ? Number(e.target.value) : null; return x })} className="w-20 rounded-lg border border-white/15 bg-night-900 px-2 py-1" />
+            <input type="number" min="0" step="0.25" value={design.pricePerFoot ?? ''} onChange={(e) => update('Changed price per foot', (x) => { x.pricePerFoot = e.target.value ? Number(e.target.value) : null; return x })} className="w-20 rounded-lg border border-white/15 bg-night-900 px-2 py-1" />
           </label>
           {stats.price != null && <strong className="text-glow-300">≈ ${stats.price.toLocaleString()}</strong>}
         </div>

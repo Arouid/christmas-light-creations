@@ -16,7 +16,8 @@ export function strandFeet(strand, design) {
 export function designStats(design) {
   const perStrand = design.strands.map((s) => {
     const feet = strandFeet(s, design)
-    const bulbs = s.points.length > 1 ? Math.floor((feet * 12) / (s.spacingIn || 12)) + 1 : 0
+    // Closed shapes end where they start: no extra bulb at the end.
+    const bulbs = s.points.length > 1 ? Math.floor((feet * 12) / (s.spacingIn || 12)) + (s.shape ? 0 : 1) : 0
     return { id: s.id, feet, bulbs }
   })
   const feet = perStrand.reduce((t, s) => t + s.feet, 0)

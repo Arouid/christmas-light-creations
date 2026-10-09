@@ -49,3 +49,32 @@ test('broken points are dropped when a design is loaded', () => {
   const d = normalize({ photo: { width: 10, height: 10 }, strands: [{ id: 's', points: [[null, null], [1, 2], [NaN, 3], [4, 5]] }] })
   assert.deepEqual(d.strands[0].points, [[1, 2], [4, 5]])
 })
+
+import { boxFrom, shapePoints } from '../src/designer/geometry.js'
+
+test('rectangles and ovals: closed outlines with no doubled bulb', () => {
+  const rect = { type: 'rect', x: 0, y: 0, w: 40, h: 20 }
+  const pts = shapePoints(rect)
+  assert.equal(length(pts), 120)
+  const bulbs = sampleAlong(pts, 10, true)
+  assert.equal(bulbs.length, 12, 'perimeter 120 at 10 apart: 12 bulbs, not 13')
+  const oval = shapePoints({ type: 'oval', x: 0, y: 0, w: 100, h: 100 })
+  assert.ok(Math.abs(length(oval) - Math.PI * 100) < 1, 'circle outline ≈ π·d')
+  assert.deepEqual(oval[0].map(Math.round), [50, 0], 'starts at the top')
+})
+
+test('boxes from a drag in any direction; locked = square', () => {
+  assert.deepEqual(boxFrom([50, 50], [10, 30]), { x: 10, y: 30, w: 40, h: 20 })
+  assert.deepEqual(boxFrom([0, 0], [40, -10], true), { x: 0, y: -40, w: 40, h: 40 })
+})
+
+test('shape strands: feet from the outline, bulbs without the closing duplicate', () => {
+  const d = newDesign({ width: 1200, height: 800 })
+  d.scale = { pxPerFt: 10 }
+  const shape = { type: 'rect', x: 0, y: 0, w: 40, h: 20 } // 12 ft around
+  d.strands.push({ ...newStrand('c9'), shape, points: shapePoints(shape) })
+  const st = designStats(d)
+  assert.equal(Math.round(st.feet), 12)
+  assert.equal(st.bulbs, 12)
+  assert.equal(normalize(d).strands[0].points.length, 5, 'outline rebuilt from the box on load')
+})
