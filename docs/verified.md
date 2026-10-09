@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Accounts live: `sendAccountLink` + `myAccount` deployed (us-south1), rules with `customerLogins` (staff read only) published, site pushed; christmas-light-creations.com/account/ shows Google + email-link sign-in at 375px, no console errors, no horizontal scroll; robots.txt disallows /account/; rules check: strangers refused on customerLogins, accountLinks and everything else | firebase deploy output, `npm run check:rules`, curl, browser pane |
 | 2026-10-09 | Firebase Auth: Email/Password provider enabled with Email link (passwordless) switched on, Google still enabled; Identity Platform upgrade (SMS MFA) not taken | Owner screenshots of Sign-in method |
 | 2026-10-09 | Staff Accounts: "Customer login: last signed in Oct 12, 2:40 PM · first Oct 10 (Google)" line under contact details at 375px, no overflow, no console errors (demo data); login-record merge tested | Browser pane `/leads/?demo#accounts` + `npm test` |
 | 2026-10-09 | Account sign-in screen with Sign in with Google + email link renders at 375px, no horizontal scroll, no console errors | Browser pane `/account/` |
