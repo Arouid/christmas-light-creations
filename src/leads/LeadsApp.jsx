@@ -9,7 +9,7 @@ import LeadsView from './LeadsView'
 import MapView from './MapView'
 import SeasonView from './SeasonView'
 import SettingsPanel from './SettingsPanel'
-import InstallApp from './InstallApp'
+import InstallApp, { InstallButtons } from './InstallApp'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
 import { DiscountSchedule } from './discountContext'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
@@ -85,6 +85,10 @@ export default function LeadsApp() {
         <button type="button" onClick={() => signIn().catch(() => setSignInError(true))}
           className="w-full rounded-full bg-glow-400 py-3.5 font-semibold text-night-950">Sign in with Google</button>
         {signInError && <p className="text-sm text-berry-500" role="alert">Sign-in didn’t finish. Try again.</p>}
+        <div className="mt-6 w-full border-t border-white/10 pt-6">
+          <p className="mb-3 text-sm text-slate-400">Get the app on your phone</p>
+          <InstallButtons />
+        </div>
       </Screen>
     )
   }
