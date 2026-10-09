@@ -29,7 +29,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 27 | **Republish Firestore rules** (designs + design images) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
 | 28 | **Try the light designer** on 2–3 real customer photos and send Claude feedback on what looks fake; set price per foot in ⚙ Settings | Customer card → 🎨 Light designs |
 | 29 | **Republish Firestore rules** (proposals) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
-| 30 | **Contract terms**: items 7–8 written from your answers (deposit non-refundable; if we can’t install by Dec 1 the customer may choose a refund; standard limited liability). Have a Texas attorney read them; set countersigner name, deposit %, takedown minimum in ⚙ Settings | Proposals can now be sent |
+| 30 | **Attorney review** of contract items 7–8 (deposit non-refundable; refund option if we can’t install by Dec 1; standard limited liability). Countersigner name and alert emails are set | Owner |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked
