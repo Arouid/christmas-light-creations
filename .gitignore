@@ -26,3 +26,5 @@ dist-ssr
 # Owner photo drop: originals may contain GPS location data, never commit
 photos-incoming/
 gift-wrap-incoming/
+# Old WordPress backup from GoDaddy: contains customer data, never commit
+old-site-backup/
