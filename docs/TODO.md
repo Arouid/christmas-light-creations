@@ -18,9 +18,8 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
 | 14 | Delete the TEST lead in Firestore → leads | |
-| 16 | **Republish Firestore rules** (new `pastRequests` list), then Import → pick `old-site-backup/past-requests-all.csv` | Firebase console → Firestore → Rules → paste `firestore.rules` → Publish |
+| 16 | **Republish Firestore rules** (new `pastRequests` list), then Import → pick `old-site-backup/past-requests-all.csv` (done once; **import it again**: now 889 people incl. the price calculator) | Firebase console → Firestore → Rules → paste `firestore.rules` → Publish |
 | 17 | **Reply to David Lauriano** (Oct 7 request via the old site; its email to you failed): La Marque, wants an itemized quote to remove/replace 3 Govee permanent light systems for an insurance claim | Past requests tab (shown first, red note) |
-| 18 | Optional, before GoDaddy hosting ends Nov 7: download the old site's `wp-config.php` and the `WP Cost Estimation` plugin folder (File Manager) so Claude can try to unlock 1,202 encrypted price-calculator requests | Put them in `old-site-backup/` |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked

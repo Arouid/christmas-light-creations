@@ -220,7 +220,7 @@ export default function LeadsApp() {
         {tab === 'import' && (customers
           ? <ImportView existing={customers} onImport={customersApi.importMany} onImportGates={gatesApi.importMany}
               onImportMessages={(records, onProgress) => mergeMany(user, 'messages', records, onProgress)}
-              onImportPast={pastApi.importMany} />
+              existingPast={pastApi.requests ?? []} onImportPast={pastApi.importMany} />
           : loading)}
       </main>
 

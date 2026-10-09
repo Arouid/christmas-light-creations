@@ -45,7 +45,7 @@ const SPAM = [
   /browsing .*\.com/i, /sorry to be a bother/i, /illness/i, /steady (cash|income|flow)/i, /we are interested in your products/i,
   /entrepreneur/i, /please call me soonest/i,
   /search terms/i, /promotional offer/i, /has some issues/i, /\bbank\b/i, /your brand/i, /vegan/i, /\bcleaning\b/i,
-  /research invitation/i, /starseed/i, /classified/i, /hurtful/i, /resubmit/i, /\breviews\b.*\bmost busi/i, /listing for your company/i,
+  /research invitation/i, /starseed/i, /dear .*\.com/i, /^(\w{1,3})\1{2,}\w{0,3}$/i, /classified/i, /hurtful/i, /resubmit/i, /\breviews\b.*\bmost busi/i, /listing for your company/i,
 ]
 export const isSpamText = (s) => SPAM.some((re) => re.test(String(s ?? '')))
 
@@ -53,12 +53,13 @@ export const isSpamText = (s) => SPAM.some((re) => re.test(String(s ?? '')))
 const ABOUT_LIGHTS = /light|christmas|xmas|holiday|install|quote|estimate|roof|house|home|tree|gutter|bush|shrub|decor|lit\b|led\b|warm white|color|building|store|office|price|cost|how much|story|eave|wrap/i
 // "RogergusSy", "MariaMaype", "Thomasdurse": one word, capital in the middle,
 // or bot test names.
-const BOT_NAME = /^[A-Z][a-z]+[a-z][A-Z][A-Za-z]*$|^[A-Z][a-z]{3,}(gus|hed|durse|maype|conee|async|tog|hfi)\w*$|xrumer|^test\b|\btest\b.*\d|thank you for/i
+const CAMEL_NAME = /^[A-Z][a-z]+[a-z][A-Z][A-Za-z]*$/ // case matters: "MariaMaype", not "Irene"
+const BOT_NAME = /^[A-Z][a-z]{3,}(gus|hed|durse|maype|conee|async|tog|hfi)\w*$|xrumer|^test\b|\btest\b.*\d|thank you for/i
 const REPEATED_NAME = /^(\w{5,})\w*\s+\1/i // "Johnsonbut JohnsonbutV"
 const FOREIGN = /[äöüëéèàçñßōāēīū]|\b(hallo|ciao|salut|sveiki|ek wou|volevo|hola|bonjour)\b/i
 
 function isRealRequest({ name, message, phone, date }) {
-  if (BOT_NAME.test(name) || REPEATED_NAME.test(name) || FOREIGN.test(message) || FOREIGN.test(name)) return false
+  if (CAMEL_NAME.test(name) || BOT_NAME.test(name) || REPEATED_NAME.test(name) || FOREIGN.test(message) || FOREIGN.test(name)) return false
   if (message) return ABOUT_LIGHTS.test(message) && !/wanted to know your price|your offer|find out (your|the) price/i.test(message)
   // No message: keep real-looking names with a US phone during the season.
   const month = Number(date.slice(5, 7))
@@ -80,6 +81,7 @@ export function cleanRow(row) {
   const zip = String(f.zip || '').trim()
 
   if (looksRandom(name) || looksRandom(message)) return null
+  if (email.endsWith('@christmas-light-creations.com')) return null // our own tests
   if (isSpamText(message) || isSpamText(name)) return null
   if (!email.includes('@') && !phone) return null
   if (!isRealRequest({ name, message, phone, date: String(row.Date ?? '') })) return null
@@ -159,4 +161,23 @@ export function findCustomer(person, customers = []) {
     [person.email, ...(person.otherEmails ?? [])].some((e) => e && c.email?.toLowerCase().split(/[\s,;]+/).includes(e))
     || (ph && digits(c.phone).endsWith(ph))
     || (nm && nm.includes(' ') && c.fullName?.toLowerCase() === nm)) ?? null
+}
+
+// On re-import, keep the id of a person already in the list (same email,
+// phone or full name) so their status and notes stay with them and no
+// duplicate is created.
+export function reuseIds(people, existing = []) {
+  const digitsOf = (s) => String(s ?? '').replace(/\D/g, '')
+  const index = new Map()
+  for (const e of existing) {
+    for (const em of [e.email, ...(e.otherEmails ?? [])]) if (em) index.set(`e:${em}`, e.id)
+    if (digitsOf(e.phone)) index.set(`p:${digitsOf(e.phone)}`, e.id)
+    if (/\S+\s+\S+/.test(e.fullName ?? '')) index.set(`n:${e.fullName.toLowerCase()}`, e.id)
+  }
+  return people.map((p) => {
+    const keys = [...[p.email, ...(p.otherEmails ?? [])].filter(Boolean).map((em) => `e:${em}`),
+      digitsOf(p.phone) && `p:${digitsOf(p.phone)}`, /\S+\s+\S+/.test(p.fullName ?? '') && `n:${p.fullName.toLowerCase()}`].filter(Boolean)
+    const id = keys.map((k) => index.get(k)).find(Boolean)
+    return id ? { ...p, id } : p
+  })
 }

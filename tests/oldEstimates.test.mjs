@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { cleanRow, mergePeople, findCustomer, cleanPhone } from '../src/lib/oldEstimates.js'
+import { cleanRow, mergePeople, findCustomer, cleanPhone, reuseIds } from '../src/lib/oldEstimates.js'
 
 const row = (date, fields, extra = {}) => ({
   Date: date, Source: 'Gravity Forms', Form: 'Get An Estimate', Email: '', Phone: '', Message: '',
@@ -65,4 +65,16 @@ test('same name with a new email merges; form entry + its email copy count once'
   assert.equal(people[0].email, 'harry2@example.com')
   assert.deepEqual(people[0].otherEmails, ['harry1@example.com'])
   assert.equal(findCustomer(people[0], [{ id: 'h', fullName: 'H. Example', email: 'harry1@example.com' }])?.id, 'h')
+})
+
+test('first-name-only people are kept; camelCase bot names are not', () => {
+  assert.ok(cleanRow(row('2019-11-08', { Name: 'Irene', Phone: '2815550111', Email: 'i@x.com', Message: 'Information on Christmas lights for my home' })))
+  assert.equal(cleanRow(row('2023-03-22', { Name: 'MariaMaype', Phone: '2815550111', Email: 'i@x.com', Message: 'Quote for my home' })), null)
+})
+
+test('re-import keeps ids of people already in the list', () => {
+  const people = [{ id: 'old-new', email: 'a@x.com', otherEmails: ['b@x.com'], phone: '', fullName: 'Ann Lee' }, { id: 'old-z', email: 'z@x.com', fullName: 'Zed' }]
+  const out = reuseIds(people, [{ id: 'old-b', email: 'b@x.com', fullName: 'Ann Lee' }])
+  assert.equal(out[0].id, 'old-b')
+  assert.equal(out[1].id, 'old-z')
 })

@@ -77,6 +77,26 @@ for r in rows(dump, 'wp_wpmailsmtp_emails_log'):
     result.append(row)
     added += 1
 
+# Price-calculator log (encrypted; decrypt_calculator.mjs reads this file).
+cols, grab = [], False
+import gzip  # noqa: E402
+with gzip.open(dump, 'rt', encoding='utf-8', errors='replace') as f:
+    for line in f:
+        if line.startswith('CREATE TABLE `wp_lfb_logs`'):
+            grab = True
+            continue
+        if grab:
+            if line.startswith(')'):
+                break
+            m = re.match(r'\s+`(\w+)`', line)
+            if m:
+                cols.append(m.group(1))
+keep = ['ref', 'email', 'dateLog', 'phone', 'address', 'formTitle', 'contentTxt']
+key = next((v[2] for v in rows(dump, 'wp_options') if v[1].strip() == 'lfbK'), '')
+logs = [{k: (v or '').strip() for k, v in zip(cols, r) if k in keep} for r in rows(dump, 'wp_lfb_logs')]
+with open(os.path.join(os.path.dirname(out), 'calculator-logs.json'), 'w', encoding='utf-8') as f:
+    json.dump({'key': key.strip(), 'logs': logs}, f)
+
 with open(out, 'w', encoding='utf-8', newline='') as f:
     w = csv.DictWriter(f, fieldnames=COLS)
     w.writeheader()
