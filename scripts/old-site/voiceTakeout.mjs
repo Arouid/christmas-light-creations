@@ -4,6 +4,7 @@
 // Ids come from voiceId() so an entry the live sync already stored isn't doubled.
 // Spec: docs/specs/message-sync.md. Tested in tests/voiceTakeout.test.mjs.
 import { MAX_TEXT, OUR_PHONES, e164, isVoice, parseItem, voiceId } from '../../functions/messageSync.js'
+import { readEmail, unfold } from './mbox.mjs'
 
 // Business Voice numbers past and present (texts before 2018 went to 0288).
 export const BUSINESS_PHONES = [...OUR_PHONES, '+12818190288']
@@ -95,65 +96,13 @@ export function namesToPhones(files) {
 
 // ---- Old Voice notification emails (mbox) ----------------------------------
 
-function unfold(head) {
-  const h = {}
-  for (const line of head.replace(/\r?\n[ \t]+/g, ' ').split(/\r?\n/)) {
-    const i = line.indexOf(':')
-    if (i > 0) h[line.slice(0, i).toLowerCase()] ??= line.slice(i + 1).trim()
-  }
-  return h
-}
-const bytesToText = (bin, charset = 'utf-8') => {
-  try { return new TextDecoder(charset).decode(Buffer.from(bin, 'latin1')) } catch { return new TextDecoder().decode(Buffer.from(bin, 'latin1')) }
-}
-function decodePart(body, h) {
-  const cte = (h['content-transfer-encoding'] ?? '').toLowerCase()
-  const charset = h['content-type']?.match(/charset="?([^";\s]+)/i)?.[1] ?? 'utf-8'
-  let bin = body
-  if (cte === 'base64') bin = Buffer.from(body.replace(/\s+/g, ''), 'base64').toString('latin1')
-  else if (cte === 'quoted-printable') bin = body.replace(/=\r?\n/g, '').replace(/=([0-9a-f]{2})/gi, (_, x) => String.fromCharCode(parseInt(x, 16)))
-  let text = bytesToText(bin, charset)
-  if (/format=flowed/i.test(h['content-type'] ?? '')) {
-    const delsp = /delsp=yes/i.test(h['content-type'])
-    text = text.replace(/ \r?\n/g, delsp ? '' : ' ')
-  }
-  return text
-}
-// "=?UTF-8?B?...?=" / "=?UTF-8?Q?...?=" in a header.
-export function decodeWords(s) {
-  return String(s ?? '').replace(/=\?([^?]+)\?([bq])\?([^?]*)\?=\s*/gi, (_, cs, enc, txt) => {
-    const bin = enc.toLowerCase() === 'b' ? Buffer.from(txt, 'base64').toString('latin1')
-      : txt.replace(/_/g, ' ').replace(/=([0-9a-f]{2})/gi, (__, x) => String.fromCharCode(parseInt(x, 16)))
-    return bytesToText(bin, cs)
-  })
-}
-// First text/plain body of a MIME message (headers + body as raw latin1 text).
-function plainBody(head, body) {
-  const h = unfold(head)
-  const type = (h['content-type'] ?? 'text/plain').toLowerCase()
-  if (type.startsWith('multipart/')) {
-    const boundary = h['content-type'].match(/boundary="?([^";]+)"?/i)?.[1]
-    if (!boundary) return ''
-    for (const part of body.split(`--${boundary}`).slice(1)) {
-      const cut = part.search(/\r?\n\r?\n/)
-      if (cut < 0) continue
-      const text = plainBody(part.slice(0, cut).replace(/^\r?\n/, ''), part.slice(cut).replace(/^\r?\n\r?\n/, ''))
-      if (text) return text
-    }
-    return ''
-  }
-  return type.startsWith('text/plain') ? decodePart(body, h) : ''
-}
-
 // Header block of a raw message -> true if it's a Voice notification worth parsing.
 export const isVoiceHead = (head) => isVoice(unfold(head).from)
 
 // One raw message (latin1 text) -> an entry, or { skip }.
 export function parseVoiceEmail(raw) {
-  const cut = raw.search(/\r?\n\r?\n/)
-  const head = cut < 0 ? raw : raw.slice(0, cut)
-  const h = unfold(head)
-  const item = { from: h.from, subject: decodeWords(h.subject), date: h.date, body: plainBody(head, cut < 0 ? '' : raw.slice(cut + 2)) }
+  const { h, subject, date, text: body } = readEmail(raw)
+  const item = { from: h.from, subject, date, body }
   const ev = parseItem(item)
   if (ev.skip) return ev
   // Text emails: "<business number>.<their number>.<id>@txt…". The live sync only

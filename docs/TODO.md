@@ -6,7 +6,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
-| 1 | **Import the old Voice history**: staff app → Import → Text history → pick `old-site-backup/voice-history.json` → check the counts → Import. Then **Download the numbers on no customer** (.csv) to look for past customers worth adding | File built 2026-10-09 from the Voice Takeout + Mail Takeout + Archived-002.mbox (30,397 entries, 2012–2026). Rebuild: `node scripts/old-site/voice-history.mjs old-site-backup/takeout-*.zip old-site-backup/Archived-002.mbox`. Re-importing after adding customers is safe (same ids) |
+| 1 | **Import the old history** (spec `docs/specs/old-history.md`), after this version is live: staff app → Import → (a) **Customer history** → `old-site-backup/customer-history.json` (texts, calls, emails, payments, estimate requests; 37,393 entries) → check counts → Import; (b) **Past requests and win-backs** → `past-requests-plus.csv` → Import. Then Past requests → **Win-backs** | Already imported `voice-history.json`? Fine: same ids, nothing doubled. Rebuild both: `voice-history.mjs` then `old-history.mjs` (commands in the spec) |
 | 4 | **Voice account setup**: record a new voicemail greeting; add linked numbers if calls should ring cells | voice.google.com as clc.voicemail.01 |
 | 5 | **Each staff phone/computer**: sign into clc.voicemail.01 (Voice app + browser) | Katie: ⚙ "My own Google Voice number" if she uses hers |
 | 3 | Change info@'s sender name from "CustomerService" to "Christmas Light Creations" | Gmail ⚙ → Accounts → Send mail as → edit info |

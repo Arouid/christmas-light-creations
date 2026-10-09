@@ -161,8 +161,11 @@ export default function LeadsApp() {
     const last = r.requests?.at(-1)
     const fields = Object.fromEntries(Object.entries({
       fullName: r.fullName, firstName: r.firstName, lastName: r.lastName, email: r.email, phone: r.phone,
-      address: [r.address, r.city].filter(Boolean).join(', '), city: r.city, since: season,
-      notes: `Old website estimate request (${r.lastAsked})${last?.message ? `: ${last.message}` : ''}`,
+      address: [r.address, r.city].filter(Boolean).join(', '), city: r.city,
+      since: (r.payments?.length && (r.firstPaid || '').slice(0, 4)) || season,
+      notes: r.payments?.length
+        ? `Former customer (old PayPal/Square records): paid $${Math.round(r.paid ?? 0)}, ${(r.firstPaid || '').slice(0, 4)}–${(r.lastPaid || '').slice(0, 4)}`
+        : `Old website estimate request (${r.lastAsked})${last?.message ? `: ${last.message}` : ''}`,
       seasons: { [season]: { installStatus: 'Confirmed - Needs to be Scheduled', firstContact: 'Confirmed' } },
     }).filter(([, v]) => v))
     try {

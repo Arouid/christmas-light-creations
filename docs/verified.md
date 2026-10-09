@@ -125,3 +125,11 @@ What was actually checked working, and how. Newest first.
 - Built `old-site-backup/voice-history.json` from the Voice Takeout zip, the Mail Takeout zip and `Archived-002.mbox`: 30,397 entries, 2,998 numbers, 2012-11-05 to 2026-10-08 (6,595 Takeout texts, 532 calls, 351 missed, 13 voicemails; 20,498 old text emails, 1,816 voicemail emails, 735 missed-call emails; 143 email copies of Takeout events dropped, 70 group texts skipped). Spot-checked samples: old SMS footers and "Play message" links removed, old number 0288 not taken as the customer.
 - `/leads/?demo#import` at 375px with a small sample file: preview "2 past texts and calls for 1 customers (1 skipped)", CSV button, Import ✓; the customer's history shows the text and "📞 Call · 2:10" from us. No console errors, no horizontal scroll.
 - Not yet checked: the real import against Firestore (owner step, TODO #1), the CSV download on a real device.
+
+## 2026-10-09 Old history: emails, payments, estimate requests, win-backs
+
+- Live import of `voice-history.json` preview (owner screenshot): 8,991 entries for 111 customers, 2,887 numbers on no customer.
+- Built `customer-history.json`: 37,393 entries (30,397 Voice; 3,655 emails with people; 373 PayPal + 253 Square payments, 347 + 270 invoices; 1,172 estimate emails + 926 old website requests). Payments total about $229k, 2012–2023; 51 anonymous card payments have no name or email.
+- `past-requests-plus.csv` through the real import logic: 2,361 people, 324 win-backs, 1,395 past requests, 642 texted-us; ids unique.
+- Demo at 375px: Past requests shows Win-backs 1 / Past requests 3 / Texted us 1; win-back card "Paid $675 · 2019–2021" with each payment and items; history import preview "3 history entries for 1 customer" with kind chips; customer history shows 💲 Payment, ✉️ Email, 📝 Estimate request. No console errors, no horizontal scroll.
+- Not yet checked: the real imports (owner, TODO #1), name-only matches against real customers.

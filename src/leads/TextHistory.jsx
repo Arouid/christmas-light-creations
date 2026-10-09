@@ -10,7 +10,7 @@ const when = (iso) => {
     : d.toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
-const KIND = { call: '📞 Call', voicemail: '🎙 Voicemail', missed: '📵 Missed call', email: '✉️ Email' }
+const KIND = { call: '📞 Call', voicemail: '🎙 Voicemail', missed: '📵 Missed call', email: '✉️ Email', payment: '💲 Payment', invoice: '🧾 Invoice', request: '📝 Estimate request' }
 
 // One history entry. Long emails start folded (tap to open).
 export function Bubble({ m, who }) {

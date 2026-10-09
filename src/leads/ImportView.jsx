@@ -17,7 +17,7 @@ async function readPastRequests(file, existingPast) {
   const kept = data.map(cleanRow).filter(Boolean)
   const people = reuseIds(mergePeople(kept), existingPast)
   const known = new Set(existingPast.map((e) => e.id))
-  return { rows: data.length, kept: kept.length, updates: people.filter((p) => known.has(p.id)).length, records: people.map(({ id, ...rest }) => ({ id, data: rest })) }
+  return { rows: data.length, kept: kept.length, winbacks: people.filter((p) => p.payments?.length).length, updates: people.filter((p) => known.has(p.id)).length, records: people.map(({ id, ...rest }) => ({ id, data: rest })) }
 }
 
 function downloadCsv(name, text) {
@@ -27,14 +27,16 @@ function downloadCsv(name, text) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
+const KIND_NAMES = { text: 'text', call: 'call', missed: 'missed call', voicemail: 'voicemail', email: 'email', payment: 'payment', invoice: 'invoice', request: 'estimate request' }
+
 const fileInput = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-900 px-3 py-3 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-slate-100'
 
 const FILES = [
   ['scheduling', 'Scheduling tab (.csv)'],
   ['accounts', 'Accounts tab (.csv)'],
   ['gates', 'Gate Codes tab (.csv), optional'],
-  ['messages', 'Text history (voice-history.json from old-site-backup, made from the Voice Takeout), optional'],
-  ['past', 'Old website estimate requests (past-requests-all.csv from old-site-backup), optional'],
+  ['messages', 'Customer history (customer-history.json from old-site-backup: texts, calls, emails, payments, estimate requests), optional'],
+  ['past', 'Past requests and win-backs (past-requests-plus.csv from old-site-backup), optional'],
 ]
 
 export default function ImportView({ existing, existingPast = [], onImport, onImportGates, onImportMessages, onImportPast }) {
@@ -58,11 +60,12 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
       if (next.gates) p.gates = buildGateCodes(await readCsv(next.gates))
       if (next.messages) {
         const parsed = JSON.parse(await next.messages.text())
-        const { records, customers, unmatched } = matchMessages(parsed.messages, existing)
+        const { records, customers, unmatched, byKind } = matchMessages(parsed.messages, existing)
         p.messages = records
         p.messageCustomers = customers
         p.messageSkipped = (parsed.messages ?? []).length - records.length
         p.unmatched = unmatched
+        p.messageKinds = byKind
       }
       if (next.past) p.past = await readPastRequests(next.past, existingPast)
       if (p.customers || p.gates || p.messages || p.past) setPreview(p)
@@ -119,8 +122,15 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
           )}
           {preview.gates && <p><strong>{preview.gates.length}</strong> neighborhood gate codes.</p>}
           {preview.messages && (
-            <p><strong>{preview.messages.length}</strong> past texts and calls for <strong>{preview.messageCustomers}</strong> customers
-              {preview.messageSkipped > 0 && <span className="text-slate-400"> ({preview.messageSkipped} skipped: number on no customer)</span>}.</p>
+            <>
+              <p><strong>{preview.messages.length}</strong> history entries for <strong>{preview.messageCustomers}</strong> customers
+                {preview.messageSkipped > 0 && <span className="text-slate-400"> ({preview.messageSkipped} about people who aren’t customers)</span>}.</p>
+              <ul className="flex flex-wrap gap-1.5 text-xs">
+                {Object.entries(preview.messageKinds ?? {}).sort((a, b) => b[1] - a[1]).map(([kind, n]) => (
+                  <li key={kind} className="rounded-full bg-white/10 px-2.5 py-1">{n} {KIND_NAMES[kind] ?? kind}{n === 1 ? '' : 's'}</li>
+                ))}
+              </ul>
+            </>
           )}
           {preview.unmatched?.length > 0 && (
             <button type="button" onClick={() => downloadCsv('numbers-not-on-a-customer.csv', unmatchedCsv(preview.unmatched))}
@@ -129,7 +139,8 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
             </button>
           )}
           {preview.past && (
-            <p><strong>{preview.past.records.length}</strong> people from the old website’s estimate requests
+            <p><strong>{preview.past.records.length}</strong> people from old estimate requests, payments and texts
+              {preview.past.winbacks > 0 && <> (<strong>{preview.past.winbacks}</strong> paid or were invoiced before: win-backs)</>}
               <span className="text-slate-400"> ({preview.past.rows} entries: {preview.past.rows - preview.past.kept} spam/junk dropped, repeat requests merged)</span>.
               They go to the <strong>Past requests</strong> tab, not Customers.
               {preview.past.updates > 0 && <> <strong>{preview.past.updates}</strong> are already there and will be updated (statuses and notes kept).</>}</p>

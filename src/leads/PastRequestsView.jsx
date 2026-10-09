@@ -19,6 +19,24 @@ function stateOf(r, customer, season) {
   return r.seasons?.[season]?.emailsSent ? 'Emailed' : ''
 }
 
+// Who they were to us: paid or were invoiced before (win-backs), asked for an
+// estimate, or only texted/called the business line.
+const GROUPS = [
+  ['winback', 'Win-backs', 'Paid us or were invoiced before, not current customers now.', (r) => r.payments?.length > 0],
+  ['asked', 'Past requests', 'Asked for an estimate but never paid us.', (r) => !r.payments?.length && r.requests?.length > 0],
+  ['voice', 'Texted us', 'Texted or called the business line a lot, or a saved contact; no form or payment.', (r) => !r.payments?.length && !r.requests?.length],
+]
+const usd = (n) => `$${Math.round(n).toLocaleString('en-US')}`
+const yearsOf = (a, b) => (a && b && a.slice(0, 4) !== b.slice(0, 4) ? `${a.slice(0, 4)}–${b.slice(0, 4)}` : (b || a || '').slice(0, 4))
+
+function summary(r) {
+  if (r.payments?.length) {
+    return r.paid > 0 ? `Paid ${usd(r.paid)} · ${yearsOf(r.firstPaid, r.lastPaid)}` : `Invoiced ${yearsOf(r.firstPaid, r.lastPaid)}`
+  }
+  if (!r.requests?.length) return r.voice?.summary ?? ''
+  return `Asked ${r.lastAsked}${r.requests.length > 1 ? ` · ${r.requests.length} times` : ''}`
+}
+
 const FILTERS = [
   ['todo', 'To contact', (s) => s === ''],
   ['Emailed', 'Emailed', (s) => s === 'Emailed'],
@@ -52,7 +70,7 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
           <div className="min-w-0">
             <p className="truncate font-semibold">{r.fullName}</p>
             <p className="text-sm text-slate-400">
-              Asked {r.lastAsked}{r.requests?.length > 1 && ` · ${r.requests.length} times`}{r.contactBy && ` · prefers ${r.contactBy}`}
+              {summary(r)}{r.contactBy && ` · prefers ${r.contactBy}`}
             </p>
           </div>
           <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${state === 'customer' ? 'bg-emerald-500/20 text-emerald-300' : state ? 'bg-white/10' : 'bg-glow-400 text-night-950'}`}>
@@ -74,8 +92,8 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
           ) : null}
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {r.phone && <a className={action} href={`tel:${r.phone.replace(/\D/g, '')}`}><Icon name="phone" className="size-4" /> Call</a>}
-            <TextButton phone={r.phone} className={action} message={textMessages.winback(r, season)} />
-            <ComposeEmail person={r} season={season} start="winback" className={action} />
+            <TextButton phone={r.phone} className={action} message={(r.payments?.length ? textMessages.comeback : textMessages.winback)(r, season)} />
+            <ComposeEmail person={r} season={season} start={r.payments?.length ? 'comeback' : 'winback'} className={action} />
             {!customer && onMakeCustomer && (
               <button type="button" onClick={make} disabled={busy} className={`${action} text-glow-300`}>{busy ? 'Adding…' : '+ Make customer'}</button>
             )}
@@ -86,9 +104,21 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
             {r.phone && <div><dt className="inline text-slate-400">Phone: </dt><dd className="inline">{r.phone}</dd></div>}
             {r.address && <div><dt className="inline text-slate-400">Address: </dt><dd className="inline">{[r.address, r.city].filter(Boolean).join(', ')}</dd></div>}
           </dl>
-          {r.requests?.length > 1 && (
+          {r.payments?.length > 0 && (
+            <ul className="space-y-1 text-sm">
+              {[...r.payments].sort((a, b) => b.date.localeCompare(a.date)).map((x) => (
+                <li key={`${x.date}${x.invoice}${x.amount}${x.kind}`} className="rounded-xl bg-night-950 px-3 py-2 text-slate-400">
+                  <span className="text-slate-500">{x.date}: </span>
+                  {x.kind === 'payment' ? `💲 Paid ${usd(x.amount)}` : `🧾 Invoiced ${usd(x.amount)}`} by {x.via}{x.invoice && ` · #${x.invoice}`}
+                  {x.items && <span className="block text-xs">{x.items}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {r.voice?.summary && r.requests?.length > 0 && <p className="text-sm text-slate-400">📞 {r.voice.summary}</p>}
+          {r.requests?.length > (r.payments?.length ? 0 : 1) && (
             <ul className="space-y-2 text-sm">
-              {r.requests.slice(0, -1).reverse().map((q) => (
+              {[...(r.payments?.length ? r.requests : r.requests.slice(0, -1))].reverse().map((q) => (
                 <li key={q.date + q.message} className="rounded-xl bg-night-950 px-3 py-2 text-slate-400"><span className="text-slate-500">{q.date}: </span>{q.message || '(no message)'}</li>
               ))}
             </ul>
@@ -113,6 +143,7 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
 // People who asked for an estimate on the old website (2015–2026), as a
 // list to win back: who's already a customer, who to contact, email in a row.
 export default function PastRequestsView({ requests, error, customers, season, onUpdate, onMakeCustomer, onOpenCustomer }) {
+  const [group, setGroup] = useState('winback')
   const [filter, setFilter] = useState('todo')
   const [year, setYear] = useState('')
   const [search, setSearch] = useState('')
@@ -125,7 +156,9 @@ export default function PastRequestsView({ requests, error, customers, season, o
 
   const years = useMemo(() => [...new Set(rows.map(({ r }) => r.year).filter(Boolean))].sort().reverse(), [rows])
   const q = search.trim().toLowerCase()
-  const inYear = rows.filter(({ r }) => (!year || r.year === year)
+  const groupTest = GROUPS.find(([k]) => k === group)[3]
+  const inGroup = rows.filter(({ r }) => groupTest(r))
+  const inYear = inGroup.filter(({ r }) => (!year || r.year === year)
     && (!q || [r.fullName, r.email, r.phone, r.address, r.requests?.map((x) => x.message).join(' ')].join(' ').toLowerCase().includes(q)))
   const test = Object.fromEntries(FILTERS.map(([k, , t]) => [k, t]))
   const shown = inYear.filter(({ state }) => test[filter](state)).sort((a, b) => Number(Boolean(b.r.missed)) - Number(Boolean(a.r.missed)))
@@ -137,15 +170,23 @@ export default function PastRequestsView({ requests, error, customers, season, o
     return (
       <div className="mt-4 rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
         <p className="font-semibold text-slate-100">No past requests yet</p>
-        <p className="mt-1">Go to <a href="#import" className="text-glow-300 underline">Import</a> and pick <strong>past-requests-all.csv</strong> from the <strong>old-site-backup</strong> folder. Spam is filtered out and repeat requests are merged.</p>
+        <p className="mt-1">Go to <a href="#import" className="text-glow-300 underline">Import</a> and pick <strong>past-requests-plus.csv</strong> from the <strong>old-site-backup</strong> folder. Spam is filtered out and repeat requests are merged.</p>
       </div>
     )
   }
 
   return (
     <>
-      <p className="text-sm text-slate-400">
-        People who asked for an estimate on the old website. Anyone already in Customers is matched by email, phone or name.
+      <div className="grid grid-cols-3 gap-1 rounded-full bg-white/5 p-1" role="tablist" aria-label="Who">
+        {GROUPS.map(([k, label, , t]) => (
+          <button key={k} type="button" role="tab" aria-selected={group === k} onClick={() => { setGroup(k); setFilter('todo') }}
+            className={`min-h-11 rounded-full px-2 text-sm font-semibold ${group === k ? 'bg-glow-400 text-night-950' : 'text-slate-300'}`}>
+            {label} <span className="block text-xs font-normal opacity-70 sm:inline">{rows.filter(({ r }) => t(r)).length}</span>
+          </button>
+        ))}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">
+        {GROUPS.find(([k]) => k === group)[2]} Anyone already in Customers is matched by email, phone or name.
       </p>
       <div className="mt-3 grid grid-cols-2 gap-2 lg:flex lg:items-center">
         <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, street, message…"
@@ -175,7 +216,7 @@ export default function PastRequestsView({ requests, error, customers, season, o
             onUpdate={onUpdate} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />
         ))}
       </ul>
-      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} templateId="winback" onClose={() => setEmailing(false)} />}
+      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} templateId={group === 'winback' ? 'comeback' : 'winback'} onClose={() => setEmailing(false)} />}
     </>
   )
 }

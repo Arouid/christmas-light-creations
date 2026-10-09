@@ -94,7 +94,7 @@ export function voiceId({ kind, phone, at, text = '' }) {
 
 // ---- Customer emails ----------------------------------------------------------
 
-function emailText(body) {
+export function emailText(body) {
   let t = String(body ?? '').replace(/\r/g, '')
   // Cut the quoted thread: Gmail's "On <date> <name> wrote:" (may wrap), Outlook's
   // "-----Original Message-----" / "From: … Sent: …" block, or ">" lines.

@@ -7,10 +7,10 @@
 //
 // Writes old-site-backup/voice-history.json (not in git: customer data).
 import { execFileSync } from 'node:child_process'
-import { createReadStream, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createInterface } from 'node:readline'
+import { streamMbox } from './mbox.mjs'
 import { dropEmailCopies, isVoiceHead, namesToPhones, parseTakeoutHtml, parseVoiceEmail } from './voiceTakeout.mjs'
 
 const OUT = 'old-site-backup/voice-history.json'
@@ -33,26 +33,7 @@ const keep = (e, src) => {
   if (!byId.has(e.id)) { byId.set(e.id, e); tally(`${src} ${e.data.kind} ${e.data.direction}`) } else tally('duplicate')
 }
 
-// Streams one mbox; only Voice notification messages are kept in memory.
-async function readMbox(path) {
-  const rl = createInterface({ input: createReadStream(path, 'latin1'), crlfDelay: Infinity })
-  let lines = []
-  let inHead = true
-  let wanted = false
-  const flush = () => { if (wanted && lines.length) keep(parseVoiceEmail(lines.join('\n')), 'email') }
-  for await (const line of rl) {
-    if (/^From \S+@xxx /.test(line)) {
-      flush()
-      lines = []; inHead = true; wanted = false
-      continue
-    }
-    if (inHead) {
-      lines.push(line)
-      if (line === '') { inHead = false; wanted = isVoiceHead(lines.join('\n')); if (!wanted) lines = [] }
-    } else if (wanted) lines.push(line.startsWith('>From ') ? line.slice(1) : line)
-  }
-  flush()
-}
+const readMbox = (path) => streamMbox(path, isVoiceHead, (raw) => keep(parseVoiceEmail(raw), 'email'))
 
 const temps = []
 try {

@@ -66,9 +66,25 @@ function isRealRequest({ name, message, phone, date }) {
   return Boolean(phone) && /\S+\s+\S+/.test(name) && (month >= 8 || month <= 1)
 }
 
+// Rows scripts/old-site/old-history.mjs adds from the old mail and Voice:
+// a PayPal/Square payment or invoice, or a named Voice contact. Not form
+// entries, so the spam checks don't apply.
+function historyRow(row, f) {
+  // Invoices sent to an address show the address where the name goes.
+  const named = String(f.Name ?? '').trim()
+  const name = named.includes('@') ? '' : named
+  const email = (String(row.Email ?? '').trim() || (named.includes('@') ? named : '')).toLowerCase()
+  const phone = cleanPhone(row.Phone)
+  if (!name && !email && !phone) return null
+  const base = { date: String(row.Date ?? '').slice(0, 10), name: name ? titleCase(name) : '', email: email.includes('@') ? email : '', phone, address: String(row.Address ?? '').trim(), message: '' }
+  if (row.Source === 'Voice') return { ...base, voice: { entries: Number(row.Amount) || 0, summary: String(row.Message ?? ''), date: base.date } }
+  return { ...base, payment: { date: base.date, via: row.Source, kind: row.Kind === 'invoice' ? 'invoice' : 'payment', amount: Number(row.Amount) || 0, invoice: String(row.Invoice ?? ''), items: String(row.Items ?? '') } }
+}
+
 // One raw CSV row -> a clean request, or null if it's junk.
 export function cleanRow(row) {
   const f = parseFields(row['All fields'])
+  if (['PayPal', 'Square', 'Voice'].includes(row.Source)) return historyRow(row, f)
   const name = (f.Name || f['your-name'] || [row['First name'], row['Last name']].filter(Boolean).join(' ')).trim()
   const email = String(f.Email || f.email || f['your-email'] || row.Email || '').trim().toLowerCase()
   const phone = cleanPhone(f.Phone || f.phone || f['tel-858'] || row.Phone)
@@ -115,8 +131,16 @@ export function mergePeople(requests) {
     const keys = [r.email && `e:${r.email}`, r.phone && `p:${r.phone}`, fullName && `n:${fullName}`].filter(Boolean)
     let p = keys.map((k) => byKey.get(k)).find(Boolean)
     if (!p) {
-      p = { requests: [], key: r.email || r.phone } // first request's contact: stable id across re-imports
+      p = { requests: [], key: r.email || r.phone || fullName } // first contact: stable id across re-imports
       people.push(p)
+    }
+    keys.forEach((k) => byKey.set(k, p))
+    if (r.payment || r.voice) {
+      for (const [k, v] of Object.entries(r)) if (v && !['message', 'date', 'payment', 'voice'].includes(k) && !p[k]) p[k] = v
+      if (r.voice) p.voice = r.voice
+      const pay = r.payment
+      if (pay && !(p.payments ??= []).some((x) => x.date === pay.date && x.amount === pay.amount && x.invoice === pay.invoice)) p.payments.push(pay)
+      continue
     }
     if (r.email && p.email && r.email !== p.email) p.otherEmails = [...new Set([...(p.otherEmails ?? []), p.email])]
     for (const [k, v] of Object.entries(r)) if (v && !['message', 'date', 'missed'].includes(k)) p[k] = v
@@ -130,8 +154,10 @@ export function mergePeople(requests) {
     keys.forEach((k) => byKey.set(k, p))
   }
   return people.map(({ key, ...p }) => {
-    const first = p.requests[0].date
-    const last = p.requests.at(-1).date
+    const paidDates = (p.payments ?? []).map((x) => x.date).filter(Boolean).sort()
+    const dates = [...p.requests.map((q) => q.date), ...paidDates, p.voice?.date].filter(Boolean).sort()
+    const first = p.requests[0]?.date ?? dates[0] ?? ''
+    const last = p.requests.at(-1)?.date ?? dates.at(-1) ?? ''
     const name = p.name || ''
     return {
       ...p,
@@ -142,6 +168,7 @@ export function mergePeople(requests) {
       lastAsked: last,
       year: last.slice(0, 4),
       missed: p.requests.some((q) => q.missed),
+      ...(p.payments ? { paid: Math.round(p.payments.filter((x) => x.kind === 'payment').reduce((a, x) => a + x.amount, 0) * 100) / 100, firstPaid: paidDates[0] ?? '', lastPaid: paidDates.at(-1) ?? '' } : {}),
       id: idFor({ ...p, key }),
     }
   })
@@ -149,7 +176,7 @@ export function mergePeople(requests) {
 
 // Stable id so re-imports update instead of duplicating.
 export function idFor(p) {
-  const base = p.key ? (p.key.includes('@') ? p.key : digits(p.key)) : p.email || digits(p.phone)
+  const base = p.key ? (p.key.includes('@') ? p.key : digits(p.key) || p.key) : p.email || digits(p.phone) || p.name || ''
   return `old-${base.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase()}`.slice(0, 120)
 }
 

@@ -9,6 +9,7 @@ const first = (c) => c.firstName || 'there'
 export const textMessages = {
   confirm: (c, year) => `Hi ${first(c)}, this is ${business.name}! We're scheduling ${year} installs. Would you like your lights again this year? Reply YES and any timing preferences.`,
   review: (c) => `Hi ${first(c)}, thanks for choosing ${business.name}! If you have a minute, a Google review really helps our family business: ${business.reviewLink}`,
+  comeback: (c, year) => `Hi ${first(c)}, this is ${business.name}. It's been a while since we lit up your home, and we'd love to have you back! We're booking ${year} installs now. Want a quote?`,
   winback: (c, year) => `Hi ${first(c)}, this is ${business.name}. You asked us about Christmas lights a while back. We're booking ${year} installs now and would love to light up your home! Free estimate, no need to be home. Want one?`,
   repaired: (c) => `Hi ${first(c)}, ${business.name} here. Your lights should be all set now. If anything else goes out, just text us! And if you have a minute, a Google review really helps: ${business.reviewLink}`,
 }

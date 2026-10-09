@@ -39,6 +39,18 @@ We're booking {season} installs now. Estimates are free: we measure your rooflin
 Just reply to this email, or call or text {businessPhone}. If you're all set, no worries, and Merry Christmas!${sign}`,
   },
   {
+    id: 'comeback', group: 'Estimates', label: 'We miss you (former customers)',
+    when: 'People who paid us in past years but are not customers now (Past requests → Win-backs).',
+    subject: 'Christmas lights again this year?',
+    body: `Hi {first},
+
+It's {business}! It's been a while since we lit up your home, and we'd love to have you back this season.
+
+We're booking {season} installs now. If you still have your lights from us, let us know: re-installing them costs less than new. Installs done by October 31st get 10% off.
+
+Just reply to this email, or call or text {businessPhone}. If you're all set, no worries, and Merry Christmas!${sign}`,
+  },
+  {
     id: 'reinstall', group: 'Booking', label: 'Re-install invite',
     when: 'Late summer/fall, to returning customers.',
     subject: 'Your {season} Christmas lights',
