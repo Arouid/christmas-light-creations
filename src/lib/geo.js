@@ -54,3 +54,54 @@ export function directionsLinks(start, ordered, perLink = 10) {
   }
   return links
 }
+
+// Round trip from home base through every stop and back. Starts from the
+// nearest-next-stop order, then untangles crossings (2-opt) since the crew
+// drives back home at the end. Straight-line miles: a good driving order for
+// a day's stops, not a guaranteed best one.
+// stops: [{ id, geo }] -> { order: [stop], totalMiles } (stops without geo left out)
+export function planLoop(home, stops) {
+  let order = planRoute(home, stops).order.map((o) => o.stop)
+  const pts = () => [home, ...order.map((s) => s.geo), home].filter(Boolean)
+  const length = (list) => list.slice(1).reduce((sum, p, i) => sum + milesBetween(list[i], p), 0)
+  if (home && order.length > 2) {
+    let improved = true
+    while (improved) {
+      improved = false
+      for (let i = 0; i < order.length - 1; i++) {
+        for (let k = i + 1; k < order.length; k++) {
+          const next = [...order.slice(0, i), ...order.slice(i, k + 1).reverse(), ...order.slice(k + 1)]
+          const before = length(pts())
+          const saved = order
+          order = next
+          if (length(pts()) < before - 1e-9) improved = true
+          else order = saved
+        }
+      }
+    }
+  }
+  return { order, totalMiles: length(pts()) }
+}
+
+// Google Maps directions for a loop: home -> stops (by address) -> home.
+// Maps takes 9 stops between start and end, so long days become several links.
+export function loopLinks(homeAddress, addresses, perLink = 10) {
+  const points = [...addresses, homeAddress].filter(Boolean)
+  const links = []
+  let from = homeAddress
+  for (let i = 0; i < points.length; i += perLink) {
+    const chunk = points.slice(i, i + perLink)
+    const params = new URLSearchParams({ api: '1', destination: chunk.at(-1), travelmode: 'driving' })
+    if (from) params.set('origin', from)
+    if (chunk.length > 1) params.set('waypoints', chunk.slice(0, -1).join('|'))
+    links.push({ from: i + 1, to: Math.min(i + chunk.length, addresses.length), url: `https://www.google.com/maps/dir/?${params}` })
+    from = chunk.at(-1)
+  }
+  return links
+}
+
+// Miles for home -> points (in this order) -> home.
+export const loopMiles = (home, points) => {
+  const pts = [home, ...points, home].filter(Boolean)
+  return pts.slice(1).reduce((sum, p, i) => sum + milesBetween(pts[i], p), 0)
+}

@@ -16,6 +16,7 @@ import { mergeTemplates } from '../lib/emailTemplates'
 import EmailsView from './EmailsView'
 import PastRequestsView from './PastRequestsView'
 import SignsView from './SignsView'
+import RouteView from './RouteView'
 import { EmailTemplates } from './templatesContext'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
@@ -26,7 +27,7 @@ import { useLeads } from './useLeads'
 import { useGateCodes, usePastRequests, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
-const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season']]
+const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Route']]
 const AFTER = [['signs', 'Signs'], ['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
@@ -205,6 +206,10 @@ export default function LeadsApp() {
           ? <ViewTab view={currentView} customers={customers} season={season} gates={gates} onOpen={setOpenId}
               onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} onDelete={() => deleteView(currentView.id)} />
           : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
+        {tab === 'route' && (customers && (settingsApi.settings || settingsApi.error)
+          ? <RouteView customers={customers} gates={gates} season={season} settings={settingsApi.settings ?? {}} onSaveSettings={settingsApi.save}
+              onLocateAll={customersApi.locateAll} onOpen={setOpenId} />
+          : loading)}
         {tab === 'signs' && (customers && (signsApi.drops || signsApi.error)
           ? <SignsView drops={signsApi.error === 'not-staff' ? [] : signsApi.drops} error={signsApi.error === 'not-staff' ? null : signsApi.error}
               leads={leads} customers={customers} season={season} settings={settingsApi.settings ?? {}} onSaveSettings={settingsApi.save}

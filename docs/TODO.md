@@ -31,7 +31,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | A | Build the Voice history import file from the Takeout zip | After #1; also a CSV of numbers that match no customer |
 | B | Customer contacts file for clc.voicemail.01 (Google Contacts CSV from the 114 customers) | So texts/calls show names |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
-| D | Sort by distance + route planner in the staff app | Math done and tested (`src/lib/geo.js`) |
 | E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
 | F | Export customers to a spreadsheet | |
 | G | Auto-reply email to website estimate requests | Needs Firebase extension + Gmail App Password; email auth DNS is done |

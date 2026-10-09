@@ -42,3 +42,30 @@ test('directions links: 9 waypoints max per link, legs chain together', () => {
   const second = new URL(links[1].url).searchParams
   assert.equal(second.get('origin'), first.get('destination'), 'next leg starts where the last ended')
 })
+
+import { planLoop, loopLinks } from '../src/lib/geo.js'
+
+test('loop route returns home and untangles crossings', () => {
+  // Four corners of a square around home: the best loop goes around, not across.
+  const home = { lat: 29.55, lng: -95.30 }
+  const sq = [[0.02, 0.02], [-0.02, -0.02], [0.02, -0.02], [-0.02, 0.02]].map(([a, b], i) => ({ id: `s${i}`, geo: { lat: home.lat + a, lng: home.lng + b } }))
+  const { order, totalMiles } = planLoop(home, sq)
+  assert.equal(order.length, 4)
+  const across = order.map((s) => s.id).join()
+  assert.ok(!/s0,s1|s1,s0|s2,s3|s3,s2/.test(across), `no diagonal hops: ${across}`)
+  assert.ok(totalMiles < 12, `loop goes around, about 11 mi: ${totalMiles}`)
+  assert.equal(planLoop(home, [{ id: 'x' }]).order.length, 0, 'stops without a location are left out')
+})
+
+test('loop links start and end at home, 9 stops per link max', () => {
+  const stops = Array.from({ length: 12 }, (_, i) => `${i + 1} Main St, Pearland, TX`)
+  const links = loopLinks('Home Base, Pearland, TX', stops)
+  assert.equal(links.length, 2)
+  const a = new URL(links[0].url).searchParams
+  assert.equal(a.get('origin'), 'Home Base, Pearland, TX')
+  assert.equal(a.get('waypoints').split('|').length, 9)
+  const b = new URL(links[1].url).searchParams
+  assert.equal(b.get('destination'), 'Home Base, Pearland, TX', 'last link ends at home')
+  assert.equal(b.get('origin'), '10 Main St, Pearland, TX')
+  assert.deepEqual([links[1].from, links[1].to], [11, 12])
+})
