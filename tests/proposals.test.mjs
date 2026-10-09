@@ -74,3 +74,10 @@ test('paper-form rules: one line per area, takedown 15% with a $150 minimum, re-
   assert.equal(items[0].details, 'Clear incandescent · clips · timer')
   assert.equal(fmt(Math.round(takedownItem(50000).rate * 100)), '$150.00', 'small job: minimum $150')
 })
+
+test('fingerprint ignores field order and missing customer fields (Firestore sorts map keys)', async () => {
+  const p = newProposal({ customer: { name: 'Ann Lee', address: '1 Elm St' } })
+  const fromDb = { ...p, customer: { address: '1 Elm St', email: '', name: 'Ann Lee', phone: '' } }
+  assert.equal(await docHash(p), await docHash(fromDb))
+  assert.notEqual(await docHash(p), await docHash({ ...p, customer: { ...p.customer, address: '2 Elm St' } }))
+})

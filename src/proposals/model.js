@@ -3,7 +3,7 @@
 //
 // Money is kept in cents internally to avoid rounding drift.
 
-export const PROPOSAL_VERSION = 1
+export const PROPOSAL_VERSION = 2
 export const STATUSES = ['draft', 'sent', 'viewed', 'signed', 'countersigned', 'declined', 'void']
 export const STATUS_LABEL = {
   draft: 'Draft', sent: 'Sent', viewed: 'Viewed', signed: 'Signed by customer',
@@ -98,7 +98,8 @@ export function canonical(p) {
   const t = totals(p)
   return JSON.stringify({
     v: PROPOSAL_VERSION,
-    title: p.title, season: p.season, customer: p.customer,
+    // Fixed field order: Firestore hands map fields back sorted, not as saved.
+    title: p.title ?? '', season: p.season ?? '', customer: ['name', 'email', 'phone', 'address'].map((k) => p.customer?.[k] ?? ''),
     items: (p.items ?? []).map((i) => [i.label, Number(i.qty) || 0, i.unit ?? '', cents(i.rate), i.due, i.details ?? '']),
     discountPct: Number(p.discountPct) || 0, depositPct: Number(p.depositPct) || 0,
     totals: [t.install, t.removal, t.total, t.deposit],
