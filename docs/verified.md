@@ -4,6 +4,8 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Old WordPress DB export parsed: 13,987 form entries, ~1,172 likely real; likely-real Sep–Dec website requests ~258 (2022) → ~59 (2023) → ~23 (2024) → ~50 (2025); heavy bot spam (6,684 entries in 2026). Exports kept in gitignored old-site-backup/ | Python parse of the SQL dump (counts only printed) |
+| 2026-10-08 | Custom 404 live (old /wp-admin/ shows it with HTTP 404); 21 old WordPress page URLs redirect to their new equivalents | curl + build output |
 | 2026-10-08 | Email auth DNS live at GoDaddy (ns71) and Google (8.8.8.8): SPF include:_spf.google.com ~all; DKIM google._domainkey (Workspace key); DMARC p=none with reports to info@ | Resolve-DnsName |
 | 2026-10-08 | Gallery 33 photos, all 200 on the page, none with metadata; plate/house number/mailbox blurs checked in crops; natural look confirmed side by side | sharp + browser pane |
 | 2026-10-08 | New gallery: 21 photos, none with EXIF/GPS; no readable plates in vehicle crops; before/after sheets reviewed (natural pass, then glam pass); all images return 200 on the home page; hero shows the owner's favorite, readable at 375px and 1440px | sharp metadata + browser pane |

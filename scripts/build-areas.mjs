@@ -136,6 +136,30 @@ for (const a of areas) {
   await writeFile(new URL('index.html', dir), page(a))
 }
 
+// Old WordPress pages -> their new home, so old links and Google results keep working.
+const REDIRECTS = {
+  'faq': '#faq', 'photos': '#gallery', 'info': '#how', 'get-an-estimate': '#estimate',
+  'pearland-christmas-light-installation': 'christmas-light-installation/pearland/',
+  'shadow-creek-ranch': 'christmas-light-installation/pearland/',
+  'silverlake': 'christmas-light-installation/pearland/',
+  'league-city': 'christmas-light-installation/league-city/',
+  'friendswood': 'christmas-light-installation/friendswood/',
+  'contact': '#estimate', 'call-today': '#estimate', 'free-estimates': '#estimate', 'signup': '#estimate',
+  'portfolio': '#gallery', 'christmas-light-designs': '#gallery',
+  'led-or-incandescent': '#faq', 'spt-cable-whats-the-difference': '#faq', 'get-help': '#faq',
+  'about-us': '', 'christmas-light-creations': '', 'thank-you': '',
+}
+for (const [from, to] of Object.entries(REDIRECTS)) {
+  const target = `${base}${to}`
+  const dir = new URL(`${from}/`, dist)
+  await mkdir(dir, { recursive: true })
+  await writeFile(new URL('index.html', dir), `<!doctype html><meta charset="utf-8"><title>Moved</title>`
+    + `<link rel="canonical" href="${SITE}/${to.startsWith('#') ? '' : to}"><meta name="robots" content="noindex">`
+    + `<meta http-equiv="refresh" content="0; url=${target}"><script>location.replace(${JSON.stringify(target)})</script>`
+    + `<a href="${target}">Continue to Christmas Light Creations</a>
+`)
+}
+
 const urls = [`${SITE}/`, ...areas.map((a) => `${SITE}/${pagePath(a)}`)]
 await writeFile(new URL('sitemap.xml', dist), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -143,4 +167,4 @@ ${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod></url>`).joi
 </urlset>
 `)
 
-console.log(`area pages: ${areas.length}, sitemap: ${urls.length} urls, styles: ${styles.length}`)
+console.log(`area pages: ${areas.length}, redirects: ${Object.keys(REDIRECTS).length}, sitemap: ${urls.length} urls, styles: ${styles.length}`)

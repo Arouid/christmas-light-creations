@@ -41,7 +41,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Keep the phone number (281-819-0163) one tap away on every screen.
 - Service areas: `serviceAreaGroups` in content.js and `areaServed` in index.html must match the Google Business Profile's service areas exactly.
 - Don't reword customer reviews; quote them as written.
-- Old WordPress URLs (`/faq/`, `/photos/`, `/info/`, `/get-an-estimate/`) must keep redirecting (`public/<path>/index.html`).
+- Old WordPress URLs must keep redirecting: the `REDIRECTS` map in `scripts/build-areas.mjs` (21 old pages, from the old site's database). Anything else missing shows `public/404.html` (estimate + call buttons).
 - Estimate form saves to Firestore `leads`; staff read and update them at `/leads/` (Google sign-in, allowlist in the `staff` collection). Access rules live in `firestore.rules`; any new lead field must be added there and in `LEAD_FIELDS` in `src/lib/firebase.js`. With Firebase not configured, the form shows a call button and `/leads/` shows sample data.
 - New Firestore collections need `firestore.rules` republished by the owner (paste in Firebase console). Until then that list is refused; it must not lock staff out (only leads/customers decide access). Say so before shipping a feature that adds a collection.
 - Load Firebase with dynamic `import()` only, so the public page stays light.
