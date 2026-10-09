@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Email auth DNS live at GoDaddy (ns71) and Google (8.8.8.8): SPF include:_spf.google.com ~all; DKIM google._domainkey (Workspace key); DMARC p=none with reports to info@ | Resolve-DnsName |
 | 2026-10-08 | Gallery 33 photos, all 200 on the page, none with metadata; plate/house number/mailbox blurs checked in crops; natural look confirmed side by side | sharp + browser pane |
 | 2026-10-08 | New gallery: 21 photos, none with EXIF/GPS; no readable plates in vehicle crops; before/after sheets reviewed (natural pass, then glam pass); all images return 200 on the home page; hero shows the owner's favorite, readable at 375px and 1440px | sharp metadata + browser pane |
 | 2026-10-08 | Area pages (built site, 375px): title/H1/canonical right, site styles apply, all photos on all 6 pages return 200, cross-links work, no sideways scroll; sitemap has 7 URLs; robots lists the sitemap and still blocks /leads/; homepage links to all 6 | `vite preview` + browser pane |

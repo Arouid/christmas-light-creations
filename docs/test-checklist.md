@@ -30,3 +30,5 @@
 | 26 | Staff signed in to Google Voice taps Text on a customer | Voice opens that customer's conversation; Ctrl+V pastes the prepared message; sends from the business number | Not checked |
 | 27 | Email these N from a custom tab | Gmail draft from info@, everyone in Bcc, template text | Not checked |
 | 28 | Submit estimate with "How did you hear about us?" | Lead card shows "Heard from: …" | Blocked: rules not republished |
+| 29 | Google Admin → Authenticate email shows "Authenticating email" | DKIM signing on | Owner to click Start authentication |
+| 30 | ~2026-11-08: review DMARC reports; if clean, change `_dmarc` to `p=quarantine` | Spoofed mail gets junked | Not due yet |
