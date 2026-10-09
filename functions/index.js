@@ -70,12 +70,18 @@ const paypalCfg = () => ({ env: PAYPAL_ENV.value(), clientId: PAYPAL_CLIENT_ID.v
 
 export const createDepositOrder = onCall({ region: REGION, secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
   const { p, amount } = await payableProposal(req.data?.token)
-  const order = await createOrder(paypalCfg(), {
-    token: req.data.token,
-    amount: dollars(amount),
-    description: `Deposit: ${p.title ?? 'Christmas lighting'} for ${p.customer?.address ?? ''}`,
-  })
-  return { orderId: order.id }
+  try {
+    const order = await createOrder(paypalCfg(), {
+      token: req.data.token,
+      amount: dollars(amount),
+      description: `Deposit: ${p.title ?? 'Christmas lighting'} for ${p.customer?.address ?? ''}`,
+    })
+    return { orderId: order.id }
+  } catch (e) {
+    // Unhandled errors reach the page only as "internal"; pass PayPal's reason on.
+    logger.error('createDepositOrder', e)
+    throw new HttpsError('unavailable', e.message)
+  }
 })
 
 export const captureDepositOrder = onCall({ region: REGION, secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {

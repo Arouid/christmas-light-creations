@@ -6,6 +6,7 @@ import { PAYPAL, callDeposit, loadPayPal } from '../lib/paypal'
 export default function DepositPanel({ token, amountLabel, onPaid }) {
   const box = useRef(null)
   const [msg, setMsg] = useState(null)
+  const lastError = useRef(null)
 
   useEffect(() => {
     if (!PAYPAL.clientId) return
@@ -14,7 +15,14 @@ export default function DepositPanel({ token, amountLabel, onPaid }) {
       if (cancelled || !box.current) return
       paypal.Buttons({
         style: { layout: 'vertical', shape: 'pill', label: 'pay' },
-        createOrder: async () => (await callDeposit('createDepositOrder', { token })).orderId,
+        createOrder: async () => {
+          try {
+            return (await callDeposit('createDepositOrder', { token })).orderId
+          } catch (e) {
+            lastError.current = e.message
+            throw e
+          }
+        },
         onApprove: async (data) => {
           setMsg('Confirming your payment…')
           try {
@@ -25,7 +33,8 @@ export default function DepositPanel({ token, amountLabel, onPaid }) {
             setMsg(`${e.message || 'We couldn’t confirm the payment.'} If money left your account, call us and we’ll sort it out.`)
           }
         },
-        onError: () => setMsg('PayPal had a problem. Please try again, or call us.'),
+        // Show the reason (our server's message, or PayPal's) so it can be fixed.
+        onError: (err) => setMsg(`PayPal had a problem (${lastError.current || err?.message || 'unknown'}). Please try again, or call us.`),
       }).render(box.current)
     }).catch(() => setMsg('PayPal didn’t load. Please refresh, or call us.'))
     return () => { cancelled = true }
