@@ -43,7 +43,7 @@ service cloud.firestore {
 
       allow update: if isStaff()
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['status', 'notes', 'updatedAt', 'updatedBy', 'customerId'])
+             .hasOnly(['status', 'notes', 'updatedAt', 'updatedBy', 'customerId', 'geo', 'geoMissing'])
         && request.resource.data.status in ['new', 'called', 'estimate-sent', 'booked', 'lost']
         && shortStr(request.resource.data.notes, 5000)
         && request.resource.data.updatedAt == request.time
@@ -111,6 +111,16 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time
         && request.resource.data.updatedBy == request.auth.token.email;
       allow delete: if false;
+    }
+
+    // Road-sign placements ("drops") for the sign ROI tab. Staff can delete
+    // a mistaken entry; nothing else depends on them.
+    match /signs/{signId} {
+      allow read, delete: if isStaff();
+      allow create, update: if isStaff()
+        && filledStr(request.resource.data.corner, 120)
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
     }
 
     // Shared staff settings (home base for distances and routes).

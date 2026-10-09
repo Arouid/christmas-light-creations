@@ -15,6 +15,7 @@ import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import { mergeTemplates } from '../lib/emailTemplates'
 import EmailsView from './EmailsView'
 import PastRequestsView from './PastRequestsView'
+import SignsView from './SignsView'
 import { EmailTemplates } from './templatesContext'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
@@ -22,11 +23,11 @@ import ViewTab from './ViewTab'
 import { mergeMany } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
-import { useGateCodes, usePastRequests, useServiceCalls, useSettings, useViews } from './useStaffLists'
+import { useGateCodes, usePastRequests, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
 const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season']]
-const AFTER = [['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
+const AFTER = [['signs', 'Signs'], ['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
   return <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">{children}</main>
@@ -45,6 +46,7 @@ export default function LeadsApp() {
   const viewsApi = useViews(user)
   const settingsApi = useSettings(user)
   const pastApi = usePastRequests(user)
+  const signsApi = useSigns(user)
   const [editing, setEditing] = useState(null) // null | {} (new) | view
   const [tab, setTab] = useState(tabFromHash)
   const [openId, setOpenId] = useState(null)
@@ -91,8 +93,8 @@ export default function LeadsApp() {
   const { customers } = customersApi
   const gates = gatesApi.gates ?? []
   const calls = serviceApi.calls ?? []
-  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error].find((e) => e && e !== 'not-staff')
-    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error].includes('not-staff')
+  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error].find((e) => e && e !== 'not-staff')
+    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error].includes('not-staff')
       ? 'part of the app was refused by the database. The security rules probably need publishing again (firestore.rules).'
       : null)
   const views = viewsApi.views ?? []
@@ -203,6 +205,11 @@ export default function LeadsApp() {
           ? <ViewTab view={currentView} customers={customers} season={season} gates={gates} onOpen={setOpenId}
               onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} onDelete={() => deleteView(currentView.id)} />
           : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
+        {tab === 'signs' && (customers && (signsApi.drops || signsApi.error)
+          ? <SignsView drops={signsApi.error === 'not-staff' ? [] : signsApi.drops} error={signsApi.error === 'not-staff' ? null : signsApi.error}
+              leads={leads} customers={customers} season={season} settings={settingsApi.settings ?? {}} onSaveSettings={settingsApi.save}
+              onAdd={signsApi.add} onUpdate={signsApi.update} onRemove={signsApi.remove} onUpdateLead={updateLead} />
+          : loading)}
         {tab === 'past' && (customers
           ? <PastRequestsView requests={pastApi.error === 'not-staff' ? [] : pastApi.requests} error={pastApi.error === 'not-staff' ? null : pastApi.error}
               customers={customers} season={season} onUpdate={pastApi.update} onMakeCustomer={makePastCustomer} onOpenCustomer={openCustomer} />

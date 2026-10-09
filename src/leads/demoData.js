@@ -31,6 +31,7 @@ const customers = [
 const demoGeo = { 'sample-customer': [29.5605, -95.2650], 'test-homeowner': [29.5075, -95.0949], 'example-family': [29.5450, -95.3770] }
 customers.forEach((c) => { const g = demoGeo[c.id]; if (g) c.geo = { lat: g[0], lng: g[1], exact: true, address: c.address } })
 
+const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString()
 const byId = (list) => Object.fromEntries(list.map(({ id, ...d }) => [id, d]))
 
 export const demoData = {
@@ -42,6 +43,11 @@ export const demoData = {
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
   ]),
   settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 } } },
+  signs: byId([
+    { id: 'demo-sign-1', corner: 'Broadway & 288', code: 'broadway-288', lat: 29.5695, lng: -95.3864, placedAt: hoursAgo(30), cost: 10, updatedBy: 'demo@example.com' },
+    { id: 'demo-sign-2', corner: 'Dixie Farm & 35', code: 'dixie-farm-35', lat: 29.5830, lng: -95.2520, placedAt: hoursAgo(60), cost: 10, removedAt: hoursAgo(40), updatedBy: 'demo@example.com' },
+    { id: 'demo-sign-3', corner: 'Broadway & 288', code: 'broadway-288', lat: 29.5696, lng: -95.3862, placedAt: hoursAgo(200), cost: 10, updatedBy: 'demo@example.com' },
+  ]),
   pastRequests: byId([
     { id: 'old-pat-sample-example-com', fullName: 'Pat Sample', firstName: 'Pat', lastName: 'Sample', email: 'pat.sample@example.com', phone: '555-010-0199',
       firstAsked: '2022-11-14', lastAsked: '2022-11-14', year: '2022', contactBy: 'Email, Text', missed: true,

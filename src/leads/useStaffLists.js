@@ -69,3 +69,17 @@ export function usePastRequests(user) {
     importMany: (records, onProgress) => mergeMany(user, 'pastRequests', records, onProgress),
   }
 }
+
+const newestPlaced = (a, b) => String(b.placedAt ?? '').localeCompare(String(a.placedAt ?? ''))
+
+// Road-sign drops (one per placement; see lib/signs.js).
+export function useSigns(user) {
+  const { items, error } = useLiveCollection(user, 'signs', newestPlaced)
+  return {
+    drops: items,
+    error,
+    add: (data) => addRecord(user, 'signs', data),
+    update: (id, path, value) => updateField(user, 'signs', id, path, value),
+    remove: (id) => deleteRecord('signs', id),
+  }
+}
