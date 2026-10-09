@@ -5,10 +5,11 @@ const api = (env) => (env === 'live' ? 'https://api-m.paypal.com' : 'https://api
 async function accessToken(env, clientId, secret) {
   const res = await fetch(`${api(env)}/v1/oauth2/token`, {
     method: 'POST',
-    headers: { Authorization: `Basic ${Buffer.from(`${clientId}:${secret}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { Authorization: `Basic ${Buffer.from(`${String(clientId).trim()}:${String(secret).trim()}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'grant_type=client_credentials',
   })
-  if (!res.ok) throw new Error(`PayPal auth failed (${res.status})`)
+  // 401 = client ID and secret don't belong to the same PayPal app (or sandbox vs live mixed up).
+  if (!res.ok) throw new Error(`PayPal auth failed (${res.status}) for ${env}`)
   return (await res.json()).access_token
 }
 
