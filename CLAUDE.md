@@ -27,6 +27,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - After a change, look at it in the browser pane at phone width (375px) and check the console for errors. A passing build doesn't prove the page renders. If the page looks stale, restart the dev server.
 - While the dev server runs, write `src/` files with the Write/Edit tools, not shell redirection (`cat > file`): Vite can read the file mid-write and keep serving a broken module ("does not provide an export named …") until restarted.
 - Check framework APIs (React, Vite, Tailwind 4, GitHub Pages) against their current docs, not memory.
+- Keep `docs/TODO.md` current: add new open items, remove finished ones.
 - Log what was actually checked in `docs/verified.md` (dated); keep unverified items in `docs/test-checklist.md`; record decisions in `docs/decisions.md`.
 
 ## Site rules
