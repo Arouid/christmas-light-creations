@@ -76,7 +76,16 @@ test('shape strands: feet from the outline, bulbs without the closing duplicate'
   const st = designStats(d)
   assert.equal(Math.round(st.feet), 12)
   assert.equal(st.bulbs, 12)
-  assert.equal(normalize(d).strands[0].points.length, 5, 'outline rebuilt from the box on load')
+  const loaded = normalize(d).strands[0]
+  assert.equal(loaded.closed, true, 'old box rectangles load as 4 free corners')
+  assert.deepEqual(loaded.points, [[0, 0], [40, 0], [40, 20], [0, 20]])
+  assert.equal('shape' in loaded, false)
+  d.strands = [loaded]
+  assert.equal(Math.round(designStats(d).feet), 12, 'closed path includes the side back to the first corner')
+  assert.equal(designStats(d).bulbs, 12)
+  // Drag one corner: only that corner moves, and it's no longer a rectangle.
+  loaded.points[2] = [44, 26]
+  assert.deepEqual(loaded.points[1], [40, 0])
 })
 
 import { hitOnStrand, strandCenter } from '../src/designer/geometry.js'

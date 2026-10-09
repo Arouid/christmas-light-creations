@@ -1,7 +1,7 @@
 // Draws a design onto a canvas 2D context sized to the photo's natural pixels:
 // the photo, a night tint, glowing bulbs, decorations, and (in the editor)
 // handles. Browser only (uses canvas).
-import { MOVE_HANDLE_OFFSET, boxCorners, shapePoints, strandCenter } from './geometry.js'
+import { MOVE_HANDLE_OFFSET, boxCorners, pathOf, shapePoints, strandCenter } from './geometry.js'
 import { COLORS, STYLES, DECORATIONS, pxPerFoot } from './model.js'
 import { bulbColor, strandBulbs } from './stats.js'
 
@@ -247,7 +247,7 @@ function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, d
   const dot = ([x, y], color, r) => { ctx.setLineDash([]); ctx.fillStyle = color; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.arc(x, y, r * u, 0, Math.PI * 2); ctx.fill(); ctx.stroke() }
   for (const s of design.strands) {
     const sel = s.id === selectedId
-    line(s.points, sel ? 'rgba(255,207,77,0.95)' : 'rgba(255,255,255,0.35)', sel ? 2.5 : 1.2, !sel)
+    line(pathOf(s), sel ? 'rgba(255,207,77,0.95)' : 'rgba(255,255,255,0.35)', sel ? 2.5 : 1.2, !sel)
     if (sel && s.shape) {
       line([...boxCorners(s.shape), boxCorners(s.shape)[0]], 'rgba(255,207,77,0.6)', 1.2, true)
       boxCorners(s.shape).forEach((p) => dot(p, '#ffcf4d', 8))

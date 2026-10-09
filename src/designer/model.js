@@ -1,4 +1,4 @@
-import { shapePoints } from './geometry.js'
+import { boxCorners, shapePoints } from './geometry.js'
 
 // Design data model for the light designer. A design is plain JSON, so it can
 // be saved anywhere (Firestore here, a file or another app later).
@@ -85,12 +85,19 @@ export function normalize(d) {
     ...base,
     ...d,
     version: DESIGN_VERSION,
-    strands: (d?.strands ?? []).map((s) => ({
-      ...newStrand(s.style, s.colors),
-      ...s,
-      // Shapes rebuild their outline from the box; lines keep their points.
-      points: s.shape ? shapePoints(s.shape) : (s.points ?? []).filter((p) => Number.isFinite(p?.[0]) && Number.isFinite(p?.[1])),
-    })),
+    strands: (d?.strands ?? []).map((raw) => {
+      // Rectangles used to be boxes; now they're 4 free corners (closed line)
+      // so each corner can follow a window seen at an angle.
+      const s = raw.shape?.type === 'rect' ? { ...raw, shape: undefined, closed: true, points: boxCorners(raw.shape) } : raw
+      const out = {
+        ...newStrand(s.style, s.colors),
+        ...s,
+        // Ovals rebuild their outline from the box; lines keep their points.
+        points: s.shape ? shapePoints(s.shape) : (s.points ?? []).filter((p) => Number.isFinite(p?.[0]) && Number.isFinite(p?.[1])),
+      }
+      if (!out.shape) delete out.shape // Firestore/JSON: no undefined fields
+      return out
+    }),
     decorations: d?.decorations ?? [],
   }
 }

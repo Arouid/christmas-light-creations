@@ -1,5 +1,5 @@
 // What a design adds up to: feet of lights, bulbs per color, a ballpark price.
-import { gapFraction, inGap, length, sampleAlong } from './geometry.js'
+import { gapFraction, inGap, length, pathOf, sampleAlong } from './geometry.js'
 import { COLORS, STYLES, pxPerFoot } from './model.js'
 
 // Color of the i-th bulb: colors repeat in groups (groupSize 2 = 2 red, 2 white…).
@@ -11,7 +11,7 @@ export function bulbColor(strand, i) {
 
 // Lit feet: erased sections don't count (no bulbs installed there).
 export function strandFeet(strand, design) {
-  return (length(strand.points) * (1 - gapFraction(strand.gaps))) / pxPerFoot(design)
+  return (length(pathOf(strand)) * (1 - gapFraction(strand.gaps))) / pxPerFoot(design)
 }
 
 // The bulbs actually drawn on a strand (same positions the renderer uses),
@@ -19,8 +19,9 @@ export function strandFeet(strand, design) {
 export function strandBulbs(strand, design) {
   const ppf = pxPerFoot(design)
   const step = Math.max(2, ((strand.spacingIn || STYLES[strand.style]?.spacingIn || 12) / 12) * ppf)
-  const L = length(strand.points) || 1
-  return sampleAlong(strand.points, step, Boolean(strand.shape))
+  const path = pathOf(strand)
+  const L = length(path) || 1
+  return sampleAlong(path, step, Boolean(strand.shape || strand.closed))
     .map((p, i) => ({ ...p, i }))
     .filter((p) => !inGap(strand.gaps, p.s / L))
 }

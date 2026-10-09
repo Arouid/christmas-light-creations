@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MOVE_HANDLE_OFFSET, addGap, boxCorners, boxFrom, dist, hitOnStrand, hitStrand, length, shapePoints, strandCenter } from './geometry.js'
+import { MOVE_HANDLE_OFFSET, addGap, boxCorners, boxFrom, dist, hitOnStrand, hitStrand, length, pathOf, shapePoints, strandCenter } from './geometry.js'
 import { loadImage } from './image.js'
 import { COLORS, COLOR_SETS, DECORATIONS, STYLES, newDecoration, newDesign, newStrand, normalize, pxPerFoot } from './model.js'
 import { renderDesign } from './render.js'
@@ -94,7 +94,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
 
   const selStrand = design.strands.find((s) => s.id === selectedId)
   const selDecor = design.decorations.find((d) => d.id === selectedId)
-  const strandLabel = (s) => `${s.shape ? (s.shape.type === 'rect' ? 'rectangle' : 'oval') : 'strand'} (${STYLES[s.style]?.label ?? s.style}, ${colorName(s.colors)})`
+  const strandLabel = (s) => `${s.shape ? 'oval' : s.closed ? 'rectangle' : 'strand'} (${STYLES[s.style]?.label ?? s.style}, ${colorName(s.colors)})`
 
   // ---- Zoom & pan -------------------------------------------------------
   const zoomAt = (clientX, clientY, z) => {
@@ -165,7 +165,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       const i = boxCorners(selStrand.shape).findIndex((c) => dist(c, p) <= tol())
       if (i >= 0) { gesture.current = { kind: 'resize', id: selStrand.id, fixed: boxCorners(selStrand.shape)[(i + 2) % 4], ...start }; return }
     } else if (selStrand) {
-      const on = hitOnStrand(selStrand.points, p, tol())
+      const on = hitOnStrand(pathOf(selStrand), p, tol()) // closed: includes the side from the last corner back to the first
+      if (on?.pointIndex === selStrand.points.length) on.pointIndex = 0 // that path's end is the first corner again
       if (on?.pointIndex == null && dist(strandCenter(selStrand.points, MOVE_HANDLE_OFFSET * pxPerScreenPx), p) <= tol() * 1.2) {
         gesture.current = { kind: 'move', id: selStrand.id, orig: structuredClone(selStrand), ...start }
         return
@@ -196,7 +197,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     const ppf = pxPerFoot(base)
     let changed = false
     const next = { ...base, strands: base.strands.map((st) => {
-      const L = length(st.points)
+      const L = length(pathOf(st))
       if (!L) return st
       const half = ((st.spacingIn || 12) / 12) * ppf / 2
       let gaps = st.gaps
@@ -290,7 +291,11 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       const shape = draftShape
       setDraftShape(null)
       if (!shape || shape.w < 4 * pxPerScreenPx || shape.h < 4 * pxPerScreenPx) return
-      const s = { ...newStrand(pen.style, pen.colors), groupSize: pen.groupSize, shape: { ...shape, lock: lockShape }, points: shapePoints(shape) }
+      // Rectangles become 4 free corners (each can be dragged on its own to
+      // follow a window at an angle); ovals keep a box with resize handles.
+      const s = shape.type === 'rect'
+        ? { ...newStrand(pen.style, pen.colors), groupSize: pen.groupSize, closed: true, points: boxCorners(shape) }
+        : { ...newStrand(pen.style, pen.colors), groupSize: pen.groupSize, shape: { ...shape, lock: lockShape }, points: shapePoints(shape) }
       update(`Added ${strandLabel(s)}`, (x) => { x.strands.push(s); return x })
       setSelectedId(s.id)
       return
@@ -334,7 +339,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   }
   function deletePin() {
     if (!selStrand || selectedPoint == null) return
-    if (selStrand.points.length <= 2) return removeSelected() // a line needs 2 pins
+    if (selStrand.points.length <= (selStrand.closed ? 3 : 2)) return removeSelected() // a line needs 2 pins, a closed shape 3
     update('Deleted a pin', (x) => { x.strands.find((st) => st.id === selectedId).points.splice(selectedPoint, 1); return x })
     setSelectedPoint(null)
   }
@@ -477,7 +482,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
           </div>
         )}
         {tool === 'select' && !selStrand && !selDecor && <p className="text-slate-400">Tap a strand, shape or decoration to change it. Drag empty space to move around the photo.</p>}
-        {tool === 'select' && selStrand && !selStrand.shape && <p className="text-slate-400">Drag a pin to move just that pin · drag the line between pins to bend it · drag ✥ to move the whole strand.</p>}
+        {tool === 'select' && selStrand && !selStrand.shape && <p className="text-slate-400">Drag a {selStrand.closed ? 'corner' : 'pin'} to move just that one · drag {selStrand.closed ? 'a side' : 'the line between pins'} to bend it · drag ✥ to move the whole {selStrand.closed ? 'rectangle' : 'strand'}.</p>}
 
         {editing && (
           <div className="space-y-2 rounded-xl bg-white/5 p-2">
@@ -516,7 +521,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
                   <span className="ml-auto flex gap-1.5">
                     {selStrand.gaps?.length > 0 && <button type="button" onClick={() => patchStrand('Restored erased lights', { gaps: [] })} className={off}>Restore erased lights</button>}
                     {!selStrand.shape && selectedPoint != null && <button type="button" onClick={deletePin} className={`${off} text-berry-500`}>Delete pin</button>}
-                    <button type="button" onClick={removeSelected} className={`${off} text-berry-500`}>Delete {selStrand.shape ? 'shape' : 'strand'}</button>
+                    <button type="button" onClick={removeSelected} className={`${off} text-berry-500`}>Delete {selStrand.shape ? 'oval' : selStrand.closed ? 'rectangle' : 'strand'}</button>
                   </span>
                 </>
               )}

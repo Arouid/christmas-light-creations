@@ -3,6 +3,10 @@
 
 export const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1])
 
+// The path bulbs follow: closed strands (rectangles drawn as 4 free corners)
+// run from the last pin back to the first.
+export const pathOf = (s) => (s.closed && s.points.length > 2 ? [...s.points, s.points[0]] : s.points)
+
 export function length(points) {
   let L = 0
   for (let i = 1; i < points.length; i++) L += dist(points[i - 1], points[i])
@@ -59,8 +63,9 @@ export function hitStrand(strands, p, tol) {
   }
   if (best) return best
   for (const s of strands) {
-    for (let i = 1; i < s.points.length; i++) {
-      const { d } = toSegment(p, s.points[i - 1], s.points[i])
+    const path = pathOf(s)
+    for (let i = 1; i < path.length; i++) {
+      const { d } = toSegment(p, path[i - 1], path[i])
       if (d <= tol && (!best || d < best.d)) best = { id: s.id, segment: i, d }
     }
   }
