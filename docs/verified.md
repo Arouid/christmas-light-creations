@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | Rules with `messages` live (strangers refused on text history and all other lists); site security: http and www redirect to https, valid certificate, no mixed content (owner's "Not secure" was a stale http tab) | `npm run check:rules` + curl |
 | 2026-10-08 | Owner test: Text opened Voice as the business account (/u/5, "Call as (281) 819-0163") but showed "No messages": the itemId link only opens existing threads. Fix: Text now opens a box with the number and message to copy + "Open Google Voice" + how to start a new message; tested in demo at 375px | Owner screenshot + browser pane |
 | 2026-10-08 | GoDaddy: hosting (ends Nov 7 2026), Website Security (Oct 28 2026), SSL (Oct 30 2028) set not to renew; domain renews Jul 23 2027 via PayPal. DNS cleaned: all old-hosting/old-email records gone; A@ (GitHub x4), www, MX (Google), SPF, DKIM, DMARC, site-verification, pay, _domainconnect present | Owner screenshot + Resolve-DnsName at ns71 |
 | 2026-10-08 | Old WordPress DB export parsed: 13,987 form entries, ~1,172 likely real; likely-real Sep–Dec website requests ~258 (2022) → ~59 (2023) → ~23 (2024) → ~50 (2025); heavy bot spam (6,684 entries in 2026). Exports kept in gitignored old-site-backup/ | Python parse of the SQL dump (counts only printed) |

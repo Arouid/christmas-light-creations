@@ -7,7 +7,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | # | Task | Notes |
 |---|---|---|
 | 1 | **Export Lacie's old Google Voice data** (texts, calls, voicemails) | takeout.google.com signed in as Lacie → Deselect all → Voice → .zip → put it in `old-site-backup/`. Then Claude matches it to customers and builds the import file. |
-| 2 | **Publish Firestore rules** (adds `messages` for text history) | Firebase → Firestore → Rules → paste `firestore.rules` → Publish |
 | 3 | Google Admin → Authenticate email → **Start authentication** (DKIM) | DNS records are live already |
 | 4 | **Voice account setup**: record a new voicemail greeting; add linked numbers if calls should ring cells | voice.google.com as clc.voicemail.01 |
 | 5 | **Each staff phone/computer**: sign into clc.voicemail.01 (Voice app + browser) | Katie: ⚙ "My own Google Voice number" if she uses hers |
