@@ -52,7 +52,7 @@ const routeFromHash = () => {
 }
 
 export default function LeadsApp() {
-  const { user, leads, error, signIn, signOut, updateLead, demo } = useLeads()
+  const { user, leads, error, signIn, signOut, updateLead, deleteLead, demo } = useLeads()
   const customersApi = useCustomers(user)
   const serviceApi = useServiceCalls(user)
   const gatesApi = useGateCodes(user)
@@ -242,7 +242,7 @@ export default function LeadsApp() {
               onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
           : loading)}
         {tab === 'leads' && (
-          <LeadsView leads={leads} error={error} onUpdate={updateLead} onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
+          <LeadsView leads={leads} error={error} onUpdate={updateLead} onDelete={deleteLead}onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
         )}
         {tab === 'customers' && (customers
           ? <CustomersView customers={customers} season={season} onOpen={setOpenId} onCreate={customersApi.create} />

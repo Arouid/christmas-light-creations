@@ -83,5 +83,16 @@ export function useLeads() {
     })
   }
 
-  return { user, leads, error, signIn, signOut: signOutUser, updateLead, demo: demoMode }
+  // Only for leads marked Spam / test (the rules refuse anything else).
+  async function deleteLead(id) {
+    if (demoMode) {
+      setLeads((ls) => ls.filter((l) => l.id !== id))
+      return
+    }
+    const app = await getFirebaseApp()
+    const { getFirestore, doc, deleteDoc } = await import('firebase/firestore')
+    await deleteDoc(doc(getFirestore(app), 'leads', id))
+  }
+
+  return { user, leads, error, signIn, signOut: signOutUser, updateLead, deleteLead, demo: demoMode }
 }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { LEAD_STATUSES, STATUS_LABELS } from '../lib/firebase'
 import LeadCard from './LeadCard'
 
-export default function LeadsView({ leads, error, onUpdate, onMakeCustomer, onOpenCustomer }) {
+export default function LeadsView({ leads, error, onUpdate, onDelete, onMakeCustomer, onOpenCustomer }) {
   const [filter, setFilter] = useState('open')
   const [search, setSearch] = useState('')
 
@@ -15,12 +15,12 @@ export default function LeadsView({ leads, error, onUpdate, onMakeCustomer, onOp
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase()
     return (leads ?? []).filter((l) =>
-      (filter === 'all' || (filter === 'open' ? !['booked', 'lost'].includes(l.status) : l.status === filter))
+      ((filter === 'all' && l.status !== 'spam') || (filter === 'open' ? !['booked', 'lost', 'spam'].includes(l.status) : l.status === filter))
       && (!q || [l.firstName, l.lastName, l.city, l.address, l.phone, l.email].join(' ').toLowerCase().includes(q)))
   }, [leads, filter, search])
 
   const chips = [['open', 'Open', (counts.new ?? 0) + (counts.called ?? 0) + (counts['estimate-sent'] ?? 0)],
-    ...LEAD_STATUSES.map((s) => [s, STATUS_LABELS[s], counts[s]]), ['all', 'All', leads?.length ?? 0]]
+    ...LEAD_STATUSES.map((s) => [s, STATUS_LABELS[s], counts[s]]), ['all', 'All', (leads?.length ?? 0) - (counts.spam ?? 0)]]
 
   return (
     <>
@@ -39,7 +39,7 @@ export default function LeadsView({ leads, error, onUpdate, onMakeCustomer, onOp
       {leads === null && !error && <p className="mt-6 text-slate-400">Loading leads…</p>}
       {leads && shown.length === 0 && <p className="mt-6 text-slate-400">No leads here.</p>}
       <ul className="mt-3 space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-        {shown.map((l) => <LeadCard key={l.id} lead={l} onUpdate={onUpdate} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />)}
+        {shown.map((l) => <LeadCard key={l.id} lead={l} onUpdate={onUpdate} onDelete={onDelete}onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />)}
       </ul>
     </>
   )

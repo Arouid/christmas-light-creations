@@ -79,3 +79,9 @@ What was actually checked working, and how. Newest first.
 
 - 2026-10-09 New-request alert email arrived after re-setting SMTP_PASSWORD from a file (the prompt paste had cut it short). Alert list set in Settings (2 addresses). Signed/deposit-paid emails use the same mailer; not yet seen live.
 - Tip for secrets on this PC: hidden-prompt paste keeps 1 character, and the app terminal's Temp folder isn't visible to the Firebase CLI. Use clipboard -> `$HOME\name.txt` -> `--data-file`.
+
+## 2026-10-09 Spam/test leads and proposal delete (demo, 375px)
+
+- Marking a lead Spam / test moves it out of Open and All into its own chip; "Delete for good" (44px) removes it after confirm.
+- New draft proposal shows Delete; deleting closes the editor. No horizontal scroll.
+- Rules published via CLI; anonymous check: all refused as expected. Live staff delete not yet tried.

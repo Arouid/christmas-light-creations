@@ -44,12 +44,14 @@ service cloud.firestore {
       allow update: if isStaff()
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['status', 'notes', 'updatedAt', 'updatedBy', 'customerId', 'geo', 'geoMissing'])
-        && request.resource.data.status in ['new', 'called', 'estimate-sent', 'booked', 'lost']
+        && request.resource.data.status in ['new', 'called', 'estimate-sent', 'booked', 'lost', 'spam']
         && shortStr(request.resource.data.notes, 5000)
         && request.resource.data.updatedAt == request.time
         && request.resource.data.updatedBy == request.auth.token.email;
 
-      allow delete: if false;
+      // Only leads first marked Spam / test can be deleted (two steps, so a
+      // real request can't vanish with one tap). Owner approved 2026-10-09.
+      allow delete: if isStaff() && resource.data.status == 'spam';
     }
 
     // Customer records (the old Google Sheet). Staff only; every change is
@@ -186,7 +188,11 @@ service cloud.firestore {
       allow list: if isStaff();
       allow create: if isStaff() && stamped();
       allow update: if (isStaff() && stamped()) || publicView() || publicSign();
-      allow delete: if isStaff() && resource.data.status == 'draft';
+      // Drafts, never-signed voided ones and test-mode payments can be deleted;
+      // signed or really-paid proposals stay as the record (owner, 2026-10-09).
+      allow delete: if isStaff() && (resource.data.status == 'draft'
+        || (resource.data.status == 'void' && !('signature' in resource.data))
+        || ('deposit' in resource.data && resource.data.deposit.env == 'sandbox'));
     }
     // Images shown on a proposal page (design + before photo), by token.
     match /proposalFiles/{fileId} {

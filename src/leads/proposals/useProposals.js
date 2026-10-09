@@ -1,12 +1,23 @@
 // Staff-app adapter for proposals: Firestore records keyed by the customer's
 // link token (see firestore.rules: the public can only open, view and sign).
 import { docHash, fillTerms, newToken, termVars } from '../../proposals/model.js'
-import { createRecord, getRecord, saveRecord, useLiveQuery } from '../staffStore'
+import { createRecord, deleteRecord, getRecord, saveRecord, useLiveQuery } from '../staffStore'
 import { loadDesignPhoto, loadDesignRender } from '../designs/useDesigns'
 
 const newestFirst = (a, b) => String(b.savedAt ?? '').localeCompare(String(a.savedAt ?? ''))
 
 export const proposalLink = (token) => `${window.location.origin}/proposal/?t=${token}`
+
+// Same test as firestore.rules: drafts, never-signed voided ones and test-mode
+// payments can go; signed or really-paid proposals stay as the record.
+export const canDeleteProposal = (p) => p.status === 'draft' || (p.status === 'void' && !p.signature) || p.deposit?.env === 'sandbox'
+// Signed but not really paid: staff can void it (customer backed out, or a test).
+export const canVoidProposal = (p) => ['sent', 'viewed', 'signed', 'countersigned'].includes(p.status) && !(p.deposit?.status === 'paid' && p.deposit.env !== 'sandbox')
+
+export async function deleteProposal(token) {
+  await Promise.all([deleteRecord('proposalFiles', `${token}-render`), deleteRecord('proposalFiles', `${token}-photo`)])
+  await deleteRecord('proposals', token)
+}
 
 export function useProposals(user, ownerId) {
   return useLiveQuery(user, 'proposals', 'ownerId', ownerId, newestFirst)

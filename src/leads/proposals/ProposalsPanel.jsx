@@ -10,7 +10,7 @@ import { designStats } from '../../designer/stats.js'
 import { useDesigns } from '../designs/useDesigns'
 import { TextButton } from '../Reach'
 import { useStaff } from '../staffContext'
-import { countersign, createProposal, proposalLink, reviseProposal, saveProposal, sendProposal, useProposals } from './useProposals'
+import { canDeleteProposal, canVoidProposal, countersign, createProposal, deleteProposal, proposalLink, reviseProposal, saveProposal, sendProposal, useProposals } from './useProposals'
 
 const BIZ = { name: business.name, phone: business.phone, email: 'info@christmas-light-creations.com', logo: business.logo }
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2 text-base text-slate-100'
@@ -69,6 +69,7 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
   })
   const revise = () => run('Reopening…', async () => { await reviseProposal(user, token, { ...d, termsTemplate }); set({ status: 'draft', terms: termsTemplate }) })
   const voidIt = () => window.confirm('Void this proposal? The customer’s link will say it’s no longer active.') && run('Saving…', async () => { await saveProposal(user, token, { status: 'void' }); set({ status: 'void' }) })
+  const remove = () => window.confirm('Delete this proposal for good? Its link will stop working. This can’t be undone.') && run('Deleting…', async () => { await deleteProposal(token); onClose() })
   const cs = () => run('Signing…', async () => { await countersign(user, token, { name: csName.trim(), image: csImage }); set({ status: 'countersigned' }) })
   async function copy() { try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* select instead */ } }
 
@@ -189,7 +190,6 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
             </div>
             <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
               <button type="button" onClick={revise} className={btn}>Make changes (reopens as draft)</button>
-              <button type="button" onClick={voidIt} className={`${btn} text-slate-400`}>Void</button>
             </div>
           </div>
         )}
@@ -210,6 +210,13 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
             <a href={link} target="_blank" rel="noreferrer" className={btn}>Open signed copy (print / PDF)</a>
           </div>
         )}
+        {(canVoidProposal(live) || canDeleteProposal(live)) && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+            {canVoidProposal(live) && <button type="button" onClick={voidIt} className={`${btn} text-slate-400`}>Void</button>}
+            {canDeleteProposal(live) && <button type="button" onClick={remove} className={`${btn} text-berry-500`}>Delete</button>}
+            {live.deposit?.env === 'sandbox' && <span className="text-xs text-slate-500">Test payment: can be deleted</span>}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -223,7 +230,10 @@ export default function ProposalsPanel({ owner }) {
   const { designs } = useDesigns(user, owner.id)
   const [open, setOpen] = useState(null) // token
   const [busy, setBusy] = useState(false)
+  const [showVoid, setShowVoid] = useState(false)
   const current = open && proposals?.find((x) => x.id === open)
+  const voided = proposals?.filter((x) => x.status === 'void').length ?? 0
+  const listed = proposals?.filter((x) => showVoid || x.status !== 'void') ?? []
 
   async function create() {
     setBusy(true)
@@ -248,9 +258,9 @@ export default function ProposalsPanel({ owner }) {
   return (
     <div className="space-y-3">
       <button type="button" onClick={create} disabled={busy} className={primary}>{busy ? 'Starting…' : '📝 New proposal'}</button>
-      {proposals?.length > 0 && (
+      {listed.length > 0 && (
         <ul className="divide-y divide-white/5 rounded-xl border border-white/10">
-          {proposals.map((x) => (
+          {listed.map((x) => (
             <li key={x.id}>
               <button type="button" onClick={() => setOpen(x.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-white/5">
                 <span className="min-w-0">
@@ -262,6 +272,11 @@ export default function ProposalsPanel({ owner }) {
             </li>
           ))}
         </ul>
+      )}
+      {voided > 0 && (
+        <button type="button" onClick={() => setShowVoid((v) => !v)} className="min-h-11 text-sm text-slate-400 underline">
+          {showVoid ? 'Hide voided' : `Show voided (${voided})`}
+        </button>
       )}
       {current && <Editor key={current.id + current.status} token={current.id} p={current} owner={owner} designs={designs} settings={settings} user={user} onClose={() => setOpen(null)} />}
     </div>

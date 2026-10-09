@@ -15,6 +15,7 @@ const statusColor = {
   'estimate-sent': 'bg-violet-500/20 text-violet-300',
   booked: 'bg-pine-500/25 text-emerald-300',
   lost: 'bg-white/10 text-slate-400',
+  spam: 'bg-berry-600/30 text-berry-500',
 }
 
 const when = (d) =>
@@ -54,7 +55,7 @@ function CustomerLink({ lead, onMakeCustomer, onOpenCustomer }) {
   )
 }
 
-export default function LeadCard({ lead, onUpdate, onMakeCustomer, onOpenCustomer }) {
+export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onOpenCustomer }) {
   const [open, setOpen] = useState(lead.status === 'new')
   const [notes, setNotes] = useState(lead.notes ?? '')
   const [saving, setSaving] = useState(false)
@@ -62,11 +63,11 @@ export default function LeadCard({ lead, onUpdate, onMakeCustomer, onOpenCustome
   const fullAddress = [lead.address, lead.city, 'TX', lead.zip].filter(Boolean).join(', ')
   const phoneDigits = lead.phone?.replace(/[^\d+]/g, '')
 
-  async function save(changes) {
+  async function save(changes, action) {
     setSaving(true)
     setSaveError(false)
     try {
-      await onUpdate(lead.id, changes)
+      await (action ? action() : onUpdate(lead.id, changes))
     } catch {
       setSaveError(true)
     } finally {
@@ -140,6 +141,13 @@ export default function LeadCard({ lead, onUpdate, onMakeCustomer, onOpenCustome
             {lead.updatedBy && <p className="text-xs text-slate-500">Last changed by {lead.updatedBy}</p>}
             {saveError && <p className="text-sm text-berry-500" role="alert">Couldn’t save. Try again.</p>}
           </div>
+          {lead.status === 'spam' && onDelete && (
+            <button type="button" disabled={saving}
+              onClick={() => window.confirm(`Delete this request from ${lead.firstName || 'this person'} for good? This can’t be undone.`) && save(null, () => onDelete(lead.id))}
+              className="min-h-11 rounded-full border border-berry-500/50 px-5 py-2.5 text-sm font-semibold text-berry-500">
+              Delete for good
+            </button>
+          )}
         </div>
       )}
     </li>

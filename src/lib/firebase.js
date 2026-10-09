@@ -12,7 +12,8 @@ export const firebaseConfig = {
 
 export const firebaseReady = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
 
-export const LEAD_STATUSES = ['new', 'called', 'estimate-sent', 'booked', 'lost']
+// 'spam': junk or test requests; only these can be deleted (firestore.rules).
+export const LEAD_STATUSES = ['new', 'called', 'estimate-sent', 'booked', 'lost', 'spam']
 
 export const STATUS_LABELS = {
   new: 'New',
@@ -20,6 +21,7 @@ export const STATUS_LABELS = {
   'estimate-sent': 'Estimate sent',
   booked: 'Booked',
   lost: 'Lost',
+  spam: 'Spam / test',
 }
 
 let app
