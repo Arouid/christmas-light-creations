@@ -72,7 +72,7 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
                 {i.label}{Number(i.qty) !== 1 || i.unit ? <span className="text-slate-400 print:text-black"> · {i.qty} {i.unit} × {fmt(Math.round(Number(i.rate) * 100))}</span> : ''}{i.due === 'removal' ? <span className="text-slate-400 print:text-black"> · due at takedown</span> : ''}
                 {i.details && <span className="block text-xs text-slate-400 print:text-black">{i.details}</span>}
               </span>
-              <span className="shrink-0 tabular-nums">{fmt(itemCents(i))}</span>
+              <span className="shrink-0 tabular-nums">{itemCents(i) === 0 ? 'Free' : fmt(itemCents(i))}</span>
             </div>
           ))}
           {t.discount > 0 && <div className={`${row} text-emerald-400 print:text-black`}><span>{p.discountLabel || 'Discount'} ({p.discountPct}% off the install)</span><span className="tabular-nums">−{fmt(t.discount)}</span></div>}
@@ -90,7 +90,8 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
             </div>
           )}
           <div className={row}><span>When installation is complete<Paid pay={p.payments?.balance} /></span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
-          {t.dueAtRemoval > 0 && <div className={row}><span>At takedown in January<Paid pay={p.payments?.takedown} /></span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>}
+          {/* $0 takedown (included in the install) shows as Free, never hidden (owner). */}
+          <div className={row}><span>At takedown in January{t.dueAtRemoval > 0 && <Paid pay={p.payments?.takedown} />}</span><span className="tabular-nums">{t.dueAtRemoval > 0 ? fmt(t.dueAtRemoval) : 'Free'}</span></div>
         </div>
       </section>
 

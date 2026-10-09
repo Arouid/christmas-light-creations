@@ -16,8 +16,8 @@ const lib = demo ? null : import('../lib/account.js')
 
 const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown' }
 const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down and labeling and boxing them for you to keep.' }
-const STATE_TEXT = { paid: 'Paid', due: 'Due now', later: 'Not due yet', none: '—' }
-const STATE_CLASS = { paid: 'text-emerald-300', due: 'text-glow-300 font-semibold', later: 'text-slate-400', none: 'text-slate-500' }
+const STATE_TEXT = { paid: 'Paid', due: 'Due now', later: 'Not due yet', none: '—', free: '' }
+const STATE_CLASS = { paid: 'text-emerald-300', due: 'text-glow-300 font-semibold', later: 'text-slate-400', none: 'text-slate-500', free: '' }
 const proposalLink = (token) => `${import.meta.env.BASE_URL}proposal/?t=${token}`
 const btn = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold'
 
@@ -244,12 +244,12 @@ function YearlyPrice({ price }) {
 
 // What they paid, season by season (from our records, incl. years before the
 // website). No grand total on purpose.
-const PAID_TEXT = { paid: 'Paid ✓', free: 'No charge', unpaid: 'Not paid yet' }
-const PAID_CLASS = { paid: 'text-emerald-300', free: 'text-slate-400', unpaid: 'text-glow-300', '': 'text-slate-400' }
+const PAID_TEXT = { paid: 'Paid ✓', free: 'Free', unpaid: 'Not paid yet' }
+const PAID_CLASS = { paid: 'text-emerald-300', free: 'text-emerald-300', unpaid: 'text-glow-300', '': 'text-slate-400' }
 function PaymentHistory({ history }) {
   const row = (label, b) => b && (
     <div className="py-1">
-      <span className="flex justify-between gap-3"><span>{label}</span>{b.amount != null && <span className="tabular-nums">{fmt(b.amount)}</span>}</span>
+      <span className="flex justify-between gap-3"><span>{label}</span>{b.amount != null && b.state !== 'free' && <span className="tabular-nums">{fmt(b.amount)}</span>}</span>
       <span className={`block ${PAID_CLASS[b.state]}`}>{PAID_TEXT[b.state] ?? ''}{b.by || b.date ? <span className="text-slate-400"> {[b.by, b.date].filter(Boolean).join(', ')}</span> : null}</span>
     </div>
   )
@@ -290,7 +290,7 @@ function ProposalCard({ p, reload }) {
           {rows.map((x) => (
             <tr key={x.part} className="border-t border-white/10">
               <td className="py-2">{PART_LABEL[x.part]}</td>
-              <td className="py-2 text-right tabular-nums">{fmt(x.state === 'paid' ? x.paid : x.amount)}</td>
+              <td className={`py-2 text-right tabular-nums ${x.state === 'free' ? 'font-semibold text-emerald-300' : ''}`}>{x.state === 'free' ? 'Free' : fmt(x.state === 'paid' ? x.paid : x.amount)}</td>
               <td className={`py-2 text-right ${STATE_CLASS[x.state]}`}>{STATE_TEXT[x.state]}{x.state === 'paid' && x.sandbox ? ' (test)' : ''}</td>
             </tr>
           ))}

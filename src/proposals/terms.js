@@ -8,7 +8,7 @@ export const FILL_IN = '[TO FILL IN'
 
 export const DEFAULT_TERMS = `1. The work. {business} will provide and install the Christmas lighting described in this proposal at {address} for the {season} season, service it at no extra charge during the season, and take it down in January.
 
-2. Price and payment. The total is {total}. A deposit of {deposit} ({depositPct} of the install) is due when you sign and holds your install date. The rest of the install, {dueAtInstall}, is due when installation is complete. Takedown, {removal}, is due at removal. We accept PayPal, Zelle, Venmo, Cash App, check or cash.
+2. Price and payment. The total is {total}. A deposit of {deposit} ({depositPct} of the install) is due when you sign and holds your install date. The rest of the install, {dueAtInstall}, is due when installation is complete. Takedown in January: {takedownCost}. We accept PayPal, Zelle, Venmo, Cash App, check or cash.
 
 3. Scheduling. Installs begin October 15. We will confirm your install date with you. Weather or safety can require us to reschedule; if we move an early install, you keep your early-install discount.
 

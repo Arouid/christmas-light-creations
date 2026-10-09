@@ -32,7 +32,7 @@ export function accountSummary(token, p) {
     const pay = paymentOf(p, part)
     let state = 'later'
     if (pay?.status === 'paid') state = 'paid'
-    else if (amount <= 0) state = 'none'
+    else if (amount <= 0) state = part === 'takedown' ? 'free' : 'none'
     else if (signed && (part === 'deposit' || p.requests?.[part] === true)) state = 'due'
     return { part, amount, state, paid: pay?.status === 'paid' ? pay.amount : 0, paidAt: iso(pay?.paidAt), sandbox: pay?.env === 'sandbox' }
   })
@@ -63,7 +63,8 @@ function billLine(b, amountKeys) {
   if (!b) return null
   const amount = amountKeys.map((k) => moneyCents(b[k])).find((x) => x != null) ?? null
   const paid = String(b.paid ?? '').trim()
-  const state = /^yes$/i.test(paid) ? 'paid' : /^no takedown cost$/i.test(paid) || /no takedown cost/i.test(b.invoice ?? '') ? 'free' : /^no$/i.test(paid) ? 'unpaid' : ''
+  const free = /^no takedown cost$/i.test(paid) || /no takedown cost/i.test(b.invoice ?? '') || amount === 0
+  const state = /^yes$/i.test(paid) ? 'paid' : free ? 'free' : /^no$/i.test(paid) ? 'unpaid' : ''
   if (amount == null && !state) return null
   return { amount, state, by: state === 'paid' ? String(b.paymentType ?? '') : '', date: state === 'paid' ? String(b.paymentDate ?? '') : '' }
 }

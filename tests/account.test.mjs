@@ -31,7 +31,7 @@ test('what is due follows the payment rules and the page math', () => {
   const s = accountSummary('t', paid)
   assert.deepEqual(states(s), { deposit: 'paid', balance: 'due', takedown: 'due' })
   for (const x of s.parts) assert.equal(x.amount, partAmount(p, x.part))
-  assert.deepEqual(states(accountSummary('t', { ...paid, items: p.items.filter((i) => i.due !== 'removal') })).takedown, 'none')
+  assert.deepEqual(states(accountSummary('t', { ...paid, items: p.items.filter((i) => i.due !== 'removal') })).takedown, 'free') // $0 takedown shows as Free
 })
 
 test('login record keeps the first sign-in and the latest one', () => {

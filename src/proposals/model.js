@@ -105,6 +105,8 @@ export function termVars(p, business = {}) {
     depositPct: `${p.depositPct ?? 0}%`,
     dueAtInstall: fmt(t.dueAtInstall),
     removal: fmt(t.removal),
+    // "Free" when takedown is included in the install (owner 2026-10-09).
+    takedownCost: t.removal > 0 ? `${fmt(t.removal)}, due at takedown` : 'Free',
     nextYear: fmt(t.nextYear),
   }
 }
