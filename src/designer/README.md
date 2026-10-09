@@ -29,6 +29,7 @@ const photo = await photoToDataUrl(file) // { dataUrl, width, height }, EXIF dro
   brand="Christmas Light Creations"   // optional text on exported images
   onSave={async (design, { blob, stats }) => { /* store JSON + image */ }}
   onClose={() => {}}
+  onSatelliteMeasure={async () => ({ feet: 52, label: 'Satellite edge' })} // optional
 />
 ```
 

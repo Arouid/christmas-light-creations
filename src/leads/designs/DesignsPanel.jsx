@@ -2,6 +2,7 @@ import { lazy, Suspense, useRef, useState } from 'react'
 import { photoToDataUrl } from '../../designer/image.js'
 import { business } from '../../data/content'
 import { useStaff } from '../staffContext'
+import SatelliteMeasure from './SatelliteMeasure'
 import { blobToDataUrl, loadDesignPhoto, loadDesignRender, removeDesign, saveDesign, useDesigns } from './useDesigns'
 
 // The editor is big (canvas code): load it only when someone opens a design.
@@ -17,6 +18,7 @@ export default function DesignsPanel({ owner }) {
   const { designs, error } = useDesigns(user, owner.id)
   const [open, setOpen] = useState(null) // { id?, photo, design? }
   const [busy, setBusy] = useState(null)
+  const [sat, setSat] = useState(null) // pending satellite measurement { resolve }
   const file = useRef(null)
 
   async function pickPhoto(e) {
@@ -90,9 +92,11 @@ export default function DesignsPanel({ owner }) {
         <Suspense fallback={<div className="fixed inset-0 z-50 grid place-items-center bg-night-950 text-slate-400">Loading designer…</div>}>
           <Designer photo={open.photo} design={open.design} defaults={{ pricePerFoot: settings.designPricePerFoot ?? null }}
             title={`${owner.name || 'Design'}${owner.address ? ` · ${owner.address}` : ''}`} brand={`${business.name} · ${business.phone}`}
-            onSave={save} onClose={() => setOpen(null)} />
+            onSave={save} onClose={() => setOpen(null)}
+            onSatelliteMeasure={owner.address ? () => new Promise((resolve) => setSat({ resolve })) : undefined} />
         </Suspense>
       )}
+      {sat && <SatelliteMeasure address={owner.address} onDone={(r) => { sat.resolve(r); setSat(null) }} />}
     </div>
   )
 }

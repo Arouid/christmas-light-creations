@@ -17,7 +17,9 @@ const colorName = (list) => Object.entries(COLOR_SETS).find(([, v]) => v.join() 
 // The light designer: draw lights on a house photo, measure, export.
 // Standalone: give it a photo and (optionally) a saved design; it calls
 // onSave(design, { blob, stats }) and onClose(). No app/database code here.
-export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose }) {
+// onSatelliteMeasure (optional): the host measures the house from above and
+// resolves { feet, label } (or null); the designer offers it as a measure preset.
+export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose, onSatelliteMeasure }) {
   const canvas = useRef(null)
   const box = useRef(null) // the viewport the photo is zoomed/panned inside
   const [img, setImg] = useState(null)
@@ -311,11 +313,17 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   function applyMeasure(feet) {
     const scale = measure && scaleFrom(measure.a, measure.b, Number(feet))
     if (!scale || dist(measure.a, measure.b) < 4) return setBusy('First drag across something you know (end to end), then pick or type its length.')
-    update(`Set scale (${feet} ft)`, (x) => { x.scale = scale; return x })
+    update(`Set scale (${feet} ft)`, (x) => { x.scale = { ...scale, source: x.satellite?.feet === Number(feet) ? 'satellite' : 'photo' }; return x })
     setMeasure(null)
     setFeetInput('')
     setBusy(null)
     setTool('select')
+  }
+  async function satellite() {
+    setBusy('Opening satellite view…')
+    const r = await onSatelliteMeasure?.().catch(() => null)
+    setBusy(r ? 'Now drag across that same edge on the photo, then tap the 🛰 button.' : null)
+    if (r) update(`Measured on satellite (${r.feet} ft)`, (x) => { x.satellite = r; return x })
   }
   const patchStrand = (label, p) => update(label, (x) => { Object.assign(x.strands.find((s) => s.id === selectedId), p); return x })
   const patchDecor = (label, p) => update(label, (x) => { Object.assign(x.decorations.find((d) => d.id === selectedId), p); return x })
@@ -443,6 +451,13 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
           <div className="space-y-2">
             <p className="text-slate-400">Drag across something you know, end to end. Then pick what it is:</p>
             <div className="flex flex-wrap items-center gap-1.5">
+              {onSatelliteMeasure && !design.satellite && <button type="button" onClick={satellite} className={off}>🛰 Measure on satellite</button>}
+              {design.satellite && (
+                <>
+                  <button type="button" onClick={() => applyMeasure(design.satellite.feet)} disabled={!measure} className={`${on} disabled:opacity-40`}>🛰 {design.satellite.label}: {design.satellite.feet} ft</button>
+                  {onSatelliteMeasure && <button type="button" onClick={satellite} className={off} aria-label="Measure on satellite again">↻</button>}
+                </>
+              )}
               {MEASURE_PRESETS.map(([label, ft]) => <button key={label} type="button" onClick={() => applyMeasure(ft)} disabled={!measure} className={`${off} disabled:opacity-40`}>{label} ({ft} ft)</button>)}
               <input value={feetInput} onChange={(e) => setFeetInput(e.target.value)} inputMode="decimal" placeholder="other ft" className="w-24 rounded-lg border border-white/15 bg-night-900 px-2 py-1.5" />
               <button type="button" onClick={() => applyMeasure(feetInput)} disabled={!measure || !feetInput} className={`${on} disabled:opacity-40`}>Set</button>
