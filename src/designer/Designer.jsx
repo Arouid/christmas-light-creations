@@ -48,7 +48,18 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   const [busy, setBusy] = useState(null)
   // View: fit size of the photo in the viewport, plus zoom and pan.
   const [fit, setFit] = useState({ w: 0, h: 0, cw: 0, ch: 0 })
-  const [view, setView] = useState({ z: 1, x: 0, y: 0 })
+  const [view, setViewRaw] = useState({ z: 1, x: 0, y: 0 })
+  const fitRef = useRef(fit)
+  fitRef.current = fit
+  // Keep the photo on screen: fully zoomed out it stays centered (no
+  // dragging); zoomed in, its edges can't be pulled inside the viewport.
+  const clampView = ({ z, x, y }) => {
+    const { w, h, cw, ch } = fitRef.current
+    const axis = (pos, size, room) => (size <= room ? (room - size) / 2 : Math.min(0, Math.max(room - size, pos)))
+    const zz = Math.max(1, z)
+    return { z: zz, x: axis(x, w * zz, cw), y: axis(y, h * zz, ch) }
+  }
+  const setView = (next) => setViewRaw((v) => clampView(typeof next === 'function' ? next(v) : next))
   const pointers = useRef(new Map())
   const gesture = useRef(null)
 
@@ -63,7 +74,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     const k = Math.min(cw / photo.width, ch / photo.height)
     const w = photo.width * k
     const h = photo.height * k
-    setFit({ w, h, cw, ch })
+    fitRef.current = { w, h, cw, ch } // so the clamp below already uses the new size
+    setFit(fitRef.current)
     setView({ z: 1, x: (cw - w) / 2, y: (ch - h) / 2 })
   }, [photo.width, photo.height])
   useEffect(() => {
@@ -389,13 +401,13 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-night-950" role="dialog" aria-modal="true" aria-label={title}>
-      <header className="flex flex-wrap items-center gap-2 border-b border-white/10 px-3 py-2">
+      <header className="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-white/10 px-3 py-2 [&>button]:shrink-0">
         <button type="button" onClick={onClose} className={off} aria-label="Close designer">✕</button>
-        <p className="min-w-0 flex-1 truncate font-semibold">{title}</p>
+        <p className="min-w-0 flex-1 truncate font-semibold"><span className="hidden sm:inline">{title}</span></p>
         <button type="button" onClick={undo} disabled={hist.at === 0} className={`${off} disabled:opacity-30`} aria-label="Undo">↶</button>
         <button type="button" onClick={redo} disabled={hist.at >= hist.list.length - 1} className={`${off} disabled:opacity-30`} aria-label="Redo">↷</button>
-        <button type="button" onClick={() => setShowHistory((v) => !v)} className={showHistory ? on : off}>History</button>
-        <button type="button" onClick={download} className={off}>⬇ Image</button>
+        <button type="button" onClick={() => setShowHistory((v) => !v)} className={showHistory ? on : off} aria-label="History">🕘<span className="hidden sm:inline"> History</span></button>
+        <button type="button" onClick={download} className={off} aria-label="Download image">⬇<span className="hidden sm:inline"> Image</span></button>
         {onSave && <button type="button" onClick={save} className={on}>Save</button>}
       </header>
 
@@ -436,7 +448,9 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
         )}
       </div>
 
-      <div className="max-h-[42vh] space-y-2 overflow-y-auto border-t border-white/10 px-3 py-2 text-sm">
+      {/* Fixed height: what's selected changes the controls, never the photo
+          area (a growing panel used to shrink and re-fit the photo). */}
+      <div className="h-[36vh] min-h-48 shrink-0 space-y-2 overflow-y-auto border-t border-white/10 px-3 py-2 text-sm lg:h-[30vh]">
         {busy && <p className="text-glow-300" role="status">{busy}</p>}
 
         {tool === 'draw' && (
