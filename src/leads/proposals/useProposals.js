@@ -10,7 +10,7 @@ export const proposalLink = (token) => `${window.location.origin}/proposal/?t=${
 
 // Same test as firestore.rules: drafts, never-signed voided ones and test-mode
 // payments can go; signed or really-paid proposals stay as the record.
-export const canDeleteProposal = (p) => p.status === 'draft' || (p.status === 'void' && !p.signature) || p.deposit?.env === 'sandbox'
+export const canDeleteProposal = (p) => p.status === 'draft' || (p.status === 'void' && !p.signature) || (p.deposit?.env === 'sandbox' && !p.payments)
 // Signed but not really paid: staff can void it (customer backed out, or a test).
 export const canVoidProposal = (p) => ['sent', 'viewed', 'signed', 'countersigned'].includes(p.status) && !(p.deposit?.status === 'paid' && p.deposit.env !== 'sandbox')
 

@@ -6,9 +6,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Staff = Google sign-in only: a customer account's email link never
+    // counts, even for an address on the staff list (security review 2026-10-09).
     function isStaff() {
       return request.auth != null
         && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
         && exists(/databases/$(database)/documents/staff/$(request.auth.token.email.lower()));
     }
 
@@ -181,18 +184,23 @@ service cloud.firestore {
         && sig.consent == true
         && sig.docHash == resource.data.docHash
         && sig.image is string && sig.image.size() < 300000
+        && sig.image.matches('^data:image/png;base64,[A-Za-z0-9+/=]+$')
         && shortStr(sig.userAgent, 200);
     }
     match /proposals/{token} {
       allow get: if true;
       allow list: if isStaff();
       allow create: if isStaff() && stamped();
-      allow update: if (isStaff() && stamped()) || publicView() || publicSign();
+      // Payments (deposit, payments.*) are recorded only by the server
+      // (captureDepositOrder), never typed in from the app.
+      allow update: if (isStaff() && stamped()
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['deposit', 'payments']))
+        || publicView() || publicSign();
       // Drafts, never-signed voided ones and test-mode payments can be deleted;
       // signed or really-paid proposals stay as the record (owner, 2026-10-09).
       allow delete: if isStaff() && (resource.data.status == 'draft'
         || (resource.data.status == 'void' && !('signature' in resource.data))
-        || ('deposit' in resource.data && resource.data.deposit.env == 'sandbox'));
+        || ('deposit' in resource.data && resource.data.deposit.env == 'sandbox' && !('payments' in resource.data)));
     }
     // Images shown on a proposal page (design + before photo), by token.
     match /proposalFiles/{fileId} {
