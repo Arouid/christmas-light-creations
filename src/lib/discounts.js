@@ -3,8 +3,7 @@
 // Manual prices ("Special Rate", e.g. some December installs) are never overwritten.
 
 export const DEFAULT_SCHEDULE = [
-  { from: '10-15', to: '10-21', pct: 15 },
-  { from: '10-22', to: '10-31', pct: 10 },
+  { from: '10-15', to: '10-31', pct: 10 },
 ]
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 }
@@ -40,14 +39,25 @@ export const money = (n) => `$${n.toLocaleString('en-US', { minimumFractionDigit
 
 const isManual = (install = {}) => /special/i.test(`${install.discount ?? ''} ${install.discountReason ?? ''}`)
 
+const pctOf = (discount) => parseFloat(String(discount ?? '').replace('%', '')) || 0
+
 // What the discount and total should be for this season's install, or null
 // if there's nothing to suggest (no date/rate, manual price, or already right).
-export function suggestDiscount(season, schedule = DEFAULT_SCHEDULE) {
+// Owner rule: a customer who booked an early (October) install and gets pushed
+// later never loses their discount. An Early Install customer, or one already
+// carrying an early discount, keeps it whatever the date (capped at the
+// schedule's top rate, so an old 15% comes down to today's rate).
+export function suggestDiscount(season, schedule = DEFAULT_SCHEDULE, installType = '') {
   const install = season?.install ?? {}
   if (isManual(install)) return null
-  const pct = discountFor(installMonthDay(season), schedule)
+  const byDate = discountFor(installMonthDay(season), schedule)
   const rate = parseMoney(install.rate)
-  if (pct === null || rate === null) return null
+  if (byDate === null || rate === null) return null
+  const pcts = schedule.map((r) => r.pct)
+  const top = pcts.length ? Math.max(...pcts) : 0
+  const floor = installType === 'Early Install' && pcts.length ? Math.min(...pcts) : 0
+  const kept = /early/i.test(install.discountReason ?? '') ? Math.min(pctOf(install.discount), top) : 0
+  const pct = Math.max(byDate, floor, kept)
   const next = {
     discount: pct ? `${pct}%` : '0',
     discountReason: pct ? 'Early Install' : '',

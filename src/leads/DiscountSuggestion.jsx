@@ -8,7 +8,7 @@ export default function DiscountSuggestion({ customer, year, onUpdate }) {
   const schedule = useDiscountSchedule()
   const [busy, setBusy] = useState(false)
   const s = customer.seasons?.[year]
-  const next = suggestDiscount(s, schedule)
+  const next = suggestDiscount(s, schedule, customer.installType)
   if (!next) return null
 
   async function apply() {

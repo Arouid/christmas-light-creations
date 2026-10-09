@@ -36,7 +36,7 @@ function DiscountSchedule({ settings, onSave }) {
       {rows.map((r, i) => (
         <div key={i} className="grid grid-cols-[1fr_1fr_4.5rem_auto] items-center gap-2 text-sm">
           <input aria-label="From" value={r.from} onChange={(e) => set(i, { from: e.target.value })} className={small} placeholder="Oct 15" />
-          <input aria-label="To" value={r.to} onChange={(e) => set(i, { to: e.target.value })} className={small} placeholder="Oct 21" />
+          <input aria-label="To" value={r.to} onChange={(e) => set(i, { to: e.target.value })} className={small} placeholder="Oct 31" />
           <label className="flex items-center gap-1"><input aria-label="Percent" value={r.pct} inputMode="numeric" onChange={(e) => set(i, { pct: e.target.value })} className={small} />%</label>
           <button type="button" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} aria-label="Remove row" className="px-2 text-slate-400">✕</button>
         </div>

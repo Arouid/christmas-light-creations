@@ -19,7 +19,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
 | 14 | Delete the TEST lead in Firestore → leads | |
-| 15 | Confirm Oct 29–31 discount: 10% (current) or none (change 2nd row to end Oct 28 in ⚙ Settings) | Then run Season → % Apply early-install discounts |
 
 ## Claude, when asked
 

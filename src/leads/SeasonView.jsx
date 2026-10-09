@@ -12,7 +12,7 @@ import { blankFor, select } from './ui'
 function ApplyDiscounts({ customers, season, onUpdate }) {
   const schedule = useDiscountSchedule()
   const [busy, setBusy] = useState(null)
-  const changes = customers.map((c) => [c, suggestDiscount(c.seasons?.[season], schedule)]).filter(([, s]) => s)
+  const changes = customers.map((c) => [c, suggestDiscount(c.seasons?.[season], schedule, c.installType)]).filter(([, s]) => s)
   if (!changes.length && busy === null) return null
   if (busy === 'done') return <span className="self-center text-sm text-emerald-400">Discounts updated ✓</span>
 
