@@ -3,7 +3,7 @@
 // env must match functions/.env PAYPAL_ENV. Empty client ID = no Pay button.
 export const PAYPAL = {
   env: 'sandbox', // 'sandbox' while testing with fake money, then 'live'
-  clientId: '',
+  clientId: 'BAArFFioPE6C7wD4d1SLSYYeBdS9Wj9PtNO03pfibSOMBTnUSFfWn62_k3ZikJUzIQUZTWhEVzs3n14Pk8', // sandbox app "CLC Website"
 }
 
 let sdk
