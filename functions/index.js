@@ -8,12 +8,15 @@
 //   and only this code can mark a deposit paid.
 // - proposalChanged: emails the customer their signed agreement link and
 //   tells staff when a proposal is signed or a deposit is paid.
+// - sendAccountLink / myAccount: customer accounts at /account/ (email-link
+//   sign-in; the account lists proposals sent to that verified email).
 //
 // Secrets (set with `firebase functions:secrets:set`, never in code):
 //   SMTP_PASSWORD  app password for info@ (Google Workspace SMTP)
 //   PAYPAL_SECRET  PayPal app secret (sandbox or live, matching PAYPAL_ENV)
 // Plain settings in functions/.env: PAYPAL_CLIENT_ID, PAYPAL_ENV.
 import { initializeApp } from 'firebase-admin/app'
+import { getAuth } from 'firebase-admin/auth'
 import { FieldValue, getFirestore } from 'firebase-admin/firestore'
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore'
 import { HttpsError, onCall } from 'firebase-functions/v2/https'
@@ -23,6 +26,7 @@ import nodemailer from 'nodemailer'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { captureOrder, createOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
+import { EMAIL_RE, accountSummary, accountUrl, byNewest, normEmail, shownInAccount } from './account.js'
 
 initializeApp()
 const REGION = 'us-south1'
@@ -145,4 +149,62 @@ export const proposalChanged = onDocumentUpdated({ document: 'proposals/{token}'
     if (was?.status === 'paid' || now?.status !== 'paid' || !staff.length) continue
     await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `${PART_LABEL[part]} paid: ${name} ($${dollars(now.amount)})`, text: `${name} paid the $${dollars(now.amount)} ${PART_LABEL[part].toLowerCase()} by PayPal${now.env === 'sandbox' ? ' (TEST payment, sandbox)' : ''}.\nPayPal order ${now.orderId}.\n\nCustomer view: ${link}` })
   }
+})
+
+// ---- Customer accounts (/account/) ------------------------------------------
+
+// Tokens of proposals sent to this email (any letter case). Reads only the
+// email field of each proposal, not the large signature images.
+async function proposalTokensFor(email) {
+  const snap = await getFirestore().collection('proposals').select('customer.email').get()
+  return snap.docs.filter((d) => normEmail(d.get('customer.email')) === email).map((d) => d.id)
+}
+
+// Emails a one-time sign-in link from info@, but only to an email that has a
+// proposal. The answer is the same either way, so nobody can test whether an
+// address is a customer. At most one link a minute, 5 a day, per email.
+export const sendAccountLink = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+  const email = normEmail(req.data?.email)
+  if (!EMAIL_RE.test(email) || email.length > 200) throw new HttpsError('invalid-argument', 'Please enter a valid email')
+  const tokens = await proposalTokensFor(email)
+  if (!tokens.length) { logger.info('Account link asked for an email with no proposals'); return { ok: true } }
+
+  // Server-only bookkeeping (no client rule matches accountLinks, so browsers can't read it).
+  const limitRef = getFirestore().doc(`accountLinks/${encodeURIComponent(email)}`)
+  const now = Date.now()
+  const day = new Date(now).toISOString().slice(0, 10)
+  const prev = (await limitRef.get()).data() ?? {}
+  const today = prev.day === day ? prev.count ?? 0 : 0
+  if (now - (prev.lastAt ?? 0) < 60_000 || today >= 5) { logger.warn('Account link rate-limited'); return { ok: true } }
+  await limitRef.set({ lastAt: now, day, count: today + 1 })
+
+  const link = await getAuth().generateSignInWithEmailLink(email, { url: accountUrl(req.data?.origin), handleCodeInApp: true })
+  await mailer().sendMail({
+    from: `"Christmas Light Creations" <${FROM}>`, to: email, replyTo: FROM,
+    subject: 'Your Christmas Light Creations sign-in link',
+    text: `Hi,
+
+Tap this link to open your account (your agreements, what's paid, and anything due):
+${link}
+
+The link works once. If you didn't ask for it, just ignore this email.
+
+Thank you,
+Christmas Light Creations
+281-819-0163`,
+  })
+  return { ok: true }
+})
+
+// The signed-in customer's proposals with what's paid and what's due. Only
+// for a verified email (email-link sign-in always is); payment amounts come
+// from the stored proposals, same as the payment functions.
+export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+  const email = normEmail(req.auth?.token?.email)
+  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const tokens = await proposalTokensFor(email)
+  const db = getFirestore()
+  const docs = tokens.length ? await db.getAll(...tokens.map((t) => db.doc(`proposals/${t}`)), { fieldMask: ['status', 'title', 'season', 'customer', 'items', 'discountPct', 'depositPct', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt'] }) : []
+  const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data())).sort(byNewest)
+  return { email, proposals }
 })

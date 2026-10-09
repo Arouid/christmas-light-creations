@@ -34,3 +34,6 @@
 | 30 | ~2026-11-08: review DMARC reports; if clean, change `_dmarc` to `p=quarantine` | Spoofed mail gets junked | Not due yet |
 | 31 | Early July 2027: domain auto-renews (PayPal still valid) | Renewed Jul 23, 2027 | Not due |
 | 32 | Publish rules (messages), import the Voice history JSON | Customers show their past texts/calls | Waiting on Takeout export |
+| 30 | Customer account: request a link at /account/ for an email on a proposal, open it on a phone | Email from info@ arrives; link signs in; proposals listed with paid / due; Pay shows PayPal buttons for amounts due | Waiting: functions deploy + Email link enabled (TODO #31) |
+| 31 | Account link opened on a different device | Asks for the email, then signs in | Not checked |
+| 32 | Account link requested for an email with no proposal | Same "Check your email" message, no email sent | Not checked |

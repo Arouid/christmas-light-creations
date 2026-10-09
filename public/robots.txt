@@ -1,5 +1,6 @@
 User-agent: *
 Disallow: /leads/
 Disallow: /proposal/
+Disallow: /account/
 
 Sitemap: https://christmas-light-creations.com/sitemap.xml

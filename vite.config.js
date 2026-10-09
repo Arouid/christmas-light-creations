@@ -6,7 +6,8 @@ import { defineConfig } from 'vite'
 // BASE_PATH is set by the deploy workflow: '/' on the custom domain,
 // '/christmas-light-creations/' on the temporary github.io address.
 // Pages: the public site, the staff-only /leads/ app, and customers'
-// /proposal/?t=… pages (reachable only by their link).
+// /proposal/?t=… pages (reachable only by their link), and customers' own
+// accounts at /account/ (email-link sign-in).
 export default defineConfig({
   base: process.env.BASE_PATH || '/',
   plugins: [react(), tailwindcss()],
@@ -18,6 +19,7 @@ export default defineConfig({
         main: resolve(import.meta.dirname, 'index.html'),
         leads: resolve(import.meta.dirname, 'leads/index.html'),
         proposal: resolve(import.meta.dirname, 'proposal/index.html'),
+        account: resolve(import.meta.dirname, 'account/index.html'),
       },
     },
   },
