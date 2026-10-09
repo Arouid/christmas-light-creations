@@ -17,7 +17,8 @@ let seq = 0
 export const itemId = () => `i${Date.now().toString(36)}${(seq++).toString(36)}`
 
 // Line item: qty × rate. `due` = when it's paid: 'install' or 'removal'.
-export const newItem = (label = '', qty = 1, unit = '', rate = 0, due = 'install') => ({ id: itemId(), label, qty, unit, rate, due })
+// `details` = what the paper form had per line: color, bulb type, hardware, timer.
+export const newItem = (label = '', qty = 1, unit = '', rate = 0, due = 'install', details = '') => ({ id: itemId(), label, qty, unit, rate, due, details })
 export const itemCents = (it) => Math.round((Number(it.qty) || 0) * cents(it.rate))
 
 // Payment schedule: deposit (a % of the install after discount) when signed,
@@ -29,16 +30,26 @@ export function totals(p) {
   const discount = Math.round((installSub * (Number(p.discountPct) || 0)) / 100)
   const install = installSub - discount
   const deposit = Math.round((install * (Number(p.depositPct) || 0)) / 100)
-  return { installSub, discount, install, removal, total: install + removal, deposit, dueAtInstall: install - deposit, dueAtRemoval: removal }
+  // Next season: re-installing the same lights (CLC: 50% of the original install).
+  const nextYear = Math.round((install * (p.reinstallPct ?? 50)) / 100)
+  return { installSub, discount, install, removal, total: install + removal, deposit, dueAtInstall: install - deposit, dueAtRemoval: removal, nextYear }
 }
 
-// Items from a light design: lit feet × price per foot, plus takedown & storage
-// as a % of the install (CLC policy: no more than 15%, due at removal).
-export function itemsFromDesign({ feet, pricePerFoot, takedownPct = 15, label = 'C9 lights, installed (12" spacing)' }) {
-  const ft = Math.round(feet)
-  const install = newItem(label, ft, 'ft', pricePerFoot || 0, 'install')
-  const items = [install]
-  if (takedownPct > 0) items.push(newItem(`Takedown, labeling & storage bins (${takedownPct}% of install)`, 1, '', Math.round(ft * (pricePerFoot || 0) * takedownPct) / 100, 'removal'))
+// Takedown & storage: a % of the install with a minimum (CLC's form: 15% of
+// total, minimum $150), due at removal.
+export function takedownItem(installCents, pct = 15, minDollars = 150) {
+  const dollars = Math.max(Math.round(installCents * pct) / 10000, minDollars || 0)
+  const label = `Takedown, labeling & storage bins (${pct}% of install${minDollars ? `, minimum $${minDollars}` : ''})`
+  return newItem(label, 1, '', dollars, 'removal')
+}
+
+// Items from a light design: one line per area (like the paper form: front
+// roofline, mulch beds, arch…) with its own feet and rate, then takedown.
+// lines: [{ label, feet, rate, details }]
+export function itemsFromDesign({ lines, feet, pricePerFoot, takedownPct = 15, takedownMin = 150 }) {
+  const list = lines ?? [{ label: 'C9 lights, installed (12" spacing)', feet, rate: pricePerFoot }]
+  const items = list.filter((l) => l.feet > 0).map((l) => newItem(l.label, Math.round(l.feet), 'ft', l.rate || 0, 'install', l.details ?? ''))
+  if (takedownPct > 0 || takedownMin > 0) items.push(takedownItem(items.reduce((t, i) => t + itemCents(i), 0), takedownPct, takedownMin))
   return items
 }
 
@@ -53,6 +64,8 @@ export function newProposal({ customer = {}, items = [], depositPct = 50, discou
     discountLabel: discountPct ? 'Early install discount' : '',
     depositPct,
     notes: '',
+    timer: '',
+    reinstallPct: 50,
     terms,
     status: 'draft',
   }
@@ -73,6 +86,7 @@ export function termVars(p, business = {}) {
     depositPct: `${p.depositPct ?? 0}%`,
     dueAtInstall: fmt(t.dueAtInstall),
     removal: fmt(t.removal),
+    nextYear: fmt(t.nextYear),
   }
 }
 export const fillTerms = (text, vars) => String(text ?? '').replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m))
@@ -85,10 +99,10 @@ export function canonical(p) {
   return JSON.stringify({
     v: PROPOSAL_VERSION,
     title: p.title, season: p.season, customer: p.customer,
-    items: (p.items ?? []).map((i) => [i.label, Number(i.qty) || 0, i.unit ?? '', cents(i.rate), i.due]),
+    items: (p.items ?? []).map((i) => [i.label, Number(i.qty) || 0, i.unit ?? '', cents(i.rate), i.due, i.details ?? '']),
     discountPct: Number(p.discountPct) || 0, depositPct: Number(p.depositPct) || 0,
     totals: [t.install, t.removal, t.total, t.deposit],
-    notes: p.notes ?? '', terms: p.terms ?? '', design: p.designImageHash ?? null,
+    notes: p.notes ?? '', timer: p.timer ?? '', reinstallPct: p.reinstallPct ?? 50, terms: p.terms ?? '', design: p.designImageHash ?? null,
   })
 }
 

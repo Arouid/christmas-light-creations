@@ -62,7 +62,10 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
         <div className="divide-y divide-white/10 rounded-2xl border border-white/10 px-4 print:border-black/20">
           {items.map((i) => (
             <div key={i.id} className={row}>
-              <span>{i.label}{Number(i.qty) !== 1 || i.unit ? <span className="text-slate-400 print:text-black"> · {i.qty} {i.unit} × {fmt(Math.round(Number(i.rate) * 100))}</span> : ''}{i.due === 'removal' ? <span className="text-slate-400 print:text-black"> · due at takedown</span> : ''}</span>
+              <span>
+                {i.label}{Number(i.qty) !== 1 || i.unit ? <span className="text-slate-400 print:text-black"> · {i.qty} {i.unit} × {fmt(Math.round(Number(i.rate) * 100))}</span> : ''}{i.due === 'removal' ? <span className="text-slate-400 print:text-black"> · due at takedown</span> : ''}
+                {i.details && <span className="block text-xs text-slate-400 print:text-black">{i.details}</span>}
+              </span>
               <span className="shrink-0 tabular-nums">{fmt(itemCents(i))}</span>
             </div>
           ))}
@@ -78,6 +81,11 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
           <div className={row}><span>When installation is complete</span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
           {t.dueAtRemoval > 0 && <div className={row}><span>At takedown in January</span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>}
         </div>
+      </section>
+
+      <section className="grid gap-2 text-sm sm:grid-cols-2">
+        {p.timer && <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Timer: </span>{p.timer}</p>}
+        <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Next season re-install: </span>{fmt(t.nextYear)} ({p.reinstallPct ?? 50}% of this install)</p>
       </section>
 
       {p.notes && <section><h2 className="mb-1 font-semibold">Notes</h2><p className="whitespace-pre-wrap text-slate-300 print:text-black">{p.notes}</p></section>}

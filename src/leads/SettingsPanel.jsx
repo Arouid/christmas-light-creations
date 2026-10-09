@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import HomeBase from './HomeBase'
 import InstallApp from './InstallApp'
+import { DEFAULT_TERMS, FILL_IN } from '../proposals/terms.js'
 
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100'
 const box = 'space-y-2 rounded-2xl border border-white/10 bg-night-950 p-4'
@@ -79,6 +80,33 @@ function AlertEmails({ settings, onSave }) {
   )
 }
 
+// Defaults for new proposals: deposit, takedown %, who countersigns, and the
+// contract terms (owner + attorney to finish every [TO FILL IN]).
+function ProposalDefaults({ settings, onSave }) {
+  const [terms, setTerms] = useState(settings.proposalTerms || DEFAULT_TERMS)
+  const [msg, setMsg] = useState(null)
+  const num = (k) => (e) => onSave({ [k]: e.target.value === '' ? null : Number(e.target.value) })
+  return (
+    <div className={box}>
+      <p className="font-semibold">Proposals & contracts</p>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <label className="text-sm text-slate-400">Deposit %<input type="number" min="0" max="100" defaultValue={settings.depositPct ?? 50} onBlur={num('depositPct')} className={field} /></label>
+        <label className="text-sm text-slate-400">Takedown % of install<input type="number" min="0" max="100" defaultValue={settings.takedownPct ?? 15} onBlur={num('takedownPct')} className={field} /></label>
+        <label className="text-sm text-slate-400">Takedown minimum $<input type="number" min="0" defaultValue={settings.takedownMin ?? 150} onBlur={num('takedownMin')} className={field} /></label>
+        <label className="col-span-2 text-sm text-slate-400 sm:col-span-1">Countersigned by<input defaultValue={settings.countersignName ?? ''} placeholder="Scott Minor, Owner" onBlur={(e) => onSave({ countersignName: e.target.value.trim() })} className={field} /></label>
+      </div>
+      <label className="block text-sm text-slate-400">Contract terms for new proposals
+        <textarea value={terms} onChange={(e) => { setTerms(e.target.value); setMsg(null) }} rows={10} className={`${field} font-mono text-xs`} />
+      </label>
+      {terms.includes(FILL_IN) && <p className="text-sm text-glow-300">Finish the parts marked [TO FILL IN] (ideally with a Texas attorney). Proposals can’t be sent until they’re done.</p>}
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={async () => { await onSave({ proposalTerms: terms }); setMsg('Saved ✓') }} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950">Save terms</button>
+        {msg && <span className="text-sm text-emerald-400">{msg}</span>}
+      </div>
+    </div>
+  )
+}
+
 export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, onClose }) {
   const [account, setAccount] = useState(settings.voiceAccount ?? '')
   const [saved, setSaved] = useState(false)
@@ -130,6 +158,8 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
               onBlur={(e) => onSave({ designPricePerFoot: e.target.value ? Number(e.target.value) : null })} className={field} />
           </label>
         </div>
+
+        <ProposalDefaults settings={settings} onSave={onSave} />
 
         <DiscountSchedule settings={settings} onSave={onSave} />
 

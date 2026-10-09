@@ -15,7 +15,7 @@ export const DEFAULT_TERMS = `1. The work. {business} will provide and install t
 
 5. Access and your property. You agree to give us access to the areas being lit (including gate codes) and working outdoor outlets, and to tell us about anything we should avoid (sprinkler heads, buried lines, pets, fragile plants). We do not install on clay or other tile roofs.
 
-6. Takedown and ownership. Takedown starts January 3 and is finished by January 13. Once paid in full, the lights and materials are yours: we label, wrap and bin them for you to keep. Re-installing them in a future season is 50% of the original install price.
+6. Takedown and ownership. Takedown starts January 3 and is finished by January 13. Once paid in full, the lights and materials are yours: we label, wrap and bin them for you to keep. Re-installing them in a future season is 50% of the original install price ({nextYear} for this design).
 
 7. Cancellation and refunds. [TO FILL IN: what happens to the deposit if the customer cancels before install, and any refund policy.]
 

@@ -13,6 +13,7 @@ import { LogCallForm, ServiceCallCard } from './ServiceView'
 import StreetViewPhoto from './StreetViewPhoto'
 import TextHistory from './TextHistory'
 import DesignsPanel from './designs/DesignsPanel'
+import ProposalsPanel from './proposals/ProposalsPanel'
 import DiscountSuggestion from './DiscountSuggestion'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
@@ -145,6 +146,9 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
 
         <Section title="🎨 Light designs" open={false}>
           <DesignsPanel owner={{ type: 'customer', id: customer.id, name: customer.fullName, address: customer.address }} />
+        </Section>
+        <Section title="📝 Proposals & contracts" open={false}>
+          <ProposalsPanel owner={{ type: 'customer', id: customer.id, name: customer.fullName, address: customer.address, email: customer.email, phone: customer.phone, installType: customer.installType }} />
         </Section>
 
         {seasons.map((y) => (

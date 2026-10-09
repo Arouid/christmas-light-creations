@@ -154,6 +154,49 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
+    // Proposals (estimate + contract). The document id is the customer's
+    // unguessable link token. The public can open one only by that exact id
+    // (no listing), mark it viewed, and sign it once: the signature must
+    // carry the fingerprint of what was sent. Staff manage everything else.
+    function stamped() {
+      return request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+    }
+    function publicView() {
+      return resource.data.status == 'sent'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'viewedAt'])
+        && request.resource.data.status == 'viewed'
+        && request.resource.data.viewedAt == request.time;
+    }
+    function publicSign() {
+      let sig = request.resource.data.signature;
+      return resource.data.status in ['sent', 'viewed']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'signature', 'signedAt'])
+        && request.resource.data.status == 'signed'
+        && request.resource.data.signedAt == request.time
+        && sig.keys().hasOnly(['name', 'image', 'consent', 'docHash', 'userAgent'])
+        && filledStr(sig.name, 120)
+        && sig.consent == true
+        && sig.docHash == resource.data.docHash
+        && sig.image is string && sig.image.size() < 300000
+        && shortStr(sig.userAgent, 200);
+    }
+    match /proposals/{token} {
+      allow get: if true;
+      allow list: if isStaff();
+      allow create: if isStaff() && stamped();
+      allow update: if (isStaff() && stamped()) || publicView() || publicSign();
+      allow delete: if isStaff() && resource.data.status == 'draft';
+    }
+    // Images shown on a proposal page (design + before photo), by token.
+    match /proposalFiles/{fileId} {
+      allow get: if true;
+      allow create, update: if isStaff() && stamped()
+        && request.resource.data.dataUrl is string
+        && request.resource.data.dataUrl.size() < 1040000;
+      allow delete: if isStaff();
+    }
+
     // Shared staff settings (home base for distances and routes).
     match /settings/{settingId} {
       allow read: if isStaff();

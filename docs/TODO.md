@@ -29,6 +29,9 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 26 | **Designer / proposals / deposits** (Strandr-style mockups, e-signed proposals, PayPal deposits): send Claude your ideas, deposit amount, existing contract (or OK to draft), and what a subscription would bill for | On hold until owner says go |
 | 27 | **Republish Firestore rules** (designs + design images) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
 | 28 | **Try the light designer** on 2–3 real customer photos and send Claude feedback on what looks fake; set price per foot in ⚙ Settings | Customer card → 🎨 Light designs |
+| 29 | **Republish Firestore rules** (proposals) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
+| 30 | **Finish the contract terms**: ⚙ Settings → Proposals & contracts → fill the [TO FILL IN] parts (cancellation/refunds, damage/liability), ideally with a Texas attorney; set countersigner name, deposit %, takedown minimum | Proposals can't be sent until done |
+| 31 | Phase B setup when ready: `npx firebase-tools login` (same as #19) + PayPal developer app keys for deposits/subscriptions | Claude walks through it |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked

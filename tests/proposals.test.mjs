@@ -5,7 +5,7 @@ import { DEFAULT_TERMS } from '../src/proposals/terms.js'
 
 const base = () => newProposal({
   customer: { name: 'Pat Sample', email: 'pat@example.com', phone: '281-555-0101', address: '123 Example St, Pearland, TX' },
-  items: itemsFromDesign({ feet: 120.4, pricePerFoot: 4.5 }), // 120 ft × $4.50 = $540; takedown 15% = $81
+  items: itemsFromDesign({ feet: 120.4, pricePerFoot: 4.5, takedownMin: 0 }), // 120 ft × $4.50 = $540; takedown 15% = $81
   discountPct: 10, depositPct: 50, season: '2026',
 })
 
@@ -53,4 +53,22 @@ test('link tokens are long and random', () => {
   assert.equal(a.length, 24)
   assert.notEqual(a, newToken())
   assert.match(a, /^[A-Za-z2-9]+$/)
+})
+
+import { takedownItem } from '../src/proposals/model.js'
+
+test('paper-form rules: one line per area, takedown 15% with a $150 minimum, re-install 50%', () => {
+  const items = itemsFromDesign({ lines: [
+    { label: 'Front roofline', feet: 141, rate: 5, details: 'Clear incandescent · clips · timer' },
+    { label: 'Mulch beds', feet: 125, rate: 3.75, details: 'Clear · stakes' },
+    { label: 'Arch', feet: 24, rate: 4.5 },
+  ] })
+  assert.deepEqual(items.map((i) => [i.label, i.qty]), [['Front roofline', 141], ['Mulch beds', 125], ['Arch', 24], [items[3].label, 1]])
+  const p = newProposal({ items, depositPct: 50 })
+  const t = totals(p)
+  assert.equal(fmt(t.install), '$1,281.75', '$705 + $468.75 + $108')
+  assert.equal(fmt(t.removal), '$192.26', '15% of install (over the $150 minimum)')
+  assert.equal(fmt(t.nextYear), '$640.88')
+  assert.equal(items[0].details, 'Clear incandescent · clips · timer')
+  assert.equal(fmt(Math.round(takedownItem(50000).rate * 100)), '$150.00', 'small job: minimum $150')
 })
