@@ -8,6 +8,10 @@ export default function Memorial() {
     <section id="in-memory" aria-labelledby="in-memory-title" className="border-t border-white/10 bg-night-900 px-4 py-20 md:py-24">
       <div className="mx-auto max-w-2xl text-center">
         <span aria-hidden="true" className="twinkle mx-auto block size-3 rounded-full bg-glow-300 shadow-[0_0_18px_6px_rgba(255,207,77,0.45)]" />
+        {memorial.photo && (
+          <img src={memorial.photo.src} alt={memorial.photo.alt} width={memorial.photo.width} height={memorial.photo.height} loading="lazy"
+            className="mt-8 h-auto w-full rounded-2xl border border-white/10 shadow-[0_0_40px_rgba(255,207,77,0.12)]" />
+        )}
         <p className="mt-8 text-sm font-semibold uppercase tracking-wider text-glow-400">In loving memory</p>
         <h2 id="in-memory-title" className="mt-3 font-display text-3xl font-extrabold tracking-tight md:text-4xl">{memorial.name}</h2>
         <blockquote className="mt-8 text-lg leading-loose text-slate-300 md:text-xl md:leading-loose">{memorial.words}</blockquote>
