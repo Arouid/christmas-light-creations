@@ -257,7 +257,15 @@ export default function ProposalsPanel({ owner }) {
 
   return (
     <div className="space-y-3">
-      <button type="button" onClick={create} disabled={busy} className={primary}>{busy ? 'Starting…' : '📝 New proposal'}</button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onClick={create} disabled={busy} className={primary}>{busy ? 'Starting…' : '📝 New proposal'}</button>
+        {voided > 0 && (
+          <button type="button" onClick={() => setShowVoid((v) => !v)} aria-pressed={showVoid}
+            className="min-h-11 rounded-full border border-white/10 px-4 text-sm text-slate-400 hover:bg-white/5">
+            {showVoid ? 'Hide voided' : `Voided (${voided})`}
+          </button>
+        )}
+      </div>
       {listed.length > 0 && (
         <ul className="divide-y divide-white/5 rounded-xl border border-white/10">
           {listed.map((x) => (
@@ -272,11 +280,6 @@ export default function ProposalsPanel({ owner }) {
             </li>
           ))}
         </ul>
-      )}
-      {voided > 0 && (
-        <button type="button" onClick={() => setShowVoid((v) => !v)} className="min-h-11 text-sm text-slate-400 underline">
-          {showVoid ? 'Hide voided' : `Show voided (${voided})`}
-        </button>
       )}
       {current && <Editor key={current.id + current.status} token={current.id} p={current} owner={owner} designs={designs} settings={settings} user={user} onClose={() => setOpen(null)} />}
     </div>
