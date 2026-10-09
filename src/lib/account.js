@@ -1,5 +1,7 @@
-// Customer accounts (/account/): email-link sign-in (no passwords) and the
-// account data from the server function myAccount (functions/index.js).
+// Customer accounts (/account/): Google or email-link sign-in (no passwords)
+// and the account data from the server function myAccount (functions/index.js).
+// Signing in here never makes anyone staff: staff access is decided only by
+// the `staff` list in Firestore.
 // Firebase loads only on this page, by dynamic import.
 import { callDeposit } from './paypal.js'
 import { getFirebaseApp } from './firebase.js'
@@ -17,6 +19,20 @@ async function auth() {
 export async function sendLink(email) {
   remember(email.trim())
   await callDeposit('sendAccountLink', { email: email.trim(), origin: window.location.origin })
+}
+
+// Google, like the staff app: popup, or a full-page sign-in that returns here
+// when the phone can't open a popup.
+export async function signInGoogle() {
+  const a = await auth()
+  const provider = new a.GoogleAuthProvider()
+  provider.setCustomParameters({ prompt: 'select_account' })
+  try {
+    await a.signInWithPopup(a.auth, provider)
+  } catch (err) {
+    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'].includes(err?.code)) await a.signInWithRedirect(a.auth, provider)
+    else if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') throw err
+  }
 }
 
 export async function isLinkInUrl() {

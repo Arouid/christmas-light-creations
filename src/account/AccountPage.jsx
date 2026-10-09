@@ -4,8 +4,8 @@ import DepositPanel from '../proposal/DepositPanel.jsx'
 import { PART_LABEL, STATUS_LABEL, fmt } from '../proposals/model.js'
 import Icon from '../components/Icon'
 
-// The customer's own account: /account/ (sign in by emailed link, no
-// password). Lists every proposal sent to their email, what's paid and what's
+// The customer's own account: /account/ (sign in with Google or an emailed
+// link, no password). Lists every proposal sent to their email, what's paid and what's
 // due, and pays open amounts with the same PayPal panel as the proposal page.
 // Dev preview with sample data: /account/?demo
 const q = new URLSearchParams(window.location.search)
@@ -88,6 +88,17 @@ export default function AccountPage() {
     }
   }
 
+  async function google() {
+    setBusy(true)
+    try {
+      await (await lib).signInGoogle()
+    } catch {
+      setView((v) => ({ ...v, error: 'Google sign-in didn’t work. Try the email link below, or call us.' }))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function logOut() {
     if (demo) return
     await (await lib).signOut()
@@ -105,12 +116,12 @@ export default function AccountPage() {
         </a>
       </header>
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data</p>}
-      <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} reload={load} logOut={logOut} />
+      <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} reload={load} logOut={logOut} />
     </main>
   )
 }
 
-function Body({ view, email, setEmail, busy, submit, reload, logOut }) {
+function Body({ view, email, setEmail, busy, submit, google, reload, logOut }) {
   if (view.name === 'checking' || view.name === 'loading') return <p className="py-20 text-center text-slate-400">Loading your account…</p>
   if (view.name === 'error') return <Notice title="We couldn’t load your account" text="Please refresh, or call or text us." />
   if (view.name === 'badLink') return <Notice title="This sign-in link has expired or was already used" text="Ask for a new one below." action={<a href={`${import.meta.env.BASE_URL}account/`} className={`${btn} bg-white text-night-950`}>Get a new link</a>} />
@@ -120,7 +131,15 @@ function Body({ view, email, setEmail, busy, submit, reload, logOut }) {
     return (
       <form onSubmit={submit} className="space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
         <h1 className="font-display text-2xl font-extrabold">{finishing ? 'Confirm your email' : 'Sign in to your account'}</h1>
-        <p className="text-slate-300">{finishing ? 'Enter the email this link was sent to.' : 'See your agreements, what’s paid and anything due, and pay online. Enter the email we sent your proposal to and we’ll email you a sign-in link. No password needed.'}</p>
+        <p className="text-slate-300">{finishing ? 'Enter the email this link was sent to.' : 'See your agreements, what’s paid and anything due, and pay online. Use the email we sent your proposal to. No password needed.'}</p>
+        {!finishing && (
+          <>
+            <button type="button" onClick={google} disabled={busy} className={`${btn} w-full bg-white text-night-950 disabled:opacity-60`}>
+              <GoogleG /> Sign in with Google
+            </button>
+            <p className="text-center text-sm text-slate-400">or get a sign-in link by email</p>
+          </>
+        )}
         <label className="block">
           <span className="mb-1 block text-sm text-slate-300">Email</span>
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -134,6 +153,18 @@ function Body({ view, email, setEmail, busy, submit, reload, logOut }) {
     )
   }
   return <Account data={view.data} reload={reload} logOut={logOut} />
+}
+
+// Google's "G" mark, as Google's sign-in button guidelines ask for.
+function GoogleG() {
+  return (
+    <svg viewBox="0 0 48 48" className="size-5" aria-hidden="true">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
+  )
 }
 
 function Notice({ title, text, action }) {
@@ -157,7 +188,7 @@ function Account({ data, reload, logOut }) {
         {me?.address && <p className="text-slate-300">{me.address}</p>}
         <p className="text-sm text-slate-400">Signed in as {data.email}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
-      {!list.length && <Notice title="No proposals yet" text="We don’t have a proposal sent to this email yet. If we used a different email, call or text us." />}
+      {!list.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
       {list.length > 0 && (
         <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
           {owed ? `Due now: ${fmt(owed)}` : 'You’re all paid up. Thank you!'}
