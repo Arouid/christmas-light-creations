@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#050b1a" />
+<title>Page not found | Christmas Light Creations</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  /* Standalone page (GitHub Pages serves it for any missing URL), so no shared CSS. */
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100svh; display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(ellipse at top, #12214a, #050b1a 60%); color: #e2e8f0;
+    font-family: Inter, system-ui, sans-serif; text-align: center;
+  }
+  main { max-width: 34rem; }
+  .bulbs { display: flex; justify-content: center; gap: 14px; margin-bottom: 28px; }
+  .bulbs span { width: 12px; height: 12px; border-radius: 50%; background: #ffcf4d; box-shadow: 0 0 12px 3px #ffcf4d; }
+  .bulbs span.out { background: #334155; box-shadow: none; }
+  h1 { font-family: Fraunces, Georgia, serif; font-size: clamp(2rem, 7vw, 3rem); line-height: 1.1; margin: 0 0 12px; }
+  p { color: #94a3b8; font-size: 1.1rem; line-height: 1.6; margin: 0 0 28px; }
+  .actions { display: flex; flex-direction: column; gap: 12px; }
+  a.btn { display: block; padding: 16px 24px; border-radius: 999px; font-weight: 600; text-decoration: none; }
+  a.primary { background: #ffcf4d; color: #050b1a; }
+  a.secondary { border: 1px solid rgba(255,255,255,.2); color: #e2e8f0; }
+  a.home { color: #ffe08a; margin-top: 8px; }
+  @media (min-width: 560px) { .actions { flex-direction: row; justify-content: center; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="bulbs" aria-hidden="true"><span></span><span></span><span class="out"></span><span></span><span></span></div>
+  <h1>Looks like a bulb burned out.</h1>
+  <p>This page doesn’t exist anymore, but we do. Get a free estimate or give us a call and we’ll get your lights up.</p>
+  <div class="actions">
+    <a class="btn primary" href="/#estimate">Get a free estimate</a>
+    <a class="btn secondary" href="tel:+12818190163">Call 281-819-0163</a>
+  </div>
+  <p style="margin-top:20px"><a class="home" href="/">Go to the home page</a></p>
+</main>
+</body>
+</html>
