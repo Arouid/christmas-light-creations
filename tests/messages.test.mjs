@@ -23,3 +23,18 @@ test('templates greet by first name and include the review link where needed', (
   assert.match(TEMPLATES.review.body(c), /g\.page\/r\//)
   assert.match(textMessages.review({}), /^Hi there,/)
 })
+
+import { fillTemplate, missingPlaceholders } from '../src/lib/messages.js'
+
+test('placeholders fill per customer; first name falls back to "there"', () => {
+  const c = { firstName: 'Pat', city: 'Pearland', gateCode: '1234', seasons: { 2026: { plannedDate: 'Nov 20', install: { total: '$414.00' } } } }
+  const t = 'Hi {first}, see you {date} in {city}. Gate {gate}. Total {total}. {business} {businessPhone}'
+  assert.equal(fillTemplate(t, c, '2026'), 'Hi Pat, see you Nov 20 in Pearland. Gate 1234. Total $414.00. Christmas Light Creations 281-819-0163')
+  assert.equal(fillTemplate('Hi {first}', {}, '2026'), 'Hi there')
+  assert.equal(fillTemplate('{unknown} stays', c, '2026'), '{unknown} stays')
+})
+
+test('missing values are reported so nobody gets an email with a blank in it', () => {
+  assert.deepEqual(missingPlaceholders('Hi {first}, gate {gate}, date {date}', { firstName: 'Pat' }, '2026'), ['Gate code', 'Planned date'])
+  assert.deepEqual(missingPlaceholders('Hi {first}', {}, '2026'), [])
+})
