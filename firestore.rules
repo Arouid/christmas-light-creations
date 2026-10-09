@@ -91,6 +91,18 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
+    // Past texts/calls/voicemails imported from the old Google Voice account.
+    // History: staff can read and (re-)import; nobody deletes.
+    match /messages/{messageId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff()
+        && filledStr(request.resource.data.customerId, 200)
+        && request.resource.data.direction in ['in', 'out']
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow delete: if false;
+    }
+
     // Shared staff settings (home base for distances and routes).
     match /settings/{settingId} {
       allow read: if isStaff();

@@ -51,6 +51,37 @@ export function useLiveCollection(user, coll, sort) {
   return { items, error }
 }
 
+// Live records where `field == value` (e.g. one customer's text history).
+// Sorted here, not in the query, so no Firestore index is needed.
+export function useLiveQuery(user, coll, field, value, sort) {
+  const pick = () => demoList(coll).filter((d) => d[field] === value).sort(sort)
+  const [items, setItems] = useState(demoMode ? pick : null)
+
+  useEffect(() => {
+    if (demoMode) {
+      const refresh = () => setItems(pick())
+      refresh()
+      demo.listeners.add(refresh)
+      return () => demo.listeners.delete(refresh)
+    }
+    if (!user || !value) return
+    let unsub = () => {}
+    let cancelled = false
+    ;(async () => {
+      const { fs, db } = await fire()
+      if (cancelled) return
+      unsub = fs.onSnapshot(
+        fs.query(fs.collection(db, coll), fs.where(field, '==', value)),
+        (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(sort)),
+        () => setItems([]),
+      )
+    })()
+    return () => { cancelled = true; unsub() }
+  }, [user, coll, field, value, sort]) // eslint-disable-line react-hooks/exhaustive-deps -- pick() reads the same args
+
+  return items
+}
+
 // path like "gateCode" or "seasons.2026.install.paid"
 export async function updateField(user, coll, id, path, value) {
   if (demoMode) return demoWrite(coll, id, (d) => setPath(d ?? {}, path, value))

@@ -13,6 +13,7 @@ import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
 import ViewTab from './ViewTab'
+import { mergeMany } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
 import { useGateCodes, useServiceCalls, useSettings, useViews } from './useStaffLists'
@@ -182,7 +183,8 @@ export default function LeadsApp() {
           ? <GatesView gates={gates} onUpdate={gatesApi.update} onAdd={gatesApi.add} />
           : loading)}
         {tab === 'import' && (customers
-          ? <ImportView existing={customers} onImport={customersApi.importMany} onImportGates={gatesApi.importMany} />
+          ? <ImportView existing={customers} onImport={customersApi.importMany} onImportGates={gatesApi.importMany}
+              onImportMessages={(records, onProgress) => mergeMany(user, 'messages', records, onProgress)} />
           : loading)}
       </main>
 
@@ -191,7 +193,7 @@ export default function LeadsApp() {
       )}
       {open && (
         <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
-          gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} />
+          gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} user={user} />
       )}
       {showSettings && (
         <SettingsPanel settings={settingsApi.settings ?? {}} onSave={settingsApi.save} textFrom={textFrom}

@@ -9,6 +9,7 @@ import Field from './Field'
 import { EmailButton, TextButton } from './Reach'
 import { LogCallForm, ServiceCallCard } from './ServiceView'
 import StreetViewPhoto from './StreetViewPhoto'
+import TextHistory from './TextHistory'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
 
@@ -79,7 +80,7 @@ function Section({ title, children, open = true }) {
   )
 }
 
-export default function CustomerDetail({ customer, season, onUpdate, onClose, gates = [], calls = [], onLogCall, onUpdateCall }) {
+export default function CustomerDetail({ customer, season, onUpdate, onClose, gates = [], calls = [], onLogCall, onUpdateCall, user }) {
   const [logging, setLogging] = useState(false)
   const gate = gateFor(customer, gates)
   const myCalls = calls.filter((c) => c.customerId === customer.id)
@@ -158,6 +159,10 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             </ul>
           </Section>
         )}
+
+        <Section title="Text & call history" open={false}>
+          <TextHistory user={user} customerId={customer.id} />
+        </Section>
 
         {GROUPS.map(([title, fields]) => (
           <Section key={title} title={title} open={title !== 'Account'}>

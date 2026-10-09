@@ -14,9 +14,10 @@ const FILES = [
   ['scheduling', 'Scheduling tab (.csv)'],
   ['accounts', 'Accounts tab (.csv)'],
   ['gates', 'Gate Codes tab (.csv), optional'],
+  ['messages', 'Text history (.json, made by Claude from the Voice export), optional'],
 ]
 
-export default function ImportView({ existing, onImport, onImportGates }) {
+export default function ImportView({ existing, onImport, onImportGates, onImportMessages }) {
   const [files, setFiles] = useState({})
   const [preview, setPreview] = useState(null)
   const [error, setError] = useState(null)
@@ -35,7 +36,15 @@ export default function ImportView({ existing, onImport, onImportGates }) {
         Object.assign(p, result, { updates: result.customers.filter((c) => ids.has(c.id)).length })
       }
       if (next.gates) p.gates = buildGateCodes(await readCsv(next.gates))
-      if (p.customers || p.gates) setPreview(p)
+      if (next.messages) {
+        const parsed = JSON.parse(await next.messages.text())
+        const known = new Set(existing.map((c) => c.id))
+        const list = (parsed.messages ?? []).filter((m) => m.id && known.has(m.data?.customerId))
+        p.messages = list
+        p.messageCustomers = new Set(list.map((m) => m.data.customerId)).size
+        p.messageSkipped = (parsed.messages ?? []).length - list.length
+      }
+      if (p.customers || p.gates || p.messages) setPreview(p)
     } catch (err) {
       setError(err.message)
     }
@@ -46,6 +55,7 @@ export default function ImportView({ existing, onImport, onImportGates }) {
     try {
       if (preview.customers) await onImport(preview.customers, setProgress)
       if (preview.gates) await onImportGates(preview.gates)
+      if (preview.messages) await onImportMessages(preview.messages, setProgress)
       setProgress('done')
     } catch (err) {
       setError(err.message)
@@ -86,6 +96,10 @@ export default function ImportView({ existing, onImport, onImportGates }) {
             </>
           )}
           {preview.gates && <p><strong>{preview.gates.length}</strong> neighborhood gate codes.</p>}
+          {preview.messages && (
+            <p><strong>{preview.messages.length}</strong> past texts and calls for <strong>{preview.messageCustomers}</strong> customers
+              {preview.messageSkipped > 0 && <span className="text-slate-400"> ({preview.messageSkipped} skipped: customer not in the app)</span>}.</p>
+          )}
           {warnings.length > 0 && (
             <details className="text-sm">
               <summary className="cursor-pointer text-glow-300">{warnings.length} {warnings.length === 1 ? 'thing' : 'things'} to check</summary>
@@ -97,7 +111,7 @@ export default function ImportView({ existing, onImport, onImportGates }) {
           ) : (
             <button type="button" onClick={run} disabled={progress !== null}
               className="w-full rounded-full bg-glow-400 py-3.5 font-semibold text-night-950 disabled:opacity-60">
-              {progress === null ? 'Import' : `Importing… ${progress}/${total}`}
+              {progress === null ? 'Import' : `Importing… ${progress}`}
             </button>
           )}
         </div>

@@ -33,3 +33,4 @@
 | 29 | Google Admin → Authenticate email shows "Authenticating email" | DKIM signing on | Owner to click Start authentication |
 | 30 | ~2026-11-08: review DMARC reports; if clean, change `_dmarc` to `p=quarantine` | Spoofed mail gets junked | Not due yet |
 | 31 | Early July 2027: domain auto-renews (PayPal still valid) | Renewed Jul 23, 2027 | Not due |
+| 32 | Publish rules (messages), import the Voice history JSON | Customers show their past texts/calls | Waiting on Takeout export |

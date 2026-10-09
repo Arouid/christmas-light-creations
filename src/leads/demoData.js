@@ -42,6 +42,11 @@ export const demoData = {
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
   ]),
   settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 } } },
+  messages: byId([
+    { id: 'demo-msg-1', customerId: 'sample-customer', phone: '+15550101', kind: 'text', direction: 'out', at: '2025-11-18T17:05:00Z', text: 'Hi! This is Christmas Light Creations. We can install Thursday Nov 20 in the evening. Does that work?' },
+    { id: 'demo-msg-2', customerId: 'sample-customer', phone: '+15550101', kind: 'text', direction: 'in', at: '2025-11-18T17:12:00Z', text: 'Thursday works, gate code is the same as last year.' },
+    { id: 'demo-msg-3', customerId: 'sample-customer', phone: '+15550101', kind: 'voicemail', direction: 'in', at: '2025-12-12T01:40:00Z', text: 'Hey, the left side of the garage went out tonight.', duration: '0:21' },
+  ]),
   views: byId([
     { id: 'demo-view-1', name: 'Needs scheduling', order: 1, mode: 'install', statuses: ['Confirmed - Needs to be Scheduled'],
       columns: ['name', 'area', 'phone', 'timeframe', 'status'] },
