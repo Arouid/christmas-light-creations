@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { business } from '../data/content'
 import { LEAD_STATUSES, STATUS_LABELS } from '../lib/firebase'
+import { leadToCustomer, seasonYear } from '../lib/customers'
 import Icon from '../components/Icon'
+import ComposeEmail from './ComposeEmail'
 import StreetViewPhoto from './StreetViewPhoto'
-import { EmailButton, TextButton } from './Reach'
-import { TEMPLATES, textMessages } from '../lib/messages'
+import { TextButton } from './Reach'
+import { textMessages } from '../lib/messages'
 
 const statusColor = {
   new: 'bg-glow-400 text-night-950',
@@ -94,7 +95,7 @@ export default function LeadCard({ lead, onUpdate, onMakeCustomer, onOpenCustome
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {phoneDigits && <a className={action} href={`tel:${phoneDigits}`}><Icon name="phone" className="size-4" /> Call</a>}
             <TextButton phone={lead.phone} className={action} />
-            <EmailButton to={lead.email} className={action} subject={`Your Christmas light estimate – ${business.name}`} />
+            <ComposeEmail person={leadToCustomer(lead, seasonYear())} season={seasonYear()} start="estimate-thanks" className={action} />
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}>Map</a>
           </div>
@@ -104,8 +105,7 @@ export default function LeadCard({ lead, onUpdate, onMakeCustomer, onOpenCustome
               <p className="text-sm text-slate-300">Booked! Ask for a Google review:</p>
               <div className="mt-2 grid grid-cols-2 gap-2 sm:flex">
                 <TextButton phone={lead.phone} className={action} label="Text review link" message={textMessages.review(lead)} />
-                <EmailButton to={lead.email} className={action} label="Email review link"
-                  subject={TEMPLATES.review.subject()} body={TEMPLATES.review.body(lead)} />
+                <ComposeEmail person={leadToCustomer(lead, seasonYear())} season={seasonYear()} start="review" label="Email review link" className={action} />
               </div>
             </div>
           )}

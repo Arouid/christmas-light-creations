@@ -6,25 +6,6 @@ export const BUSINESS_EMAIL = 'info@christmas-light-creations.com'
 
 const first = (c) => c.firstName || 'there'
 
-export const TEMPLATES = {
-  reinstall: {
-    label: 'Re-install invite',
-    subject: (year) => `Your ${year} Christmas lights`,
-    body: (c, year) => `Hi ${first(c)},\n\nIt's ${business.name}! We're booking ${year} installs now and would love to light up your home again. Reply to this email (or text ${business.phone}) with "yes" and any timing preferences, and we'll get you on the schedule.\n\nEarly installs book up fast.\n\nThank you,\n${business.name}\n${business.phone}`,
-  },
-  schedule: {
-    label: 'Scheduling update',
-    subject: (year) => `Scheduling your ${year} install`,
-    body: (c) => `Hi ${first(c)},\n\nWe're putting together the install schedule. Reply with the dates that work best for you, or any gate code or access notes we should know.\n\nThank you,\n${business.name}\n${business.phone}`,
-  },
-  review: {
-    label: 'Review request',
-    subject: () => `Thank you from ${business.name}`,
-    body: (c) => `Hi ${first(c)},\n\nThank you for choosing ${business.name}! If you have a minute, a Google review really helps our small family business:\n${business.reviewLink}\n\nMerry Christmas,\n${business.name}`,
-  },
-  custom: { label: 'Blank', subject: () => '', body: (c) => `Hi ${first(c)},\n\n\n\n${business.name}\n${business.phone}` },
-}
-
 export const textMessages = {
   confirm: (c, year) => `Hi ${first(c)}, this is ${business.name}! We're scheduling ${year} installs. Would you like your lights again this year? Reply YES and any timing preferences.`,
   review: (c) => `Hi ${first(c)}, thanks for choosing ${business.name}! If you have a minute, a Google review really helps our family business: ${business.reviewLink}`,

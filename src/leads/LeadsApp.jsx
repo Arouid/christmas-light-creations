@@ -12,6 +12,9 @@ import SettingsPanel from './SettingsPanel'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
 import { DiscountSchedule } from './discountContext'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
+import { mergeTemplates } from '../lib/emailTemplates'
+import EmailsView from './EmailsView'
+import { EmailTemplates } from './templatesContext'
 import ServiceView from './ServiceView'
 import ViewEditor from './ViewEditor'
 import ViewTab from './ViewTab'
@@ -22,7 +25,7 @@ import { useGateCodes, useServiceCalls, useSettings, useViews } from './useStaff
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
 const BEFORE = [['map', 'Map'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season']]
-const AFTER = [['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
+const AFTER = [['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
   return <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">{children}</main>
@@ -124,11 +127,13 @@ export default function LeadsApp() {
   const open = openId && customers?.find((c) => c.id === openId)
   const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
 
+  const templates = mergeTemplates(settingsApi.settings?.emailTemplates)
   const voiceAccount = textFrom === 'own' ? '' : (settingsApi.settings?.voiceAccount ?? '')
 
   return (
     <VoiceAccount.Provider value={voiceAccount}>
     <DiscountSchedule.Provider value={settingsApi.settings?.discountSchedule ?? DEFAULT_SCHEDULE}>
+    <EmailTemplates.Provider value={templates}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
@@ -179,6 +184,10 @@ export default function LeadsApp() {
           ? <ViewTab view={currentView} customers={customers} season={season} gates={gates} onOpen={setOpenId}
               onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} onDelete={() => deleteView(currentView.id)} />
           : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
+        {tab === 'emails' && (customers
+          ? <EmailsView saved={settingsApi.settings?.emailTemplates ?? []} onSave={settingsApi.save}
+              customers={customers} season={season} onUpdate={customersApi.update} />
+          : loading)}
         {tab === 'service' && (customers && serviceApi.calls
           ? <ServiceView calls={calls} customers={customers} gates={gates} onLog={serviceApi.log} onUpdate={serviceApi.update} onOpen={setOpenId} />
           : loading)}
@@ -203,6 +212,7 @@ export default function LeadsApp() {
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
       )}
     </div>
+    </EmailTemplates.Provider>
     </DiscountSchedule.Provider>
     </VoiceAccount.Provider>
   )

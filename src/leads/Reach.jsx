@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { gmailUrl, voiceUrl } from '../lib/messages'
+import { voiceUrl } from '../lib/messages'
 import Icon from '../components/Icon'
 import { useVoiceAccount } from './voice'
 
@@ -65,15 +65,5 @@ export function TextButton({ phone, message, label = 'Text', className = pill, o
         </div>
       )}
     </>
-  )
-}
-
-export function EmailButton({ to, subject, body, label = 'Email', className = pill, onSent }) {
-  if (!to) return null
-  return (
-    <a href={gmailUrl({ to, subject, body })} target="_blank" rel="noreferrer" className={className}
-      onClick={(e) => { e.stopPropagation(); onSent?.() }} title="Opens Gmail as info@">
-      {label}
-    </a>
   )
 }

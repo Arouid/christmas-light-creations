@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { e164, voiceUrl, gmailUrl, TEMPLATES, textMessages } from '../src/lib/messages.js'
+import { e164, voiceUrl, gmailUrl, textMessages, PLACEHOLDERS } from '../src/lib/messages.js'
+import { STOCK_TEMPLATES, TEMPLATE_GROUPS, mergeTemplates } from '../src/lib/emailTemplates.js'
 
 test('phone numbers become +1 format for Google Voice', () => {
   assert.equal(e164('(281) 819-0163'), '+12818190163')
@@ -17,11 +18,28 @@ test('Gmail compose opens from the business account with fields filled', () => {
   assert.equal(u.searchParams.get('body'), 'Line 1\nLine 2')
 })
 
-test('templates greet by first name and include the review link where needed', () => {
-  const c = { firstName: 'Pat' }
-  assert.match(TEMPLATES.reinstall.body(c, '2026'), /^Hi Pat,/)
-  assert.match(TEMPLATES.review.body(c), /g\.page\/r\//)
+test('stock email templates: valid placeholders, known groups, unique ids', () => {
+  const keys = new Set(PLACEHOLDERS.map((p) => p.key))
+  const ids = new Set()
+  for (const t of STOCK_TEMPLATES) {
+    assert.ok(!ids.has(t.id), `duplicate id ${t.id}`)
+    ids.add(t.id)
+    assert.ok(TEMPLATE_GROUPS.includes(t.group), `${t.id}: unknown group`)
+    assert.match(t.body, /^Hi \{first\},/, `${t.id}: greets by first name`)
+    for (const [, k] of `${t.subject} ${t.body}`.matchAll(/\{(\w+)\}/g)) assert.ok(keys.has(k), `${t.id}: unknown {${k}}`)
+  }
+  for (const id of ['reinstall', 'schedule', 'review', 'custom']) assert.ok(ids.has(id), `keeps ${id} (emailsSent history)`)
+  assert.match(STOCK_TEMPLATES.find((t) => t.id === 'review').body, /\{reviewLink\}/)
   assert.match(textMessages.review({}), /^Hi there,/)
+})
+
+test('staff edits replace stock templates; added ones come last', () => {
+  const merged = mergeTemplates([{ id: 'review', label: 'Ask for a review' }, { id: 'x1', label: 'Ours', subject: 's', body: 'b' }])
+  assert.equal(merged.find((t) => t.id === 'review').label, 'Ask for a review')
+  assert.ok(merged.find((t) => t.id === 'review').edited)
+  assert.match(merged.find((t) => t.id === 'review').body, /\{reviewLink\}/, 'unedited fields keep stock text')
+  assert.deepEqual(merged.at(-1), { group: 'Our templates', id: 'x1', label: 'Ours', subject: 's', body: 'b', custom: true })
+  assert.equal(mergeTemplates().length, STOCK_TEMPLATES.length)
 })
 
 import { fillTemplate, missingPlaceholders } from '../src/lib/messages.js'

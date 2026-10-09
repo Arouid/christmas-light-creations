@@ -48,3 +48,4 @@ What was actually checked working, and how. Newest first.
 | 2026-10-08 | `npm run check` passes (lint with zero warnings + build) | Ran locally |
 | 2026-10-08 | Phone width (375px): no sideways scroll, hero, services, gallery, form render | Browser pane, mobile viewport |
 | 2026-10-08 | All gallery images and logo load (none broken) | Browser pane, scrolled whole page, checked every `<img>` |
+| 2026-10-08 | Emails tab (demo, 375px): 16 templates grouped, Send… → picker → ticked 2 → queue filled per person with missing-field warnings → Sent/Next ×2 → Done; editing a stock template saves and shows "edited"; customer Email button template dropdown fills name/address/date. No console errors, no horizontal scroll | Browser pane + `npm test` (29) |

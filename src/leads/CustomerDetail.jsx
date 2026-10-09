@@ -3,10 +3,11 @@ import {
   BLANK_LABEL, FIRST_CONTACT, INSTALL_STATUSES, INSTALL_TYPES, INVOICE_STATUSES, PAID, PAYMENT_TYPES,
   TAKEDOWN_STATUSES, gateFor, getPath, todayISO,
 } from '../lib/customers'
-import { TEMPLATES, textMessages } from '../lib/messages'
+import { textMessages } from '../lib/messages'
+import ComposeEmail from './ComposeEmail'
 import Icon from '../components/Icon'
 import Field from './Field'
-import { EmailButton, TextButton } from './Reach'
+import { TextButton } from './Reach'
 import { LogCallForm, ServiceCallCard } from './ServiceView'
 import StreetViewPhoto from './StreetViewPhoto'
 import TextHistory from './TextHistory'
@@ -112,7 +113,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
           <TextButton phone={customer.phone} className={action} />
-          <EmailButton to={customer.email} className={action} subject="Christmas Light Creations" body={TEMPLATES.custom.body(customer)} />
+          <ComposeEmail person={customer} season={season} className={action} />
           {customer.address && (
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}`}>Map</a>
@@ -134,8 +135,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <TextButton phone={customer.phone} className={action} label="Text review link" message={textMessages.review(customer)} onSent={markAsked} />
-              <EmailButton to={customer.email} className={action} label="Email review link" onSent={markAsked}
-                subject={TEMPLATES.review.subject()} body={TEMPLATES.review.body(customer)} />
+              <ComposeEmail person={customer} season={reviewSeason} start="review" label="Email review link" className={action} onSent={markAsked} />
             </div>
           </div>
         )}

@@ -153,7 +153,7 @@ export const faq = [
     group: 'General',
     items: [
       ['What do you do?', 'We install and remove Christmas lighting for homes and businesses, from Pearland and Manvel (past 288) down to Kemah, Alvin, Texas City, Santa Fe and everywhere in between.'],
-      ['When can you install my lights?', 'Our season starts October 15th and gets busier until the holidays. Installing early earns a discount based on how early, typically good through the end of October.'],
+      ['When can you install my lights?', 'Our season starts October 15th and gets busier until the holidays. Installing early earns a discount, good through the end of October.'],
       ['Do you install on tiled roofs?', 'No. Clay and other tile roofs are too fragile for us to work on safely.'],
     ],
   },
