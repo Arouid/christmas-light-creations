@@ -138,3 +138,4 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-09 Past requests: Deceased status
 
 - Demo at 375px: Status → Deceased moves the person to the Deceased chip (wins over "already a customer"); card shows no Call/Text/Email/Make customer; "Email these" leaves them out. No console errors, no horizontal scroll.
+- Same day: statuses Personal (family/friends) and Junk / spam added. Demo at 375px: Personal moves the person to the "Personal / junk" chip, no contact buttons, no "Email these". No console errors.
