@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { buildCustomers, buildGateCodes } from '../lib/importSheet'
+import { matchMessages, unmatchedCsv } from '../lib/messageImport'
 import { cleanRow, mergePeople, reuseIds } from '../lib/oldEstimates'
 
 async function readCsv(file) {
@@ -19,13 +20,20 @@ async function readPastRequests(file, existingPast) {
   return { rows: data.length, kept: kept.length, updates: people.filter((p) => known.has(p.id)).length, records: people.map(({ id, ...rest }) => ({ id, data: rest })) }
 }
 
+function downloadCsv(name, text) {
+  const url = URL.createObjectURL(new Blob([`﻿${text}`], { type: 'text/csv' }))
+  const a = Object.assign(document.createElement('a'), { href: url, download: name })
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
 const fileInput = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-900 px-3 py-3 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-slate-100'
 
 const FILES = [
   ['scheduling', 'Scheduling tab (.csv)'],
   ['accounts', 'Accounts tab (.csv)'],
   ['gates', 'Gate Codes tab (.csv), optional'],
-  ['messages', 'Text history (.json, made by Claude from the Voice export), optional'],
+  ['messages', 'Text history (voice-history.json from old-site-backup, made from the Voice Takeout), optional'],
   ['past', 'Old website estimate requests (past-requests-all.csv from old-site-backup), optional'],
 ]
 
@@ -50,11 +58,11 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
       if (next.gates) p.gates = buildGateCodes(await readCsv(next.gates))
       if (next.messages) {
         const parsed = JSON.parse(await next.messages.text())
-        const known = new Set(existing.map((c) => c.id))
-        const list = (parsed.messages ?? []).filter((m) => m.id && known.has(m.data?.customerId))
-        p.messages = list
-        p.messageCustomers = new Set(list.map((m) => m.data.customerId)).size
-        p.messageSkipped = (parsed.messages ?? []).length - list.length
+        const { records, customers, unmatched } = matchMessages(parsed.messages, existing)
+        p.messages = records
+        p.messageCustomers = customers
+        p.messageSkipped = (parsed.messages ?? []).length - records.length
+        p.unmatched = unmatched
       }
       if (next.past) p.past = await readPastRequests(next.past, existingPast)
       if (p.customers || p.gates || p.messages || p.past) setPreview(p)
@@ -112,7 +120,13 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
           {preview.gates && <p><strong>{preview.gates.length}</strong> neighborhood gate codes.</p>}
           {preview.messages && (
             <p><strong>{preview.messages.length}</strong> past texts and calls for <strong>{preview.messageCustomers}</strong> customers
-              {preview.messageSkipped > 0 && <span className="text-slate-400"> ({preview.messageSkipped} skipped: customer not in the app)</span>}.</p>
+              {preview.messageSkipped > 0 && <span className="text-slate-400"> ({preview.messageSkipped} skipped: number on no customer)</span>}.</p>
+          )}
+          {preview.unmatched?.length > 0 && (
+            <button type="button" onClick={() => downloadCsv('numbers-not-on-a-customer.csv', unmatchedCsv(preview.unmatched))}
+              className="min-h-11 w-full rounded-full border border-white/20 px-4 text-sm font-semibold">
+              Download the {preview.unmatched.length} {preview.unmatched.length === 1 ? 'number' : 'numbers'} on no customer (.csv)
+            </button>
           )}
           {preview.past && (
             <p><strong>{preview.past.records.length}</strong> people from the old website’s estimate requests

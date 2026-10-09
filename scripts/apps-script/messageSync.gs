@@ -10,17 +10,17 @@
  * Spec: docs/specs/message-sync.md in the website repo.
  *
  * SETUP (once, signed in as info@christmas-light-creations.com):
- *  1. script.google.com → New project → name it "CLC message sync".
+ *  1. script.google.com -> New project -> name it "CLC message sync".
  *     Delete the sample code, paste this whole file, Save.
- *  2. Project Settings (gear) → Script Properties → Add:
+ *  2. Project Settings (gear) -> Script Properties -> Add:
  *       SYNC_URL = https://messagesync-77t3pogapq-vp.a.run.app
  *       SYNC_KEY = the same key you gave `firebase functions:secrets:set MESSAGE_SYNC_KEY`
- *  3. Editor → choose function `testSync` → Run. Allow the permissions
+ *  3. Editor -> choose function `testSync` -> Run. Allow the permissions
  *     (read Gmail, connect to an external service). The log lists the last
  *     Voice emails as text/voicemail with the last 4 digits. Nothing is saved.
- *  4. Choose `setup` → Run. This adds the 5-minute trigger (Triggers page
- *     shows "syncMessages · Time-based"). First run looks back 1 day.
- *  To stop: Triggers (clock icon) → delete the trigger.
+ *  4. Choose `setup` -> Run. This adds the 5-minute trigger (Triggers page
+ *     shows "syncMessages - Time-based"). First run looks back 1 day.
+ *  To stop: Triggers (clock icon) -> delete the trigger.
  */
 
 const LOOKBACK_MS = 24 * 3600 * 1000 // first run
@@ -92,7 +92,7 @@ function post_(payload) {
   const props = PropertiesService.getScriptProperties()
   const url = props.getProperty('SYNC_URL')
   const key = props.getProperty('SYNC_KEY')
-  if (!url || !key) throw new Error('Set SYNC_URL and SYNC_KEY in Project Settings → Script Properties')
+  if (!url || !key) throw new Error('Set SYNC_URL and SYNC_KEY in Project Settings -> Script Properties')
   const res = UrlFetchApp.fetch(url, {
     method: 'post', contentType: 'application/json', payload: JSON.stringify(payload),
     headers: { 'x-clc-sync-key': key }, muteHttpExceptions: true,
