@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Security fixes live: owner deployed rules + createDepositOrder/captureDepositOrder; live stranger check 23/23 refused. Site pushed: live homepage at 375px, tapping the form loads reCAPTCHA Enterprise and calls App Check (exchangeRecaptchaEnterpriseToken), notice under the button, no badge over the Call bar, no console errors | `npm run check:rules`, browser pane on christmas-light-creations.com |
 | 2026-10-09 | App Check key added: on localhost, focusing the estimate form loads firebase/app-check, reCAPTCHA Enterprise and the debug-token exchange; notice shown under the button, badge hidden, no overflow at 375px; production build has the key and no debug flag. Live site not yet checked (not pushed) | Browser pane network list + grep of dist |
 | 2026-10-09 | App Check wiring with no key yet (off): homepage form at 375px loads Firebase on first field focus, no reCAPTCHA notice, no overflow, no console errors; /account/?demo and /proposal/?demo unchanged, no errors. With a key it is not yet checked | Browser pane + `npm run check` |
 | 2026-10-09 | Rules hardening (not yet published): staff email signed in by email link refused; signature must be a PNG picture (web address, SVG, injected markup refused; a ~250 KB real-size PNG passes); staff can't write deposit/payments but can still ask for a payment and countersign; sandbox-paid proposal with a live payment can't be deleted. Emulator 105/105 | `npm run test:rules` |
