@@ -118,3 +118,9 @@ What was actually checked working, and how. Newest first.
 
 - `/leads/?demo`, Accounts page of demo lead demo-2 → "Make customer": the synced text ("Do you do roofline only?") shows in the new customer's Text & email history. No console errors. `npm run check` passes.
 - Not yet checked live: conversion with real Firestore (update allowed by `firestore.rules`: customerId filled + stamped).
+
+## 2026-10-09 Old Voice history import file
+
+- Built `old-site-backup/voice-history.json` from the Voice Takeout zip, the Mail Takeout zip and `Archived-002.mbox`: 30,397 entries, 2,998 numbers, 2012-11-05 to 2026-10-08 (6,595 Takeout texts, 532 calls, 351 missed, 13 voicemails; 20,498 old text emails, 1,816 voicemail emails, 735 missed-call emails; 143 email copies of Takeout events dropped, 70 group texts skipped). Spot-checked samples: old SMS footers and "Play message" links removed, old number 0288 not taken as the customer.
+- `/leads/?demo#import` at 375px with a small sample file: preview "2 past texts and calls for 1 customers (1 skipped)", CSV button, Import ✓; the customer's history shows the text and "📞 Call · 2:10" from us. No console errors, no horizontal scroll.
+- Not yet checked: the real import against Firestore (owner step, TODO #1), the CSV download on a real device.

@@ -6,7 +6,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
-| 1 | **Export Lacie's old Google Voice data** (texts, calls, voicemails) | takeout.google.com signed in as Lacie → Deselect all → Voice → .zip → put it in `old-site-backup/`. Then Claude matches it to customers and builds the import file. |
+| 1 | **Import the old Voice history**: staff app → Import → Text history → pick `old-site-backup/voice-history.json` → check the counts → Import. Then **Download the numbers on no customer** (.csv) to look for past customers worth adding | File built 2026-10-09 from the Voice Takeout + Mail Takeout + Archived-002.mbox (30,397 entries, 2012–2026). Rebuild: `node scripts/old-site/voice-history.mjs old-site-backup/takeout-*.zip old-site-backup/Archived-002.mbox`. Re-importing after adding customers is safe (same ids) |
 | 4 | **Voice account setup**: record a new voicemail greeting; add linked numbers if calls should ring cells | voice.google.com as clc.voicemail.01 |
 | 5 | **Each staff phone/computer**: sign into clc.voicemail.01 (Voice app + browser) | Katie: ⚙ "My own Google Voice number" if she uses hers |
 | 3 | Change info@'s sender name from "CustomerService" to "Christmas Light Creations" | Gmail ⚙ → Accounts → Send mail as → edit info |
@@ -41,7 +41,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
-| A | Build the Voice history import file from the Takeout zip | After #1; also a CSV of numbers that match no customer |
 | B | Customer contacts file for clc.voicemail.01 (Google Contacts CSV from the 114 customers) | So texts/calls show names |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
 | E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
@@ -50,7 +49,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | I | "Customer login" link on the public site (footer) once accounts are tested | /account/ is noindex; a footer link is fine |
 | J | Subscriptions (PayPal Subscriptions, enabled on the Live app) on the account page | Account is keyed by verified email; spec first |
 | K | Security follow-ups after #34: check the PayPal order before capturing; transaction around marking paid; lowercase email field so `sendAccountLink` stops reading every proposal; CSP meta on /proposal/ and /account/ | `docs/security-review.md` risks 2, 7, 8, 10 |
-| L | Message sync follow-up: Takeout import (A) must use `voiceId()` from `functions/messageSync.js` so texts already synced aren't doubled | Spec `docs/specs/message-sync.md` |
 | H | Privacy page (the form collects personal info) | |
 
 ## Dated reminders

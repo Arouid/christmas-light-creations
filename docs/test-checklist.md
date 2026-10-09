@@ -33,7 +33,7 @@
 | 29 | Google Admin → Authenticate email shows "Authenticating email" | DKIM signing on | Owner to click Start authentication |
 | 30 | ~2026-11-08: review DMARC reports; if clean, change `_dmarc` to `p=quarantine` | Spoofed mail gets junked | Not due yet |
 | 31 | Early July 2027: domain auto-renews (PayPal still valid) | Renewed Jul 23, 2027 | Not due |
-| 32 | Publish rules (messages), import the Voice history JSON | Customers show their past texts/calls | Waiting on Takeout export |
+| 32 | Import `voice-history.json` (Import tab) | Preview counts customers matched by phone; customers show past texts, calls (with length), voicemails back to 2012; CSV of the other numbers downloads | Ready (file built 2026-10-09) |
 | 30 | Customer account: pay an open balance from /account/ | PayPal completes, row turns Paid, staff get the paid email | Sign-in and list OK (owner); payment needs a non-merchant PayPal, Venmo or card |
 | 33 | Sign in with Google at /account/ (Gmail on a proposal, then one that isn't) | Proposals listed; other account shows "No proposals under this email"; /leads/ still says not on staff list | Waiting: functions deploy |
 | 34 | Staff Accounts page after a customer signs in | "Customer login: last signed in <date, time> · first <date> (Google/email link)"; others "never" | Waiting: deploy + rules |

@@ -98,7 +98,7 @@ At most 50 items per call. Answer: `{ ok: true, saved, duplicate, skipped, unmat
 Staff edits on unmatched entries: `customerId` + `unmatched: false`, or `dismissed: true` (stamped `updatedAt`/`updatedBy`).
 
 **Ids** (`functions/messageSync.js`):
-- Voice: `gv-` + first 20 hex of SHA-256 of `kind|phone|minute (UTC, YYYY-MM-DDTHH:MM)|text`. A future Takeout import must use the same function so the same event isn't stored twice. A Takeout timestamp a minute off from the email gives a second entry; accepted.
+- Voice: `gv-` + first 20 hex of SHA-256 of `kind|phone|minute (UTC, YYYY-MM-DDTHH:MM)|text`. The Takeout import (`scripts/old-site/voice-history.mjs`, parser `voiceTakeout.mjs`) uses the same function so the same event isn't stored twice. A Takeout timestamp a minute off from the email gives a second entry; accepted.
 - Email: `em-` + first 20 hex of SHA-256 of the lowercase Message-ID, + `-<customer or lead id>`.
 
 ## Links
