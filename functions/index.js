@@ -68,7 +68,8 @@ async function payableProposal(token) {
 }
 const paypalCfg = () => ({ env: PAYPAL_ENV.value(), clientId: PAYPAL_CLIENT_ID.value(), secret: PAYPAL_SECRET.value() })
 
-export const createDepositOrder = onCall({ region: REGION, secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+// invoker 'public': customers aren't signed in; each call checks the proposal and amount itself.
+export const createDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
   const { p, amount } = await payableProposal(req.data?.token)
   try {
     const order = await createOrder(paypalCfg(), {
@@ -84,7 +85,7 @@ export const createDepositOrder = onCall({ region: REGION, secrets: [PAYPAL_SECR
   }
 })
 
-export const captureDepositOrder = onCall({ region: REGION, secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
+export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'] }, async (req) => {
   const token = req.data?.token
   const { ref, amount } = await payableProposal(token)
   const result = await captureOrder(paypalCfg(), String(req.data?.orderId ?? ''))
