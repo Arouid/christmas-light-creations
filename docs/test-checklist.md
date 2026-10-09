@@ -37,8 +37,8 @@
 | 30 | Customer account: pay an open balance from /account/ | PayPal completes, row turns Paid, staff get the paid email | Sign-in and list OK (owner); payment needs a non-merchant PayPal, Venmo or card |
 | 33 | Sign in with Google at /account/ (Gmail on a proposal, then one that isn't) | Proposals listed; other account shows "No proposals under this email"; /leads/ still says not on staff list | Waiting: functions deploy |
 | 34 | Staff Accounts page after a customer signs in | "Customer login: last signed in <date, time> · first <date> (Google/email link)"; others "never" | Waiting: deploy + rules |
-| 35 | Add-on proposal: tick "Add-on to their existing lights", send, sign | Add-on appears on the customer's 💲 Yearly price with the undiscounted install price, source "signed proposal" | Waiting: deploy |
-| 36 | Tick "Customer can see this" on a real customer, open their /account/ | "Your yearly price" matches the staff breakdown and "What you've paid" matches the Seasons table; unticked → neither card | Waiting: deploy |
-| 37 | Customer with only a customer record (no proposal) asks for a sign-in link | Link arrives; account shows name/address and (if allowed) yearly price | Waiting: deploy |
+| 35 | Add-on proposal: tick "Add-on to their existing lights", send, sign | Add-on appears on the customer's 💲 Yearly price with the undiscounted install price, source "signed proposal" | Ready to test (live) |
+| 36 | Tick "Customer can see this" on a real customer, open their /account/ | "Your yearly price" matches the staff breakdown and "What you've paid" matches the Seasons table; unticked → neither card | Ready to test (live) |
+| 37 | Customer with only a customer record (no proposal) asks for a sign-in link | Link arrives; account shows name/address and (if allowed) yearly price | Ready to test (live) |
 | 31 | Account link opened on a different device | Asks for the email, then signs in | Not checked |
 | 32 | Account link requested for an email with no proposal | Same "Check your email" message, no email sent | Not checked |

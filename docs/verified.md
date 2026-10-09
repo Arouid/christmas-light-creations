@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Deployed: myAccount, sendAccountLink, proposalChanged (us-south1) updated; site pushed; live /account/ sign-in screen OK at 375px, no console errors; live homepage shows "Removal", no "storage", no horizontal scroll | firebase deploy output, curl of live bundle, browser pane |
 | 2026-10-09 | $0 takedown shows "Free" on the account proposal card and in "What you've paid" (demo, 375px, no overflow, no console errors); account state, terms {takedownCost} and history "Free" tested. The proposal page's "At takedown in January: Free" row is code-only so far (sample proposal has a takedown charge) | Browser pane + `npm test` (93) |
 | 2026-10-09 | "Storage" wording gone from /account/ and the homepage (Removal card), 375px, no console errors; takedown at 0% / $0 gives no takedown line, payment or account row (`npm test`, 93) | Browser pane + tests/addOns.test.mjs |
 | 2026-10-09 | "What you've paid" (demo): 2025 and 2024 seasons with lights-up and takedown amounts, Paid ✓ + how/when, no grand total; 375px, no overflow, no console errors. History rules (newest first, current season only once paid, No Takedown Cost, unpaid, missing amounts): `npm test` | Browser pane `/account/?demo` + tests/addOns.test.mjs |
