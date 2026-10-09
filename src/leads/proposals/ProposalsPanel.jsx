@@ -254,7 +254,7 @@ export default function ProposalsPanel({ owner }) {
               <button type="button" onClick={() => setOpen(x.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-white/5">
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{x.title}{x.season ? ` · ${x.season}` : ''}</span>
-                  <span className="block text-xs text-slate-400">{fmt(totals(x).total)} · {x.status === 'draft' ? `saved ${when(x.savedAt)}` : x.signedAt ? `signed ${when(x.signedAt)}` : `sent ${when(x.sentAt)}`}</span>
+                  <span className="block text-xs text-slate-400">{fmt(totals(x).total)}{x.deposit?.status === 'paid' ? ` · deposit paid${x.deposit.env === 'sandbox' ? ' (test)' : ''}` : ''} · {x.status === 'draft' ? `saved ${when(x.savedAt)}` : x.signedAt ? `signed ${when(x.signedAt)}` : `sent ${when(x.sentAt)}`}</span>
                 </span>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[x.status]}`}>{STATUS_LABEL[x.status]}</span>
               </button>

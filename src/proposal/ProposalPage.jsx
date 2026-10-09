@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { business } from '../data/content'
 import ProposalDocument from '../proposals/ProposalDocument.jsx'
 import SignPanel from '../proposals/SignPanel.jsx'
-import { docHash } from '../proposals/model.js'
+import DepositPanel from './DepositPanel.jsx'
+import { docHash, fmt, totals } from '../proposals/model.js'
 import Icon from '../components/Icon'
 
 // The customer's proposal page: /proposal/?t=<token> (link sent by text/email).
@@ -72,6 +73,8 @@ export default function ProposalPage() {
   const { p, images } = state
   const open = p.status === 'sent' || p.status === 'viewed'
   const signed = p.status === 'signed' || p.status === 'countersigned'
+  const deposit = totals(p).deposit
+  const depositDue = signed && deposit > 0 && p.deposit?.status !== 'paid'
   return (
     <main className="px-4 pb-24 pt-6 print:p-0">
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm print:hidden">Preview with sample data</p>}
@@ -85,6 +88,8 @@ export default function ProposalPage() {
           <button type="button" onClick={() => window.print()} className="rounded-full bg-white px-5 py-3 font-semibold text-night-950">Save or print a copy (PDF)</button>
         </div>
       )}
+      {depositDue && <div className="mx-auto mb-6 max-w-3xl"><DepositPanel token={token} amountLabel={fmt(deposit)} onPaid={() => load(false)} /></div>}
+      {p.deposit?.status === 'paid' && <p className="mx-auto mb-6 max-w-3xl rounded-2xl bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-300 print:hidden">Deposit paid ✓ {fmt(p.deposit.amount)}. Thank you!</p>}
       <ProposalDocument proposal={p} images={images} business={BIZ} />
       <div className="mx-auto mt-8 max-w-3xl space-y-4">
         {open && state.intact !== false && <SignPanel expectedName={p.customer?.name ?? ''} onSign={sign} />}

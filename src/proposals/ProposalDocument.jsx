@@ -77,7 +77,12 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
       <section>
         <h2 className="mb-2 font-display text-xl font-extrabold">Payment schedule</h2>
         <div className="divide-y divide-white/10 rounded-2xl border border-white/10 px-4 print:border-black/20">
-          {t.deposit > 0 && <div className={row}><span>Deposit when you sign ({p.depositPct}% of the install)</span><span className="tabular-nums">{fmt(t.deposit)}</span></div>}
+          {t.deposit > 0 && (
+            <div className={row}>
+              <span>Deposit when you sign ({p.depositPct}% of the install){p.deposit?.status === 'paid' && <span className="font-semibold text-emerald-400 print:text-black"> · paid ✓{p.deposit.env === 'sandbox' ? ' (test)' : ''}</span>}</span>
+              <span className="tabular-nums">{fmt(t.deposit)}</span>
+            </div>
+          )}
           <div className={row}><span>When installation is complete</span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
           {t.dueAtRemoval > 0 && <div className={row}><span>At takedown in January</span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>}
         </div>
