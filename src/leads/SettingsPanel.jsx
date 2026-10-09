@@ -93,6 +93,7 @@ function ProposalDefaults({ settings, onSave }) {
         <label className="text-sm text-slate-400">Deposit %<input type="number" min="0" max="100" defaultValue={settings.depositPct ?? 50} onBlur={num('depositPct')} className={field} /></label>
         <label className="text-sm text-slate-400">Takedown % of install<input type="number" min="0" max="100" defaultValue={settings.takedownPct ?? 15} onBlur={num('takedownPct')} className={field} /></label>
         <label className="text-sm text-slate-400">Takedown minimum $<input type="number" min="0" defaultValue={settings.takedownMin ?? 150} onBlur={num('takedownMin')} className={field} /></label>
+        <p className="col-span-2 text-xs text-slate-500 sm:col-span-3">Takedown included in the install price? Set both takedown boxes to 0: new proposals get no takedown line or payment, and the contract terms’ takedown sentence should be edited below.</p>
         <label className="col-span-2 text-sm text-slate-400 sm:col-span-1">Countersigned by<input defaultValue={settings.countersignName ?? ''} placeholder="Scott Minor, Owner" onBlur={(e) => onSave({ countersignName: e.target.value.trim() })} className={field} /></label>
       </div>
       <label className="block text-sm text-slate-400">Contract terms for new proposals

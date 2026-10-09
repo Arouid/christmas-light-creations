@@ -14,8 +14,8 @@ const q = new URLSearchParams(window.location.search)
 const demo = import.meta.env.DEV && q.has('demo')
 const lib = demo ? null : import('../lib/account.js')
 
-const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown & storage' }
-const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down, labeling and storing them.' }
+const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown' }
+const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down and labeling and boxing them for you to keep.' }
 const STATE_TEXT = { paid: 'Paid', due: 'Due now', later: 'Not due yet', none: '—' }
 const STATE_CLASS = { paid: 'text-emerald-300', due: 'text-glow-300 font-semibold', later: 'text-slate-400', none: 'text-slate-500' }
 const proposalLink = (token) => `${import.meta.env.BASE_URL}proposal/?t=${token}`
@@ -234,7 +234,7 @@ function YearlyPrice({ price }) {
           </tr>
         </tbody>
       </table>
-      <p className="text-xs text-slate-400">Before any discount (like early install). Takedown & storage is separate.</p>
+      <p className="text-xs text-slate-400">Before any discount (like early install).</p>
       {y.thisSeason.map((l, i) => (
         <p key={i} className="rounded-2xl bg-white/5 px-4 py-2 text-sm">New this season: {l.what} ({fmt(l.priceCents)}, charged in full this year). From next season it adds {fmt(l.addsCents)} a year.</p>
       ))}
@@ -261,7 +261,7 @@ function PaymentHistory({ history }) {
           <li key={h.season} className="py-2">
             <p className="font-semibold">{h.season} season</p>
             {row('Lights up', h.install)}
-            {row('Takedown & storage', h.takedown)}
+            {row('Takedown', h.takedown)}
           </li>
         ))}
       </ul>

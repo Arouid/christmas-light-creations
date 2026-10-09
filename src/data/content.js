@@ -96,7 +96,7 @@ export const steps = [
     body: 'Anything goes out, we fix or replace it free, typically same day locally (48 hours max during peak weeks).',
   },
   {
-    title: 'Removal & storage',
+    title: 'Removal',
     body: 'From January 3rd (done by the 13th) we take everything down, label, wrap and bin it for you to keep. We call in late summer to schedule next year.',
   },
 ]

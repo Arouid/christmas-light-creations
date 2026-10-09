@@ -50,7 +50,7 @@ function paidSummary(x) {
 // takedown show a Pay button on the customer's page once staff ask for them.
 const ASK_TEXT = {
   balance: (first, amount, link) => `Hi ${first}, your Christmas lights are up! Thank you for choosing ${business.name}. You can pay the install balance of ${amount} here: ${link}`,
-  takedown: (first, amount, link) => `Hi ${first}, your lights are down, labeled and stored for next year. You can pay ${amount} for takedown & storage here: ${link}`,
+  takedown: (first, amount, link) => `Hi ${first}, your lights are down, labeled and boxed for you to keep. You can pay ${amount} for takedown here: ${link}`,
 }
 function Payments({ p, first, link, onAsk }) {
   return (
@@ -183,12 +183,13 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
                 </ul>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => set({ items: [...d.items, newItem('', 1, '', 0)] })} className={btn}>＋ Add item</button>
-                  {/* Takedown from the current install lines (replaces an existing takedown line). */}
-                  <button type="button" onClick={() => {
+                  {/* Takedown from the current install lines (replaces an existing takedown line).
+                      Hidden when Settings has takedown at 0% / $0 (takedown included in the install). */}
+                  {((settings.takedownPct ?? 15) > 0 || (settings.takedownMin ?? 150) > 0) && <button type="button" onClick={() => {
                     const install = d.items.filter((i) => i.due !== 'removal')
                     const sub = install.reduce((tt, i) => tt + itemCents(i), 0)
                     set({ items: [...install, ...d.items.filter((i) => i.due === 'removal' && !/^Takedown/.test(i.label)), takedownItem(sub, settings.takedownPct ?? 15, settings.takedownMin ?? 150)] })
-                  }} className={btn}>＋ Takedown ({settings.takedownPct ?? 15}%, min ${settings.takedownMin ?? 150})</button>
+                  }} className={btn}>＋ Takedown ({settings.takedownPct ?? 15}%, min ${settings.takedownMin ?? 150})</button>}
                 </div>
               </div>
 

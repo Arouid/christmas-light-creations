@@ -39,10 +39,10 @@ export function totals(p) {
 
 // The three payments on a proposal (same as functions/proposalMath.js): the
 // deposit at signing, the rest of the install when it's done, and takedown /
-// storage at removal. Balance and takedown are payable once staff ask
+// labeling at removal (no storage: customers keep their lights). Balance and takedown are payable once staff ask
 // (requests.<part>); payments are recorded only by the server.
 export const PAY_PARTS = ['deposit', 'balance', 'takedown']
-export const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown & storage' }
+export const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown' }
 export const paymentOf = (p, part) => (part === 'deposit' ? p.deposit : p.payments?.[part])
 export function partAmount(p, part) {
   const t = totals(p)
@@ -53,11 +53,11 @@ export function isPayable(p, part) {
   return signed && partAmount(p, part) > 0 && paymentOf(p, part)?.status !== 'paid' && (part === 'deposit' || p.requests?.[part] === true)
 }
 
-// Takedown & storage: a % of the install with a minimum (CLC's form: 15% of
+// Takedown: a % of the install with a minimum (CLC's form: 15% of
 // total, minimum $150), due at removal.
 export function takedownItem(installCents, pct = 15, minDollars = 150) {
   const dollars = Math.max(Math.round(installCents * pct) / 10000, minDollars || 0)
-  const label = `Takedown, labeling & storage bins (${pct}% of install${minDollars ? `, minimum $${minDollars}` : ''})`
+  const label = `Takedown & labeling (${pct}% of install${minDollars ? `, minimum $${minDollars}` : ''})`
   return newItem(label, 1, '', dollars, 'removal')
 }
 

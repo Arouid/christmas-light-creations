@@ -58,7 +58,7 @@ export const newLeadAlert = onDocumentCreated(
 
 // ---- Payments (deposit, install balance, takedown) --------------------------
 
-const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown & storage' }
+const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown' }
 const customIdFor = (token, part) => (part === 'deposit' ? token : `${token}:${part}`)
 
 // The deposit is payable once signed; the balance and takedown only after

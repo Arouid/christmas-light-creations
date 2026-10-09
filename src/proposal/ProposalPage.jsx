@@ -8,8 +8,8 @@ import Icon from '../components/Icon'
 
 // The customer's proposal page: /proposal/?t=<token> (link sent by text/email).
 // Dev preview with sample data: /proposal/?demo
-const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown & storage' }
-const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down, labeling and storing them.' }
+const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown' }
+const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down and labeling and boxing them for you to keep.' }
 
 const q = new URLSearchParams(window.location.search)
 const token = q.get('t') ?? ''

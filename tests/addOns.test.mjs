@@ -72,3 +72,13 @@ test('payment history: per season, newest first, no current season until paid', 
   const paidNow = { ...seasons, 2026: { install: { total: '$414.00', paid: 'Yes', paymentType: 'PayPal', paymentDate: '10/20/2026' } } }
   assert.equal(paymentHistory(paidNow, '2026')[0].season, '2026')
 })
+
+test('takedown included in the install (Settings 0% / $0): no takedown line or payment', async () => {
+  const { itemsFromDesign, isPayable, partAmount } = await import('../src/proposals/model.js')
+  const { accountSummary } = await import('../functions/account.js')
+  const p = { ...newProposal({ items: itemsFromDesign({ feet: 100, pricePerFoot: 6, takedownPct: 0, takedownMin: 0 }) }), status: 'countersigned', requests: { takedown: true } }
+  assert.equal(p.items.some((i) => i.due === 'removal'), false)
+  assert.equal(partAmount(p, 'takedown'), 0)
+  assert.equal(isPayable(p, 'takedown'), false)
+  assert.equal(accountSummary('t', p).parts.find((x) => x.part === 'takedown').state, 'none')
+})

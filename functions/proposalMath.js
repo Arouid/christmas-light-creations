@@ -14,7 +14,7 @@ export function depositCents(p) {
 }
 
 // The three payments on a proposal: deposit at signing, the rest of the
-// install when it's done, takedown/storage at removal.
+// install when it's done, takedown at removal.
 export const PARTS = ['deposit', 'balance', 'takedown']
 
 export function partCents(p, part) {
