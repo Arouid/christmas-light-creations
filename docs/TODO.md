@@ -20,7 +20,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 14 | Delete the TEST lead in Firestore → leads | |
 | 16 | **Republish Firestore rules** (new `pastRequests` list), then Import → pick `old-site-backup/past-requests-all.csv` (done once; **import it again**: now 889 people incl. the price calculator) | Firebase console → Firestore → Rules → paste `firestore.rules` → Publish |
 | 17 | **Reply to David Lauriano** (Oct 7 request via the old site; its email to you failed): La Marque, wants an itemized quote to remove/replace 3 Govee permanent light systems for an insurance claim | Past requests tab (shown first, red note) |
-| 19 | **Turn on new-request alerts** (one-time, ~10 min): 1) app password for info@, 2) `npx firebase-tools login`, 3) set the secret, Claude deploys, 4) ⚙ Settings → New-request alerts: Scott, Lacie, Katie's emails, 5) test request | See Claude's steps in chat |
 | 20 | **Republish Firestore rules** again (new `signs` list; leads can store their map location) | Firebase console → Rules → paste `firestore.rules` → Publish |
 | 21 | **Republish Firestore rules** again (new `routes` list) | Firebase console → Rules → paste `firestore.rules` → Publish |
 | 23 | Add each installer's Google email to the Firestore `staff` list so they can open their route link | Firebase console → Firestore → staff → add document (id = their email) |
@@ -31,7 +30,8 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 28 | **Try the light designer** on 2–3 real customer photos and send Claude feedback on what looks fake; set price per foot in ⚙ Settings | Customer card → 🎨 Light designs |
 | 29 | **Republish Firestore rules** (proposals) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
 | 30 | **Finish the contract terms**: ⚙ Settings → Proposals & contracts → fill the [TO FILL IN] parts (cancellation/refunds, damage/liability), ideally with a Texas attorney; set countersigner name, deposit %, takedown minimum | Proposals can't be sent until done |
-| 31 | Phase B setup when ready: `npx firebase-tools login` (same as #19) + PayPal developer app keys for deposits/subscriptions | Claude walks through it |
+| 32 | **Test deposit (sandbox)**: make a proposal for yourself, sign it, pay with the PayPal sandbox *personal* test account; then switch to Live keys | Claude walks through it |
+| 33 | ⚙ Settings → New-request alerts: add Scott, Lacie and Katie's emails (alerts are now live) | |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked
