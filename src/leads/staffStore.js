@@ -82,6 +82,14 @@ export function useLiveQuery(user, coll, field, value, sort) {
   return items
 }
 
+// Records where `field == value`, read once (e.g. a lead's messages).
+export async function queryOnce(coll, field, value) {
+  if (demoMode) return demoList(coll).filter((d) => d[field] === value)
+  const { fs, db } = await fire()
+  const snap = await fs.getDocs(fs.query(fs.collection(db, coll), fs.where(field, '==', value)))
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+}
+
 // path like "gateCode" or "seasons.2026.install.paid"
 export async function updateField(user, coll, id, path, value) {
   if (demoMode) return demoWrite(coll, id, (d) => setPath(d ?? {}, path, value))

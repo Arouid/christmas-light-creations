@@ -50,7 +50,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | I | "Customer login" link on the public site (footer) once accounts are tested | /account/ is noindex; a footer link is fine |
 | J | Subscriptions (PayPal Subscriptions, enabled on the Live app) on the account page | Account is keyed by verified email; spec first |
 | K | Security follow-ups after #34: check the PayPal order before capturing; transaction around marking paid; lowercase email field so `sendAccountLink` stops reading every proposal; CSP meta on /proposal/ and /account/ | `docs/security-review.md` risks 2, 7, 8, 10 |
-| L | Message sync follow-ups: when a lead is made a customer, move its synced messages (`leadId`) to the customer; Takeout import (A) must use `voiceId()` from `functions/messageSync.js` so texts already synced aren't doubled | Spec `docs/specs/message-sync.md` |
+| L | Message sync follow-up: Takeout import (A) must use `voiceId()` from `functions/messageSync.js` so texts already synced aren't doubled | Spec `docs/specs/message-sync.md` |
 | H | Privacy page (the form collects personal info) | |
 
 ## Dated reminders

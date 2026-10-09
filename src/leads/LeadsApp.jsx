@@ -28,7 +28,7 @@ import ServiceView from './ServiceView'
 import UnmatchedMessages from './UnmatchedMessages'
 import ViewEditor from './ViewEditor'
 import ViewTab from './ViewTab'
-import { mergeMany } from './staffStore'
+import { mergeMany, queryOnce, saveRecord } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
 import { useGateCodes, usePastRequests, useRoutes, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
@@ -147,6 +147,13 @@ export default function LeadsApp() {
       id = existing.id
     }
     await updateLead(lead.id, { customerId: id })
+    // Texts/emails the sync filed on the lead now show in the customer's history.
+    try {
+      const msgs = await queryOnce('messages', 'leadId', lead.id)
+      await Promise.all(msgs.filter((m) => !m.customerId).map((m) => saveRecord(user, 'messages', m.id, { customerId: id })))
+    } catch (err) {
+      console.warn('Lead messages not moved to the customer', err)
+    }
     return id
   }
   // Past website request -> customer (or link the existing one with that name).

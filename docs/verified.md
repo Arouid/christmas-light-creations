@@ -113,3 +113,8 @@ What was actually checked working, and how. Newest first.
 - Demo `/proposal/?demo=balance` at 375px: "Pay your install balance: $267.30" panel with PayPal buttons, "Deposit paid ✓" line, no horizontal scroll.
 - Functions deployed; unknown part answers INVALID_ARGUMENT. 81 tests incl. server/page amount parity for all three parts.
 - Not yet checked: staff Payments box on a real signed proposal; a real balance payment.
+
+## 2026-10-09 Lead → customer keeps synced messages (demo, 375px)
+
+- `/leads/?demo`, Accounts page of demo lead demo-2 → "Make customer": the synced text ("Do you do roofline only?") shows in the new customer's Text & email history. No console errors. `npm run check` passes.
+- Not yet checked live: conversion with real Firestore (update allowed by `firestore.rules`: customerId filled + stamped).
