@@ -8,12 +8,15 @@ import { TextButton } from './Reach'
 import { select } from './ui'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
-const PAST_STATUSES = ['', 'Interested', 'Estimate booked', 'Not interested', 'Moved / bad info']
+const PAST_STATUSES = ['', 'Interested', 'Estimate booked', 'Not interested', 'Moved / bad info', 'Deceased']
+// Never contacted again: no text, email or "Email these".
+const DO_NOT_CONTACT = ['customer', 'Not interested', 'Moved / bad info', 'Deceased']
 const STATUS_LABEL = { '': 'Not contacted yet' }
 
 // Where each person stands: became a customer, a status staff set, or
-// emailed from the list (any template this season).
+// emailed from the list (any template this season). Deceased wins over all.
 function stateOf(r, customer, season) {
+  if (r.status === 'Deceased') return 'Deceased'
   if (customer) return 'customer'
   if (r.status) return r.status
   return r.seasons?.[season]?.emailsSent ? 'Emailed' : ''
@@ -43,6 +46,7 @@ const FILTERS = [
   ['Interested', 'Interested', (s) => s === 'Interested' || s === 'Estimate booked'],
   ['done', 'Not interested / bad', (s) => s === 'Not interested' || s === 'Moved / bad info'],
   ['customer', 'Already customers', (s) => s === 'customer'],
+  ['Deceased', 'Deceased', (s) => s === 'Deceased'],
   ['all', 'All', () => true],
 ]
 
@@ -91,10 +95,10 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
             </p>
           ) : null}
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            {r.phone && <a className={action} href={`tel:${r.phone.replace(/\D/g, '')}`}><Icon name="phone" className="size-4" /> Call</a>}
-            <TextButton phone={r.phone} className={action} message={(r.payments?.length ? textMessages.comeback : textMessages.winback)(r, season)} />
-            <ComposeEmail person={r} season={season} start={r.payments?.length ? 'comeback' : 'winback'} className={action} />
-            {!customer && onMakeCustomer && (
+            {r.phone && state !== 'Deceased' && <a className={action} href={`tel:${r.phone.replace(/\D/g, '')}`}><Icon name="phone" className="size-4" /> Call</a>}
+            {state !== 'Deceased' && <TextButton phone={r.phone} className={action} message={(r.payments?.length ? textMessages.comeback : textMessages.winback)(r, season)} />}
+            {state !== 'Deceased' && <ComposeEmail person={r} season={season} start={r.payments?.length ? 'comeback' : 'winback'} className={action} />}
+            {!customer && state !== 'Deceased' && onMakeCustomer && (
               <button type="button" onClick={make} disabled={busy} className={`${action} text-glow-300`}>{busy ? 'Adding…' : '+ Make customer'}</button>
             )}
           </div>
@@ -123,7 +127,7 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
               ))}
             </ul>
           )}
-          {!customer && (
+          {(!customer || state === 'Deceased') && (
             <label className="block text-sm text-slate-400">Status
               <select value={r.status ?? ''} onChange={(e) => set('status', e.target.value)} className={`${select} mt-1 w-full`}>
                 {PAST_STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s] ?? s}</option>)}
@@ -162,7 +166,7 @@ export default function PastRequestsView({ requests, error, customers, season, o
     && (!q || [r.fullName, r.email, r.phone, r.address, r.requests?.map((x) => x.message).join(' ')].join(' ').toLowerCase().includes(q)))
   const test = Object.fromEntries(FILTERS.map(([k, , t]) => [k, t]))
   const shown = inYear.filter(({ state }) => test[filter](state)).sort((a, b) => Number(Boolean(b.r.missed)) - Number(Boolean(a.r.missed)))
-  const emailable = shown.filter(({ r, state }) => r.email && !['customer', 'Not interested', 'Moved / bad info'].includes(state)).map(({ r }) => r)
+  const emailable = shown.filter(({ r, state }) => r.email && !DO_NOT_CONTACT.includes(state)).map(({ r }) => r)
 
   if (error) return <p className="mt-6 text-berry-500" role="alert">Couldn’t load past requests: {error}</p>
   if (!requests) return <p className="mt-6 text-slate-400">Loading…</p>

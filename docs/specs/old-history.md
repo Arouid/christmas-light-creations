@@ -10,6 +10,7 @@ Owner, 2026-10-09: "anything in any of those backups that has anything to do wit
   - **Past requests**: asked for an estimate (old website, estimate emails), never paid.
   - **Texted us**: a saved Voice contact, or 3+ incoming texts, with no form or payment.
   Anyone already in Customers is flagged as before (email, phone or name).
+  Status **Deceased** (owner, 2026-10-09): own filter chip, no Call/Text/Email/Make customer, never in "Email these".
 
 ## Sources (all in `old-site-backup/`, not in git)
 

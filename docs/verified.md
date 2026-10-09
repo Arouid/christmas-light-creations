@@ -134,3 +134,7 @@ What was actually checked working, and how. Newest first.
 - `past-requests-plus.csv` through the real import logic: 2,361 people, 324 win-backs, 1,395 past requests, 642 texted-us; ids unique.
 - Demo at 375px: Past requests shows Win-backs 1 / Past requests 3 / Texted us 1; win-back card "Paid $675 · 2019–2021" with each payment and items; history import preview "3 history entries for 1 customer" with kind chips; customer history shows 💲 Payment, ✉️ Email, 📝 Estimate request. No console errors, no horizontal scroll.
 - Not yet checked: the real imports (owner, TODO #1), name-only matches against real customers.
+
+## 2026-10-09 Past requests: Deceased status
+
+- Demo at 375px: Status → Deceased moves the person to the Deceased chip (wins over "already a customer"); card shows no Call/Text/Email/Make customer; "Email these" leaves them out. No console errors, no horizontal scroll.
