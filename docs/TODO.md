@@ -30,7 +30,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 28 | **Try the light designer** on 2–3 real customer photos and send Claude feedback on what looks fake; set price per foot in ⚙ Settings | Customer card → 🎨 Light designs |
 | 29 | **Republish Firestore rules** (proposals) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
 | 30 | **Contract terms**: items 7–8 written from your answers (deposit non-refundable; if we can’t install by Dec 1 the customer may choose a refund; standard limited liability). Have a Texas attorney read them; set countersigner name, deposit %, takedown minimum in ⚙ Settings | Proposals can now be sent |
-| 32 | **Test deposit (sandbox)**: make a proposal for yourself, sign it, pay with the PayPal sandbox *personal* test account; then switch to Live keys | Claude walks through it |
+| 32 | **Switch PayPal to Live** (sandbox test passed 2026-10-09): Live app Client ID → `src/lib/paypal.js` + `functions/.env` (PAYPAL_ENV=live); set the Live secret via the clipboard→file command (pasting into the prompt only takes 1 character); redeploy functions | Claude walks through it |
 | 33 | ⚙ Settings → New-request alerts: add Scott, Lacie and Katie's emails (alerts are now live) | |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 

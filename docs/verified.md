@@ -69,3 +69,10 @@ What was actually checked working, and how. Newest first.
 | 2026-10-09 | Proposals (demo): customer page renders items/totals/schedule, signing with drawn signature + consent shows Signed ✓ and the signature; staff: new proposal blocked until terms' [TO FILL IN] are finished, send stores filled terms with an intact fingerprint and shows link/email/text, simulated customer signature → countersign → Signed by both ✓; takedown button gives $150 minimum on a $200 job and 15% ($225) on $1,500; editor rows fit 375px. `npm test` 74 | Browser pane + tests |
 | 2026-10-09 | Accounts (demo, 375px): 'sam' lists customers before leads/past; '555-0102' finds by phone; '1234' finds by gate code; street search works; Enter opens the top match at #accounts/customer/…; account page shows contact, gate, actions, seasons table (2026 scheduled $414 10% off, 2025 paid PayPal) and lifetime total; Edit details button now gold (fixed color clash, also on New design). `npm test` 77 | Browser pane |
 | 2026-10-09 | Cloud Functions deployed to us-south1 (createDepositOrder, captureDepositOrder, newLeadAlert, proposalChanged) after first-time 2nd-gen permissions settled; secrets PAYPAL_SECRET and SMTP_PASSWORD in Secret Manager (v2 each); createDepositOrder answers NOT_FOUND for a made-up token and INVALID_ARGUMENT for junk; container cleanup policy set (1 day) | firebase deploy + curl |
+
+## 2026-10-09 Proposal → sign → PayPal deposit (sandbox), live site
+
+- Owner sent a real proposal, signed it on the customer page (fingerprint intact after the key-order fix), paid $749.25 through PayPal sandbox; page showed "Deposit paid ✓" and "paid ✓ (test)" in the schedule.
+- Fixes found on the way: Firestore map key order broke the fingerprint; PAYPAL_SECRET paste only took 1 character (set from a file instead, v5); captureDepositOrder had no public invoker after its failed first create (owner set it in Cloud Run).
+- Both deposit callables answer an unknown token with NOT_FOUND (curl).
+- Not yet checked: signed/paid emails to customer and staff (needs alert emails in Settings).

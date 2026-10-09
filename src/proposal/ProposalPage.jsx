@@ -84,7 +84,7 @@ export default function ProposalPage() {
       {signed && (
         <div className="mx-auto mb-6 max-w-3xl space-y-3 rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-5 print:hidden">
           <p className="font-display text-2xl font-extrabold text-emerald-300">Signed ✓ Thank you!</p>
-          <p className="text-slate-300">We’ll contact you to confirm your install date and send your deposit request{p.status === 'countersigned' ? '' : ', and we’ll countersign your agreement'}. Keep a copy for your records:</p>
+          <p className="text-slate-300">{depositDue ? 'Pay your deposit below to hold your install date. ' : ''}We’ll contact you to confirm your install date{p.status === 'countersigned' ? '' : ' and countersign your agreement'}. Keep a copy for your records:</p>
           <button type="button" onClick={() => window.print()} className="rounded-full bg-white px-5 py-3 font-semibold text-night-950">Save or print a copy (PDF)</button>
         </div>
       )}
