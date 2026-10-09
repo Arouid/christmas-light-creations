@@ -19,6 +19,13 @@ export const business = {
   logo: `${base}images/clc-logo.png`,
 }
 
+// In memory of the owner's brother and business partner. The owner's own
+// words; don't edit them. The section stays hidden until `name` is filled in.
+export const memorial = {
+  name: '',
+  words: 'My brother and my business partner. We worked side by side since we were kids who thought we were adults. Every job I’ve ever had, and for the last ten years, you’ve been right there next to me. Every home, every scorching October, and freezing January we were out there building this business. You were my part of home and I just wish this wasn’t the last job we’ll do together.',
+}
+
 // Estimate form: "How did you hear about us?" (shown on each lead to staff).
 export const HEARD_FROM = ['Google search', 'Google Maps / Business listing', 'Google ad', 'Facebook', 'Nextdoor', 'Saw your lights / yard sign', 'Friend or neighbor', 'Returning customer', 'Other']
 

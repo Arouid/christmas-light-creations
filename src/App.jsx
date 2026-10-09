@@ -9,6 +9,7 @@ import ServiceAreas from './components/ServiceAreas'
 import Estimate from './components/Estimate'
 import Footer from './components/Footer'
 import MobileCta from './components/MobileCta'
+import Memorial from './components/Memorial'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <ServiceAreas />
         <Faq />
         <Estimate />
+        <Memorial />
       </main>
       <Footer />
       <MobileCta />
