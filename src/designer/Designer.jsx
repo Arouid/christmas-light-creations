@@ -369,7 +369,10 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     }
   }
 
-  const editing = selStrand ?? (['draw', 'rect', 'oval'].includes(tool) ? pen : null)
+  // The palette always stays on screen (it used to vanish after a delete):
+  // it edits the selected strand, or sets up the next one when none is selected.
+  // Hidden only while a decoration is selected or for measuring/decorating.
+  const editing = selStrand ?? (selDecor || tool === 'measure' || tool === 'decor' ? null : pen)
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-night-950" role="dialog" aria-modal="true" aria-label={title}>
@@ -463,7 +466,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
 
         {editing && (
           <div className="space-y-2 rounded-xl bg-white/5 p-2">
-            {selStrand && <p className="font-semibold capitalize">{strandLabel(selStrand)}</p>}
+            <p className={selStrand ? 'font-semibold capitalize' : 'text-xs uppercase tracking-wider text-slate-400'}>{selStrand ? strandLabel(selStrand) : 'For the next strand'}</p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(STYLES).map(([k, v]) => (
                 <button key={k} type="button" onClick={() => { setPen((p) => ({ ...p, style: k })); if (selStrand) patchStrand(`Style: ${v.label}`, { style: k, spacingIn: v.spacingIn }) }}
