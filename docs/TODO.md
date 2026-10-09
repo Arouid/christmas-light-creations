@@ -17,7 +17,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 11 | **Gift wrapping** answers | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/` |
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
-| 14 | Delete the TEST lead in Firestore → leads | |
+| 14 | Delete the TEST leads (incl. "TEST email check" from 2026-10-09): staff app → mark **Spam / test** → Delete | |
 | 16 | **Republish Firestore rules** (new `pastRequests` list), then Import → pick `old-site-backup/past-requests-all.csv` (done once; **import it again**: now 889 people incl. the price calculator) | Firebase console → Firestore → Rules → paste `firestore.rules` → Publish |
 | 17 | **Reply to the Oct 7 old-site request** (its email to you failed): itemized quote for an insurance claim | Past requests tab (shown first, red note) |
 | 20 | **Republish Firestore rules** again (new `signs` list; leads can store their map location) | Firebase console → Rules → paste `firestore.rules` → Publish |
