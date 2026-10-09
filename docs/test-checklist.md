@@ -34,7 +34,7 @@
 | 30 | ~2026-11-08: review DMARC reports; if clean, change `_dmarc` to `p=quarantine` | Spoofed mail gets junked | Not due yet |
 | 31 | Early July 2027: domain auto-renews (PayPal still valid) | Renewed Jul 23, 2027 | Not due |
 | 32 | Publish rules (messages), import the Voice history JSON | Customers show their past texts/calls | Waiting on Takeout export |
-| 30 | Customer account: request a link at /account/ for an email on a proposal, open it on a phone | Email from info@ arrives; link signs in; proposals listed with paid / due; Pay shows PayPal buttons for amounts due | Waiting: functions deploy + Email link enabled (TODO #31) |
+| 30 | Customer account: pay an open balance from /account/ | PayPal completes, row turns Paid, staff get the paid email | Sign-in and list OK (owner); payment needs a non-merchant PayPal, Venmo or card |
 | 33 | Sign in with Google at /account/ (Gmail on a proposal, then one that isn't) | Proposals listed; other account shows "No proposals under this email"; /leads/ still says not on staff list | Waiting: functions deploy |
 | 34 | Staff Accounts page after a customer signs in | "Customer login: last signed in <date, time> · first <date> (Google/email link)"; others "never" | Waiting: deploy + rules |
 | 31 | Account link opened on a different device | Asks for the email, then signs in | Not checked |
