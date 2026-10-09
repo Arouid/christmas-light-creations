@@ -42,7 +42,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
           <option>Early Install</option>
           <option>Regular Install</option>
         </select>
-        <div className="col-span-2 lg:ml-auto"><BulkEmail rows={shown} season={season} /></div>
+        <div className="col-span-2 lg:ml-auto"><BulkEmail rows={shown} season={season} onUpdate={onUpdate} /></div>
       </div>
 
       <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-2" aria-label="Filter by status">

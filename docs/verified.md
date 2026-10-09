@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-08 | One-by-one email queue (demo): 3 queued, personalized greeting, Gmail draft to one address, progress, skip, done count; reopening skips already-sent | Browser pane `/leads/?demo` |
 | 2026-10-08 | Email from info@ to Gmail: SPF PASS, DKIM PASS (d=christmas-light-creations.com), DMARC PASS | Owner screenshot of "Show original" |
 | 2026-10-08 | Rules with `messages` live (strangers refused on text history and all other lists); site security: http and www redirect to https, valid certificate, no mixed content (owner's "Not secure" was a stale http tab) | `npm run check:rules` + curl |
 | 2026-10-08 | Owner test: Text opened Voice as the business account (/u/5, "Call as (281) 819-0163") but showed "No messages": the itemId link only opens existing threads. Fix: Text now opens a box with the number and message to copy + "Open Google Voice" + how to start a new message; tested in demo at 375px | Owner screenshot + browser pane |

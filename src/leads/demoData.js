@@ -16,13 +16,13 @@ const customers = [
   },
   {
     id: 'test-homeowner', fullName: 'Test Homeowner', firstName: 'Test', lastName: 'Homeowner',
-    phone: '555-0102', address: '456 Sample Ln League City, TX 77573', city: 'League City',
+    phone: '555-0102', email: 'test.homeowner@example.com', address: '456 Sample Ln League City, TX 77573', city: 'League City',
     locationBlock: 'League City - East side of 45', installType: 'Regular Install',
     seasons: { 2026: { installStatus: '' }, 2025: { installStatus: 'Install Completed' } },
   },
   {
     id: 'example-family', fullName: 'Example Family', firstName: 'Example', lastName: 'Family',
-    phone: '555-0103', address: '789 Placeholder Dr Manvel, TX 77578', city: 'Manvel',
+    phone: '555-0103', email: 'example.family@example.com', address: '789 Placeholder Dr Manvel, TX 77578', city: 'Manvel',
     locationBlock: 'Shadow Creek - West side of 288', installType: 'Early Install',
     seasons: { 2026: { installStatus: 'Confirmed - Needs to be Scheduled', firstContact: 'Confirmed', timeframe: 'first week of Nov' } },
   },

@@ -15,7 +15,7 @@ export default function ViewTab({ view, customers, season, gates, onOpen, onUpda
           <p className="text-sm text-slate-400">{year} · {describeView(view, blankFor(view.mode))}</p>
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-2">
-          <BulkEmail rows={rows} season={year} />
+          <BulkEmail rows={rows} season={year} onUpdate={onUpdate} />
           <button type="button" onClick={onEdit} className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold">Edit tab</button>
           <button type="button" className="rounded-full border border-berry-500/40 px-4 py-2 text-sm font-semibold text-berry-500 hover:bg-berry-600/10"
             onClick={() => { if (window.confirm(`Delete the "${view.name}" tab for everyone? Customers are not affected.`)) onDelete() }}>
