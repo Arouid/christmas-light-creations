@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { buildCustomers, buildGateCodes } from '../lib/importSheet'
+import { buildCustomers, buildGateCodes, fieldLabel, keepAppValues, sheetConflicts } from '../lib/importSheet'
 import { CONTACT_GROUPS, contactGroups, toVcard } from '../lib/contactsExport'
 import { matchMessages, unmatchedCsv } from '../lib/messageImport'
 import { cleanRow, mergePeople, reuseIds } from '../lib/oldEstimates'
@@ -32,12 +32,15 @@ const KIND_NAMES = { text: 'text', call: 'call', missed: 'missed call', voicemai
 
 const fileInput = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-900 px-3 py-3 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-slate-100'
 
-const FILES = [
+const SHEET_FILES = [
   ['scheduling', 'Scheduling tab (.csv)'],
   ['accounts', 'Accounts tab (.csv)'],
   ['gates', 'Gate Codes tab (.csv), optional'],
-  ['messages', 'Customer history (customer-history.json from old-site-backup: texts, calls, emails, payments, estimate requests), optional'],
-  ['past', 'Past requests and win-backs (past-requests-plus.csv from old-site-backup), optional'],
+]
+// One-time imports from the old business accounts (done 2026-10-09).
+const OLD_FILES = [
+  ['messages', 'Customer history: customer-history.json (texts, calls, emails, payments, estimate requests)'],
+  ['past', 'Past requests and win-backs: past-requests-plus.csv'],
 ]
 
 // Contacts for the business Google account, so Voice shows names.
@@ -71,6 +74,7 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
   const [preview, setPreview] = useState(null)
   const [error, setError] = useState(null)
   const [progress, setProgress] = useState(null)
+  const [sheetWins, setSheetWins] = useState(false)
 
   async function check(next) {
     setFiles(next)
@@ -82,7 +86,8 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
       if (next.scheduling) {
         const result = buildCustomers(await readCsv(next.scheduling), next.accounts ? await readCsv(next.accounts) : [])
         const ids = new Set(existing.map((c) => c.id))
-        Object.assign(p, result, { updates: result.customers.filter((c) => ids.has(c.id)).length })
+        Object.assign(p, result, { updates: result.customers.filter((c) => ids.has(c.id)).length, conflicts: sheetConflicts(result.customers, existing) })
+        setSheetWins(false)
       }
       if (next.gates) p.gates = buildGateCodes(await readCsv(next.gates))
       if (next.messages) {
@@ -104,7 +109,8 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
   async function run() {
     setProgress(0)
     try {
-      if (preview.customers) await onImport(preview.customers, setProgress)
+      // Where the sheet and the app differ, the app's value stays unless staff chose the sheet.
+      if (preview.customers) await onImport(preview.conflicts?.length && !sheetWins ? keepAppValues(preview.customers, preview.conflicts) : preview.customers, setProgress)
       if (preview.gates) await onImportGates(preview.gates)
       if (preview.messages) await onImportMessages(preview.messages, setProgress)
       if (preview.past) await onImportPast(preview.past.records, setProgress)
@@ -118,24 +124,32 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
   const total = preview?.customers?.length ?? 0
   const warnings = preview?.warnings ?? []
 
+  const picker = ([key, label]) => (
+    <label key={key} className="block text-sm text-slate-400">{label}
+      <input type="file" accept={key === 'messages' ? '.json,application/json' : '.csv,text/csv'} className={fileInput} onChange={(e) => check({ ...files, [key]: e.target.files[0] })} />
+    </label>
+  )
+
   return (
     <div className="space-y-4">
       {existing.length > 0 && <ContactsExport customers={existing} past={existingPast} />}
-      <div className="rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
-        <p className="font-semibold text-slate-100">From the Google Sheet</p>
-        <ol className="mt-2 list-decimal space-y-1 pl-5">
+      <section className="space-y-3 rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
+        <p className="font-semibold text-slate-100">1 · Google Sheet updates (this season, while staff still use the sheet)</p>
+        <ol className="list-decimal space-y-1 pl-5">
           <li>Open the <strong>Scheduling</strong> tab → <strong>File → Download → Comma-separated values (.csv)</strong>.</li>
           <li>Do the same for the <strong>Accounts</strong> tab (and <strong>Gate Codes</strong> if it changed).</li>
           <li>Pick the files below, check the preview, then Import.</li>
         </ol>
-        <p className="mt-2 text-slate-400">Importing again later is safe: it updates the same records instead of adding copies. Blank cells in the sheet never erase what was typed here; filled cells do replace it.</p>
-      </div>
-
-      {FILES.map(([key, label]) => (
-        <label key={key} className="block text-sm text-slate-400">{label}
-          <input type="file" accept={key === 'messages' ? '.json,application/json' : '.csv,text/csv'} className={fileInput} onChange={(e) => check({ ...files, [key]: e.target.files[0] })} />
-        </label>
-      ))}
+        <p className="text-slate-400">Safe to repeat: same records are updated, never copied. Blank sheet cells never erase anything. Where the sheet and the app both have a value and they differ, the preview lists them and the <strong>app’s value stays</strong> unless you choose the sheet.</p>
+        {SHEET_FILES.map(picker)}
+      </section>
+      <details className="rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
+        <summary className="cursor-pointer font-semibold text-slate-100">2 · Old records from the old business accounts (one-time, imported Oct 2026)</summary>
+        <div className="mt-3 space-y-3">
+          <p className="text-slate-400">Only needed again after a new Google Voice / Gmail download. Files are in <strong>old-site-backup</strong> on the office computer. Re-importing is safe: entries keep their ids, so nothing is doubled; Past requests keep their statuses and notes.</p>
+          {OLD_FILES.map(picker)}
+        </div>
+      </details>
 
       {error && <p className="rounded-xl bg-berry-600/20 p-3 text-sm text-berry-500" role="alert">{error}</p>}
 
@@ -146,6 +160,18 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
               <p><strong>{total}</strong> customers found (<strong>{total - preview.updates}</strong> new, <strong>{preview.updates}</strong> already here and will be updated).</p>
               <p className="text-sm text-slate-400">Seasons: statuses and rates go to {preview.currentSeason}; payments and last year’s dates go to {preview.previousSeason}.</p>
               {!files.accounts && <p className="text-sm text-glow-300">No Accounts file picked: prices and payments won’t be imported.</p>}
+              {preview.conflicts?.length > 0 && (
+                <div className="space-y-2 rounded-xl border border-glow-400/30 p-3 text-sm">
+                  <p className="font-semibold text-glow-300">{preview.conflicts.length} {preview.conflicts.length === 1 ? 'place where' : 'places where'} the sheet and the app differ</p>
+                  <ul className="max-h-60 space-y-1 overflow-y-auto text-slate-300">
+                    {preview.conflicts.map((c) => (
+                      <li key={`${c.id}|${c.path}`}><span className="font-medium">{c.name}</span> · {fieldLabel(c.path)}: app “{c.app}” · sheet “{c.sheet}”</li>
+                    ))}
+                  </ul>
+                  <label className="flex min-h-11 items-center gap-3"><input type="radio" name="wins" className="size-5" checked={!sheetWins} onChange={() => setSheetWins(false)} /> Keep the app’s values (recommended)</label>
+                  <label className="flex min-h-11 items-center gap-3"><input type="radio" name="wins" className="size-5" checked={sheetWins} onChange={() => setSheetWins(true)} /> Use the sheet’s values for all of these</label>
+                </div>
+              )}
             </>
           )}
           {preview.gates && <p><strong>{preview.gates.length}</strong> neighborhood gate codes.</p>}

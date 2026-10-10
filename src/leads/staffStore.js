@@ -124,9 +124,16 @@ export async function createRecord(user, coll, id, data) {
 }
 
 // Merge-writes imported records; fields only set in the app are kept.
+// Like Firestore's set(..., { merge: true }): nested maps merge, other values replace.
+const deepMerge = (a, b) => {
+  const out = { ...(a ?? {}) }
+  for (const [k, v] of Object.entries(b ?? {})) out[k] = v && typeof v === 'object' && !Array.isArray(v) && out[k] && typeof out[k] === 'object' && !Array.isArray(out[k]) ? deepMerge(out[k], v) : v
+  return out
+}
+
 export async function mergeMany(user, coll, records, onProgress) {
   if (demoMode) {
-    records.forEach(({ id, data }) => demoWrite(coll, id, (d) => ({ ...d, ...data })))
+    records.forEach(({ id, data }) => demoWrite(coll, id, (d) => deepMerge(d, data)))
     onProgress?.(records.length)
     return
   }

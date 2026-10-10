@@ -28,7 +28,7 @@ All 4 staff can see and edit everything, including prices and payments. Nobody c
 - Scheduling tab: contact, property, lights, current-year statuses and notes, previous-year status/day/week/date.
 - Accounts tab, matched by Full Name: current rate/discount/total go to the **current** season; Invoice/Paid/Payment columns (dated Nov 2025–Jan 2026) go to the **previous** season.
 - "2026 Install / Takedown Notes" goes to the customer-level `takedownNotes` (zip-tie instructions carry over year to year).
-- Blank sheet cells are skipped on import, so a re-import never erases something typed in the app. A non-blank sheet value does overwrite the app value.
+- Blank sheet cells are skipped on import, so a re-import never erases something typed in the app. Where a filled sheet cell differs from a filled app value, the preview lists them and the app's value stays unless staff choose the sheet (2026-10-09; staff edit both this season).
 
 ## Acceptance (who observes)
 

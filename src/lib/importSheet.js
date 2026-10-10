@@ -143,3 +143,40 @@ export function buildGateCodes(rows) {
       data: compact({ neighborhood: g.neighborhood, code: g.code, alternative: g.alternative, notes: g.notes }),
     }))
 }
+
+// Re-importing the sheet while staff also edit in the app: where a filled
+// sheet cell differs from a filled app value, staff choose who wins.
+// records: buildCustomers().customers ([{ id, data }]); existing: customers in the app.
+const isLeaf = (v) => v === null || typeof v !== 'object' || Array.isArray(v)
+const filled = (v) => v !== undefined && v !== null && String(v).trim() !== ''
+function walk(data, app, path, out) {
+  for (const [k, v] of Object.entries(data ?? {})) {
+    const p = path ? `${path}.${k}` : k
+    const a = app?.[k]
+    if (!isLeaf(v)) walk(v, a, p, out)
+    else if (filled(v) && filled(a) && isLeaf(a) && String(a).trim() !== String(v).trim()) out.push({ path: p, app: String(a), sheet: String(v) })
+  }
+}
+export function sheetConflicts(records, existing) {
+  const byId = new Map((existing ?? []).map((c) => [c.id, c]))
+  return (records ?? []).flatMap(({ id, data }) => {
+    const out = []
+    walk(data, byId.get(id), '', out)
+    return out.map((c) => ({ id, name: data.fullName ?? byId.get(id)?.fullName ?? id, ...c }))
+  })
+}
+// The same records without the conflicting cells (the app's values stay).
+export function keepAppValues(records, conflicts) {
+  const drop = new Set((conflicts ?? []).map((c) => `${c.id}|${c.path}`))
+  const strip = (obj, id, path) => {
+    const out = {}
+    for (const [k, v] of Object.entries(obj ?? {})) {
+      const p = path ? `${path}.${k}` : k
+      if (!isLeaf(v)) { const inner = strip(v, id, p); if (Object.keys(inner).length) out[k] = inner } else if (!drop.has(`${id}|${p}`)) out[k] = v
+    }
+    return out
+  }
+  return (records ?? []).map(({ id, data }) => ({ id, data: strip(data, id, '') }))
+}
+// "seasons.2026.install.paid" → "2026 install paid"
+export const fieldLabel = (path) => path.replace(/^seasons\./, '').split('.').map((s) => s.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()).join(' ')

@@ -96,3 +96,18 @@ test('gate code: own code wins, else the neighborhood code', () => {
   assert.deepEqual(gateFor({ neighborhood: ' example lakes ' }, codes), { code: '#2468 or 1111', notes: undefined, source: 'Example Lakes' })
   assert.equal(gateFor({ neighborhood: 'Nowhere' }, codes), null)
 })
+
+test('re-importing the sheet: conflicts are listed and the app can win', async () => {
+  const { sheetConflicts, keepAppValues, fieldLabel } = await import('../src/lib/importSheet.js')
+  const records = [{ id: 'pat', data: { fullName: 'Pat Sample', phone: '555-0101', gateCode: '9999', seasons: { 2026: { installStatus: 'Install Scheduled', install: { rate: '$460.00', paid: 'Yes' } } } } }]
+  const existing = [{ id: 'pat', fullName: 'Pat Sample', phone: '555-0101', gateCode: '1234', addOns: [{ id: 'a' }], seasons: { 2026: { installStatus: 'Install Completed', install: { rate: '$460.00' } } } }]
+  const conflicts = sheetConflicts(records, existing)
+  assert.deepEqual(conflicts.map((c) => [c.path, c.app, c.sheet]), [['gateCode', '1234', '9999'], ['seasons.2026.installStatus', 'Install Completed', 'Install Scheduled']])
+  assert.equal(conflicts[0].name, 'Pat Sample')
+  // Keep the app: conflicting cells dropped; new info (paid: Yes) still comes in; same values untouched.
+  assert.deepEqual(keepAppValues(records, conflicts)[0].data, { fullName: 'Pat Sample', phone: '555-0101', seasons: { 2026: { install: { rate: '$460.00', paid: 'Yes' } } } })
+  // A brand-new customer has no conflicts.
+  assert.deepEqual(sheetConflicts([{ id: 'new', data: { fullName: 'New Person', phone: '1' } }], existing), [])
+  assert.equal(fieldLabel('seasons.2026.installStatus'), '2026 install status')
+  assert.equal(fieldLabel('gateCode'), 'gate code')
+})
