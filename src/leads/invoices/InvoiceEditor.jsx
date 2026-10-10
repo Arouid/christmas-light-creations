@@ -5,6 +5,7 @@ import {
   KINDS, KIND_LABEL, OFFLINE_METHODS, STATE_LABEL, TERMS_LABEL, invoiceCents, invoiceState, line, longDate, money, paidInfo, sendProblems, toCents,
 } from '../../lib/invoices'
 import InvoiceDocument from '../../invoices/InvoiceDocument.jsx'
+import AccountGlance from './AccountGlance'
 import { TextButton } from '../Reach'
 import { STATE_STYLE, invoiceLink, previewLink, useInvoicesContext } from './useInvoices'
 
@@ -88,6 +89,11 @@ export default function InvoiceEditor({ token: startToken, invoice, onClose }) {
   const setAmount = (id, text) => { setTexts((t) => ({ ...t, [id]: text })); setItem(id, { cents: toCents(text) ?? 0 }) }
   const addLine = () => { const l = line(); setTexts((t) => ({ ...t, [l.id]: '' })); set({ items: [...d.items, l] }) }
   const removeLine = (id) => set({ items: d.items.filter((i) => i.id !== id) })
+  // From the account panel: suggested lines go in, replacing a still-empty line.
+  const addLines = (lines) => {
+    setTexts((t) => ({ ...t, ...Object.fromEntries(lines.map((l) => [l.id, (l.cents / 100).toFixed(2)])) }))
+    set({ items: [...d.items.filter((i) => String(i.description ?? '').trim() || i.cents), ...lines] })
+  }
 
   async function run(label, fn) {
     setBusy(label)
@@ -130,6 +136,12 @@ export default function InvoiceEditor({ token: startToken, invoice, onClose }) {
                   <label className="block text-sm text-slate-400">Name<input value={d.customer?.name ?? ''} onChange={(e) => setCustomer({ name: e.target.value })} className={field} /></label>
                   <label className="block text-sm text-slate-400">Email (the invoice goes here)<input type="email" inputMode="email" value={d.customer?.email ?? ''} onChange={(e) => setCustomer({ email: e.target.value.trim() })} className={field} /></label>
                   <label className="block text-sm text-slate-400 sm:col-span-2">Address<input value={d.customer?.address ?? ''} onChange={(e) => setCustomer({ address: e.target.value })} className={field} /></label>
+                </div>
+              </details>
+              <details className="rounded-2xl border border-white/10 p-3" open={status === 'draft'}>
+                <summary className="cursor-pointer text-sm font-semibold">📒 Their account: what they owe</summary>
+                <div className="mt-3">
+                  <AccountGlance customerId={d.customerId} season={d.season} kind={d.kind} token={token} editable={editable} onAddLines={addLines} />
                 </div>
               </details>
               <div className="grid gap-3 sm:grid-cols-3">

@@ -30,6 +30,26 @@ const discountLabel = (b) => {
 // Lines and amount for one customer's re-install or takedown invoice:
 // install = the season's Total due (with its discount shown as a line), else
 // Rate, else the yearly price + add-ons new this season (charged in full).
+// Used by the bulk drafts and the invoice editor's "＋ Add" buttons.
+export function suggestedLines(c, season, kind) {
+  if (kind !== 'install' && kind !== 'takedown') return []
+  return draftLines(c, String(season), kind)
+}
+
+// Season billing boxes marked Paid "No", other than this season: money still
+// owed from before (shown in the invoice editor's account panel).
+export function unpaidSeasons(c, season) {
+  const out = []
+  for (const [y, s] of Object.entries(c?.seasons ?? {}).sort(([a], [b]) => b.localeCompare(a))) {
+    if (y === String(season)) continue
+    for (const part of ['install', 'takedown']) {
+      const b = s?.[part]
+      if (/^no$/i.test(String(b?.paid ?? '').trim())) out.push({ season: y, part, amount: b.total || b.rate || '' })
+    }
+  }
+  return out
+}
+
 function draftLines(c, season, kind) {
   const b = c.seasons?.[season]?.[kind] ?? {}
   if (kind === 'takedown') {

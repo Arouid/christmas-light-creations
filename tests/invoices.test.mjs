@@ -5,7 +5,7 @@ import {
   paidInfo, payableInvoiceProblem, receiptEmail, reminderDue, seasonFillsOnPaid, seasonFillsOnSend, sendProblems,
   shownInvoice, staffPaidEmail, toCents, validToken,
 } from '../functions/invoices.js'
-import { bulkCandidates, customerSnapshot, newInvoice } from '../src/lib/invoices.js'
+import { bulkCandidates, customerSnapshot, newInvoice, suggestedLines, unpaidSeasons } from '../src/lib/invoices.js'
 
 const item = (description, cents) => ({ id: description, description, cents })
 const inv = (over = {}) => ({
@@ -219,4 +219,20 @@ test('bulk takedown drafts: season takedown rate; free or no-takedown skipped', 
   assert.equal(rows.a.cents, 15000)
   assert.match(rows.b.reason, /free/i)
   assert.match(rows.c.reason, /No Takedown/)
+})
+
+test('editor account panel: suggested lines by kind, and unpaid earlier seasons', () => {
+  const c = {
+    id: 'a', since: '2021', originalRate: '$900',
+    seasons: {
+      2026: { install: { rate: '$460.00', discount: '10%', discountReason: 'Early install', total: '$414.00' }, takedown: { rate: '$150' } },
+      2025: { install: { total: '$450', paid: 'Yes' }, takedown: { rate: '$150', paid: 'No' } },
+      2024: { install: { rate: '$440', paid: 'no ' } },
+    },
+  }
+  assert.deepEqual(suggestedLines(c, '2026', 'install').map((l) => l.cents), [46000, -4600])
+  assert.deepEqual(suggestedLines(c, 2026, 'takedown').map((l) => l.cents), [15000])
+  assert.deepEqual(suggestedLines(c, '2026', 'service'), [])
+  assert.deepEqual(unpaidSeasons(c, '2026'), [{ season: '2025', part: 'takedown', amount: '$150' }, { season: '2024', part: 'install', amount: '$440' }])
+  assert.deepEqual(unpaidSeasons({}, '2026'), [])
 })
