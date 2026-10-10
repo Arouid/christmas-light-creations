@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Staff guide (demo, 375px, no console errors): ? button opens it; "How do I…" (10 tasks) and 15 section cards; search "gate code" narrows to Accounts, Customers, Routes, Map, Service, Gates; Open → on Gates closes the guide and opens #gates; button labels in the guide match the app's | Browser pane `/leads/?demo` |
 | 2026-10-09 | Stock email templates' wording reviewed and fixed (payment methods, timer, takedown dates, early rule) | Owner report |
 | 2026-10-09 | Installers' Google emails added to the Firestore `staff` list | Owner report |
 | 2026-10-09 | TEST leads deleted in the staff app (Spam / test → Delete) | Owner report |

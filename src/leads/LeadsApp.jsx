@@ -9,6 +9,7 @@ import LeadsView from './LeadsView'
 import MapView from './MapView'
 import SeasonView from './SeasonView'
 import SettingsPanel from './SettingsPanel'
+import GuidePanel from './GuidePanel'
 import InstallApp, { InstallButtons } from './InstallApp'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
 import { DiscountSchedule } from './discountContext'
@@ -68,6 +69,7 @@ export default function LeadsApp() {
   const [openId, setOpenId] = useState(null)
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const season = seasonYear()
@@ -217,6 +219,8 @@ export default function LeadsApp() {
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
           <div className="flex min-w-0 items-center gap-3 text-sm">
             <span className="hidden truncate text-slate-400 sm:inline">{user.email}</span>
+            <button type="button" onClick={() => setShowGuide(true)} aria-label="Staff guide" title="Staff guide: what the app does"
+              className="shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold">?</button>
             <button type="button" onClick={() => setShowSettings(true)} aria-label="Settings" title="Settings"
               className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">⚙</button>
             {!demo && <button type="button" onClick={signOut} className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">Sign out</button>}
@@ -304,6 +308,7 @@ export default function LeadsApp() {
         <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} user={user} />
       )}
+      {showGuide && <GuidePanel onClose={() => setShowGuide(false)} />}
       {showSettings && (
         <SettingsPanel settings={settingsApi.settings ?? {}} onSave={settingsApi.save} textFrom={textFrom}
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
