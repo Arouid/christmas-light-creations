@@ -11,6 +11,7 @@ export const INCIDENT_LABEL = {
   paypal: 'PayPal didn’t answer',
   email: 'An email to a customer didn’t go out',
   sync: 'Texts/emails stopped syncing',
+  push: 'Phone notifications didn’t go out',
   other: 'Something went wrong',
 }
 

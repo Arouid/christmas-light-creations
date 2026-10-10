@@ -54,3 +54,7 @@
 | 47 | Email from the app (after deploy): staff app → a test customer with your second email → Email → Send from info@ | Arrives from info@ within a minute; in info@'s Sent folder; shows **once** in their Text & email history right away ("Us · <you>"), still once 10 minutes later (after the sync); control: an invoice email shows once | Not checked |
 | 48 | Reply to that email from the test address | Same conversation in info@'s Gmail; shows in their history as from the customer within ~10 minutes | Not checked |
 | 49 | Season → ✉ Email these N with 2–3 test customers → Send ✓ Next, then Send the rest | Each arrives once; each customer shows the template as sent this season; a staff member who isn't on the staff list can't send | Not checked |
+| 50 | Owner's phone, installed CLC Staff app (after #39 steps 1–3): 💬 → Turn on → Allow → Send a test | "CLC Staff: test notification" within a minute; tapping it opens the app on 💬; control: a Google Voice notification on the same phone | Not checked |
+| 51 | Text the business number and email info@ from a phone/address on a test customer | Within ~10 minutes: "Text from <test customer>" and "Email from <test customer>" notifications; tapping opens their account; 💬 count goes up on the computer too; control: the same messages in their Text & call history | Not checked |
+| 52 | Text from a number on no customer | "Text from (xxx) xxx-xxxx"; tap opens Leads → Unmatched | Not checked |
+| 53 | 💬 → Turn off on that phone, text again | No notification on that phone; 💬 count still goes up | Not checked |

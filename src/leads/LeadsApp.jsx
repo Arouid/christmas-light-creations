@@ -36,6 +36,9 @@ import { useLeads } from './useLeads'
 import { useGateCodes, usePastRequests, useRoutes, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
 import InvoicesView from './invoices/InvoicesView'
 import { InvoicesContext, useInvoices } from './invoices/useInvoices'
+import MessagesPanel from './MessagesPanel'
+import { refreshDevice, setIconBadge } from './push'
+import { useStaffAlerts } from './useStaffAlerts'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
 const BEFORE = [['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
@@ -76,13 +79,34 @@ export default function LeadsApp() {
   const [showGuide, setShowGuide] = useState(false)
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
+  const alerts = useStaffAlerts(user)
+  const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
   const season = seasonYear()
 
   useEffect(() => {
-    const onHash = () => { setTab(tabFromHash()); setRouteOpen(routeFromHash()) }
+    // #messages (a notification for several messages) opens 💬 over the current tab.
+    const onHash = () => {
+      if (window.location.hash === '#messages') { setShowMessages(true); return }
+      setTab(tabFromHash()); setRouteOpen(routeFromHash())
+    }
     window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
+    // A notification tapped while the app was open (public/leads/sw.js).
+    const onWorker = (e) => {
+      if (e.data?.type !== 'clc-open') return
+      const hash = new URL(e.data.url).hash
+      if (hash === '#messages') setShowMessages(true)
+      else { setShowMessages(false); window.location.hash = hash }
+    }
+    navigator.serviceWorker?.addEventListener('message', onWorker)
+    return () => { window.removeEventListener('hashchange', onHash); navigator.serviceWorker?.removeEventListener('message', onWorker) }
   }, [])
+
+  useEffect(() => { setIconBadge(alerts.count) }, [alerts.count])
+  // Once per app start, on a device with notifications on: keep it registered.
+  const prefsLoaded = alerts.prefs.data !== undefined
+  useEffect(() => {
+    if (user && prefsLoaded) refreshDevice(user, alerts.prefs.data?.pushDevices).catch((e) => console.warn('Notifications refresh', e))
+  }, [user, prefsLoaded]) // eslint-disable-line react-hooks/exhaustive-deps -- once, when your settings first load
 
   if (user === undefined) return <Screen><p className="text-slate-400">Loading…</p></Screen>
 
@@ -184,6 +208,14 @@ export default function LeadsApp() {
   }
   const open = openId && customers?.find((c) => c.id === openId)
   const loading = <p className="mt-6 text-slate-400">Loading customers…</p>
+  const closeMessages = () => {
+    setShowMessages(false)
+    if (window.location.hash === '#messages') window.history.replaceState(null, '', `#${tab}`)
+  }
+  const names = showMessages ? Object.fromEntries([
+    ...(customers ?? []).map((c) => [`customer:${c.id}`, c.fullName]),
+    ...(leads ?? []).map((l) => [`lead:${l.id}`, `${l.firstName ?? ''} ${l.lastName ?? ''}`.trim()]),
+  ]) : {}
 
   const templates = mergeTemplates(settingsApi.settings?.emailTemplates)
   // ＋ Route from any customer card or list: append to a route, or start one for a day.
@@ -224,8 +256,18 @@ export default function LeadsApp() {
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 lg:max-w-7xl">
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
-          <div className="flex min-w-0 items-center gap-3 text-sm">
+          <div className="flex min-w-0 items-center gap-2 text-sm sm:gap-3">
             <span className="hidden truncate text-slate-400 sm:inline">{user.email}</span>
+            <button type="button" onClick={() => setShowMessages(true)} title="New messages from customers"
+              aria-label={alerts.count ? `New messages: ${alerts.count}` : 'Messages from customers'}
+              className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-base">
+              <span aria-hidden="true">💬</span>
+              {alerts.count > 0 && (
+                <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-berry-500 px-1 text-center text-xs font-bold leading-5 text-white" aria-hidden="true">
+                  {alerts.count > 99 ? '99+' : alerts.count}
+                </span>
+              )}
+            </button>
             <button type="button" onClick={() => setShowGuide(true)} aria-label="Staff guide" title="Staff guide: what the app does"
               className="shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold">?</button>
             <button type="button" onClick={() => setShowSettings(true)} aria-label="Settings" title="Settings"
@@ -316,6 +358,7 @@ export default function LeadsApp() {
         <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} user={user} />
       )}
+      {showMessages && <MessagesPanel user={user} alerts={alerts} names={names} onClose={closeMessages} />}
       {showGuide && <GuidePanel onClose={() => setShowGuide(false)} />}
       {showSettings && (
         <SettingsPanel settings={settingsApi.settings ?? {}} onSave={settingsApi.save} textFrom={textFrom}

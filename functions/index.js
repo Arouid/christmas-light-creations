@@ -15,7 +15,9 @@
 //   proposals; numbers, emails, season billing and reminders done here.
 // - messageSync: receives Google Voice notification emails and customer
 //   emails from the Apps Script in info@ (scripts/apps-script/messageSync.gs)
-//   and files them in customer history (docs/specs/message-sync.md).
+//   and files them in customer history (docs/specs/message-sync.md), then
+//   sends staff a phone notification (docs/specs/staff-alerts.md).
+// - sendTestPush: a test notification to the calling staff member's devices.
 // - sendStaffEmail: staff email a customer from info@ without leaving the
 //   staff app; filed in their history at once (docs/specs/staff-email.md).
 //
@@ -24,9 +26,9 @@
 //   PAYPAL_SECRET  PayPal app secret (sandbox or live, matching PAYPAL_ENV)
 //   MESSAGE_SYNC_KEY  shared key with the info@ Apps Script (Script Properties)
 // Plain settings in functions/.env: PAYPAL_CLIENT_ID, PAYPAL_ENV.
-import { initializeApp } from 'firebase-admin/app'
+import { getApp, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
-import { FieldValue, getFirestore } from 'firebase-admin/firestore'
+import { FieldPath, FieldValue, getFirestore } from 'firebase-admin/firestore'
 import { onDocumentCreated, onDocumentUpdated, onDocumentWritten } from 'firebase-functions/v2/firestore'
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
@@ -42,6 +44,7 @@ import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
+import { TEST_PUSH, devicesOf, deviceGone, fcmMessage, pushFor } from './staffPush.js'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import {
   centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceSummary, KIND_SHORT, paidInfo,
@@ -669,13 +672,14 @@ async function syncBatch(req, res) {
   const events = req.body.items.map(parseItem)
   const needDir = events.some((e) => !e.skip)
   const [cust, leads] = needDir
-    ? await Promise.all([db.collection('customers').select('phone', 'email').get(), db.collection('leads').select('phone', 'email', 'customerId').get()])
+    ? await Promise.all([db.collection('customers').select('phone', 'email', 'fullName').get(), db.collection('leads').select('phone', 'email', 'customerId', 'firstName', 'lastName').get()])
     : [{ docs: [] }, { docs: [] }]
   const dir = buildDirectory(cust.docs.map((d) => ({ id: d.id, ...d.data() })), leads.docs.map((d) => ({ id: d.id, ...d.data() })))
   const fromApp = await sentFromApp(db, events)
 
   const count = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0 }
   const results = []
+  const saved = [] // new history entries, for the staff phone notification
   for (const [i, event] of events.entries()) {
     const gmailId = String(req.body.items[i]?.gmailId ?? '')
     const docs = event.skip ? [] : docsFor(event, dir)
@@ -688,6 +692,7 @@ async function syncBatch(req, res) {
       try {
         await db.doc(`messages/${id}`).create({ ...data, syncedAt: FieldValue.serverTimestamp() })
         status = 'saved'
+        saved.push(data)
         if (data.unmatched) count.unmatched++
       } catch (e) {
         if (e.code !== 6) throw e // 6 = ALREADY_EXISTS
@@ -697,8 +702,72 @@ async function syncBatch(req, res) {
     results.push({ gmailId, status })
   }
   logger.info('messageSync', { items: events.length, dryRun: req.body.dryRun === true, ...count, reasons: events.filter((e) => e.skip).map((e) => e.skip) })
+  // Before answering: Cloud Run may pause the instance once the answer is sent.
+  if (saved.length) await alertStaff(pushFor(saved, namesOf(cust.docs, leads.docs)))
   res.json({ ok: true, ...count, results })
 }
+
+// ---- Staff alerts: phone notifications (docs/specs/staff-alerts.md) ---------
+// Each staff member turns them on per device (staff app → 💬); the device ids
+// (Firebase Installation IDs) are in staffPrefs/{email}.pushDevices. Sent with
+// the FCM HTTP v1 API directly: firebase-admin 13 can't target an FID.
+
+const namesOf = (custDocs, leadDocs) => Object.fromEntries([
+  ...custDocs.map((d) => [`customer:${d.id}`, d.get('fullName') ?? '']),
+  ...leadDocs.map((d) => [`lead:${d.id}`, `${d.get('firstName') ?? ''} ${d.get('lastName') ?? ''}`.trim()]),
+])
+
+// One notification to the given staffPrefs docs' devices; devices FCM says are
+// gone are removed. Logs counts only, never the text.
+async function pushToDevices(push, prefDocs) {
+  const devices = devicesOf(prefDocs.filter((d) => d.exists).map((d) => ({ email: d.id, ...d.data() })))
+  if (!push || !devices.length) return { devices: devices.length, sent: 0, gone: 0, failed: 0 }
+  const { access_token: token } = await getApp().options.credential.getAccessToken()
+  const url = `https://fcm.googleapis.com/v1/projects/${process.env.GCLOUD_PROJECT || getApp().options.projectId}/messages:send`
+  const results = await Promise.all(devices.map(async (d) => {
+    const r = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(fcmMessage(d.fid, push)) })
+    if (r.ok) return { ok: true }
+    const body = await r.json().catch(() => null)
+    return { ok: false, gone: deviceGone(body), d, status: r.status, code: body?.error?.status }
+  }))
+  const gone = results.filter((x) => x.gone)
+  const db = getFirestore()
+  await Promise.all(gone.map(({ d }) => db.doc(`staffPrefs/${d.email}`).update(new FieldPath('pushDevices', d.fid), FieldValue.delete()).catch((e) => logger.warn('drop device', e.message))))
+  const failed = results.filter((x) => !x.ok && !x.gone)
+  const out = { devices: devices.length, sent: results.filter((x) => x.ok).length, gone: gone.length, failed: failed.length }
+  logger.info('staffPush', { ...out, errors: failed.map((x) => `${x.status} ${x.code ?? ''}`.trim()) })
+  if (failed.length && !out.sent) throw new Error(`FCM refused all ${failed.length} (${failed[0].status} ${failed[0].code ?? ''})`)
+  return out
+}
+
+// After a sync: tell every staff device. Never throws (the messages are saved
+// either way); a failure is reported at most every 6 hours.
+async function alertStaff(push) {
+  if (!push) return
+  try {
+    await pushToDevices(push, (await getFirestore().collection('staffPrefs').get()).docs)
+  } catch (e) {
+    logger.error('staffPush failed', e.message)
+    try {
+      const gate = getFirestore().doc('serverState/pushProblem')
+      if (Date.now() - ((await gate.get()).data()?.at ?? 0) < 6 * 60 * 60 * 1000) return
+      await gate.set({ at: Date.now() })
+      await reportIncident('push', `Phone notifications for new customer messages didn't go out (the messages are in the app): ${e.message}`)
+    } catch (e2) { logger.error('push problem report failed', e2) }
+  }
+}
+
+// "Send a test" in the staff app: a test notification to the caller's own devices.
+export const sendTestPush = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
+  if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Staff only.')
+  const ref = getFirestore().doc(`staffPrefs/${normEmail(req.auth.token.email)}`)
+  try {
+    return await pushToDevices(TEST_PUSH, [await ref.get()])
+  } catch (e) {
+    throw new HttpsError('unavailable', `The notification service refused it: ${e.message}`)
+  }
+})
 
 // Emails sent from the staff app are already in history (sendStaffEmail):
 // returns a test that's true for their copies in info@'s Sent folder, found

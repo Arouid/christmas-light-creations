@@ -302,6 +302,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Each staff member's own app state (docs/specs/staff-alerts.md): when
+    // they last opened 💬 New messages, and the devices that get phone
+    // notifications. Only their own doc (id = their lowercase email); the
+    // server reads all of them to send, and removes gone devices.
+    match /staffPrefs/{email} {
+      allow read: if isStaff() && email == request.auth.token.email.lower();
+      allow create, update: if isStaff() && email == request.auth.token.email.lower() && stamped()
+        && request.resource.data.keys().hasOnly(['messagesSeenAt', 'pushDevices', 'updatedAt', 'updatedBy'])
+        && (!('messagesSeenAt' in request.resource.data) || request.resource.data.messagesSeenAt is timestamp)
+        && (!('pushDevices' in request.resource.data)
+          || (request.resource.data.pushDevices is map && request.resource.data.pushDevices.size() <= 10));
+      allow delete: if false;
+    }
+
     // Website problems (failed alert emails, payment trouble, sync stopped),
     // written only by the server. Staff read them and can only mark one seen.
     match /incidents/{incidentId} {

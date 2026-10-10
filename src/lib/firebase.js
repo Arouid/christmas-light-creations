@@ -31,6 +31,12 @@ export const STATUS_LABELS = {
 // in Firebase console → App Check → Apps → ⋮ → Manage debug tokens.
 export const APP_CHECK_SITE_KEY = '6Le6IuctAAAAAG-n1sS8J5Gjg-IvFXnnHqgI9uxR'
 
+// Phone notifications for staff (docs/specs/staff-alerts.md): the PUBLIC half
+// of the project's web push key, from Firebase console → Project settings →
+// Cloud Messaging → Web configuration → Web Push certificates. Public by
+// design. Empty = the staff app says notifications aren't set up yet.
+export const PUSH_VAPID_KEY = ''
+
 let appPromise
 export function getFirebaseApp() {
   appPromise ??= (async () => {

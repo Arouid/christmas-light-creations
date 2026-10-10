@@ -82,6 +82,71 @@ export function useLiveQuery(user, coll, field, value, sort) {
   return items
 }
 
+// Live records where `field >= since` (a Date; e.g. messages synced this
+// week). Single-field range: no Firestore index needed.
+export function useLiveSince(user, coll, field, since, sort) {
+  const ms = since.getTime()
+  const pick = () => demoList(coll).filter((d) => toMillis(d[field]) >= ms).sort(sort)
+  const [items, setItems] = useState(demoMode ? pick : null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (demoMode) {
+      const refresh = () => setItems(pick())
+      refresh()
+      demo.listeners.add(refresh)
+      return () => demo.listeners.delete(refresh)
+    }
+    if (!user) return
+    let unsub = () => {}
+    let cancelled = false
+    ;(async () => {
+      const { fs, db } = await fire()
+      if (cancelled) return
+      unsub = fs.onSnapshot(
+        fs.query(fs.collection(db, coll), fs.where(field, '>=', new Date(ms))),
+        (snap) => setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(sort)),
+        (err) => setError(err.code === 'permission-denied' ? 'not-staff' : err.message),
+      )
+    })()
+    return () => { cancelled = true; unsub() }
+  }, [user, coll, field, ms, sort]) // eslint-disable-line react-hooks/exhaustive-deps -- pick() reads the same args
+
+  return { items, error }
+}
+const toMillis = (t) => (t?.toMillis ? t.toMillis() : typeof t === 'number' ? t : Date.parse(t ?? '') || 0)
+
+// One record, live: undefined while loading, null if it doesn't exist.
+export function useLiveDoc(user, coll, id) {
+  const [data, setData] = useState(() => (demoMode ? demo.data[coll]?.[id] ?? null : undefined))
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (demoMode) {
+      const refresh = () => setData(demo.data[coll]?.[id] ?? null)
+      refresh()
+      demo.listeners.add(refresh)
+      return () => demo.listeners.delete(refresh)
+    }
+    if (!user || !id) return
+    let unsub = () => {}
+    let cancelled = false
+    ;(async () => {
+      const { fs, db } = await fire()
+      if (cancelled) return
+      unsub = fs.onSnapshot(
+        fs.doc(db, coll, id),
+        // 'estimate': a just-written server time shows at once instead of null.
+        (snap) => setData(snap.exists() ? snap.data({ serverTimestamps: 'estimate' }) : null),
+        (err) => setError(err.code === 'permission-denied' ? 'not-staff' : err.message),
+      )
+    })()
+    return () => { cancelled = true; unsub() }
+  }, [user, coll, id])
+
+  return { data, error }
+}
+
 // Records where `field == value`, read once (e.g. a lead's messages).
 export async function queryOnce(coll, field, value) {
   if (demoMode) return demoList(coll).filter((d) => d[field] === value)
@@ -153,6 +218,35 @@ export async function saveRecord(user, coll, id, data) {
   if (demoMode) return demoWrite(coll, id, (d) => ({ ...d, ...data, updatedBy: user.email }))
   const { fs, db } = await fire()
   await fs.setDoc(fs.doc(db, coll, id), { ...data, ...stamp(fs, user) }, { merge: true })
+}
+
+// Set nested fields of one record, creating it if needed, in one stamped
+// write: { 'pushDevices.<id>': {...} }. null removes the field; SERVER_TIME
+// is the server's clock.
+export const SERVER_TIME = Symbol('server time')
+export async function mergePaths(user, coll, id, paths) {
+  if (demoMode) {
+    return demoWrite(coll, id, (d) => {
+      const next = structuredClone({ ...d, updatedBy: user.email })
+      for (const [path, v] of Object.entries(paths)) {
+        const keys = path.split('.')
+        const last = keys.pop()
+        const parent = keys.reduce((o, k) => (o[k] ??= {}), next)
+        if (v === null) delete parent[last]
+        else parent[last] = v === SERVER_TIME ? Date.now() : v
+      }
+      return next
+    })
+  }
+  const { fs, db } = await fire()
+  const data = { ...stamp(fs, user) }
+  for (const [path, v] of Object.entries(paths)) {
+    const keys = path.split('.')
+    const last = keys.pop()
+    const parent = keys.reduce((o, k) => (o[k] ??= {}), data)
+    parent[last] = v === null ? fs.deleteField() : v === SERVER_TIME ? fs.serverTimestamp() : v
+  }
+  await fs.setDoc(fs.doc(db, coll, id), data, { merge: true })
 }
 
 // Remove fields from a record (and set others) in one stamped write.

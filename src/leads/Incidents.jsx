@@ -10,6 +10,7 @@ const LABEL = {
   paypal: 'PayPal didn’t answer',
   email: 'Email to a customer didn’t go out',
   sync: 'Texts/emails stopped syncing',
+  push: 'Phone notifications didn’t go out',
   other: 'Something went wrong',
 }
 const newestFirst = (a, b) => (b.at?.toMillis?.() ?? 0) - (a.at?.toMillis?.() ?? 0)

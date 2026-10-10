@@ -349,3 +349,43 @@ describe('collections nobody named', () => {
     }
   })
 })
+
+describe('staffPrefs: each staff member’s own alert state (docs/specs/staff-alerts.md)', () => {
+  const OTHER = 'katie@example.com'
+  const asOther = () => env.authenticatedContext('katie', { email: OTHER, email_verified: true, firebase: { sign_in_provider: 'google.com' } }).firestore()
+  const devices = (n) => Object.fromEntries(Array.from({ length: n }, (_, i) => [`fid${i}`, { name: 'iPhone', at: 1 }]))
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'staff', OTHER), { name: 'Katie' })
+      await setDoc(doc(ctx.firestore(), 'staffPrefs', OTHER), { pushDevices: { fidK: { name: 'Android phone', at: 1 } } })
+    })
+  })
+  test('staff read and write only their own doc, stamped, known fields', async () => {
+    const db = as.staff()
+    await assertSucceeds(setDoc(doc(db, 'staffPrefs', STAFF), { messagesSeenAt: serverTimestamp(), ...stamp() }, { merge: true }))
+    await assertSucceeds(setDoc(doc(db, 'staffPrefs', STAFF), { pushDevices: { fid1: { name: 'iPhone', at: 1 } }, ...stamp() }, { merge: true }))
+    await assertSucceeds(updateDoc(doc(db, 'staffPrefs', STAFF), { 'pushDevices.fid1': deleteField(), ...stamp() }))
+    await assertSucceeds(getDoc(doc(db, 'staffPrefs', STAFF)))
+    await assertFails(setDoc(doc(db, 'staffPrefs', STAFF), { messagesSeenAt: serverTimestamp(), ...stamp('someone@else.com') }, { merge: true }))
+    await assertFails(setDoc(doc(db, 'staffPrefs', STAFF), { isOwner: true, ...stamp() }, { merge: true }))
+    await assertFails(setDoc(doc(db, 'staffPrefs', STAFF), { messagesSeenAt: 'yesterday', ...stamp() }, { merge: true }))
+    await assertFails(setDoc(doc(db, 'staffPrefs', STAFF), { pushDevices: devices(11), ...stamp() }, { merge: true }))
+    await assertSucceeds(setDoc(doc(db, 'staffPrefs', STAFF), { pushDevices: devices(10), ...stamp() }, { merge: true }))
+    await assertFails(deleteDoc(doc(db, 'staffPrefs', STAFF)))
+  })
+  test('nobody reads or changes another staff member’s doc, and outsiders get nothing', async () => {
+    const db = as.staff()
+    await assertFails(getDoc(doc(db, 'staffPrefs', OTHER)))
+    await assertFails(getDocs(collection(db, 'staffPrefs')))
+    await assertFails(setDoc(doc(db, 'staffPrefs', OTHER), { pushDevices: {}, ...stamp() }, { merge: true }))
+    await assertSucceeds(getDoc(doc(asOther(), 'staffPrefs', OTHER)))
+    for (const who of outsiders) {
+      await assertFails(getDoc(doc(as[who](), 'staffPrefs', STAFF)))
+      await assertFails(setDoc(doc(as[who](), 'staffPrefs', STAFF), { messagesSeenAt: serverTimestamp(), ...stamp() }))
+    }
+  })
+  test('the doc id must be the lowercase email (another letter case is refused)', async () => {
+    await assertFails(setDoc(doc(as.staff(), 'staffPrefs', 'Boss@Example.com'), { messagesSeenAt: serverTimestamp(), ...stamp() }))
+    await assertSucceeds(setDoc(doc(as.staffUpper(), 'staffPrefs', STAFF), { messagesSeenAt: serverTimestamp(), ...stamp('Boss@Example.com') }))
+  })
+})

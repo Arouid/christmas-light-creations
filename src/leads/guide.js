@@ -15,6 +15,8 @@ export const TASKS = [
   ['They paid cash, check or Zelle', 'Open their invoice → **Mark paid…** → how, when, check # → Mark paid. They get a receipt and their Seasons billing fills in. Wrong invoice? **Undo “Mark paid”**. No invoice? Type it in their Seasons (Edit details).'],
   ['Plan installs or takedowns', '**Season** (filter by area, early/regular) → **＋ Route these N**, or **Routes** → New route → **⚡ Optimize** → **Send to the installer**.'],
   ['A customer’s lights are out', '**Service** → Log call → pick the customer and the problem → Done when fixed (then ask for a review).'],
+  ['A customer texted, called or emailed', 'The **💬** button (top right) shows a red count of new texts, voicemails, missed calls and emails from customers since you last looked. Tap it: newest first, new ones marked; tap one to open their account and full history (unknown numbers open the Unmatched list on Leads).'],
+  ['Get a notification on my phone', 'Tap **💬** → **Turn on** → Allow → **Send a test**. Do it once on each phone or computer. From then on you get a notification within about 5 minutes of every customer text, voicemail, missed call or email; tap it to open their account. iPhone: install the app first (Safari → Share → Add to Home Screen) and turn it on from there. **Turn off** in the same place.'],
   ['Text a customer', 'Tap **Text**: the message is copied and Google Voice opens as the business number. Paste and send.'],
   ['Email a customer', 'Tap **Email**, pick a template (it fills in their name, dates and prices), check it, then **Send from info@**. It goes out right away without leaving the app and shows in their **Text & email history** with your name; their reply comes to info@. Need an attachment or Cc? **Open in Gmail instead**.'],
   ['Ask for a Google review', 'Shows up after an install is completed, a service call is done, or a lead is booked: **Text/Email review link**. Never offer anything for a review.'],
@@ -164,6 +166,18 @@ export const SECTIONS = [
       '**1 · Google Sheet updates**: download the Scheduling and Accounts tabs as CSV and pick them. Where the sheet and the app disagree, you see the list and the **app’s value stays** unless you choose the sheet.',
       '**Export contacts for Google Voice** so texts show names.',
       '**2 · Old records** (one-time, already done): old texts, emails, payments and requests.',
+    ],
+  },
+  {
+    id: 'messages', icon: '💬', title: 'New messages (💬 top right)', tab: null,
+    summary: 'Every text, voicemail, missed call and email a customer sends, so nothing waits unseen. Plus phone notifications if you want them.',
+    items: [
+      'The red number counts what arrived **since you last opened the list**. It’s yours: opening it doesn’t clear it for anyone else. On the installed app it also shows on the app icon (most phones).',
+      'The list shows the last 7 days, newest first, with the customer’s name (or the number if we don’t know them) and the first words. **New** marks what arrived since your last look.',
+      'Tap one: their account opens with the full Text & call history. Unknown numbers open the **Unmatched** list on Leads, to link or dismiss.',
+      'Messages arrive within about 5 minutes (the info@ sync). Our own replies aren’t listed.',
+      '**📲 Phone notifications on this device**: **Turn on** once per phone or computer, then **Send a test**. Everyone who turned it on gets every new customer message. **Turn off** (or **Remove** an old phone) in the same place. Quiet at night? Use your phone’s Do Not Disturb.',
+      'iPhone/iPad: works only in the installed app (Safari → Share → Add to Home Screen), iOS 16.4 or later. If it says notifications are blocked, allow them in the phone’s settings for CLC Staff.',
     ],
   },
   {
