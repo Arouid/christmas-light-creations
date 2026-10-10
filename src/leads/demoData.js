@@ -78,6 +78,8 @@ export const demoData = {
     { id: 'gv-demo-missed', customerId: 'sample-customer', phone: '+15550101', kind: 'missed', direction: 'in', source: 'voice-email', at: hoursAgo(0.7), syncedAt: hoursAgo(0.65) },
     { id: 'gv-demo-unmatched-2', unmatched: true, phone: '+15550100177', kind: 'voicemail', direction: 'in', source: 'voice-email', at: hoursAgo(9), syncedAt: hoursAgo(8.95), text: 'Hi, this is about getting lights put up on our house in Silverlake. Please call me back.' },
   ]),
+  // Staff list (ids = emails), named in ⚙ Settings → Staff names.
+  staff: { 'demo@example.com': {}, 'katie@example.com': {}, 'lacie@example.com': {} },
   // Home: recent staff activity and a route for today (docs/specs/dashboard.md).
   activity: byId([
     { id: 'demo-act-1', at: minAgo(4), by: 'katie@example.com', action: 'email', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Re: Your 2026 install' },

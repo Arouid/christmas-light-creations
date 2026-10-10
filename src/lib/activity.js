@@ -45,6 +45,21 @@ export function whoByPhone(dir, phone) {
   return dir.get(k) ?? { type: 'phone', id: k, name: prettyPhone(k) }
 }
 
+// The team (owner, 2026-10-10): how each email starts -> their name, so Home
+// shows names with no setup (no full addresses here: the repo is public).
+// Also the suggestions in ⚙ Settings → Staff names.
+const STAFF_PREFIXES = [['exatrum', 'Scott'], ['lacie', 'Lacie'], ['katie', 'Katie']]
+export const STAFF_FIRST_NAMES = STAFF_PREFIXES.map(([, n]) => n)
+
+// Email -> name: ⚙ Settings → Staff names ([{ email, name }], shared) first,
+// then a `name` on the staff list doc (Firebase console).
+export function staffNamesMap(staffDocs = [], settingNames = []) {
+  const out = {}
+  for (const s of staffDocs ?? []) if (s?.id && s.name) out[s.id.toLowerCase()] = s.name
+  for (const s of settingNames ?? []) if (s?.email && String(s.name ?? '').trim()) out[String(s.email).toLowerCase()] = String(s.name).trim()
+  return out
+}
+
 // Staff email -> a first name: the staff list's `name` if set, else the
 // address before @ ("katie.smith@…" -> "Katie").
 export function staffName(email, names = {}) {
@@ -52,6 +67,9 @@ export function staffName(email, names = {}) {
   if (email === 'website') return 'Website'
   const set = names[String(email).toLowerCase()]
   if (set) return set
+  const local = String(email).split('@')[0].toLowerCase()
+  const known = STAFF_PREFIXES.find(([p]) => local.startsWith(p))
+  if (known) return known[1]
   const first = String(email).split('@')[0].split(/[._-]/)[0]
   return first ? first[0].toUpperCase() + first.slice(1) : email
 }

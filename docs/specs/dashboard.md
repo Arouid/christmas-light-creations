@@ -57,6 +57,7 @@ A **Home** tab, first in the staff app, where the app opens (installer route lin
 | 2026-10-10 | Entries are written where the action happens in the app (after it succeeds), not reconstructed from records | Records keep only the last change; the log needs each action and who did it |
 | 2026-10-10 | "I've got it" is an activity entry (action `handling`, target = the message), not a field on the message | Works for messages, unmatched numbers and estimate requests alike, with no rules change on those collections |
 | 2026-10-10 | Text/Call are "started" entries (tap on Text/Call), with the person found by phone number | The app can't see Google Voice or the phone dialer |
+| 2026-10-10 | Staff names: the team is known by how their email starts (exatrum → Scott, lacie → Lacie, katie → Katie; no full addresses in the public repo); ⚙ Settings → Staff names (settings/app.staffNames) overrides or adds people; else the start of the email | Owner gave the three names; works with no setup |
 | 2026-10-10 | Look: existing theme tokens (night/glow/berry/pine), Inter with tabular numbers and uppercase spaced labels, thin panel borders, glowing status lights; no new fonts or libraries | CLAUDE.md theme rules; fast on phones |
 
 ## Acceptance criteria

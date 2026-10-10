@@ -39,7 +39,7 @@ export const SECTIONS = [
       '**Today’s routes**: each route with stops done, skipped and left. **Season**: installs and takedowns by step, and money collected (season billing marked paid) next to last season.',
       '**System status** lights: text/email sync, website problems, payments, the request-alert email list, the activity log, and notifications on this device. Green is good; amber means look; red means something broke (tap the red banner).',
       '**⛶ Wall screen**: full screen with big numbers for a TV in the shop; it updates by itself. **✕** or Esc to leave.',
-      'Your name: the staff list’s name (owner: Firebase console → staff → add a `name` field), else the start of your email.',
+      'Names: Scott, Lacie and Katie are known by their email. Anyone else (or a different name): **⚙ Settings → Staff names**.',
     ],
   },
   {

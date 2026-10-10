@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   ACTIONS, collected, counters, describe, firstInWindow, handlers, phoneDirectory, recentEntries, routesToday,
-  seasonProgress, staffName, syncLight, targetLink, whoByPhone,
+  seasonProgress, staffName, staffNamesMap, syncLight, targetLink, whoByPhone,
 } from '../src/lib/activity.js'
 
 const now = Date.parse('2026-10-10T15:00:00Z')
@@ -29,8 +29,13 @@ test('phone → person: customers first, several numbers per box, leads, unknown
   assert.equal(whoByPhone(dir, '555-0101'), null)
 })
 
-test('staff names: the staff list’s name, else the first part of the email', () => {
+test('staff names: the staff list’s name, the team’s email starts, else the first part of the email', () => {
   assert.equal(staffName('katie.smith@gmail.com'), 'Katie')
+  assert.equal(staffName('Exatrum@gmail.com'), 'Scott')
+  assert.equal(staffName('laciexyz123@gmail.com'), 'Lacie')
+  assert.equal(staffName('katiepq@gmail.com'), 'Katie')
+  assert.equal(staffName('pat.helper@gmail.com'), 'Pat')
+  assert.equal(staffName('katiepq@gmail.com', { 'katiepq@gmail.com': 'Katie P.' }), 'Katie P.')
   assert.equal(staffName('Boss@Example.com', { 'boss@example.com': 'Scott' }), 'Scott')
   assert.equal(staffName('website'), 'Website')
   assert.equal(staffName(''), 'Someone')
@@ -141,4 +146,14 @@ test('sync light: green within 3 days, amber after or never', () => {
   assert.equal(syncLight(now - DAY, now), 'green')
   assert.equal(syncLight(now - 4 * DAY, now), 'amber')
   assert.equal(syncLight(0, now), 'amber')
+})
+
+test('staff names: Settings first, then the staff list, by lowercase email', () => {
+  const map = staffNamesMap(
+    [{ id: 'Exatrum@gmail.com', name: 'Boss' }, { id: 'katie@x.com' }, { id: 'lacie@x.com', name: 'Lacie' }],
+    [{ email: 'exatrum@gmail.com', name: ' Scott ' }, { email: 'katie@x.com', name: 'Katie' }, { email: 'blank@x.com', name: '  ' }],
+  )
+  assert.deepEqual(map, { 'exatrum@gmail.com': 'Scott', 'katie@x.com': 'Katie', 'lacie@x.com': 'Lacie' })
+  assert.equal(staffName('Exatrum@Gmail.com', map), 'Scott')
+  assert.deepEqual(staffNamesMap(), {})
 })

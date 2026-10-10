@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
+import { STAFF_FIRST_NAMES, staffName } from '../lib/activity'
+import { useStaff } from './staffContext'
+import { useLiveCollection } from './staffStore'
 import HomeBase from './HomeBase'
 import InstallApp from './InstallApp'
 import { DEFAULT_TERMS, FILL_IN } from '../proposals/terms.js'
@@ -160,6 +163,43 @@ function AlertEmails({ settings, onSave }) {
   )
 }
 
+// Names on Home (Recent activity, "… is on it"): one box per person on the
+// staff list, shared by everyone (settings/app.staffNames, docs/specs/dashboard.md).
+const byEmail = (a, b) => a.id.localeCompare(b.id)
+function StaffNames({ settings, onSave }) {
+  const { user } = useStaff()
+  const staff = useLiveCollection(user, 'staff', byEmail)
+  const saved = Object.fromEntries((settings.staffNames ?? []).map((x) => [String(x.email).toLowerCase(), x.name]))
+  const [names, setNames] = useState(saved)
+  const [msg, setMsg] = useState(null)
+  const emails = [...new Set([...(staff.items ?? []).map((x) => x.id.toLowerCase()), ...Object.keys(saved)])].sort()
+  async function save() {
+    await onSave({ staffNames: emails.map((email) => ({ email, name: String(names[email] ?? '').trim() })).filter((x) => x.name) })
+    setMsg('Saved ✓')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">Staff names</p>
+      <p className="text-sm text-slate-400">How each person shows on Home (“Katie emailed…”, “Scott is on it”). Empty = the name shown in grey (Scott, Lacie and Katie are known by their email).</p>
+      {staff.error && <p className="text-sm text-berry-500">Couldn’t load the staff list.</p>}
+      {!staff.error && !emails.length && <p className="text-sm text-slate-400">Loading the staff list…</p>}
+      {emails.map((email) => (
+        <label key={email} className="block break-all text-sm text-slate-400">{email}
+          <input list="staff-first-names" value={names[email] ?? ''} placeholder={staffName(email)} autoComplete="off"
+            onChange={(e) => { setNames({ ...names, [email]: e.target.value }); setMsg(null) }} className={field} />
+        </label>
+      ))}
+      <datalist id="staff-first-names">{STAFF_FIRST_NAMES.map((n) => <option key={n} value={n} />)}</datalist>
+      {emails.length > 0 && (
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={save} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950">Save</button>
+          {msg && <span className="text-sm text-emerald-400">{msg}</span>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Defaults for new proposals: deposit, takedown %, who countersigns, and the
 // contract terms (owner + attorney to finish every [TO FILL IN]).
 function ProposalDefaults({ settings, onSave }) {
@@ -209,6 +249,8 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
         <div className={box}><InstallApp /></div>
 
         <AlertEmails settings={settings} onSave={onSave} />
+
+        <StaffNames settings={settings} onSave={onSave} />
 
         <BookingStatus settings={settings} onSave={onSave} />
 

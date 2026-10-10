@@ -83,7 +83,7 @@ export default function LeadsApp() {
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const alerts = useStaffAlerts(user, leads)
-  const feed = useActivityFeed(user)
+  const feed = useActivityFeed(user, settingsApi.settings?.staffNames)
   const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
   const season = seasonYear()
 

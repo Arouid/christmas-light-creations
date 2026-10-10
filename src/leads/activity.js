@@ -4,7 +4,7 @@
 // it never throws and never slows the action. LeadsApp keeps the signed-in
 // user and the customer/lead lists here, so callers only name the action.
 import { useMemo, useState } from 'react'
-import { ACTIVITY_DAYS, firstInWindow, handlers, phoneDirectory, recentEntries, toMs, whoByPhone } from '../lib/activity'
+import { ACTIVITY_DAYS, firstInWindow, handlers, phoneDirectory, recentEntries, staffNamesMap, toMs, whoByPhone } from '../lib/activity'
 import { appendLog, useLiveCollection, useLiveSince } from './staffStore'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -39,13 +39,13 @@ const newestFirst = (a, b) => toMs(b.at) - toMs(a.at)
 const byId = (a, b) => a.id.localeCompare(b.id)
 
 // The last 7 days of entries, live, who's handling which message, and staff
-// first names (the staff list's `name`, set in the Firebase console; else the email).
-export function useActivityFeed(user) {
+// names (⚙ Settings → Staff names, else the staff list's `name`, else the email).
+export function useActivityFeed(user, settingNames) {
   const [since] = useState(() => new Date(Date.now() - ACTIVITY_DAYS * DAY))
   const { items, error } = useLiveSince(user, 'activity', 'at', since, newestFirst)
   const staff = useLiveCollection(user, 'staff', byId).items
   const entries = useMemo(() => recentEntries(items ?? []), [items])
   const handling = useMemo(() => handlers(items ?? []), [items])
-  const names = useMemo(() => Object.fromEntries((staff ?? []).filter((s) => s.name).map((s) => [s.id.toLowerCase(), s.name])), [staff])
+  const names = useMemo(() => staffNamesMap(staff ?? [], settingNames ?? []), [staff, settingNames])
   return { entries, handling, names, error, loading: !items && !error }
 }
