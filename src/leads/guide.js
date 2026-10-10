@@ -118,6 +118,7 @@ export const SECTIONS = [
     id: 'map', icon: '🗺', title: 'Map', tab: 'map',
     summary: 'Every customer as a pin, colored by this season’s status. Pulsing red = open service call.',
     items: [
+      'Opens on our area (Houston to Galveston, centered between Pearland and Clear Lake). **Fit all** shows every pin; on a computer, **📌 Open the map here** makes the current view where the map opens for everyone.',
       'Filter by saved tab, installs/takedowns or area; satellite view; **Full screen** for a wall screen.',
       'Tap a pin: name, status, gate code, miles from home base, **Open customer / Directions / Street View**.',
       '**Put N addresses on the map** finds customers that don’t have a pin yet.',

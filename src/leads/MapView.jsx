@@ -16,7 +16,12 @@ const COLORS = {
 }
 const CALL = '#ff3b5c'
 const HOME = '#ffffff'
-const PEARLAND = { lat: 29.5636, lng: -95.286 }
+// Where the map opens (owner, 2026-10-10): between Pearland and Clear Lake,
+// Houston to Galveston on a computer, not "fit every pin" (a few far or
+// roughly-found addresses zoomed it way out). 📌 Start here saves another
+// view for everyone (settings/app.mapView).
+const START_VIEW = { lat: 29.51, lng: -95.22, zoom: 10 }
+const startOf = (v) => (Number.isFinite(v?.lat) && Number.isFinite(v?.lng) && Number.isFinite(v?.zoom) ? v : START_VIEW)
 
 const NIGHT = [
   { elementType: 'geometry', stylers: [{ color: '#08122b' }] },
@@ -78,7 +83,8 @@ export default function MapView({ customers, calls, gates, views, settings, seas
   const mapDiv = useRef(null)
   const map = useRef(null)
   const layer = useRef(null)
-  const fitted = useRef(false)
+  const fitted = useRef(true) // false = fit the pins once (after Put N addresses on the map)
+  const [startMsg, setStartMsg] = useState('')
   const [ready, setReady] = useState(false)
   const [loadError, setLoadError] = useState(null)
   const [mode, setMode] = useState('install')
@@ -121,8 +127,9 @@ export default function MapView({ customers, calls, gates, views, settings, seas
     loadMaps().then(async (maps) => {
       const { Map } = await maps.importLibrary('maps')
       if (cancelled || !mapDiv.current) return
+      const start = startOf(settings?.mapView)
       map.current = new Map(mapDiv.current, {
-        center: PEARLAND, zoom: 10, styles: NIGHT, backgroundColor: '#050b1a',
+        center: { lat: start.lat, lng: start.lng }, zoom: start.zoom, styles: NIGHT, backgroundColor: '#050b1a',
         disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy', clickableIcons: false,
       })
       map.current.addListener('click', () => setPicked(null))
@@ -131,9 +138,9 @@ export default function MapView({ customers, calls, gates, views, settings, seas
       setReady(true)
     }).catch((e) => setLoadError(e.message))
     return () => { cancelled = true; layer.current?.setMap(null) }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- the start view is read once, when the map is made
 
-  // Pins whenever data or filters change; fit the view the first time.
+  // Pins whenever data or filters change; fit them after newly located addresses.
   useEffect(() => {
     if (!ready) return
     layer.current.setPins(pins, picked?.key)
@@ -153,6 +160,14 @@ export default function MapView({ customers, calls, gates, views, settings, seas
     const t = setInterval(() => setNow(new Date()), 30000)
     return () => clearInterval(t)
   }, [])
+
+  // 📌 Start here: this view becomes where the map opens, for everyone.
+  async function saveStart() {
+    const c = map.current.getCenter()
+    await onSaveSettings({ mapView: { lat: Number(c.lat().toFixed(5)), lng: Number(c.lng().toFixed(5)), zoom: map.current.getZoom() } })
+    setStartMsg('Saved ✓ The map opens here for everyone.')
+    setTimeout(() => setStartMsg(''), 4000)
+  }
 
   function fitAll() {
     if (!pins.length) return
@@ -253,6 +268,8 @@ export default function MapView({ customers, calls, gates, views, settings, seas
           <button type="button" onClick={() => (document.fullscreenElement ? document.exitFullscreen() : wallRef.current.requestFullscreen())}
             className="flex-1 rounded-lg bg-white/10 py-1.5 text-sm">Full screen</button>
         </div>
+        <button type="button" onClick={saveStart} title="Open the map at this view, for everyone" className="w-full rounded-lg bg-white/10 py-1.5 text-sm">📌 Open the map here</button>
+        {startMsg && <p className="text-xs text-emerald-300" role="status">{startMsg}</p>}
       </div>
 
       {/* Bottom: picked pin */}
