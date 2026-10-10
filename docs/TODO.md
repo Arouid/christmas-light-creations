@@ -30,7 +30,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
-| K | **Next up (owner, 2026-10-09): "Recent staff activity" box** so people don't do the same thing twice: who emailed a customer, sent an invoice to whom, answered someone's message… | Spec first (docs/specs/). There's no dashboard yet: decide where it lives (new Home tab? top of 💬?). Sources already in the data: staff emails (`messages`, sent by), invoices (`sent` log), every staff edit's `updatedBy`/`updatedAt`; "responded to a message" needs a way to mark one handled |
+| K | **Next up (owner, 2026-10-09): "Recent staff activity" box** so people don't do the same thing twice: who emailed a customer, sent an invoice to whom, answered someone's message… | Spec first (docs/specs/). There's no dashboard yet: decide where it lives (new Home tab? top of 💬?). Sources already in the data: staff emails (`messages`, sent by), invoices (`sent` log), every staff edit's `updatedBy`/`updatedAt`; "responded to a message" needs a way to mark one handled. Owner also wants the dashboard to "look like NASA" (mission control): ideas to pick from: live counters (new messages, open requests, unpaid $), today's routes with stops done/left, season progress (confirmed → scheduled → installed → taken down), money this season vs last, system status lights (text sync last seen, alert emails, payments; from `incidents`/dailyHealth), install-day weather (new outside service: decision + privacy check first), a wall-screen full-screen mode |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
 | E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
 | F | Export customers to a spreadsheet | |
