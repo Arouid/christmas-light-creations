@@ -72,6 +72,9 @@ export const demoData = {
     { id: 'gv-demo-unmatched-1', unmatched: true, phone: '+15550100166', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(2), text: 'Hi! Saw your sign on Broadway. How much for a one story house?' },
     { id: 'gv-demo-unmatched-2', unmatched: true, phone: '+15550100177', kind: 'voicemail', direction: 'in', source: 'voice-email', at: hoursAgo(9), text: 'Hi, this is about getting lights put up on our house in Silverlake. Please call me back.' },
   ]),
+  incidents: byId([
+    { id: 'demo-incident-1', kind: 'lead-alert', open: true, message: 'New request from Pat Sample (555-0101) is in the staff app, but the alert email failed: Invalid login (sample).' },
+  ]),
   views: byId([
     { id: 'demo-view-1', name: 'Needs scheduling', order: 1, mode: 'install', statuses: ['Confirmed - Needs to be Scheduled'],
       columns: ['name', 'area', 'phone', 'timeframe', 'status'] },

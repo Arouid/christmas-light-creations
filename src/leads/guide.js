@@ -15,6 +15,7 @@ export const TASKS = [
   ['Text a customer', 'Tap **Text**: the message is copied and Google Voice opens as the business number. Paste and send.'],
   ['Email a customer', 'Tap **Email**: Gmail opens as info@ with a template filled in. Check it and send.'],
   ['Ask for a Google review', 'Shows up after an install is completed, a service call is done, or a lead is booked: **Text/Email review link**. Never offer anything for a review.'],
+  ['A red “website problem” banner showed up', 'Tap it: it says in plain words what broke (a request alert email, a payment, the text sync). Deal with it (or forward it to whoever looks after the website), then tap **Dealt with ✓**. The alert list also gets an email, and every Monday an “all OK” email; if that stops coming, say so.'],
   ['A customer asks “why did my price go up?”', 'Their account → **💲 Yearly price & add-ons** shows the breakdown. Tick **Customer can see this** so they can see it on their own account too.'],
 ]
 

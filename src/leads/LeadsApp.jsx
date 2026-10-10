@@ -10,6 +10,7 @@ import MapView from './MapView'
 import SeasonView from './SeasonView'
 import SettingsPanel from './SettingsPanel'
 import GuidePanel from './GuidePanel'
+import IncidentsBanner from './Incidents'
 import InstallApp, { InstallButtons } from './InstallApp'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
 import { DiscountSchedule } from './discountContext'
@@ -209,6 +210,7 @@ export default function LeadsApp() {
     <StaffContext.Provider value={{ user, settings: settingsApi.settings ?? {} }}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
+      <IncidentsBanner user={user} />
       {!installHidden && (
         <div className="md:hidden">
           <InstallApp compact onDismiss={() => { setInstallHidden(true); try { localStorage.setItem('clcInstallHidden', '1') } catch { /* fine */ } }} />

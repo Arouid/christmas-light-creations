@@ -225,6 +225,16 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Website problems (failed alert emails, payment trouble, sync stopped),
+    // written only by the server. Staff read them and can only mark one seen.
+    match /incidents/{incidentId} {
+      allow read: if isStaff();
+      allow update: if isStaff() && stamped()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['open', 'updatedAt', 'updatedBy'])
+        && request.resource.data.open == false;
+      allow create, delete: if false;
+    }
+
     // Shared staff settings (home base for distances and routes).
     match /settings/{settingId} {
       allow read: if isStaff();
