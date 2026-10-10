@@ -4,7 +4,7 @@
 import { after, before, beforeEach, describe, test } from 'node:test'
 import { readFileSync } from 'node:fs'
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing'
-import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 
 let env
 const STAFF = 'boss@example.com'
@@ -28,6 +28,11 @@ const lead = (over = {}) => ({
   contactMethod: 'Phone', message: 'Lights please', source: 'web', status: 'new', notes: '', createdAt: serverTimestamp(), ...over,
 })
 const sentProposal = (over = {}) => ({ status: 'sent', docHash: HASH, customer: { name: 'Pat', email: 'cust@example.com' }, items: [{ qty: 1, rate: 500 }], depositPct: 50, ...over })
+const invoice = (over = {}) => ({
+  status: 'open', customerId: 'pat-test', customer: { name: 'Pat Test', email: 'cust@example.com', phone: '', address: '1 Main St' },
+  season: '2026', kind: 'install', items: [{ id: 'l1', description: 'Re-install', cents: 45000 }], note: '', terms: 'receipt', dueDate: '2026-11-01', ...over,
+})
+const offline = (over = {}) => ({ method: 'Check', date: '2026-11-05', note: '#1043', by: STAFF, at: 1700000000000, ...over })
 const signature = (over = {}) => ({ name: 'Pat Test', image: 'data:image/png;base64,AAAA', consent: true, docHash: HASH, userAgent: 'test', ...over })
 
 // A valid staff-style document for every staff-only collection.
@@ -69,6 +74,12 @@ beforeEach(async () => {
     await setDoc(doc(db, 'proposals', 'sandboxThenLive'), sentProposal({ status: 'signed', signature: signature(), deposit: { status: 'paid', env: 'sandbox' }, payments: { balance: { status: 'paid', env: 'live' } } }))
     await setDoc(doc(db, 'proposals', 'livePaid'), sentProposal({ status: 'signed', signature: signature(), deposit: { status: 'paid', env: 'live' } }))
     await setDoc(doc(db, 'proposalFiles', 'sent1-render'), { dataUrl: 'data:image/png;base64,AAAA' })
+    await setDoc(doc(db, 'invoices', 'invOpen'), invoice({ number: 'CLC-2026-0001', sent: { invoice: { at: 1 } } }))
+    await setDoc(doc(db, 'invoices', 'invDraft'), invoice({ status: 'draft', dueDate: '' }))
+    await setDoc(doc(db, 'invoices', 'invPaidOnline'), invoice({ status: 'paid', number: 'CLC-2026-0002', payment: { status: 'paid', cents: 45000, env: 'live' } }))
+    await setDoc(doc(db, 'invoices', 'invPaidOffline'), invoice({ status: 'paid', number: 'CLC-2026-0003', offline: offline() }))
+    await setDoc(doc(db, 'invoices', 'invVoid'), invoice({ status: 'void', number: 'CLC-2026-0004' }))
+    await setDoc(doc(db, 'invoices', 'invLocked'), invoice({ number: 'CLC-2026-0005', paymentLock: { orderId: 'ORDER123', at: Date.now() } }))
   })
 })
 
@@ -90,7 +101,7 @@ describe('staff-only collections: outsiders get nothing', () => {
 describe('staff', () => {
   test('staff can read and stamp-write staff collections', async () => {
     const db = as.staff()
-    for (const c of ['leads', 'customers', 'serviceCalls', 'gateCodes', 'views', 'messages', 'pastRequests', 'signs', 'routes', 'designs', 'designFiles', 'settings', 'customerLogins', 'staff']) {
+    for (const c of ['leads', 'customers', 'serviceCalls', 'gateCodes', 'views', 'messages', 'pastRequests', 'signs', 'routes', 'designs', 'designFiles', 'settings', 'customerLogins', 'invoices', 'staff']) {
       await assertSucceeds(getDocs(collection(db, c)))
     }
     await assertSucceeds(setDoc(doc(db, 'customers', 'new1'), { fullName: 'New', ...stamp() }))
@@ -243,6 +254,88 @@ describe('proposalFiles: images by token', () => {
       await assertFails(deleteDoc(doc(db, 'proposalFiles', 'sent1-render')))
     }
     await assertSucceeds(setDoc(doc(as.staff(), 'proposalFiles', 'sent1-photo'), { dataUrl: 'data:,x', ...stamp() }))
+  })
+})
+
+describe('invoices: customer link (token = document id)', () => {
+  test('anyone with the link can open it; only staff list', async () => {
+    await assertSucceeds(getDoc(doc(as.anon(), 'invoices', 'invOpen')))
+    for (const who of outsiders) await assertFails(getDocs(collection(as[who](), 'invoices')))
+    await assertSucceeds(getDocs(collection(as.staff(), 'invoices')))
+  })
+  test('the public can only note it was opened, once, with the server time', async () => {
+    const db = as.anon()
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { viewedAt: new Date(0) }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { viewedAt: serverTimestamp(), status: 'paid' }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invDraft'), { viewedAt: serverTimestamp() }))
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invOpen'), { viewedAt: serverTimestamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { viewedAt: serverTimestamp() }))
+  })
+  test('outsiders (customers too) never write payments, amounts or anything else', async () => {
+    for (const who of outsiders) {
+      const db = as[who]()
+      await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid' }))
+      await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { payment: { status: 'paid', cents: 45000, env: 'live' } }))
+      await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid', offline: offline({ by: 'cust@example.com' }) }))
+      await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { items: [{ id: 'l1', description: 'Re-install', cents: 1 }] }))
+      await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { 'customer.email': 'attacker@example.com' }))
+      await assertFails(setDoc(doc(db, 'invoices', 'mine'), invoice()))
+      await assertFails(deleteDoc(doc(db, 'invoices', 'invDraft')))
+    }
+  })
+  test('staff create drafts or sent invoices, stamped, never with server fields', async () => {
+    const db = as.staff()
+    await assertSucceeds(setDoc(doc(db, 'invoices', 'new1'), { ...invoice({ status: 'draft', dueDate: '' }), ...stamp() }))
+    await assertSucceeds(setDoc(doc(db, 'invoices', 'new2'), { ...invoice(), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'new3'), { ...invoice(), ...stamp('other@example.com') }))
+    await assertFails(setDoc(doc(db, 'invoices', 'new4'), { ...invoice({ status: 'paid' }), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'new5'), { ...invoice({ number: 'CLC-2026-9999' }), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'new6'), { ...invoice({ payment: { status: 'paid' } }), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'new7'), { ...invoice({ offline: offline() }), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'new8'), { ...invoice({ items: [] }), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'new9'), { ...invoice({ dueDate: '' }), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'newA'), { ...invoice({ kind: 'storage' }), ...stamp() }))
+    await assertFails(setDoc(doc(db, 'invoices', 'newB'), { ...invoice({ customer: { name: 'x', admin: true } }), ...stamp() }))
+  })
+  test('staff edit, send and void unpaid ones; a sent one never goes back to draft', async () => {
+    const db = as.staff()
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invDraft'), { status: 'open', dueDate: '2026-11-01', ...stamp() }))
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invOpen'), { items: [{ id: 'l1', description: 'Re-install', cents: 40000 }], emailAgainAt: serverTimestamp(), ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'draft', ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { number: 'CLC-2026-0100', ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { 'sent.invoice': null, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { paymentLock: null, ...stamp() }))
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'void', ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invVoid'), { status: 'open', ...stamp() }))
+  })
+  test('Mark paid: offline method by the signed-in staff member, never over an online payment or a payment in progress', async () => {
+    const db = as.staff()
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid', ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid', offline: offline({ by: 'other@example.com' }), ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid', offline: offline({ method: 'Bitcoin' }), ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid', offline: offline(), items: [{ id: 'l1', description: 'x', cents: 1 }], ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid', payment: { status: 'paid' }, offline: offline(), ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invLocked'), { status: 'paid', offline: offline(), ...stamp() }))
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invOpen'), { status: 'paid', offline: offline(), ...stamp() }))
+    // A lock left by a crashed payment (older than 2 minutes) doesn't block it forever.
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'invoices', 'invStaleLock'), invoice({ number: 'CLC-2026-0006', paymentLock: { orderId: 'ORDER9', at: Date.now() - 10 * 60 * 1000 } }))
+    })
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invStaleLock'), { status: 'paid', offline: offline(), ...stamp() }))
+  })
+  test('Undo Mark paid; online payments and paid invoices stay as they are', async () => {
+    const db = as.staff()
+    await assertFails(updateDoc(doc(db, 'invoices', 'invPaidOnline'), { status: 'open', ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invPaidOnline'), { status: 'void', ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invPaidOnline'), { items: [{ id: 'l1', description: 'x', cents: 1 }], ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'invoices', 'invPaidOffline'), { items: [{ id: 'l1', description: 'x', cents: 1 }], ...stamp() }))
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invPaidOnline'), { remindersOff: true, ...stamp() }))
+    await assertSucceeds(updateDoc(doc(db, 'invoices', 'invPaidOffline'), { status: 'open', offline: deleteField(), ...stamp() }))
+  })
+  test('staff delete only never-sent drafts', async () => {
+    const db = as.staff()
+    await assertSucceeds(deleteDoc(doc(db, 'invoices', 'invDraft')))
+    for (const id of ['invOpen', 'invPaidOnline', 'invPaidOffline', 'invVoid']) await assertFails(deleteDoc(doc(db, 'invoices', id)))
   })
 })
 

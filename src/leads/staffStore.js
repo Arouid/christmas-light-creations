@@ -155,6 +155,13 @@ export async function saveRecord(user, coll, id, data) {
   await fs.setDoc(fs.doc(db, coll, id), { ...data, ...stamp(fs, user) }, { merge: true })
 }
 
+// Remove fields from a record (and set others) in one stamped write.
+export async function clearFields(user, coll, id, fields, data = {}) {
+  if (demoMode) return demoWrite(coll, id, (d) => { const next = { ...d, ...data, updatedBy: user.email }; fields.forEach((f) => delete next[f]); return next })
+  const { fs, db } = await fire()
+  await fs.updateDoc(fs.doc(db, coll, id), { ...data, ...Object.fromEntries(fields.map((f) => [f, fs.deleteField()])), ...stamp(fs, user) })
+}
+
 export async function deleteRecord(coll, id) {
   if (demoMode) {
     delete demo.data[coll]?.[id]

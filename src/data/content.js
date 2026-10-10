@@ -238,6 +238,7 @@ export const privacy = {
         '**When you ask for an estimate:** your name, email, phone, address, how you’d like us to contact you, your message, and how you heard about us.',
         '**When you’re a customer:** your contact and property details (like a gate code), what we installed, your season schedule, prices and what you’ve paid, and notes we need to do the job.',
         '**When you sign a proposal:** your typed name, your drawn signature, the date and time, the browser you signed on, and a fingerprint of the exact document you agreed to.',
+        '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',
         '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
         '**When you text, call or email us:** we keep that conversation history with your customer record so anyone on our team can help you.',
         '**When you sign in to your account:** your email address and when you signed in. With “Sign in with Google”, Google tells us your name and email; we never see your Google password.',
@@ -246,8 +247,9 @@ export const privacy = {
     {
       title: 'How we use it',
       items: [
-        'To contact you about your estimate, schedule installs, service calls and takedowns, send proposals and receipts, and answer your questions.',
-        'To show you your agreements, yearly price and payments in your account.',
+        'To contact you about your estimate, schedule installs, service calls and takedowns, send proposals, invoices and receipts, and answer your questions.',
+        'If an invoice is still unpaid, we email at most two reminders (7 and 14 days after it was due), then stop.',
+        'To show you your agreements, invoices, yearly price and payments in your account.',
         'To keep our own business records (agreements and payments).',
         'We don’t use advertising or tracking cookies, we don’t run analytics on this site, and we don’t sell or rent your information to anyone.',
       ],

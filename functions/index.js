@@ -9,7 +9,10 @@
 // - proposalChanged: emails the customer their signed agreement link and
 //   tells staff when a proposal is signed or a deposit is paid.
 // - sendAccountLink / myAccount: customer accounts at /account/ (email-link
-//   sign-in; the account lists proposals sent to that verified email).
+//   sign-in; the account lists proposals and invoices sent to that verified email).
+// - createInvoiceOrder / captureInvoiceOrder / invoiceChanged /
+//   invoiceReminders: our own invoices (docs/specs/invoices.md), paid like
+//   proposals; numbers, emails, season billing and reminders done here.
 // - messageSync: receives Google Voice notification emails and customer
 //   emails from the Apps Script in info@ (scripts/apps-script/messageSync.gs)
 //   and files them in customer history (docs/specs/message-sync.md).
@@ -37,6 +40,10 @@ import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
+import {
+  centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceSummary, KIND_SHORT, paidInfo,
+  payableInvoiceProblem, receiptEmail, reminderDue, seasonFillsOnPaid, seasonFillsOnSend, shownInvoice, staffPaidEmail, toMs, validToken,
+} from './invoices.js'
 
 initializeApp()
 const REGION = 'us-south1'
@@ -255,6 +262,243 @@ async function proposalChangeEmails(event) {
   }
 }
 
+// ---- Invoices (docs/specs/invoices.md) ------------------------------------
+// Staff create, edit and send invoices in the staff app (firestore.rules).
+// Only this code gives the number, sends the emails, takes the online
+// payment, fills the season billing and sends reminders. Payment safety is
+// the same as proposals: the amount comes from the stored invoice, the order
+// is checked before capture, one capture at a time.
+const invoiceLink = (token) => `${SITE}/invoice/?t=${token}`
+const payCall = { region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET, SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }
+
+async function payableInvoice(token) {
+  if (!validToken(token)) throw new HttpsError('invalid-argument', 'Bad link')
+  const ref = getFirestore().doc(`invoices/${token}`)
+  const inv = (await ref.get()).data()
+  const problem = payableInvoiceProblem(inv)
+  if (problem) throw new HttpsError(...problem)
+  return { ref, inv, amount: invoiceCents(inv) }
+}
+
+export const createInvoiceOrder = onCall(payCall, async (req) => {
+  const token = req.data?.token
+  const { inv, amount } = await payableInvoice(token)
+  const busy = lockProblem(inv.paymentLock, null, Date.now())
+  if (busy) throw new HttpsError(...busy)
+  try {
+    const order = await createOrder(paypalCfg(), {
+      token, customId: invoiceCustomId(token), amount: dollars(amount),
+      description: `Invoice ${inv.number}: ${KIND_SHORT[inv.kind] ?? 'Christmas lighting'} for ${inv.customer?.address ?? ''}`,
+    })
+    return { orderId: order.id }
+  } catch (e) {
+    await reportIncident('paypal', `${inv.customer?.name ?? 'A customer'} tried to pay invoice ${inv.number} and PayPal refused: ${e.message}`, { invoice: token })
+    throw new HttpsError('unavailable', e.message)
+  }
+})
+
+export const captureInvoiceOrder = onCall(payCall, async (req) => {
+  const token = req.data?.token
+  const orderId = String(req.data?.orderId ?? '')
+  if (!validOrderId(orderId)) throw new HttpsError('invalid-argument', 'Bad payment reference')
+  const { ref, inv, amount } = await payableInvoice(token)
+  const customId = invoiceCustomId(token)
+  const cfg = paypalCfg()
+  const label = `invoice ${inv.number}`
+
+  // 1. Look at the order first: a wrong one is refused before any money moves.
+  const order = await getOrder(cfg, orderId).catch(async (e) => {
+    await reportIncident('paypal', `Couldn't check a payment for ${label} with PayPal (nothing charged): ${e.message}`, { invoice: token, orderId })
+    throw new HttpsError('unavailable', 'PayPal didn’t answer. Please try again.')
+  })
+  const wrong = orderProblem(order, { customId, amount })
+  if (wrong) {
+    await reportIncident('payment', `A payment for ${label} was refused before charging because the PayPal order didn't match (nothing charged).`, { invoice: token, orderId, ...wrong, amount })
+    throw new HttpsError('failed-precondition', 'This payment doesn’t match what’s due. Nothing was charged. Please refresh and try again, or call us.')
+  }
+
+  // 2. One capture at a time per invoice, and the invoice must not have changed.
+  const db = getFirestore()
+  await db.runTransaction(async (tx) => {
+    const cur = (await tx.get(ref)).data()
+    const problem = payableInvoiceProblem(cur) ?? lockProblem(cur?.paymentLock, orderId, Date.now())
+    if (problem) throw new HttpsError(...problem)
+    if (invoiceCents(cur) !== amount) throw new HttpsError('failed-precondition', 'This invoice just changed. Nothing was charged. Please refresh and try again.')
+    tx.update(ref, { paymentLock: { orderId, at: Date.now() } })
+  })
+  const unlock = () => ref.update({ paymentLock: FieldValue.delete() }).catch((e) => logger.error('unlock', e))
+
+  // 3. Take the money, then check PayPal's answer once more.
+  let result
+  try {
+    result = await captureOrder(cfg, orderId)
+  } catch (e) {
+    await unlock()
+    await reportIncident('payment', `PayPal couldn't complete a payment for ${label} (the customer was told to try again): ${e.message}`, { invoice: token, orderId })
+    throw new HttpsError('unavailable', 'PayPal couldn’t complete the payment. Please try again, or call us.')
+  }
+  const capture = result.purchase_units?.[0]?.payments?.captures?.[0]
+  const mismatch = captureProblem(result, { customId, amount })
+  if (mismatch) {
+    await unlock()
+    await reportIncident('payment', `IMPORTANT: PayPal took a payment for ${label} but it didn't match what's due, so it wasn't recorded. Check PayPal order ${orderId}, then refund it or mark the invoice paid by hand.`, { invoice: token, orderId, status: result.status, ...mismatch, amount })
+    throw new HttpsError('failed-precondition', 'Payment could not be confirmed. Please call us.')
+  }
+
+  // 4. Money moved: always record it, and release the lock with it. If staff
+  // marked it paid or voided it in the meantime, say so (paid twice?).
+  const record = {
+    status: 'paid', cents: amount, orderId: result.id, captureId: capture.id, source: Object.keys(result.payment_source ?? {})[0] ?? 'paypal',
+    payerEmail: result.payer?.email_address ?? null, env: PAYPAL_ENV.value(), paidAt: FieldValue.serverTimestamp(),
+  }
+  const before = await db.runTransaction(async (tx) => {
+    const cur = (await tx.get(ref)).data()
+    tx.update(ref, { payment: record, status: 'paid', paymentLock: FieldValue.delete() })
+    return cur
+  })
+  if (before.status !== 'open' || invoiceCents(before) !== amount) {
+    const what = before.status === 'paid' ? `marked paid by staff (${before.offline?.method ?? 'offline'})` : before.status === 'void' ? 'voided' : 'changed'
+    await reportIncident('payment', `IMPORTANT: ${before.customer?.name ?? 'A customer'} paid ${label} online ($${dollars(amount)}) just after it was ${what}. Check whether they paid twice; refund in PayPal if so (order ${result.id}).`, { invoice: token, orderId: result.id })
+  }
+  return { paid: true }
+})
+
+// A one-time step for an invoice (an email, a season fill). The claim is
+// written in a transaction before it runs, so two runs of the trigger at the
+// same moment can't both send it. Steps report their own failures and return
+// { failed }, which stays on the invoice (no retry loop).
+async function once(ref, inv, map, key, run) {
+  if (inv[map]?.[key]) return
+  const claimed = await getFirestore().runTransaction(async (tx) => {
+    if ((await tx.get(ref)).data()?.[map]?.[key]) return false
+    tx.update(ref, { [`${map}.${key}`]: { at: Date.now() } })
+    return true
+  })
+  if (!claimed) return
+  const extra = await run()
+  if (extra && Object.keys(extra).length) await ref.update({ [`${map}.${key}`]: { at: Date.now(), ...extra } })
+}
+
+async function mailInvoiceCustomer(token, inv, message, what) {
+  const to = inv.customer.email.trim()
+  try {
+    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to, replyTo: FROM, ...message })
+    return { to }
+  } catch (e) {
+    await reportIncident('email', `${what} to ${inv.customer?.name ?? 'a customer'} (${to}) didn't go out: ${e.message}. Text them the link instead: ${invoiceLink(token)}`, { invoice: token })
+    return { to, failed: String(e.message).slice(0, 200) }
+  }
+}
+
+// Writes the season billing boxes worked out by fillsOf(invoice, customer)
+// (only empty ones; functions/invoices.js), stamped like a staff edit.
+async function fillCustomerSeason(inv, fillsOf, what) {
+  if (!inv.customerId || inv.customerId.includes('/')) return { skipped: 'no customer' }
+  const db = getFirestore()
+  const ref = db.doc(`customers/${inv.customerId}`)
+  try {
+    return await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref)
+      if (!snap.exists) return { skipped: 'customer not found' }
+      const fills = fillsOf(inv, snap.data())
+      if (fills.length) tx.update(ref, { ...Object.fromEntries(fills.map((f) => [f.path, f.value])), updatedAt: FieldValue.serverTimestamp(), updatedBy: `website (invoice ${inv.number})` })
+      return { filled: fills.length }
+    })
+  } catch (e) {
+    await reportIncident('other', `Invoice ${inv.number} (${inv.customer?.name ?? ''}): couldn't ${what} on their ${inv.season} season billing. Fill it in by hand (Edit details): ${e.message}`, { invoice: inv.number })
+    return { failed: String(e.message).slice(0, 200) }
+  }
+}
+
+// CLC-2026-0001: the year it's sent (Central) + a count kept in
+// serverState/invoiceNumbers (no client rule matches serverState).
+async function assignInvoiceNumber(ref) {
+  const db = getFirestore()
+  const counter = db.doc('serverState/invoiceNumbers')
+  return db.runTransaction(async (tx) => {
+    const [snap, count] = await Promise.all([tx.get(ref), tx.get(counter)])
+    const inv = snap.data()
+    if (inv.number) return inv
+    const year = centralDay().slice(0, 4)
+    const n = (Number(count.data()?.[year]) || 0) + 1
+    const number = invoiceNumber(year, n)
+    tx.set(counter, { [year]: n }, { merge: true })
+    tx.update(ref, { number, sentAt: FieldValue.serverTimestamp() })
+    return { ...inv, number, sentAt: new Date() }
+  })
+}
+
+// Every write to an invoice: keep its email key (for /account/), then do what
+// its state calls for. Each step runs once, so this is safe to run again.
+export const invoiceChanged = onDocumentWritten({ document: 'invoices/{token}', secrets: [SMTP_PASSWORD], region: REGION }, async (event) => {
+  if (!event.data?.after?.exists) return
+  try {
+    await invoiceSteps(event.data.after.ref, event.params.token)
+  } catch (e) {
+    await reportIncident('other', `Something went wrong after an invoice changed (link ${event.params.token.slice(0, 6)}…): ${e.message}`, { invoice: event.params.token })
+  }
+})
+
+async function invoiceSteps(ref, token) {
+  let inv = (await ref.get()).data()
+  if (!inv) return
+  const keys = proposalEmailKeys(inv) // same shape: customer.email
+  if (!sameKeys(keys, inv.emailKeys)) await ref.update({ emailKeys: keys })
+  if (inv.status !== 'open' && inv.status !== 'paid') return
+  if (!inv.number) inv = await assignInvoiceNumber(ref)
+  const link = invoiceLink(token)
+  const today = centralDay()
+  const canMail = emailOk(inv.customer?.email)
+
+  if (inv.status === 'open') {
+    await once(ref, inv, 'done', 'invoiceBox', () => fillCustomerSeason(inv, seasonFillsOnSend, 'mark the invoice as sent'))
+    if (canMail) {
+      // Also covers an email added later to an invoice sent without one.
+      await once(ref, inv, 'sent', 'invoice', () => mailInvoiceCustomer(token, inv, invoiceEmail({ inv, link, today }), `Invoice ${inv.number}`))
+      const again = toMs(inv.emailAgainAt)
+      if (inv.sent?.invoice && Number.isFinite(again)) await once(ref, inv, 'sent', `again_${again}`, () => mailInvoiceCustomer(token, inv, invoiceEmail({ inv, link, today, type: 'again' }), `Invoice ${inv.number} (sent again)`))
+    }
+  }
+
+  const paid = paidInfo(inv)
+  if (inv.status === 'paid' && paid) {
+    await once(ref, inv, 'done', `season_${paid.id}`, () => fillCustomerSeason(inv, (i, c) => seasonFillsOnPaid(i, c, paid), 'mark it paid'))
+    await once(ref, inv, 'done', `staff_${paid.id}`, async () => {
+      const to = await staffEmails()
+      if (!to.length) return { skipped: 'no alert list' }
+      try {
+        await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, ...staffPaidEmail({ inv, link, paid }) })
+        return {}
+      } catch (e) {
+        await reportIncident('email', `The "invoice paid" email for ${inv.number} (${inv.customer?.name ?? ''}) didn't go out: ${e.message}`, { invoice: inv.number })
+        return { failed: String(e.message).slice(0, 200) }
+      }
+    })
+    if (canMail) await once(ref, inv, 'sent', `receipt_${paid.id}`, () => mailInvoiceCustomer(token, inv, receiptEmail({ inv, link, paid }), `The receipt for invoice ${inv.number}`))
+  }
+}
+
+// Reminders (9 am Central): 7 and 14 days past due, then stop (owner
+// 2026-10-09). Rules in reminderDue (functions/invoices.js).
+export const invoiceReminders = onSchedule({ schedule: '0 9 * * *', timeZone: 'America/Chicago', region: REGION, secrets: [SMTP_PASSWORD] }, async () => {
+  const snap = await getFirestore().collection('invoices').where('status', '==', 'open').get()
+  const today = centralDay()
+  const now = Date.now()
+  let sent = 0
+  for (const d of snap.docs) {
+    const inv = d.data()
+    const day = reminderDue(inv, today, now)
+    if (!day) continue
+    try {
+      await once(d.ref, inv, 'sent', `reminder_${day}`, () => mailInvoiceCustomer(d.id, inv, invoiceEmail({ inv, link: invoiceLink(d.id), today, type: 'reminder', day }), `A reminder for invoice ${inv.number}`))
+      sent++
+    } catch (e) {
+      await reportIncident('other', `A reminder for invoice ${inv.number} failed: ${e.message}`, { invoice: inv.number })
+    }
+  }
+  logger.info('invoiceReminders', { open: snap.size, sent })
+})
+
 // ---- Customer accounts (/account/) ------------------------------------------
 
 // emailKeys: lowercase emails on each proposal and customer, written only by
@@ -290,6 +534,12 @@ async function proposalTokensFor(email) {
   return snap.docs.map((d) => d.id)
 }
 
+// Sent invoices to this email (their emailKeys are set by invoiceChanged).
+async function invoicesFor(email) {
+  const snap = await getFirestore().collection('invoices').where('emailKeys', 'array-contains', email).get()
+  return snap.docs.filter((d) => shownInvoice(d.data()))
+}
+
 // Customer records (old sheet + staff app) listing this email, incl. linked other emails.
 async function customersFor(email) {
   await ensureEmailIndex()
@@ -314,8 +564,8 @@ export const customerEmails = onDocumentWritten({ document: 'customers/{id}', re
 export const sendAccountLink = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const email = normEmail(req.data?.email)
   if (!EMAIL_RE.test(email) || email.length > 200) throw new HttpsError('invalid-argument', 'Please enter a valid email')
-  const [tokens, customerIds] = await Promise.all([proposalTokensFor(email), customersFor(email)])
-  if (!tokens.length && !customerIds.length) { logger.info('Account link asked for an unknown email'); return { ok: true } }
+  const [tokens, customerIds, invoices] = await Promise.all([proposalTokensFor(email), customersFor(email), invoicesFor(email)])
+  if (!tokens.length && !customerIds.length && !invoices.length) { logger.info('Account link asked for an unknown email'); return { ok: true } }
 
   // Server-only bookkeeping (no client rule matches accountLinks, so browsers can't read it).
   const limitRef = getFirestore().doc(`accountLinks/${encodeURIComponent(email)}`)
@@ -376,7 +626,10 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const now = new Date()
   const season = String(now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1) // same as src/lib/customers.js seasonYear (server clock is UTC; fine for a July 1 cutover)
   const price = recs.map((d) => customerForAccount(d.data(), season)).find(Boolean) ?? null
-  return { email, proposals, price, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+  // Their invoices (sent or paid; never drafts or voided ones), newest first.
+  const today = centralDay()
+  const invoices = (await invoicesFor(email)).map((d) => invoiceSummary(d.id, d.data(), today)).sort((a, b) => String(b.sentDay).localeCompare(String(a.sentDay)) || b.number.localeCompare(a.number))
+  return { email, proposals, invoices, price, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
 })
 
 // ---- Message sync (Voice notifications + customer emails → history) ---------
@@ -451,11 +704,12 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
   const db = getFirestore()
   const now = Date.now()
   const WEEK = 7 * 24 * 60 * 60 * 1000
-  const [leadsSnap, lastMsg, openSnap, propSnap] = await Promise.all([
+  const [leadsSnap, lastMsg, openSnap, propSnap, invSnap] = await Promise.all([
     db.collection('leads').where('createdAt', '>=', new Date(now - WEEK)).get(),
     db.collection('messages').orderBy('syncedAt', 'desc').limit(1).get(),
     db.collection('incidents').where('open', '==', true).get(),
     db.collection('proposals').select('deposit', 'payments').get(),
+    db.collection('invoices').where('status', '==', 'paid').select('payment').get(),
   ])
   const leads = leadsSnap.docs.map((d) => d.data())
   const lastSync = lastMsg.docs[0]?.get('syncedAt') ?? null
@@ -463,7 +717,8 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
   const missed = missedLeadAlerts(leads, now)
   if (missed.length) problems.push(`• ${missed.length} website request${missed.length === 1 ? '' : 's'} from the last day never got an alert email (${missed.map((l) => `${l.firstName ?? ''} ${l.lastName ?? ''}`.trim()).join(', ')}). They're in the staff app under Leads.`)
   if (syncStale(lastSync, now)) problems.push('• No texts or emails have synced into customer history for 3+ days. If customers have been texting, the sync (Apps Script in info@) may have stopped.')
-  const payments = propSnap.docs.flatMap((d) => PARTS.map((part) => paymentOf(d.data(), part))).filter((x) => x?.status === 'paid' && now - tsMs(x.paidAt) < WEEK).length
+  const payments = [...propSnap.docs.flatMap((d) => PARTS.map((part) => paymentOf(d.data(), part))), ...invSnap.docs.map((d) => d.get('payment'))]
+    .filter((x) => x?.status === 'paid' && now - tsMs(x.paidAt) < WEEK).length
   const monday = new Date(now).toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' }) === 'Mon'
   const openIncidents = openSnap.docs.map((d) => d.data()).sort((a, b) => tsMs(b.at) - tsMs(a.at)).slice(0, 10)
   const report = dailyReport({ problems, openIncidents, monday, stats: { leads: leads.length, payments, lastSync: lastSync?.toDate?.() ?? null } })

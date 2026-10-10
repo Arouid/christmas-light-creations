@@ -53,6 +53,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Privacy page `/privacy/` (words in `privacy` in content.js) must stay true: when the site starts collecting or sharing something new, update it in the same commit.
 - Staff guide (the ? button in the staff app): content in `src/leads/guide.js`. When a staff feature is added or changes, update the guide in the same commit (and its `GUIDE_UPDATED` date).
 - Customer accounts at `/account/` (noindex, robots-disallowed): Google or email-link sign-in (never grants staff access); data only via the `myAccount` function (proposals whose customer.email matches the verified email, any case), payments via the same PayPal callables. `myAccount` also records sign-ins in `customerLogins/{email}` (server-only writes, staff read) for the Accounts page, and returns the yearly-price breakdown (`src/lib/addOns.js`, spec `docs/specs/add-ons.md`) only when staff set `priceShown`. `/account/?demo` in dev shows sample data.
+- Invoices (spec `docs/specs/invoices.md`): `invoices/{link token}`, customer page `/invoice/?t=` (noindex, robots-disallowed, `?demo` in dev), staff Invoices tab. Totals, states, numbers, reminders and season fills live in `functions/invoices.js`, shared by the server and the pages (via `src/lib/invoices.js`): change them there only. Only the server writes the number, online payments, emails sent and season bookkeeping; staff only Mark paid for offline money.
 
 ## The user
 

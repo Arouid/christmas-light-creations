@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { PAYPAL, callDeposit, loadPayPal } from '../lib/paypal'
 
-// One payment on a signed proposal (deposit, install balance or takedown):
-// PayPal's own buttons (PayPal, Venmo, card). Our server creates the order for
-// the exact amount and confirms it.
-export default function DepositPanel({ token, part = 'deposit', title, note, amountLabel, onPaid }) {
+// Server functions for each kind of payment (functions/index.js).
+const CALLS = {
+  proposal: ['createDepositOrder', 'captureDepositOrder'],
+  invoice: ['createInvoiceOrder', 'captureInvoiceOrder'],
+}
+
+// One payment on a signed proposal (deposit, install balance or takedown) or
+// an invoice (of="invoice"): PayPal's own buttons (PayPal, Venmo, card). Our
+// server creates the order for the exact amount and confirms it.
+export default function DepositPanel({ token, part = 'deposit', of = 'proposal', title, note, amountLabel, onPaid }) {
   const box = useRef(null)
   const [msg, setMsg] = useState(null)
   const lastError = useRef(null)
@@ -20,7 +26,7 @@ export default function DepositPanel({ token, part = 'deposit', title, note, amo
         style: { layout: 'vertical', shape: 'pill', label: 'pay' },
         createOrder: async () => {
           try {
-            return (await callDeposit('createDepositOrder', { token, part })).orderId
+            return (await callDeposit(CALLS[of][0], of === 'invoice' ? { token } : { token, part })).orderId
           } catch (e) {
             lastError.current = e.message
             throw e
@@ -29,7 +35,7 @@ export default function DepositPanel({ token, part = 'deposit', title, note, amo
         onApprove: async (data) => {
           setMsg('Confirming your payment…')
           try {
-            await callDeposit('captureDepositOrder', { token, part, orderId: data.orderID })
+            await callDeposit(CALLS[of][1], of === 'invoice' ? { token, orderId: data.orderID } : { token, part, orderId: data.orderID })
             setMsg(null)
             paid.current?.()
           } catch (e) {
@@ -41,7 +47,7 @@ export default function DepositPanel({ token, part = 'deposit', title, note, amo
       }).render(box.current)
     }).catch(() => setMsg('PayPal didn’t load. Please refresh, or call us.'))
     return () => { cancelled = true }
-  }, [token, part])
+  }, [token, part, of])
 
   if (!PAYPAL.clientId) return null
   return (

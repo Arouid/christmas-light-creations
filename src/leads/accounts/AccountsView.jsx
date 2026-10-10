@@ -13,6 +13,7 @@ import AddToRoute from '../AddToRoute'
 import ComposeEmail from '../ComposeEmail'
 import DesignsPanel from '../designs/DesignsPanel'
 import ProposalsPanel from '../proposals/ProposalsPanel'
+import CustomerInvoices from '../invoices/CustomerInvoices'
 import { TextButton } from '../Reach'
 import StreetViewPhoto from '../StreetViewPhoto'
 import TextHistory from '../TextHistory'
@@ -186,6 +187,7 @@ function CustomerAccount({ c, customers, leads, past, calls, gates, season, user
         <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>
       </Header>
       <Section title="Seasons"><SeasonRows customer={c} /></Section>
+      <Section title="🧾 Invoices"><CustomerInvoices customer={c} /></Section>
       <OldRecordsPanel customer={c} customers={customers} user={user} past={myPast} />
       <Section title="💲 Yearly price & add-ons" open={needsAddOnCheck(c)}><AddOnsPanel customer={c} user={user} /></Section>
       {c.notes && <Section title="Notes"><p className="whitespace-pre-wrap text-sm text-slate-300">{c.notes}</p></Section>}

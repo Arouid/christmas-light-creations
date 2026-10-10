@@ -1,0 +1,123 @@
+import { useMemo, useState } from 'react'
+import { todayISO } from '../../lib/customers'
+import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, listTotals, longDate, money, paidInfo, sendProblems } from '../../lib/invoices'
+import DataTable from '../DataTable'
+import InvoiceEditor from './InvoiceEditor'
+import { STATE_STYLE, numberLabel, useInvoicesContext } from './useInvoices'
+
+const FILTERS = [['open', 'Open'], ['overdue', 'Overdue'], ['paid', 'Paid'], ['draft', 'Drafts'], ['void', 'Cancelled'], ['all', 'All']]
+const matches = (s, f) => f === 'all' || s === f || (f === 'open' && s === 'overdue')
+const when = (i, s) => (s === 'paid' ? `paid ${longDate(paidInfo(i)?.date)}` : s === 'draft' ? 'not sent' : s === 'void' ? 'cancelled' : `due ${longDate(i.dueDate)}`)
+
+// Invoices tab: what's owed (open, overdue), what came in, drafts to send.
+export default function InvoicesView() {
+  const ctx = useInvoicesContext()
+  const [filter, setFilter] = useState('open')
+  const [season, setSeason] = useState('')
+  const [q, setQ] = useState('')
+  const [open, setOpen] = useState(null)
+  const [busy, setBusy] = useState(null)
+  const today = todayISO()
+  const all = useMemo(() => (ctx?.invoices ?? []).map((i) => ({ ...i, state: invoiceState(i, today) })), [ctx?.invoices, today])
+  if (!ctx) return null
+  if (ctx.error) return <p className="mt-6 text-slate-400">Invoices aren’t available yet: the database rules need publishing (firestore.rules). Everything else works.</p>
+  if (!ctx.invoices) return <p className="mt-6 text-slate-400">Loading invoices…</p>
+
+  const seasons = [...new Set(all.map((i) => i.season).filter(Boolean))].sort().reverse()
+  const term = q.trim().toLowerCase()
+  const inSeason = all.filter((i) => (!season || i.season === season) && (!term || `${i.number} ${i.customer?.name} ${i.customer?.address}`.toLowerCase().includes(term)))
+  const totals = listTotals(inSeason, today)
+  const shown = inSeason.filter((i) => matches(i.state, filter))
+  const drafts = inSeason.filter((i) => i.state === 'draft')
+  const ready = drafts.filter((i) => !sendProblems(i).length)
+
+  async function sendAll() {
+    if (!window.confirm(`Send ${ready.length} invoice${ready.length === 1 ? '' : 's'} (${money(ready.reduce((t, i) => t + invoiceCents(i), 0))})? Each customer with an email gets theirs from info@.`)) return
+    for (const [n, i] of ready.entries()) {
+      setBusy(`Sending ${n + 1} of ${ready.length}…`)
+      try { await ctx.send(i.id, i) } catch (e) { setBusy(`Stopped at ${i.customer?.name}: ${e.message}`); return }
+    }
+    setBusy(`Sent ${ready.length} ✓`)
+  }
+
+  const columns = [
+    { key: 'number', label: 'Invoice', get: numberLabel },
+    { key: 'name', label: 'Customer', get: (i) => i.customer?.name ?? '' },
+    { key: 'for', label: 'For', get: (i) => `${KIND_SHORT[i.kind] ?? ''} ${i.season ?? ''}` },
+    { key: 'amount', label: 'Amount', get: (i) => String(invoiceCents(i)).padStart(10, '0'), render: (i) => <span className="tabular-nums">{money(invoiceCents(i))}</span>, className: 'text-right' },
+    { key: 'when', label: 'Due / paid', get: (i) => (i.state === 'paid' ? paidInfo(i)?.date : i.dueDate) ?? '', render: (i) => when(i, i.state) },
+    { key: 'state', label: 'Status', get: (i) => STATE_LABEL[i.state], render: (i) => <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATE_STYLE[i.state]}`}>{STATE_LABEL[i.state]}</span> },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h1 className="font-display text-3xl font-extrabold">Invoices</h1>
+        <div className="flex w-full gap-2 sm:w-auto">
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, street or number" aria-label="Search invoices"
+            className="min-h-11 min-w-0 flex-1 rounded-full border border-white/20 bg-night-900 px-4 text-base sm:w-64" />
+          <select value={season} onChange={(e) => setSeason(e.target.value)} aria-label="Season" className="min-h-11 rounded-full border border-white/20 bg-night-900 px-3 text-base">
+            <option value="">All seasons</option>
+            {seasons.map((y) => <option key={y}>{y}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {[['open', 'Open (unpaid)'], ['overdue', 'Overdue'], ['paid', 'Paid'], ['draft', 'Drafts']].map(([k, label]) => (
+          <button key={k} type="button" onClick={() => setFilter(k)} aria-pressed={filter === k}
+            className={`rounded-2xl border p-3 text-left ${filter === k ? 'border-glow-400 bg-glow-400/10' : 'border-white/10 bg-night-900'}`}>
+            <span className="block text-sm text-slate-400">{label} · {totals[k].n}</span>
+            <span className={`block text-xl font-bold tabular-nums ${k === 'overdue' && totals[k].n ? 'text-berry-500' : ''}`}>{money(totals[k].cents)}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4" aria-label="Show">
+        {FILTERS.map(([k, label]) => (
+          <button key={k} type="button" onClick={() => setFilter(k)}
+            className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium ${filter === k ? 'bg-glow-400 text-night-950' : 'bg-white/10'}`}>{label}</button>
+        ))}
+      </div>
+
+      {filter === 'draft' && drafts.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-glow-400/30 bg-glow-400/5 p-3">
+          <button type="button" onClick={sendAll} disabled={!ready.length || !!busy} className="min-h-11 rounded-full bg-glow-400 px-5 font-semibold text-night-950 disabled:opacity-40">
+            Send all {ready.length} draft{ready.length === 1 ? '' : 's'}
+          </button>
+          <span className="text-sm text-slate-400">{busy ?? (drafts.length > ready.length ? `${drafts.length - ready.length} need a fix first (open them).` : 'Check the amounts first.')}</span>
+        </div>
+      )}
+
+      {shown.length ? (
+        <>
+          <ul className="divide-y divide-white/5 rounded-2xl border border-white/10 bg-night-900 lg:hidden">
+            {shown.map((i) => (
+              <li key={i.id}>
+                <button type="button" onClick={() => setOpen(i)} className="flex min-h-11 w-full items-center gap-3 px-3 py-2.5 text-left">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">{i.customer?.name}</span>
+                    <span className="block truncate text-sm text-slate-400">{numberLabel(i)} · {KIND_SHORT[i.kind] ?? ''} {i.season} · {when(i, i.state)}</span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block tabular-nums">{money(invoiceCents(i))}</span>
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATE_STYLE[i.state]}`}>{STATE_LABEL[i.state]}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden lg:block">
+            <DataTable rows={shown} columns={columns} onRowClick={(id) => setOpen(shown.find((i) => i.id === id))} label="Invoices" />
+          </div>
+        </>
+      ) : (
+        <p className="rounded-2xl border border-white/10 p-4 text-sm text-slate-400">
+          {all.length ? 'Nothing here.' : 'No invoices yet. Open a customer (Accounts) → 🧾 Invoices → ＋ New invoice, or Season → 🧾 Invoice these N for a whole season.'}
+        </p>
+      )}
+
+      {open && <InvoiceEditor token={open.id} invoice={open} onClose={() => setOpen(null)} />}
+    </div>
+  )
+}

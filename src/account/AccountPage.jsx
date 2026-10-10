@@ -6,6 +6,7 @@ import Icon from '../components/Icon'
 import RecaptchaNote from '../components/RecaptchaNote'
 import { REINSTALL_PCT, yearlyPrice } from '../lib/addOns'
 import { seasonYear } from '../lib/customers'
+import { KIND_SHORT, longDate } from '../lib/invoices'
 
 // The customer's own account: /account/ (sign in with Google or an emailed
 // link, no password). Lists every proposal sent to their email, what's paid and what's
@@ -183,8 +184,10 @@ function Notice({ title, text, action }) {
 
 function Account({ data, reload, logOut }) {
   const list = data.proposals ?? []
-  const me = list[0]?.customer ?? data.customer
-  const owed = list.flatMap((p) => p.parts.filter((x) => x.state === 'due')).reduce((t, x) => t + x.amount, 0)
+  const invoices = data.invoices ?? []
+  const me = list[0]?.customer ?? data.customer ?? invoices[0]?.customer
+  const unpaid = invoices.filter((i) => i.state === 'open' || i.state === 'overdue')
+  const owed = list.flatMap((p) => p.parts.filter((x) => x.state === 'due')).reduce((t, x) => t + x.amount, 0) + unpaid.reduce((t, i) => t + i.cents, 0)
   return (
     <div className="space-y-6">
       <section className="space-y-1">
@@ -193,13 +196,15 @@ function Account({ data, reload, logOut }) {
         <p className="text-sm text-slate-400">Signed in as {data.email}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
       {data.price && <YearlyPrice price={data.price} />}
-      {!list.length && !data.customer && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
-      {list.length > 0 && (
+      {!list.length && !data.customer && !invoices.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
+      {(list.length > 0 || invoices.length > 0) && (
         <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
           {owed ? `Due now: ${fmt(owed)}` : 'You’re all paid up. Thank you!'}
         </p>
       )}
+      {unpaid.map((i) => <InvoiceCard key={i.token} i={i} reload={reload} />)}
       {list.map((p) => <ProposalCard key={p.token} p={p} reload={reload} />)}
+      {invoices.length > unpaid.length && <PaidInvoices invoices={invoices.filter((i) => i.state === 'paid')} />}
       {data.price?.history?.length > 0 && <PaymentHistory history={data.price.history} />}
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-slate-400">Questions about your lights or a bill?</span>
@@ -269,6 +274,43 @@ function PaymentHistory({ history }) {
         ))}
       </ul>
       <p className="text-xs text-slate-400">Something look off? Call or text us and we’ll check it.</p>
+    </section>
+  )
+}
+
+// An invoice still to pay: what it's for, when it's due, Pay (same PayPal buttons).
+const invoiceLink = (token) => `${import.meta.env.BASE_URL}invoice/?t=${token}`
+function InvoiceCard({ i, reload }) {
+  const late = i.state === 'overdue'
+  return (
+    <section className="space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="font-display text-xl font-extrabold">Invoice {i.number}</h2>
+          <p className="text-sm text-slate-400">{KIND_SHORT[i.kind] ?? ''}{i.season ? `, ${i.season} season` : ''}</p>
+        </div>
+        <span className={`rounded-full px-3 py-1 text-sm ${late ? 'bg-berry-600/30 text-berry-500' : 'bg-glow-400/10 text-glow-300'}`}>{late ? 'Overdue' : 'Due'}</span>
+      </div>
+      <p className="flex justify-between gap-3 font-semibold"><span>{late ? `Was due ${longDate(i.dueDate)}` : i.dueDate > i.sentDay ? `Due ${longDate(i.dueDate)}` : 'Due on receipt'}</span><span className="tabular-nums">{fmt(i.cents)}</span></p>
+      <a href={invoiceLink(i.token)} className={`${btn} bg-white text-night-950`}>View or print the invoice</a>
+      <DepositPanel token={i.token} of="invoice" title={`Pay invoice ${i.number}`} note={late ? 'Past due.' : 'Thank you!'} amountLabel={fmt(i.cents)} onPaid={reload} />
+    </section>
+  )
+}
+
+// Paid invoices, newest first, each with its receipt. No total (owner's request).
+function PaidInvoices({ invoices }) {
+  return (
+    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">Paid invoices</h2>
+      <ul className="divide-y divide-white/10 text-sm">
+        {invoices.map((i) => (
+          <li key={i.token} className="flex flex-wrap items-center justify-between gap-2 py-2">
+            <span>{i.number} · {KIND_SHORT[i.kind] ?? ''} {i.season}<span className="block text-emerald-300">Paid ✓ {fmt(i.paid?.cents ?? i.cents)}{i.paid?.method ? ` by ${i.paid.method}` : ''}{i.paid?.date ? `, ${longDate(i.paid.date)}` : ''}{i.paid?.sandbox ? ' (test)' : ''}</span></span>
+            <a href={invoiceLink(i.token)} className="min-h-11 content-center underline">Receipt</a>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }

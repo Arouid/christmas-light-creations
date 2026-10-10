@@ -10,6 +10,10 @@ export const DEMO_ACCOUNT = {
       { season: '2025', install: { amount: 64800, state: 'paid', by: 'PayPal', date: '11/26/2025' }, takedown: { amount: 15000, state: 'paid', by: 'PayPal', date: '1/12/2026' } },
       { season: '2024', install: { amount: 54000, state: 'paid', by: 'Zelle', date: '11/30/2024' }, takedown: { amount: 0, state: 'free', by: '', date: '' } },
     ] },
+  invoices: [
+    { token: 'demoInvoiceOpen0000001', number: 'CLC-2026-0012', state: 'open', kind: 'takedown', season: '2025', cents: 15000, dueDate: '2026-10-09', sentDay: '2026-10-09', customer: { name: customer.name, address: customer.address }, paid: null },
+    { token: 'demoInvoicePaid0000002', number: 'CLC-2026-0003', state: 'paid', kind: 'addon', season: '2026', cents: 30000, dueDate: '2026-10-02', sentDay: '2026-10-02', customer: { name: customer.name, address: customer.address }, paid: { method: 'Check', date: '2026-10-04', cents: 30000, sandbox: false } },
+  ],
   proposals: [
     { token: 'demo-2026', status: 'countersigned', title: 'Christmas lighting proposal', season: '2026', customer, sentAt: '2026-10-09T15:00:00Z', signedAt: '2026-10-09T16:00:00Z',
       parts: [part('deposit', 26730, 'paid', 26730), part('balance', 26730, 'due'), part('takedown', 0, 'free')] },

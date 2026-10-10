@@ -37,6 +37,8 @@ const cases = [
   ['Public can read customer logins', () => getDocsFromServer(collection(db, 'customerLogins'))],
   ['Public can read account-link bookkeeping', () => getDocsFromServer(collection(db, 'accountLinks'))],
   ['Public can list proposals', () => getDocsFromServer(collection(db, 'proposals'))],
+  ['Public can list invoices', () => getDocsFromServer(collection(db, 'invoices'))],
+  ['Public can create an invoice', () => addDoc(collection(db, 'invoices'), { status: 'open', customerId: 'x', customer: { name: 'Intruder' }, season: '2026', kind: 'other', items: [{ description: 'x', cents: 100 }], dueDate: '2026-10-09' })],
   ['Public can add a customer', () => addDoc(collection(db, 'customers'), { fullName: 'Intruder', updatedAt: serverTimestamp(), updatedBy: 'x@example.com' })],
 ]
 

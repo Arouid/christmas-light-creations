@@ -218,6 +218,83 @@ service cloud.firestore {
       allow delete: if isStaff();
     }
 
+    // Invoices (docs/specs/invoices.md). The document id is the customer's
+    // unguessable link token: the public can open one only by that exact id
+    // (no listing) and only note that it was opened. Staff create, edit,
+    // send, void and mark paid (cash, check…) with stamped writes. The
+    // number, the online payment, the capture lock, the emails sent and the
+    // season bookkeeping are written only by the server, never from a browser.
+    function invoiceServerKeys() {
+      return ['number', 'sentAt', 'payment', 'paymentLock', 'sent', 'done', 'emailKeys', 'viewedAt'];
+    }
+    function isDay(v) {
+      return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+    function validInvoice(d) {
+      return d.status in ['draft', 'open', 'paid', 'void']
+        && filledStr(d.customerId, 200)
+        && d.customer is map
+        && d.customer.keys().hasOnly(['name', 'email', 'phone', 'address'])
+        && shortStr(d.customer.get('email', ''), 200)
+        && d.kind in ['install', 'takedown', 'addon', 'service', 'other']
+        && d.season is string && d.season.matches('^[0-9]{4}$')
+        && d.items is list && d.items.size() > 0 && d.items.size() <= 30
+        && (d.status in ['draft', 'void'] || isDay(d.dueDate))
+        && shortStr(d.get('note', ''), 2000);
+    }
+    function validOffline(o) {
+      return o is map
+        && o.keys().hasOnly(['method', 'date', 'note', 'by', 'at'])
+        && o.method in ['Cash', 'Check', 'Zelle', 'Venmo', 'CashApp', 'Square', 'PayPal', 'Other']
+        && isDay(o.date)
+        && shortStr(o.get('note', ''), 300)
+        && o.by == request.auth.token.email
+        && o.at is int;
+    }
+    // An online payment going through right now (2-minute capture lock).
+    function invoiceLocked(d) {
+      return 'paymentLock' in d && request.time.toMillis() - d.paymentLock.at < 120000;
+    }
+    function staffInvoiceChange() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let keys = after.diff(before).affectedKeys();
+      let payKeys = ['status', 'offline', 'updatedAt', 'updatedBy'];
+      return !keys.hasAny(invoiceServerKeys())
+        && (
+          // Edit, send or void one that isn't paid; a sent one never goes back to draft.
+          (before.status in ['draft', 'open'] && after.status in ['draft', 'open', 'void']
+            && !(before.status == 'open' && after.status == 'draft')
+            && !keys.hasAny(['offline']))
+          // Mark paid (money taken outside the site), never on top of an online payment.
+          || (before.status == 'open' && after.status == 'paid' && !('payment' in before) && !invoiceLocked(before)
+            && keys.hasOnly(payKeys) && validOffline(after.offline))
+          // Undo a mistaken Mark paid.
+          || (before.status == 'paid' && after.status == 'open' && !('payment' in before)
+            && keys.hasOnly(payKeys) && !('offline' in after))
+          // Paid or voided: only reminders on/off.
+          || (before.status in ['paid', 'void'] && after.status == before.status
+            && keys.hasOnly(['remindersOff', 'updatedAt', 'updatedBy']))
+        );
+    }
+    function publicInvoiceView() {
+      return resource.data.status in ['open', 'paid']
+        && !('viewedAt' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewedAt'])
+        && request.resource.data.viewedAt == request.time;
+    }
+    match /invoices/{token} {
+      allow get: if true;
+      allow list: if isStaff();
+      allow create: if isStaff() && stamped() && validInvoice(request.resource.data)
+        && request.resource.data.status in ['draft', 'open']
+        && !request.resource.data.keys().hasAny(invoiceServerKeys().concat(['offline']));
+      allow update: if (isStaff() && stamped() && validInvoice(request.resource.data) && staffInvoiceChange())
+        || publicInvoiceView();
+      // Only drafts never sent (no number); sent ones stay as the record.
+      allow delete: if isStaff() && resource.data.status == 'draft' && !('number' in resource.data);
+    }
+
     // When customers signed in to their own account (/account/): one doc per
     // lowercase email, written only by the server (myAccount). Staff read only.
     match /customerLogins/{email} {

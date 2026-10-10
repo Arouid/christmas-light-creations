@@ -34,9 +34,11 @@ import { mergeMany, queryOnce, saveRecord } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
 import { useGateCodes, usePastRequests, useRoutes, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
+import InvoicesView from './invoices/InvoicesView'
+import { InvoicesContext, useInvoices } from './invoices/useInvoices'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
-const BEFORE = [['map', 'Map'], ['accounts', 'Accounts'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
+const BEFORE = [['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
 const AFTER = [['signs', 'Signs'], ['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
@@ -64,6 +66,7 @@ export default function LeadsApp() {
   const pastApi = usePastRequests(user)
   const signsApi = useSigns(user)
   const routesApi = useRoutes(user)
+  const invoicesApi = useInvoices(user)
   const [editing, setEditing] = useState(null) // null | {} (new) | view
   const [tab, setTab] = useState(tabFromHash)
   const [routeOpen, setRouteOpen] = useState(routeFromHash)
@@ -117,8 +120,8 @@ export default function LeadsApp() {
   const { customers } = customersApi
   const gates = gatesApi.gates ?? []
   const calls = serviceApi.calls ?? []
-  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error, routesApi.error].find((e) => e && e !== 'not-staff')
-    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error, routesApi.error].includes('not-staff')
+  const listError = [customersApi.error, serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error, routesApi.error, invoicesApi.error].find((e) => e && e !== 'not-staff')
+    ?? ([serviceApi.error, gatesApi.error, viewsApi.error, settingsApi.error, pastApi.error, signsApi.error, routesApi.error, invoicesApi.error].includes('not-staff')
       ? 'part of the app was refused by the database. The security rules probably need publishing again (firestore.rules).'
       : null)
   const views = viewsApi.views ?? []
@@ -208,6 +211,7 @@ export default function LeadsApp() {
     <EmailTemplates.Provider value={templates}>
     <RoutesContext.Provider value={routesCtx}>
     <StaffContext.Provider value={{ user, settings: settingsApi.settings ?? {} }}>
+    <InvoicesContext.Provider value={invoicesApi}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <IncidentsBanner user={user} />
@@ -258,6 +262,7 @@ export default function LeadsApp() {
               onOpenCustomer={setOpenId} onMakeLeadCustomer={makeCustomer}
               onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
           : loading)}
+        {tab === 'invoices' && <InvoicesView />}
         {tab === 'leads' && user && <UnmatchedMessages user={user} customers={customers} />}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onDelete={deleteLead}onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
@@ -316,6 +321,7 @@ export default function LeadsApp() {
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
       )}
     </div>
+    </InvoicesContext.Provider>
     </StaffContext.Provider>
     </RoutesContext.Provider>
     </EmailTemplates.Provider>

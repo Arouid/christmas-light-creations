@@ -83,4 +83,22 @@ export const demoData = {
     { id: 'example-lakes', neighborhood: 'Example Lakes', code: '#2468' },
     { id: 'sample-meadow', neighborhood: 'Sample Meadow', code: '1875#', notes: 'Code, then hit green button' },
   ]),
+  // Invoices: one overdue (reminder sent), one paid by check, one draft.
+  invoices: byId([
+    { id: 'demoInvoiceOverdue0001', status: 'open', number: 'CLC-2026-0001', customerId: 'test-homeowner', season: '2025', kind: 'takedown', terms: 'receipt',
+      customer: { name: 'Test Homeowner', email: 'test.homeowner@example.com', phone: '555-0102', address: '456 Sample Ln League City, TX 77573' },
+      items: [{ id: 'l1', description: 'Takedown: taking down, labeling and boxing your lights (2025 season)', cents: 15000 }],
+      sentAt: hoursAgo(24 * 9), dueDate: new Date(Date.now() - 9 * 86400000).toLocaleDateString('en-CA'), savedAt: hoursAgo(24 * 9),
+      sent: { invoice: { at: Date.now() - 9 * 86400000, to: 'test.homeowner@example.com' }, reminder_7: { at: Date.now() - 2 * 86400000, to: 'test.homeowner@example.com' } },
+      viewedAt: hoursAgo(24 * 8) },
+    { id: 'demoInvoicePaid000002', status: 'paid', number: 'CLC-2026-0002', customerId: 'sample-customer', season: '2026', kind: 'addon', terms: 'receipt',
+      customer: { name: 'Sample Customer', email: 'sample@example.com', phone: '555-0101', address: '123 Example St Pearland, TX 77581' },
+      items: [{ id: 'l1', description: 'Add-on: Arch over the walkway', cents: 30000 }],
+      sentAt: hoursAgo(24 * 3), dueDate: new Date(Date.now() - 3 * 86400000).toLocaleDateString('en-CA'), savedAt: hoursAgo(24 * 3),
+      offline: { method: 'Check', date: new Date(Date.now() - 86400000).toLocaleDateString('en-CA'), note: '#1043', by: 'demo@example.com', at: Date.now() - 86400000 },
+      sent: { invoice: { at: Date.now() - 3 * 86400000, to: 'sample@example.com' } } },
+    { id: 'demoInvoiceDraft00003', status: 'draft', customerId: 'example-family', season: '2026', kind: 'install', terms: 'receipt', dueDate: '',
+      customer: { name: 'Example Family', email: 'example.family@example.com', phone: '555-0103', address: '789 Placeholder Dr Manvel, TX 77578' },
+      items: [{ id: 'l1', description: 'Re-install of your Christmas lights, 2026 season', cents: 52000 }], note: '', savedAt: hoursAgo(1) },
+  ]),
 }
