@@ -30,6 +30,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
+| K | **Next up (owner, 2026-10-09): "Recent staff activity" box** so people don't do the same thing twice: who emailed a customer, sent an invoice to whom, answered someone's message… | Spec first (docs/specs/). There's no dashboard yet: decide where it lives (new Home tab? top of 💬?). Sources already in the data: staff emails (`messages`, sent by), invoices (`sent` log), every staff edit's `updatedBy`/`updatedAt`; "responded to a message" needs a way to mark one handled |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
 | E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
 | F | Export customers to a spreadsheet | |
