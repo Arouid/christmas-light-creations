@@ -1,6 +1,6 @@
 # "Design your lights": the designer on the public website
 
-> Status: approved 2026-10-10 by Scott (Finess), building · needs firestore.rules (new `leadDesigns`, `designId` on leads) published
+> Status: live 2026-10-10 (rules published, newLeadAlert deployed, site pushed) · approved 2026-10-10 by Scott (Finess) · owner phone test pending
 
 ## The problem
 
