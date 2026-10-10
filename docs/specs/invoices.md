@@ -1,6 +1,6 @@
 # Invoices
 
-> Status: approved, building · Decided 2026-10-09 by Scott (owner) · Owner: Scott (Finess)
+> Status: implemented, live 2026-10-09 (owner's end-to-end test pending: TODO #37) · Decided 2026-10-09 by Scott (owner)
 
 ## The problem
 
