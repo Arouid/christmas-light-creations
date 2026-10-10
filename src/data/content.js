@@ -108,12 +108,12 @@ export const steps = [
   },
   {
     title: 'Removal',
-    body: 'From January 3rd (done by the 13th) we take everything down, label, wrap and bin it for you to keep. We call in late summer to schedule next year.',
+    body: 'From January 3rd (done by the 13th) we take everything down, label it and box it up for you to store until next season. We call in late summer to schedule next year.',
   },
 ]
 
 export const pricingNotes = [
-  { label: 'Removal', value: '≤ 15%', note: 'of the install price, included in your estimate' },
+  { label: 'Removal', value: 'Set price', note: 'shown in your estimate, due in January' },
   { label: 'Re-install', value: '50%', note: 'of the original price every year after' },
   { label: 'Service calls', value: '$0', note: 'no limit, all season long' },
 ]
@@ -170,37 +170,49 @@ export const gallery = [
   { src: photo('green-led-two-story-home.jpg'), alt: 'Green LED lights outlining the gables, windows and garage of a two-story home' },
 ]
 
+// FAQ, rewritten from scratch with the owner (2026-10-09). Keep answers short
+// and true to how we work now; no prices, percentages or formulas that would
+// tie our hands (owner: "I don't want to ball and chain myself").
 export const faq = [
   {
-    group: 'General',
+    group: 'Getting started',
     items: [
-      ['What do you do?', 'We install and remove Christmas lighting for homes and businesses, from Pearland and Manvel (past 288) down to Kemah, Alvin, Texas City, Santa Fe and everywhere in between.'],
-      ['When can you install my lights?', 'Our season starts October 15th and gets busier until the holidays. Installing early earns a discount, good through the end of October.'],
-      ['Do you install on tiled roofs?', 'No. Clay and other tile roofs are too fragile for us to work on safely.'],
+      ['What do you do?', 'We design, install, maintain and take down Christmas lights for homes and businesses across Pearland, Manvel, Friendswood, League City, the Bay Area and Galveston County. You never touch a ladder.'],
+      ['How do I get a price?', 'Request a free estimate. We measure your home in about 30 minutes without climbing on the roof, and you don’t need to be home unless we need to get through a gate. In a hurry? Text us a few photos for a rough price. We’ll text or email your estimate, and you can sign it online.'],
+      ['How do you price it?', 'Every home is different. We look at how much you want lit, the size and shape of your home, and how tricky it is to reach, then give you one clear price. What’s in your estimate is what you pay.'],
+      ['Do you work on tile roofs?', 'No. Clay and other tile roofs are too fragile to work on safely.'],
+      ['Do you do businesses?', 'Yes: storefronts, restaurants, neighborhood entrances and more.'],
     ],
   },
   {
-    group: 'Pricing',
+    group: 'Installing',
     items: [
-      ['So how much does it cost?', 'Every home is different, so we won’t quote a number we can’t stand behind. We measure (you don’t need to be home unless we need the backyard) and send the estimate by phone or email.'],
-      ['How do you determine the cost?', 'We measure ground runs and straight roof lines with a measuring wheel, count shingles up each gable (about every other tab is 1 ft), and add a foot at each corner for overhang. Those totals set the price.'],
-      ['Is LED more expensive than incandescent?', 'Generally, yes. LED bulbs can cost up to 6× as much as traditional incandescent.'],
+      ['When can you install?', 'Installs start October 15th and fill up fast. Book early: installs done by the end of October get an early install discount.'],
+      ['How long does it take? Do I need to be home?', 'About 2 hours for most homes. You don’t need to be home. Just make sure we can reach your outdoor outlets and get through any gate.'],
+      ['What’s included?', 'Everything: lights, clips, cords, timers, design, installation and all-season service. It’s all measured and cut to fit your home, with no extra strands hanging off the roof.'],
+      ['What kind of lights do you use?', 'Commercial-grade LED only: brighter, cheaper to run, and sealed in plastic so they don’t break.'],
     ],
   },
   {
-    group: 'Service',
+    group: 'Paying',
     items: [
-      ['Do service calls cost anything?', 'No, and there’s no limit.'],
-      ['What counts as a service call?', 'Anything to do with our lights or material: burned-out bulbs, bad or reset timers, tripped GFCIs, unglued bulbs, and anything else that comes up.'],
-      ['What if you can’t fix it?', 'We replace it, no questions asked and no extra charge. Typically same day in our immediate area; we reserve a 48-hour window during the busiest weeks.'],
+      ['How do I pay?', 'A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Pay online by PayPal, Venmo or card from the link we send you, or by Zelle, check or cash.'],
+      ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online.'],
     ],
   },
   {
-    group: 'Removal',
+    group: 'During the season',
     items: [
-      ['Do you take the lights down?', 'Absolutely. Removal starts January 3rd and wraps up by January 13th.'],
-      ['Is there a cost for removal?', 'On most installs, yes: no more than 15% of the install price, built into your estimate and due at removal. We label, wrap and bin your lights for you to keep, and every year after, re-installing is 50% of the original price.'],
-      ['How do you take them down?', 'Fast, safe and careful. Rocks, trees and concrete can occasionally break an incandescent bulb; LEDs are sealed in plastic and don’t break.'],
+      ['What if something goes out?', 'Call or text and we’ll fix it free, with no limit: burned-out or unglued bulbs, timers, tripped outlets. Usually the same day locally, within 48 hours during the busiest weeks. If we can’t fix it, we replace it at no charge.'],
+    ],
+  },
+  {
+    group: 'Removal & next year',
+    items: [
+      ['When do you take them down?', 'Between January 3rd and 13th. We take everything down, label it and box it up, and you store the boxes until next season.'],
+      ['Is there a cost for removal?', 'Yes, a set price shown in your estimate, due in January.'],
+      ['Do I own the lights?', 'Yes. Once they’re paid for, they’re yours. Every year after, we put them back up for about half the original price. We call in late summer to get you on the schedule.'],
+      ['Why did my price change?', 'If you add lights (an arch, a tree, more roofline), the new part is charged in full that year. After that it adds about half its price to your yearly re-install. Your online account shows the full breakdown.'],
     ],
   },
 ]
