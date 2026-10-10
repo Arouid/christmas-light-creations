@@ -27,7 +27,12 @@ export const business = {
 export const memorial = {
   name: 'Bradley Medel',
   photo: { src: `${base}images/memorial-bradley.jpg`, alt: 'Bradley Medel smiling with family at an aquarium', width: 1400, height: 788 },
-  words: 'My brother and my business partner. We worked side by side since we were kids who thought we were adults. Every job I’ve ever had, and for the last ten years, you’ve been right there next to me. Every home, every scorching October, and freezing January we were out there building this business. You were my part of home and I just wish this wasn’t the last job we’ll do together.',
+  // Owner's own words (shortened and reordered with him, 2026-10-09). One string per paragraph.
+  words: [
+    'Brother, partner, best friend.',
+    'We’ve worked side by side since we were kids, and we never stopped. For ten years you were right there next to me: every home, every scorching October, every freezing January, building this business together.',
+    'You were my part of home. I just wish this wasn’t our last job together.',
+  ],
 }
 
 // Estimate form: "How did you hear about us?" (shown on each lead to staff).

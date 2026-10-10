@@ -14,7 +14,9 @@ export default function Memorial() {
         )}
         <p className="mt-8 text-sm font-semibold uppercase tracking-wider text-glow-400">In loving memory</p>
         <h2 id="in-memory-title" className="mt-3 font-display text-3xl font-extrabold tracking-tight md:text-4xl">{memorial.name}</h2>
-        <blockquote className="mt-8 text-lg leading-loose text-slate-300 md:text-xl md:leading-loose">{memorial.words}</blockquote>
+        <blockquote className="mt-8 space-y-5 text-lg leading-loose text-slate-300 md:text-xl md:leading-loose">
+          {[memorial.words].flat().map((p) => <p key={p}>{p}</p>)}
+        </blockquote>
       </div>
     </section>
   )
