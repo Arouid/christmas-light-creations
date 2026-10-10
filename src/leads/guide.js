@@ -16,6 +16,7 @@ export const TASKS = [
   ['Email a customer', 'Tap **Email**: Gmail opens as info@ with a template filled in. Check it and send.'],
   ['Ask for a Google review', 'Shows up after an install is completed, a service call is done, or a lead is booked: **Text/Email review link**. Never offer anything for a review.'],
   ['A red “website problem” banner showed up', 'Tap it: it says in plain words what broke (a request alert email, a payment, the text sync). Deal with it (or forward it to whoever looks after the website), then tap **Dealt with ✓**. The alert list also gets an email, and every Monday an “all OK” email; if that stops coming, say so.'],
+  ['A customer picked a date on the website', 'Their request says “Preferred install date: …” at the top. It’s a request, not a booking: confirm the date when you send the estimate, then put it in their Season planned date so the website stops offering it.'],
   ['A customer asks “why did my price go up?”', 'Their account → **💲 Yearly price & add-ons** shows the breakdown. Tick **Customer can see this** so they can see it on their own account too.'],
 ]
 
@@ -153,6 +154,7 @@ export const SECTIONS = [
       '**Install the app** on your phone (Android: Install; iPhone: Share → Add to Home Screen).',
       '**New-request alerts**: who gets the email when a website request comes in.',
       '**Business texting**: the Google Voice account; **on this device, text from** the business number or your own.',
+      '**Install availability**: the website’s “Check availability” shows the next real open install days. Set installs on a normal day, the days you work, and change single days (**6** on helper days, **0** for rain or a day off). A day fills up from the Season planned dates and route stops, so keep those current.',
       '**How booked we are (home page)**: a short, true line like “October is 80% booked” under the main buttons on the website. Update it weekly; it hides itself after 14 days.',
       '**Home base** (for distances and routes), **price per foot** for designs, **early-install discounts**.',
       '**Proposals & contracts**: deposit %, takedown % and minimum (set both to 0 if takedown is ever included), countersigner, contract terms.',

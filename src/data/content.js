@@ -258,7 +258,7 @@ export const privacy = {
         '**Google** (Firebase, Google Workspace, Google Voice, Google Maps): stores our customer records, sends and receives our email and texts, and shows addresses on a map for our crew.',
         '**PayPal** (including Venmo and card payments): processes online payments under PayPal’s own privacy policy.',
         '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
-        'Our pages load fonts from Google Fonts, and the home page asks our own server (on Google Cloud) for the line about how booked we are. That’s all: no other outside services see your visit.',
+        'Our pages load fonts from Google Fonts, and the home page asks our own server (on Google Cloud) for the line about how booked we are and the next open install dates (only dates, nothing about anyone). That’s all: no other outside services see your visit.',
       ],
     },
     {
@@ -308,4 +308,14 @@ export const urgency = {
   },
   // Staff's "how full we are" line (⚙ Settings) hides itself if not updated for this long.
   statusMaxDays: 14,
+  // "Check availability": the next real open install days (functions/availability.js).
+  availability: {
+    button: 'Check availability',
+    title: 'Next open install dates',
+    pick: 'Request this date',
+    note: 'Dates go fast in season. Pick one and we’ll confirm it when we send your estimate.',
+    full: 'Our calendar is full for now. Call us and we’ll find you a day.',
+    loading: 'Checking the calendar…',
+    request: 'Preferred install date: {date}',
+  },
 }

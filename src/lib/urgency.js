@@ -35,9 +35,23 @@ export function freshStatus(status, now = Date.now()) {
   return text && Number.isFinite(updated) && now - updated <= U.statusMaxDays * 86400000 ? text : ''
 }
 
-// The staff's line, read without loading Firebase (functions/index.js bookingStatus).
-export const BOOKING_STATUS_URL = 'https://us-south1-clc-leads-site.cloudfunctions.net/bookingStatus'
-export async function fetchBookingStatus() {
-  const res = await fetch(BOOKING_STATUS_URL)
-  return res.ok ? freshStatus(await res.json()) : ''
+// Booking info from our server, without loading Firebase (functions/index.js
+// `booking`): the staff's line (if fresh) and the next open install days.
+export const BOOKING_URL = 'https://us-south1-clc-leads-site.cloudfunctions.net/booking'
+let pending
+export function fetchBooking() {
+  pending ??= fetch(BOOKING_URL)
+    .then((res) => (res.ok ? res.json() : {}))
+    .then((j) => ({ status: freshStatus(j.status), openDays: Array.isArray(j.openDays) ? j.openDays : [] }))
+    .catch(() => { pending = undefined; return { status: '', openDays: null } })
+  return pending
+}
+
+// "2026-10-16" → "Thu, Oct 16"
+export const dayLabel = (day) => new Date(`${day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+
+// "Request this date": the estimate form puts it at the top of the message.
+export function pickDate(day) {
+  window.dispatchEvent(new CustomEvent('clc:pick-date', { detail: dayLabel(day) }))
+  document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth' })
 }

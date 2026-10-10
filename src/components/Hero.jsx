@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { business, currentYear, gallery } from '../data/content'
-import { bookLine, fetchBookingStatus, seasonBadge } from '../lib/urgency'
+import { bookLine, fetchBooking, seasonBadge } from '../lib/urgency'
+import Availability from './Availability'
 import Icon from './Icon'
 import SignWelcome from './SignWelcome'
 
@@ -8,7 +9,7 @@ export default function Hero() {
   // Staff's "how booked we are" line, fetched after the page has drawn.
   const [status, setStatus] = useState('')
   useEffect(() => {
-    const t = setTimeout(() => { fetchBookingStatus().then(setStatus).catch(() => {}) }, 1200)
+    const t = setTimeout(() => { fetchBooking().then((b) => setStatus(b.status)) }, 1200)
     return () => clearTimeout(t)
   }, [])
   return (
@@ -42,6 +43,7 @@ export default function Hero() {
           {status && <span className="mr-2 font-semibold text-glow-300">🔥 {status}.</span>}
           {bookLine()}
         </p>
+        <Availability className="mt-4" />
 
         <dl className="mt-12 grid max-w-lg grid-cols-3 gap-4 border-t border-white/10 pt-6 text-center sm:text-left">
           {[

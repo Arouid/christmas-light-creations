@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { HEARD_FROM, business } from '../data/content'
+import { useEffect, useRef, useState } from 'react'
+import { HEARD_FROM, business, urgency } from '../data/content'
 import { firebaseReady, getFirebaseApp, submitLead } from '../lib/firebase'
 import { signCode, signSource } from '../lib/sign'
+import Availability from './Availability'
 import Icon from './Icon'
 import RecaptchaNote from './RecaptchaNote'
 
@@ -11,6 +12,24 @@ const label = 'block text-sm font-medium text-slate-300'
 export default function Estimate() {
   const [status, setStatus] = useState('idle') // idle | sending | sent | error
   const [sign] = useState(signCode)
+  const message = useRef(null)
+  const first = useRef(null)
+
+  // "Request this date" (Availability): put the date at the top of the message.
+  useEffect(() => {
+    const onPick = (e) => {
+      const line = urgency.availability.request.replace('{date}', e.detail)
+      const el = message.current
+      if (!el) return
+      // Replace an earlier picked date rather than stacking them.
+      const prefix = line.split(':')[0]
+      const rest = el.value.split('\n').filter((l) => !l.startsWith(prefix))
+      el.value = `${[line, ...rest].join('\n').trim()}\n`
+      setTimeout(() => first.current?.focus({ preventScroll: true }), 400)
+    }
+    window.addEventListener('clc:pick-date', onPick)
+    return () => window.removeEventListener('clc:pick-date', onPick)
+  }, [])
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -37,6 +56,7 @@ export default function Estimate() {
           <p className="mt-4 text-lg text-slate-300">
             Our schedule books fast every fall. Tell us about your home and we’ll measure and send a price, no need to be home.
           </p>
+          <Availability className="mt-6" />
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href={business.phoneHref} className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-6 py-3.5 font-semibold hover:bg-white/15">
               <Icon name="phone" className="size-5" /> Call {business.phone}
@@ -60,7 +80,7 @@ export default function Estimate() {
             // Load Firebase (and the anti-spam check) once someone starts filling in the form.
             <form onSubmit={onSubmit} onFocus={() => { if (firebaseReady) getFirebaseApp().catch(() => {}) }} className="grid gap-5 sm:grid-cols-2">
               <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
-              <label className={label}>First name *<input required name="firstName" maxLength={80} autoComplete="given-name" className={field} /></label>
+              <label className={label}>First name *<input ref={first} required name="firstName" maxLength={80} autoComplete="given-name" className={field} /></label>
               <label className={label}>Last name *<input required name="lastName" maxLength={80} autoComplete="family-name" className={field} /></label>
               <label className={label}>Email *<input required type="email" name="email" maxLength={200} autoComplete="email" className={field} /></label>
               <label className={label}>Phone<input type="tel" name="phone" maxLength={40} autoComplete="tel" className={field} /></label>
@@ -90,7 +110,7 @@ export default function Estimate() {
                 </select>
               </label>
               <label className={`${label} sm:col-span-2`}>How can we help? *
-                <textarea required name="message" rows={4} maxLength={3000} className={field} placeholder="Roofline, trees, walkways, colors…" />
+                <textarea ref={message} required name="message" rows={4} maxLength={3000} className={field} placeholder="Roofline, trees, walkways, colors…" />
               </label>
 
               <div className="sm:col-span-2">

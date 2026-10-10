@@ -31,6 +31,7 @@ import nodemailer from 'nodemailer'
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { dailyReport, incidentEmail, missedLeadAlerts, shouldMail, syncStale } from './health.js'
+import { bookedByDay, bookingSeason, openDays } from './availability.js'
 import { captureOrder, createOrder, getOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
@@ -477,13 +478,31 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
   }
 })
 
-// ---- Booking status line for the home page --------------------------------
-// Staff set it in ⚙ Settings (settings/app.bookingStatus = { text, updatedAt });
-// the public home page reads it here without loading Firebase. The page hides
-// it if it hasn't been updated for 14 days.
-export const bookingStatus = onRequest({ region: REGION, invoker: 'public', maxInstances: 2, cors: [SITE, 'http://localhost:5173'] }, async (req, res) => {
+// ---- Booking info for the home page ----------------------------------------
+// One small public endpoint (no Firebase on the home page): the staff's "how
+// booked we are" line (⚙ Settings, hidden by the page after 14 days without an
+// update) and the next real open install days (functions/availability.js).
+// Only dates leave the server, never customer details. The open days are
+// worked out at most every 10 minutes (serverState/availability).
+export const booking = onRequest({ region: REGION, invoker: 'public', maxInstances: 3, cors: [SITE, 'http://localhost:5173'] }, async (req, res) => {
   if (req.method !== 'GET') { res.status(405).end(); return }
-  const s = (await getFirestore().doc('settings/app').get()).get('bookingStatus') ?? {}
+  const db = getFirestore()
+  const settings = (await db.doc('settings/app').get()).data() ?? {}
+  const s = settings.bookingStatus ?? {}
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+  const cacheRef = db.doc('serverState/availability')
+  const cached = (await cacheRef.get()).data()
+  let days = cached && cached.today === today && Date.now() - cached.at < 10 * 60 * 1000 ? cached.days : null
+  if (!days) {
+    const season = bookingSeason(today)
+    const [cust, routes] = await Promise.all([
+      db.collection('customers').select(`seasons.${season}.plannedDate`).get(),
+      db.collection('routes').where('day', '>', today).select('day', 'stops').get(),
+    ])
+    const booked = bookedByDay({ customers: cust.docs.map((d) => ({ id: d.id, ...d.data() })), routes: routes.docs.map((d) => ({ id: d.id, ...d.data() })), season })
+    days = openDays({ today, booked, settings: settings.availability ?? {} })
+    await cacheRef.set({ today, at: Date.now(), days })
+  }
   res.set('Cache-Control', 'public, max-age=300')
-  res.json({ text: String(s.text ?? '').slice(0, 120), updatedAt: s.updatedAt ?? null })
+  res.json({ status: { text: String(s.text ?? '').slice(0, 120), updatedAt: s.updatedAt ?? null }, openDays: days })
 })

@@ -81,6 +81,57 @@ function BookingStatus({ settings, onSave }) {
   )
 }
 
+// "Check availability" on the website (functions/availability.js): how many
+// installs fit in a day, which days we work, and day-by-day changes (helper
+// days, rain, days off). Saved in settings/app.availability.
+const WEEK = [['Sun', 0], ['Mon', 1], ['Tue', 2], ['Wed', 3], ['Thu', 4], ['Fri', 5], ['Sat', 6]]
+function InstallAvailability({ settings, onSave }) {
+  const cur = { perDay: 2, workDays: [1, 2, 3, 4, 5, 6], overrides: {}, show: 3, ...(settings.availability ?? {}) }
+  const [day, setDay] = useState('')
+  const [count, setCount] = useState('6')
+  const [msg, setMsg] = useState(null)
+  const [today] = useState(() => new Date().toLocaleDateString('en-CA'))
+  const save = async (changes) => { await onSave({ availability: { ...cur, ...changes } }); setMsg('Saved ✓ The website updates within 10 minutes.') }
+  const upcoming = Object.entries(cur.overrides).filter(([d]) => d >= today).sort()
+  const label = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  return (
+    <div className={box}>
+      <p className="font-semibold">Install availability (website “Check availability”)</p>
+      <p className="text-sm text-slate-400">The website shows the next real open install days. A day is full when its planned installs (Season dates and route stops) reach its number below. Customers only ever see dates.</p>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="text-sm text-slate-400">Installs on a normal day
+          <input type="number" min="0" max="20" defaultValue={cur.perDay} onBlur={(e) => save({ perDay: Number(e.target.value) || 0 })} className={field} /></label>
+        <label className="text-sm text-slate-400">Dates shown on the website
+          <input type="number" min="1" max="7" defaultValue={cur.show} onBlur={(e) => save({ show: Math.min(7, Math.max(1, Number(e.target.value) || 3)) })} className={field} /></label>
+      </div>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Days we install">
+        {WEEK.map(([name, n]) => {
+          const on = cur.workDays.includes(n)
+          return <button key={n} type="button" aria-pressed={on} onClick={() => save({ workDays: on ? cur.workDays.filter((x) => x !== n) : [...cur.workDays, n].sort() })}
+            className={`min-h-11 rounded-full px-4 text-sm font-semibold ${on ? 'bg-glow-400 text-night-950' : 'bg-white/10 text-slate-400'}`}>{name}</button>
+        })}
+      </div>
+      <p className="text-sm text-slate-400">Change one day: <strong>6</strong> on helper days, <strong>0</strong> for rain or a day off.</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <input type="date" value={day} min={today} onChange={(e) => setDay(e.target.value)} aria-label="Day" className={`${field} w-44`} />
+        <input type="number" min="0" max="20" value={count} onChange={(e) => setCount(e.target.value)} aria-label="Installs that day" className={`${field} w-20`} />
+        <button type="button" disabled={!day} onClick={() => { save({ overrides: { ...cur.overrides, [day]: Number(count) || 0 } }); setDay('') }} className="min-h-11 rounded-full bg-glow-400 px-5 text-sm font-semibold text-night-950 disabled:opacity-40">Set</button>
+      </div>
+      {upcoming.length > 0 && (
+        <ul className="flex flex-wrap gap-2 text-sm">
+          {upcoming.map(([d, n]) => (
+            <li key={d} className="inline-flex items-center gap-2 rounded-full bg-white/10 py-1 pl-3 pr-1">
+              {label(d)}: {Number(n) === 0 ? 'closed' : `${n} installs`}
+              <button type="button" aria-label={`Remove change for ${label(d)}`} onClick={() => { const next = { ...cur.overrides }; delete next[d]; save({ overrides: next }) }} className="min-h-11 min-w-11 rounded-full text-slate-400">✕</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {msg && <p className="text-sm text-emerald-400">{msg}</p>}
+    </div>
+  )
+}
+
 // Who gets an email the moment a website estimate request comes in
 // (functions/index.js reads settings/app.alertEmails).
 function AlertEmails({ settings, onSave }) {
@@ -160,6 +211,8 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
         <AlertEmails settings={settings} onSave={onSave} />
 
         <BookingStatus settings={settings} onSave={onSave} />
+
+        <InstallAvailability settings={settings} onSave={onSave} />
 
         <form onSubmit={saveAccount} className={box}>
           <p className="font-semibold">Business texting (Google Voice)</p>
