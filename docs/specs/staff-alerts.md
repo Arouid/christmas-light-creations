@@ -10,9 +10,9 @@ Customer texts, voicemails, missed calls and emails to info@ are filed into the 
 
 **In the app (everyone, every device):**
 
-- A **💬 button** in the staff app header, on every tab, with a red count of **new** incoming messages: texts, voicemails, missed calls and emails that customers (or unknown numbers, or new email senders) sent, plus **website estimate requests**, that arrived **since you last opened the list**. Owner's aim: "I don't want to miss anyone's texts or emails if I'm only working from the app." Per staff member (same count on your phone and computer), not shared: Scott opening it doesn't clear it for Katie.
-- Tap it: **New messages** list, newest first, last 7 days. Each row: who (customer or lead name; unknown numbers as the number), what (text / voicemail / missed call / email), a short preview, when. New ones are marked. Tap a row → that person's account (Accounts page, with their full history); unknown numbers → the Unmatched list on Leads.
-- Opening the list clears the count (for you).
+- A **💬 button** in the staff app header, on every tab, with a red count of **new** incoming messages: texts, voicemails, missed calls and emails that customers (or unknown numbers, or new email senders) sent, plus **website estimate requests**, that **nobody has taken yet** (I've got it / Take it over; an estimate request still New; dismissed ones drop out). Owner's aim: "I don't want to miss anyone's texts or emails if I'm only working from the app." The same count for everyone. (Until 2026-10-10 it was per person, "since you last opened the list"; still the fallback when the activity log isn't available.)
+- Tap it: **New messages** list, newest first, last 7 days. Each row: who (customer or lead name; unknown numbers as the number), what (text / voicemail / missed call / email), a short preview, when. Ones nobody has taken are marked "Needs someone". Tap a row → that person's account (Accounts page, with their full history); unknown numbers → the Unmatched list on Leads.
+- Opening the list does **not** clear the count (owner 2026-10-10: "just looking at new messages clears the notification even if I don't actually do anything").
 - On an installed app, the home-screen icon shows the count too where the phone supports it.
 
 **On the phone (opt-in, per device):**

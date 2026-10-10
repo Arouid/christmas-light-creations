@@ -83,8 +83,8 @@ export default function LeadsApp() {
   const [showGuide, setShowGuide] = useState(false)
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
-  const alerts = useStaffAlerts(user, leads)
   const feed = useActivityFeed(user, settingsApi.settings?.staffNames)
+  const alerts = useStaffAlerts(user, leads, feed)
   const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
   const season = seasonYear()
 
@@ -275,8 +275,8 @@ export default function LeadsApp() {
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
           <div className="flex min-w-0 items-center gap-2 text-sm sm:gap-3">
             <span className="hidden truncate text-slate-400 sm:inline" title={user.email}>{staffName(user.email, feed.names)}</span>
-            <button type="button" onClick={() => setShowMessages(true)} title="New messages from customers"
-              aria-label={alerts.count ? `New messages: ${alerts.count}` : 'Messages from customers'}
+            <button type="button" onClick={() => setShowMessages(true)} title="Customer messages (red = nobody has taken them yet)"
+              aria-label={alerts.count ? `Messages nobody has taken yet: ${alerts.count}` : 'Messages from customers'}
               className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-base">
               <span aria-hidden="true">💬</span>
               {alerts.count > 0 && (
