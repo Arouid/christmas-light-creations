@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Invoice "Open their full account" on top + Back to the invoice: owner checked live, "works now" | Owner |
 | 2026-10-09 | "Open their full account" from an invoice now opens the account on top (owner: it used to leave the invoice): demo 375px, typed "Timer replacement $85" → Open their full account (whole Accounts page, without Edit details, on top) → ← Back to the invoice → line and $85 still there; also works on a paid invoice (not greyed out); Accounts page still has Edit details; no console errors | Browser pane + `npm run check` |
 | 2026-10-09 | Invoice editor "📒 Their account: what they owe" (owner's request; demo, 375px, no overflow): Sample Customer → 2026 Lights up $414.00 (10% off of $460.00), Takedown 150, status Install Scheduled · Oct 15, yearly price, other invoice CLC-2026-0002 Paid; "＋ Add all ($414.00)" filled Re-install $460.00 + Early Install discount −$46.00 = $414.00; "Open their full account ↗" opens #accounts/customer/sample-customer in a new tab. Suggested lines and unpaid earlier seasons: tests/invoices.test.mjs (17) | Browser pane + `npm run check` (168) |
 | 2026-10-09 | Staff search boxes no longer bring up the browser's saved-address pop-up (New invoice search; also Invoices tab and Accounts): owner checked live after the push, "works now" | Owner |
