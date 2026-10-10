@@ -16,6 +16,7 @@ import ProposalsPanel from '../proposals/ProposalsPanel'
 import CustomerInvoices from '../invoices/CustomerInvoices'
 import { TextButton } from '../Reach'
 import StreetViewPhoto from '../StreetViewPhoto'
+import { noAutofill } from '../ui'
 import TextHistory from '../TextHistory'
 
 const KIND = { customer: ['Customer', 'bg-emerald-500/20 text-emerald-300'], lead: ['Website lead', 'bg-glow-400/20 text-glow-300'], past: ['Past request', 'bg-white/10 text-slate-300'] }
@@ -49,7 +50,7 @@ function SearchBox({ index, autoFocus, compact, onPick }) {
     <div className="relative">
       <div className={`flex items-center gap-3 rounded-full border border-white/20 bg-night-900 px-5 shadow-lg focus-within:border-glow-400 ${compact ? 'py-2.5' : 'py-4'}`}>
         <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-        <input type="search" value={q} autoFocus={autoFocus} onChange={(e) => { setQ(e.target.value); setHi(0) }}
+        <input type="search" {...noAutofill} value={q} autoFocus={autoFocus} onChange={(e) => { setQ(e.target.value); setHi(0) }}
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown') { e.preventDefault(); setHi((h) => Math.min(h + 1, results.length - 1)) }
             if (e.key === 'ArrowUp') { e.preventDefault(); setHi((h) => Math.max(h - 1, 0)) }

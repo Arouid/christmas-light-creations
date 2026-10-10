@@ -3,7 +3,7 @@ import { buildIndex, searchAccounts } from '../../lib/accountSearch'
 import { seasonYear, todayISO } from '../../lib/customers'
 import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, listTotals, longDate, money, newInvoice, paidInfo, sendProblems } from '../../lib/invoices'
 import DataTable from '../DataTable'
-import { select } from '../ui'
+import { noAutofill, select } from '../ui'
 import InvoiceEditor from './InvoiceEditor'
 import { STATE_STYLE, numberLabel, useInvoicesContext } from './useInvoices'
 
@@ -23,7 +23,7 @@ function PickCustomer({ customers, onPick, onClose }) {
           <h2 className="font-display text-2xl font-extrabold">New invoice for…</h2>
           <button type="button" onClick={onClose} className="min-h-11 rounded-full bg-white/10 px-4 text-sm font-semibold">Close</button>
         </div>
-        <input type="search" autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, street, phone or email" aria-label="Search customers"
+        <input type="search" autoFocus {...noAutofill} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search customers" aria-label="Search customers"
           className="block min-h-11 w-full rounded-full border border-white/20 bg-night-950 px-4 text-base" />
         {q.trim() ? (
           <ul className="divide-y divide-white/5 rounded-2xl border border-white/10">
@@ -38,7 +38,7 @@ function PickCustomer({ customers, onPick, onClose }) {
             {!results.length && <li className="px-4 py-4 text-sm text-slate-400">No customer matches “{q}”. A website lead must be made a customer first (Accounts → ＋ Make customer).</li>}
           </ul>
         ) : (
-          <p className="text-sm text-slate-400">Start typing to find the customer. Billing a whole season? <a href="#season" onClick={onClose} className="text-glow-300 underline">Season → 🧾 Invoice these N</a>.</p>
+          <p className="text-sm text-slate-400">Type their name, street, phone or email. Billing a whole season? <a href="#season" onClick={onClose} className="text-glow-300 underline">Season → 🧾 Invoice these N</a>.</p>
         )}
       </div>
     </div>
@@ -98,7 +98,7 @@ export default function InvoicesView({ customers = [] }) {
           <button type="button" onClick={() => setPicking(true)} className="min-h-11 shrink-0 rounded-full bg-glow-400 px-5 font-semibold text-night-950 hover:bg-glow-300">＋ New invoice</button>
         </div>
         <div className="flex w-full gap-2 sm:w-auto">
-          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find an invoice or customer" aria-label="Find an invoice or customer"
+          <input type="search" {...noAutofill} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find an invoice or customer" aria-label="Find an invoice or customer"
             className="min-h-11 min-w-0 flex-1 rounded-xl border border-white/15 bg-night-900 px-3 text-base sm:w-72" />
           <select value={season} onChange={(e) => setSeason(e.target.value)} aria-label="Season" className={`${select} min-h-11 shrink-0`}>
             <option value="">All seasons</option>
