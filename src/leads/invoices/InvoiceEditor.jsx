@@ -138,12 +138,15 @@ export default function InvoiceEditor({ token: startToken, invoice, onClose }) {
                   <label className="block text-sm text-slate-400 sm:col-span-2">Address<input value={d.customer?.address ?? ''} onChange={(e) => setCustomer({ address: e.target.value })} className={field} /></label>
                 </div>
               </details>
-              <details className="rounded-2xl border border-white/10 p-3" open={status === 'draft'}>
-                <summary className="cursor-pointer text-sm font-semibold">📒 Their account: what they owe</summary>
-                <div className="mt-3">
-                  <AccountGlance customerId={d.customerId} season={d.season} kind={d.kind} token={token} editable={editable} onAddLines={addLines} />
-                </div>
-              </details>
+            </fieldset>
+            {/* Outside the fieldset: usable (Open their full account) even on a paid invoice. */}
+            <details className="rounded-2xl border border-white/10 p-3" open={status === 'draft'}>
+              <summary className="cursor-pointer text-sm font-semibold">📒 Their account: what they owe</summary>
+              <div className="mt-3">
+                <AccountGlance customerId={d.customerId} season={d.season} kind={d.kind} token={token} editable={editable} onAddLines={addLines} />
+              </div>
+            </details>
+            <fieldset disabled={!editable} className="min-w-0 space-y-4 disabled:opacity-80">
               <div className="grid gap-3 sm:grid-cols-3">
                 <label className="block text-sm text-slate-400">For<select value={d.kind} onChange={(e) => set({ kind: e.target.value })} className={field}>{KINDS.map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</select></label>
                 <label className="block text-sm text-slate-400">Season<select value={d.season} onChange={(e) => set({ season: e.target.value })} className={field}>{[...new Set([d.season, ...seasons()])].filter(Boolean).map((y) => <option key={y}>{y}</option>)}</select></label>

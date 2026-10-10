@@ -211,7 +211,8 @@ export default function LeadsApp() {
     <EmailTemplates.Provider value={templates}>
     <RoutesContext.Provider value={routesCtx}>
     <StaffContext.Provider value={{ user, settings: settingsApi.settings ?? {} }}>
-    <InvoicesContext.Provider value={{ ...invoicesApi, customers: customers ?? [] }}>
+    <InvoicesContext.Provider value={{ ...invoicesApi, customers: customers ?? [],
+      account: { leads: leads ?? [], past: pastApi.error ? [] : pastApi.requests ?? [], calls, gates, season, user } }}>
     <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <IncidentsBanner user={user} />

@@ -1,4 +1,7 @@
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { yearlyPrice } from '../../lib/addOns'
+import { CustomerAccount } from '../accounts/AccountsView'
 import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, money, suggestedLines, unpaidSeasons } from '../../lib/invoices'
 import { todayISO } from '../../lib/customers'
 import { PAY_PARTS, PART_LABEL, isPayable, partAmount, paymentOf, fmt } from '../../proposals/model.js'
@@ -30,6 +33,7 @@ export default function AccountGlance({ customerId, season, kind, token, editabl
   const ctx = useInvoicesContext()
   const { user } = useStaff()
   const proposals = useProposals(user, customerId)
+  const [full, setFull] = useState(false)
   const c = ctx?.customers?.find((x) => x.id === customerId)
   if (!c) return <p className="text-sm text-slate-400">Their customer record isn’t loaded.</p>
   const today = todayISO()
@@ -91,7 +95,22 @@ export default function AccountGlance({ customerId, season, kind, token, editabl
         </div>
       )}
 
-      <a href={`#accounts/customer/${encodeURIComponent(c.id)}`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-glow-300 underline">Open their full account ↗</a>
+      <button type="button" onClick={() => setFull(true)} className="inline-flex min-h-11 items-center text-glow-300 underline">Open their full account</button>
+
+      {/* On top of the invoice, which stays open underneath: Back returns to it as it was.
+          Drawn on <body> so the editor's blur and scrolling don't move or clip it. */}
+      {full && createPortal(
+        <div className="fixed inset-0 z-[60] overflow-y-auto bg-night-950" role="dialog" aria-modal="true" aria-label={`${c.fullName}: full account`}>
+          <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-white/10 bg-night-950/95 px-4 py-3 backdrop-blur">
+            <button type="button" onClick={() => setFull(false)} className="min-h-11 shrink-0 rounded-full bg-glow-400 px-4 font-semibold text-night-950 hover:bg-glow-300">← Back to the invoice</button>
+            <span className="truncate text-sm text-slate-400">{c.fullName}</span>
+          </div>
+          <div className="mx-auto max-w-4xl p-4 text-base">
+            <CustomerAccount c={c} customers={ctx.customers} {...ctx.account} />
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   )
 }

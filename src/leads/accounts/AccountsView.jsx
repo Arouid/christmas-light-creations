@@ -170,7 +170,8 @@ function LoginLine({ email }) {
 
 const mapLink = (address) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 
-function CustomerAccount({ c, customers, leads, past, calls, gates, season, user, onOpenCustomer }) {
+// Also shown on top of an open invoice (invoices/AccountGlance), without Edit details.
+export function CustomerAccount({ c, customers, leads = [], past = [], calls = [], gates = [], season, user, onOpenCustomer }) {
   const gate = gateFor(c, gates)
   const phone = String(c.phone ?? '').replace(/\D/g, '')
   const myCalls = calls.filter((x) => x.customerId === c.id)
@@ -185,7 +186,7 @@ function CustomerAccount({ c, customers, leads, past, calls, gates, season, user
         <ComposeEmail person={c} season={season} className={action} />
         {c.address && <a className={action} href={mapLink(c.address)} target="_blank" rel="noreferrer">Map</a>}
         <AddToRoute customers={[c]} className={action} />
-        <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>
+        {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}
       </Header>
       <Section title="Seasons"><SeasonRows customer={c} /></Section>
       <Section title="🧾 Invoices"><CustomerInvoices customer={c} /></Section>

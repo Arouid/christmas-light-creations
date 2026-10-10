@@ -43,7 +43,7 @@ export const SECTIONS = [
     summary: 'Our own invoices (instead of PayPal invoices): emailed from info@, paid online by PayPal, Venmo or card, or marked paid by you.',
     items: [
       '**＋ New invoice**: search the customer (name, street, phone or email) and tap them to start their invoice.',
-      'Inside an invoice, **📒 Their account: what they owe** shows that season’s billing (install total and discount, takedown, paid or not), anything unpaid from earlier seasons, their other invoices, proposal payments not paid yet and their yearly price. Tap **＋ Re-install…** / **＋ Takedown…** (or **＋ Add all**) to put those lines in; **Open their full account ↗** opens it in a new tab.',
+      'Inside an invoice, **📒 Their account: what they owe** shows that season’s billing (install total and discount, takedown, paid or not), anything unpaid from earlier seasons, their other invoices, proposal payments not paid yet and their yearly price. Tap **＋ Re-install…** / **＋ Takedown…** (or **＋ Add all**) to put those lines in; **Open their full account** shows their whole account on top of the invoice (**← Back to the invoice** returns to it as you left it).',
       'Boxes at the top: **Open** (unpaid), **Overdue**, **Paid**, **Drafts**, each with its total. Search by name, street or number; pick a season.',
       'Tap an invoice to see what went out (invoice emailed, reminders, receipt), when the customer opened it, and to **Text it**, **Copy link**, **Email again**, **Mark paid…**, **Void**, or turn reminders off.',
       'Numbers come from the website when you press Send: CLC-2026-0001, CLC-2026-0002… (a new count each January). Voided ones keep their number; only never-sent drafts can be deleted.',
