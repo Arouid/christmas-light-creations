@@ -1,6 +1,6 @@
 # To-do
 
-Open items for the website, staff app and accounts. Newest decisions are in `decisions.md`, things checked working in `verified.md`. Updated 2026-10-09.
+Open items for the website, staff app and accounts. Newest decisions are in `decisions.md`, things checked working in `verified.md`. Updated 2026-10-09 (evening).
 
 ## Waiting on Scott / staff
 
@@ -17,22 +17,17 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
 | 14 | Delete the TEST leads (incl. "TEST email check" from 2026-10-09): staff app → mark **Spam / test** → Delete | |
-| 16 | **Republish Firestore rules** (new `pastRequests` list), then Import → pick `old-site-backup/past-requests-all.csv` (done once; **import it again**: now 889 people incl. the price calculator) | Firebase console → Firestore → Rules → paste `firestore.rules` → Publish |
 | 17 | **Reply to the Oct 7 old-site request** (its email to you failed): itemized quote for an insurance claim | Past requests tab (shown first, red note) |
-| 20 | **Republish Firestore rules** again (new `signs` list; leads can store their map location) | Firebase console → Rules → paste `firestore.rules` → Publish |
-| 21 | **Republish Firestore rules** again (new `routes` list) | Firebase console → Rules → paste `firestore.rules` → Publish |
 | 23 | Add each installer's Google email to the Firestore `staff` list so they can open their route link | Firebase console → Firestore → staff → add document (id = their email) |
 | 24 | **Google Cloud free trial ends ~Jan 6, 2027** ($300 credit, 90 days from Oct 8): upgrade to a full account before then (by ~Dec 20) or Maps, Street View, drive times and alert emails can stop | console.cloud.google.com → banner → Upgrade |
 | 25 | **Install CLC Staff on each phone** and sign in once: iPhone Safari → Share → Add to Home Screen; Android Chrome → Install app. Tell Claude if sign-in fails inside the iPhone app | staff app link: christmas-light-creations.com/leads/ |
 | 26 | **Designer / proposals / deposits** (Strandr-style mockups, e-signed proposals, PayPal deposits): send Claude your ideas, deposit amount, existing contract (or OK to draft), and what a subscription would bill for | On hold until owner says go |
-| 27 | **Republish Firestore rules** (designs + design images) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
 | 28 | **Try the light designer** on 2–3 real customer photos and send Claude feedback on what looks fake; set price per foot in ⚙ Settings | Customer card → 🎨 Light designs |
-| 29 | **Republish Firestore rules** (proposals) — copied to clipboard 2026-10-09 | Firebase console → Rules → paste → Publish |
 | 30 | **Attorney review** of contract items 7–8 (deposit non-refundable; refund option if we can’t install by Dec 1; standard limited liability). Countersigner name and alert emails are set | Owner |
-| 31 | **Customer accounts** (/account/): (a) ~~deploy functions, rules, push~~ done 2026-10-09; (b) ~~turn on Email link sign-in~~ done 2026-10-09; (c) check the site is an authorized domain; then (d) on your phone try both **Sign in with Google** and an emailed link for your own email, see your test proposals, pay an open balance | (b) Firebase console → Authentication → Sign-in method → Email/Password → enable **Email link (passwordless sign-in)** → Save (turn on Email/Password too if asked; passwords are never used). (c) Authentication → Settings → Authorized domains: `christmas-light-creations.com` listed. **Rules change (new `customerLogins` list, staff read only)**: OK, then Claude publishes and runs `npm run check:rules`. Until then the "Customer login" line on Accounts stays hidden; nothing else is affected |
+| 31 | **Customer accounts** (live; sign-in and account checked on your phone): last check, **pay an open balance** from /account/ with a card or someone else's PayPal (your own PayPal is the merchant, so PayPal blocks it), then refund it in PayPal | |
 | 32 | **Add-ons / yearly price** (live since 2026-10-09). In the staff app: Accounts → "Add-on notes to check" → for each customer confirm the drafts, set Original rate (first-year full price) where missing (or type the re-install price, set per-year amounts or add a price change where it wasn't 50%; add missing past seasons in Edit details), and tick "Customer can see this" once the breakdown and that customer's Seasons (amount + paid) are right | No rules change needed |
 | 35 | **Spam protection (App Check) setup**: (1) console.cloud.google.com → Security → reCAPTCHA → Create key: type **Web**, domain `christmas-light-creations.com`, leave **checkbox challenge off** → ~~send key ID to Claude~~ done 2026-10-09 (key in `src/lib/firebase.js`); (2) Firebase console → App Check → Apps → your web app → **reCAPTCHA Enterprise** → paste the key → Save; (3) ~~deploy + push~~ done 2026-10-09; (4) after ~3 days Claude checks App Check metrics with you, then turns on enforcement (Firestore in console; functions by deploy) | Free up to 10,000 checks/month (Google's no-cost quota), well above our traffic |
-| 34 | **Old records onto customers**: Accounts → "From old records: N customers" → Add all (old payments into Seasons, old phones/emails linked); then check the "name match: check" ones one by one. Then step 2 in the same box: **pick `old-site-backup/customer-history.json`** → "Bring them over" (only the texts/calls/emails of the linked numbers are added; covers the 40 "Texted us → Already customers") | Only empty season boxes are filled; nothing typed is overwritten |
+| 34 | **Old records onto customers**: Add all done. If not yet: **Import tab → 2 · Old records → Customer history → `old-site-backup/customer-history.json` → Import** (all old texts/calls/emails/payments onto customers; no duplicates), then spot-check Lori Draeger's history goes back to 2016. Then tick "Customer can see this" per customer once their Seasons look right (#32) | |
 | 15 | Read the stock email templates (Emails tab) and fix wording: payment lines say PayPal invoice + Zelle/Venmo/Cash App/check/cash; timer, takedown dates and 10% early rule taken from the website | Edit → Save for everyone |
 
 ## Claude, when asked
