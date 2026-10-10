@@ -45,9 +45,8 @@ function page(a) {
 <meta property="og:type" content="website" />
 <meta property="og:url" content="${url}" />
 <link rel="icon" type="image/svg+xml" href="${base}favicon.svg" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="preload" href="${base}fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="${base}fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
 ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 <script type="application/ld+json">${JSON.stringify(schema)}</script>
 </head>
@@ -122,7 +121,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
     </div>
   </nav>
 </main>
-<footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-500">
+<footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-400">
   © ${new Date().getFullYear()} ${esc(business.name)} · ${esc(business.city)} · ${business.phone}
   · <a href="${base}account/" class="hover:text-glow-300">Customer login</a> · <a href="${base}privacy/" class="hover:text-glow-300">Privacy</a>
 </footer>

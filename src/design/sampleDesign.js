@@ -4,6 +4,10 @@
 import { newDecoration, newDesign, newStrand } from '../designer/model.js'
 
 export const SAMPLE_PHOTO = { src: `${import.meta.env.BASE_URL}images/design/sample-house.jpg`, width: 1280, height: 800, sample: true }
+// The sample below already drawn on the sample house, shown until the visitor
+// changes something. Redraw it after changing this file, the house or
+// render.js: node scripts/sample-design.mjs
+export const SAMPLE_PICTURE = `${import.meta.env.BASE_URL}images/design/sample-design.webp`
 
 export function sampleDesign() {
   const d = newDesign({ width: 1280, height: 800, name: 'Sample house' })

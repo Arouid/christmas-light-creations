@@ -52,7 +52,7 @@ export default function InvoiceDocument({ invoice: inv, business = {}, today = t
         <ul className="divide-y divide-white/5 print:divide-black/10">
           {(inv.items ?? []).map((i) => (
             <li key={i.id} className={row}>
-              <span className="min-w-0 break-words">{i.description || <span className="text-slate-500">(no description)</span>}</span>
+              <span className="min-w-0 break-words">{i.description || <span className="text-slate-400">(no description)</span>}</span>
               <span className="shrink-0 tabular-nums">{money(Number(i.cents) || 0)}</span>
             </li>
           ))}
