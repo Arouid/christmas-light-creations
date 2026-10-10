@@ -1,6 +1,6 @@
 # New-message alerts for staff (💬 badge + phone notifications)
 
-> Status: approved (kind of alert) · built, not yet live (needs: web push key, rules publish, functions deploy, push) · Decided on 2026-10-09 by Scott (Finess): "Badge + push"
+> Status: live 2026-10-09 (rules published, web push key set, messageSync + sendTestPush deployed, site pushed); owner's phone test pending · Decided on 2026-10-09 by Scott (Finess): "Badge + push"
 
 ## The problem
 
