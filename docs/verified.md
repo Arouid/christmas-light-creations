@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | TEST leads deleted in the staff app (Spam / test → Delete) | Owner report |
 | 2026-10-09 | Google Business Profile filled in: photos, services, description, special hours | Owner report |
 | 2026-10-09 | info@'s Gmail sender name changed from "CustomerService" to "Christmas Light Creations" | Owner report |
 | 2026-10-09 | Message sync after the key swap: owner's test email to info@ and reply from info@ showed in the customer's Text & email history, and a text from an unknown number showed in the staff app within ~10 minutes. Still not seen: a real voicemail transcript. Note: `firebase functions:log` misses messageSync entries (same as for alerts); use Logs Explorer | Owner in the live staff app |

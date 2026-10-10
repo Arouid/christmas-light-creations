@@ -14,7 +14,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 11 | **Gift wrapping** answers | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/` |
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
-| 14 | Delete the TEST leads (incl. "TEST email check" from 2026-10-09): staff app → mark **Spam / test** → Delete | |
 | 17 | **Reply to the Oct 7 old-site request** (its email to you failed): itemized quote for an insurance claim | Past requests tab (shown first, red note) |
 | 23 | Add each installer's Google email to the Firestore `staff` list so they can open their route link | Firebase console → Firestore → staff → add document (id = their email) |
 | 24 | **Google Cloud free trial ends ~Jan 6, 2027** ($300 credit, 90 days from Oct 8): upgrade to a full account before then (by ~Dec 20). If it lapses, Firebase drops to the free Spark plan: Cloud Functions stop (payments, account sign-in links, new-request alerts, message sync) and Maps/Street View/drive times stop; trial resources are deleted after a 30-day grace. Upgrading keeps the free tiers; you pay only above them (set the $5 budget alert, #12) | console.cloud.google.com → banner → Upgrade |
