@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getFirebaseApp } from '../lib/firebase'
+import { STATUS_LABELS, getFirebaseApp } from '../lib/firebase'
+import { logActivity } from './activity'
 import { demoMode } from './demo'
 import { demoLeads } from './demoLeads'
 
@@ -72,6 +73,7 @@ export function useLeads() {
   async function updateLead(id, changes) {
     if (demoMode) {
       setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, ...changes } : l)))
+      logStatus(id, changes)
       return
     }
     const app = await getFirebaseApp()
@@ -81,6 +83,12 @@ export function useLeads() {
       updatedAt: serverTimestamp(),
       updatedBy: user.email,
     })
+    logStatus(id, changes)
+  }
+
+  // Recent activity (docs/specs/dashboard.md): status changes only, not notes.
+  function logStatus(id, changes) {
+    if (changes.status && changes.status !== 'new') logActivity('lead-status', { type: 'lead', id }, STATUS_LABELS[changes.status] ?? changes.status)
   }
 
   // Only for leads marked Spam / test (the rules refuse anything else).

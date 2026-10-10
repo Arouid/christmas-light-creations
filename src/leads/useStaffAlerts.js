@@ -4,7 +4,7 @@
 // "new" since they last opened the list (kept in their staffPrefs doc, or on
 // this device if the database rules for it aren't published yet).
 import { useMemo, useState } from 'react'
-import { countNew, listSince, recentIncoming, requestItems } from '../lib/staffAlerts'
+import { countNew, listSince, recentIncoming, requestItems, toMs } from '../lib/staffAlerts'
 import { prefsId } from './push'
 import { SERVER_TIME, mergePaths, useLiveDoc, useLiveSince } from './staffStore'
 
@@ -31,5 +31,8 @@ export function useStaffAlerts(user, leads) {
     mergePaths(user, 'staffPrefs', prefsId(user), { messagesSeenAt: SERVER_TIME }).catch((e) => console.warn('messagesSeenAt', e))
   }
 
-  return { list, count: loading ? 0 : countNew(list, seenAt), seenAt, markSeen, prefs, error, loading }
+  // Last time the sync filed anything (Home's status light).
+  const lastSync = useMemo(() => Math.max(0, ...(items ?? []).map((m) => toMs(m.syncedAt))), [items])
+
+  return { list, count: loading ? 0 : countNew(list, seenAt), seenAt, markSeen, prefs, error, loading, lastSync }
 }

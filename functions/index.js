@@ -88,6 +88,18 @@ async function reportIncident(kind, message, details = {}) {
   } catch (e) { logger.error('incident email failed', e) }
 }
 
+// Recent activity on the staff app's Home (docs/specs/dashboard.md): what a
+// customer did on the website. Never throws (it's a nice-to-have).
+async function logWebsite(action, target, text = '') {
+  try {
+    await getFirestore().collection('activity').add({
+      at: FieldValue.serverTimestamp(), by: 'website', action, text: String(text ?? '').slice(0, 300),
+      target: { type: target.type, id: String(target.id ?? ''), name: String(target.name ?? '').slice(0, 200) },
+    })
+  } catch (e) { logger.warn('activity not logged', e.message) }
+}
+const proposalTarget = (p, name) => ({ type: p.ownerType === 'lead' ? 'lead' : 'customer', id: p.ownerId, name })
+
 // The sign-in link email: if it fails, report it and tell the customer.
 async function sendOrReport(to, message) {
   try {
@@ -248,6 +260,7 @@ async function proposalChangeEmails(event) {
   const staff = await staffEmails()
 
   if (before.status !== 'signed' && after.status === 'signed') {
+    await logWebsite('proposal-signed', proposalTarget(after, name), after.title ?? '')
     const first = name.split(' ')[0] || 'there'
     if (after.customer?.email) {
       await mail.sendMail({
@@ -266,7 +279,9 @@ async function proposalChangeEmails(event) {
   for (const part of PARTS) {
     const was = paymentOf(before, part)
     const now = paymentOf(after, part)
-    if (was?.status === 'paid' || now?.status !== 'paid' || !staff.length) continue
+    if (was?.status === 'paid' || now?.status !== 'paid') continue
+    await logWebsite('proposal-paid', proposalTarget(after, name), `${PART_LABEL[part]} · ${dollars(now.amount)}${now.env === 'sandbox' ? ' (test)' : ''}`)
+    if (!staff.length) continue
     await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `${PART_LABEL[part]} paid: ${name} ($${dollars(now.amount)})`, text: `${name} paid the $${dollars(now.amount)} ${PART_LABEL[part].toLowerCase()} by PayPal${now.env === 'sandbox' ? ' (TEST payment, sandbox)' : ''}.\nPayPal order ${now.orderId}.\n\nCustomer view: ${link}` })
   }
 }
@@ -472,6 +487,13 @@ async function invoiceSteps(ref, token) {
   const paid = paidInfo(inv)
   if (inv.status === 'paid' && paid) {
     await once(ref, inv, 'done', `season_${paid.id}`, () => fillCustomerSeason(inv, (i, c) => seasonFillsOnPaid(i, c, paid), 'mark it paid'))
+    // Paid online: a Recent activity entry (staff log their own Mark paid).
+    if (paid.online) {
+      await once(ref, inv, 'done', `activity_${paid.id}`, async () => {
+        await logWebsite('invoice-paid-online', { type: 'customer', id: inv.customerId, name: inv.customer?.name }, `${inv.number} · ${dollars(paid.cents ?? invoiceCents(inv))}${paid.sandbox ? ' (test)' : ''}`)
+        return {}
+      })
+    }
     await once(ref, inv, 'done', `staff_${paid.id}`, async () => {
       const to = await staffEmails()
       if (!to.length) return { skipped: 'no alert list' }

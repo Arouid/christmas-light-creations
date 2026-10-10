@@ -174,6 +174,19 @@ export async function addRecord(user, coll, data) {
   return ref.id
 }
 
+// Append-only log entry (activity): `at` is the server's clock and `by` the
+// signed-in staff member; firestore.rules allow nothing else on it.
+export async function appendLog(user, coll, data) {
+  if (demoMode) {
+    const id = `demo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    demoWrite(coll, id, () => ({ ...data, at: Date.now(), by: user.email }))
+    return id
+  }
+  const { fs, db } = await fire()
+  const ref = await fs.addDoc(fs.collection(db, coll), { ...data, at: fs.serverTimestamp(), by: user.email })
+  return ref.id
+}
+
 // New record with a chosen id; refuses to overwrite an existing one.
 export async function createRecord(user, coll, id, data) {
   if (demoMode) {

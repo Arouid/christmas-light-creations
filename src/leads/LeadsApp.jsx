@@ -39,9 +39,12 @@ import { InvoicesContext, useInvoices } from './invoices/useInvoices'
 import MessagesPanel from './MessagesPanel'
 import { refreshDevice, setIconBadge } from './push'
 import { useStaffAlerts } from './useStaffAlerts'
+import HomeView from './HomeView'
+import { byPhone, logActivity, setActivityContext, useActivityFeed } from './activity'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
-const BEFORE = [['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
+// The app opens on Home (docs/specs/dashboard.md).
+const BEFORE = [['home', 'Home'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
 const AFTER = [['signs', 'Signs'], ['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
 
 function Screen({ children }) {
@@ -52,7 +55,7 @@ const tabFromHash = () => {
   const h = window.location.hash.slice(1)
   if (h.startsWith('route-')) return 'route' // #route-<id> (installer) or #route-<id>~edit
   if (h.startsWith('accounts/')) return 'accounts' // #accounts/<kind>/<id>
-  return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'map'
+  return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'home'
 }
 const routeFromHash = () => {
   const m = window.location.hash.match(/^#route-([^~]+)(~edit)?$/)
@@ -80,6 +83,7 @@ export default function LeadsApp() {
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const alerts = useStaffAlerts(user, leads)
+  const feed = useActivityFeed(user)
   const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
   const season = seasonYear()
 
@@ -102,6 +106,17 @@ export default function LeadsApp() {
   }, [])
 
   useEffect(() => { setIconBadge(alerts.count) }, [alerts.count])
+  // Recent activity: who's signed in and who's who, for the action loggers.
+  useEffect(() => { setActivityContext(user, customersApi.customers, leads, pastApi.requests) }, [user, customersApi.customers, leads, pastApi.requests])
+  // "Started a call": any Call (tel:) link tapped anywhere in the app.
+  useEffect(() => {
+    const onClick = (e) => {
+      const a = e.target.closest?.('a[href^="tel:"]')
+      if (a) logActivity('call', byPhone(a.getAttribute('href')))
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
+  }, [])
   // Once per app start, on a device with notifications on: keep it registered.
   const prefsLoaded = alerts.prefs.data !== undefined
   useEffect(() => {
@@ -177,6 +192,7 @@ export default function LeadsApp() {
       id = existing.id
     }
     await updateLead(lead.id, { customerId: id })
+    logActivity('make-customer', { type: 'customer', id, name: fields.fullName })
     // Texts/emails the sync filed on the lead now show in the customer's history.
     try {
       const msgs = await queryOnce('messages', 'leadId', lead.id)
@@ -300,13 +316,17 @@ export default function LeadsApp() {
       )}
       <main className={tab === 'map' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl'}>
         {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
+        {tab === 'home' && (customers
+          ? <HomeView user={user} season={season} alerts={alerts} feed={feed} customers={customers} leads={leads ?? []} invoices={invoicesApi.invoices ?? []}
+              calls={calls} routes={routesApi.routes ?? []} settings={settingsApi.settings ?? {}} onOpenMessages={() => setShowMessages(true)} />
+          : loading)}
         {tab === 'accounts' && (customers
           ? <AccountsView customers={customers} leads={leads ?? []} past={pastApi.error ? [] : pastApi.requests ?? []} calls={calls} gates={gates} season={season} user={user}
               onOpenCustomer={setOpenId} onMakeLeadCustomer={makeCustomer}
               onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
           : loading)}
         {tab === 'invoices' && <InvoicesView customers={customers ?? []} />}
-        {tab === 'leads' && user && <UnmatchedMessages user={user} customers={customers} />}
+        {tab === 'leads' && user && <UnmatchedMessages user={user} customers={customers} feed={feed} />}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onDelete={deleteLead}onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
         )}
@@ -358,7 +378,7 @@ export default function LeadsApp() {
         <CustomerDetail customer={open} season={season} onUpdate={customersApi.update} onClose={() => setOpenId(null)}
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} user={user} />
       )}
-      {showMessages && <MessagesPanel user={user} alerts={alerts} names={names} onClose={closeMessages} />}
+      {showMessages && <MessagesPanel user={user} alerts={alerts} names={names} feed={feed} onClose={closeMessages} />}
       {showGuide && <GuidePanel onClose={() => setShowGuide(false)} />}
       {showSettings && (
         <SettingsPanel settings={settingsApi.settings ?? {}} onSave={settingsApi.save} textFrom={textFrom}

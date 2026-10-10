@@ -229,7 +229,7 @@ export const recaptchaNote = {
 // Privacy policy (/privacy/). Plain words; keep it true to what the site does.
 // Owner to review (and the attorney along with the contract terms).
 export const privacy = {
-  updated: 'October 9, 2026',
+  updated: 'October 10, 2026',
   intro: 'We’re a family business. We only collect what we need to quote, install, service and bill your lights, and we never sell it. Here’s exactly what that means.',
   sections: [
     {
@@ -240,7 +240,7 @@ export const privacy = {
         '**When you sign a proposal:** your typed name, your drawn signature, the date and time, the browser you signed on, and a fingerprint of the exact document you agreed to.',
         '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',
         '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
-        '**When we text, call or email each other:** we keep that conversation history (including the emails we send you) with your customer record so anyone on our team can help you. If we don’t know you yet, your text or email waits in a list our team goes through (obvious junk mail isn’t kept). When you write to us or ask for an estimate, our team’s phones may show a short notification (your name and the first words) so you hear back sooner.',
+        '**When we text, call or email each other:** we keep that conversation history (including the emails we send you, and which of us called, texted or emailed you, so we don’t double up) with your customer record so anyone on our team can help you. If we don’t know you yet, your text or email waits in a list our team goes through (obvious junk mail isn’t kept). When you write to us or ask for an estimate, our team’s phones may show a short notification (your name and the first words) so you hear back sooner.',
         '**When you sign in to your account:** your email address and when you signed in. With “Sign in with Google”, Google tells us your name and email; we never see your Google password.',
       ],
     },

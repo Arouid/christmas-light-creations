@@ -5,6 +5,7 @@ import Icon from '../components/Icon'
 import { TextButton, pill } from './Reach'
 import { Bubble } from './TextHistory'
 import { saveRecord, useLiveQuery } from './staffStore'
+import Handling from './Handling'
 
 const newestFirst = (a, b) => (b.at ?? '').localeCompare(a.at ?? '')
 const prettyPhone = (p) => {
@@ -35,7 +36,7 @@ function LinkPicker({ customers, onPick, onCancel }) {
   )
 }
 
-function Row({ m, user, customers }) {
+function Row({ m, user, customers, feed }) {
   const [linking, setLinking] = useState(false)
   const [busy, setBusy] = useState(false)
   const save = async (data) => {
@@ -54,6 +55,7 @@ function Row({ m, user, customers }) {
         {customers && <button type="button" disabled={busy} onClick={() => setLinking(!linking)} className={pill}>Link to customer</button>}
         <button type="button" disabled={busy} onClick={() => save({ dismissed: true })} className={pill}>Dismiss</button>
       </div>
+      <Handling m={m} who={m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'} feed={feed} user={user} />
       {linking && <LinkPicker customers={customers} onCancel={() => setLinking(false)}
         onPick={(customerId) => save({ customerId, unmatched: false, dismissed: false })} />}
     </li>
@@ -63,7 +65,7 @@ function Row({ m, user, customers }) {
 // Texts, voicemails and missed calls from numbers that match no customer or
 // lead, and emails from new senders (junk filtered out by the sync; owner
 // 2026-10-09). Staff link one to a customer or dismiss it.
-export default function UnmatchedMessages({ user, customers }) {
+export default function UnmatchedMessages({ user, customers, feed }) {
   const items = useLiveQuery(user, 'messages', 'unmatched', true, newestFirst)
   const open = (items ?? []).filter((m) => !m.dismissed)
   if (!open.length) return null
@@ -73,7 +75,7 @@ export default function UnmatchedMessages({ user, customers }) {
         📥 {open.length} {open.length === 1 ? 'message' : 'messages'} from people we don’t know yet
       </summary>
       <ul className="mt-2 space-y-3">
-        {open.map((m) => <Row key={m.id} m={m} user={user} customers={customers} />)}
+        {open.map((m) => <Row key={m.id} m={m} user={user} customers={customers} feed={feed} />)}
       </ul>
     </details>
   )

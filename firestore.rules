@@ -302,6 +302,26 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Recent staff activity on Home (docs/specs/dashboard.md): who emailed,
+    // invoiced, called or is handling whom. Append-only: staff add entries as
+    // themselves with the server's time; nobody changes or deletes one. The
+    // server adds website entries (a customer signed or paid).
+    match /activity/{entryId} {
+      allow read: if isStaff();
+      allow create: if isStaff()
+        && request.resource.data.keys().hasOnly(['at', 'by', 'action', 'target', 'text'])
+        && request.resource.data.at == request.time
+        && request.resource.data.by == request.auth.token.email
+        && filledStr(request.resource.data.action, 40)
+        && request.resource.data.target is map
+        && request.resource.data.target.keys().hasOnly(['type', 'id', 'name'])
+        && filledStr(request.resource.data.target.type, 20)
+        && shortStr(request.resource.data.target.get('id', ''), 200)
+        && shortStr(request.resource.data.target.get('name', ''), 200)
+        && shortStr(request.resource.data.get('text', ''), 300);
+      allow update, delete: if false;
+    }
+
     // Each staff member's own app state (docs/specs/staff-alerts.md): when
     // they last opened 💬 New messages, and the devices that get phone
     // notifications. Only their own doc (id = their lowercase email); the

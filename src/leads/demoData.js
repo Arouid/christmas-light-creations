@@ -34,6 +34,8 @@ customers.forEach((c) => { const g = demoGeo[c.id]; if (g) c.geo = { lat: g[0], 
 
 const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString()
 const byId = (list) => Object.fromEntries(list.map(({ id, ...d }) => [id, d]))
+const minAgo = (m) => Date.now() - m * 60000
+const localDay = () => new Date().toLocaleDateString('en-CA')
 
 export const demoData = {
   customers: byId(customers),
@@ -74,6 +76,23 @@ export const demoData = {
       subject: 'Christmas lights quote', text: 'Hi, a neighbor recommended you. Could you give us a quote for our roofline? Two-story house in Shadow Creek Ranch.' },
     { id: 'gv-demo-missed', customerId: 'sample-customer', phone: '+15550101', kind: 'missed', direction: 'in', source: 'voice-email', at: hoursAgo(0.7), syncedAt: hoursAgo(0.65) },
     { id: 'gv-demo-unmatched-2', unmatched: true, phone: '+15550100177', kind: 'voicemail', direction: 'in', source: 'voice-email', at: hoursAgo(9), syncedAt: hoursAgo(8.95), text: 'Hi, this is about getting lights put up on our house in Silverlake. Please call me back.' },
+  ]),
+  // Home: recent staff activity and a route for today (docs/specs/dashboard.md).
+  activity: byId([
+    { id: 'demo-act-1', at: minAgo(4), by: 'katie@example.com', action: 'email', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Re: Your 2026 install' },
+    { id: 'demo-act-2', at: minAgo(12), by: 'katie@example.com', action: 'handling', target: { type: 'message', id: 'gv-demo-unmatched-1', name: '(555) 010-0166' }, text: 'Text' },
+    { id: 'demo-act-3', at: minAgo(35), by: 'website', action: 'proposal-signed', target: { type: 'customer', id: 'example-family', name: 'Example Family' }, text: '2026 lights' },
+    { id: 'demo-act-4', at: minAgo(80), by: 'katie@example.com', action: 'invoice-sent', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: '$150.00' },
+    { id: 'demo-act-5', at: minAgo(140), by: 'demo@example.com', action: 'lead-status', target: { type: 'lead', id: 'demo-2', name: 'Test Lead' }, text: 'Called' },
+    { id: 'demo-act-6', at: minAgo(200), by: 'katie@example.com', action: 'call', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: '' },
+    { id: 'demo-act-7', at: minAgo(26 * 60), by: 'demo@example.com', action: 'service-done', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Lights out on the left side' },
+  ]),
+  routes: byId([
+    { id: 'demo-route-today', day: localDay(), name: 'Crew 1', status: 'sent', startTime: '08:00', stops: [
+      { id: 's1', customerId: 'sample-customer', name: 'Sample Customer', address: '123 Example St Pearland, TX 77581', kind: 'install', minutes: 135, status: 'done' },
+      { id: 's2', customerId: 'example-family', name: 'Example Family', address: '789 Placeholder Dr Manvel, TX 77578', kind: 'install', minutes: 135, status: 'skipped', skipReason: 'Gate locked' },
+      { id: 's3', customerId: 'test-homeowner', name: 'Test Homeowner', address: '456 Sample Ln League City, TX 77573', kind: 'service', minutes: 20, status: 'todo' },
+    ] },
   ]),
   incidents: byId([
     { id: 'demo-incident-1', kind: 'lead-alert', open: true, message: 'New request from Pat Sample (555-0101) is in the staff app, but the alert email failed: Invalid login (sample).' },

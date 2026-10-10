@@ -36,6 +36,7 @@ const cases = [
   ['Public can read website problems', () => getDocsFromServer(collection(db, 'incidents'))],
   ['Public can read customer logins', () => getDocsFromServer(collection(db, 'customerLogins'))],
   ['Public can read staff alert settings and devices', () => getDocsFromServer(collection(db, 'staffPrefs'))],
+  ['Public can read staff activity', () => getDocsFromServer(collection(db, 'activity'))],
   ['Public can read account-link bookkeeping', () => getDocsFromServer(collection(db, 'accountLinks'))],
   ['Public can list proposals', () => getDocsFromServer(collection(db, 'proposals'))],
   ['Public can list invoices', () => getDocsFromServer(collection(db, 'invoices'))],

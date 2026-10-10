@@ -1,5 +1,6 @@
 import { customerId, todayISO } from '../lib/customers'
 import { addRecord, deleteRecord, mergeMany, saveRecord, updateField, useLiveCollection } from './staffStore'
+import { customerTarget, logActivity } from './activity'
 
 const newestFirst = (a, b) => (b.received ?? '').localeCompare(a.received ?? '')
 const byNeighborhood = (a, b) => (a.neighborhood ?? '').localeCompare(b.neighborhood ?? '')
@@ -9,15 +10,24 @@ export function useServiceCalls(user) {
   return {
     calls: items,
     error,
-    update: (id, path, value) => updateField(user, 'serviceCalls', id, path, value),
-    log: (customer, issue, details) => addRecord(user, 'serviceCalls', {
-      customerId: customer.id,
-      customerName: customer.fullName,
-      issue,
-      ...(details ? { details } : {}),
-      received: todayISO(),
-      status: 'Open',
-    }),
+    // Recent activity (docs/specs/dashboard.md): logged and finished calls.
+    update: async (id, path, value) => {
+      await updateField(user, 'serviceCalls', id, path, value)
+      const call = items?.find((c) => c.id === id)
+      if (path === 'status' && value === 'Done' && call) logActivity('service-done', customerTarget(call.customerId, call.customerName), call.issue ?? '')
+    },
+    log: async (customer, issue, details) => {
+      const id = await addRecord(user, 'serviceCalls', {
+        customerId: customer.id,
+        customerName: customer.fullName,
+        issue,
+        ...(details ? { details } : {}),
+        received: todayISO(),
+        status: 'Open',
+      })
+      logActivity('service-logged', customerTarget(customer.id, customer.fullName), issue)
+      return id
+    },
   }
 }
 

@@ -3,7 +3,7 @@
   "name": "CLC Staff",
   "short_name": "CLC Staff",
   "description": "Christmas Light Creations staff app: customers, routes, leads.",
-  "start_url": "/leads/#route",
+  "start_url": "/leads/",
   "scope": "/leads/",
   "display": "standalone",
   "background_color": "#050b1a",

@@ -60,3 +60,6 @@
 | 53 | 💬 → Turn off on that phone, text again | No notification on that phone; 💬 count still goes up | Not checked |
 | 54 | Send a test estimate request on the website (mark it Spam / test after) | Phone notification "New estimate request from <name>" within a minute, plus the usual email; tap opens the lead; it's in 💬 as 📝 | Not checked |
 | 55 | Email info@ from an address that's on no customer or lead | Within ~10 minutes: "Email from <address>" notification; Leads → Unmatched shows it with Reply in Gmail / Link to customer / Dismiss; a newsletter or no-reply email does NOT show | Not checked |
+| 56 | Live, two staff phones: one emails a test customer from the app (or sends a test invoice) | Within seconds the other's **Home → Recent activity** shows "<name> emailed <customer>"; tapping it opens that account; control: the email in that customer's history | Not checked |
+| 57 | Live: tap **I've got it** on a message in 💬 | The other person sees "<name> is on it · just now" on the same message (💬 and Leads → Unmatched) and a Recent activity entry | Not checked |
+| 58 | Open the installed app on a phone; then a route link texted to an installer | The app opens on **Home**; the route link still opens that route | Not checked |

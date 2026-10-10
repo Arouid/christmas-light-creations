@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { KIND_WORD, LIST_DAYS, isNew, messageLink, previewOf, whoOf } from '../lib/staffAlerts'
+import Handling from './Handling'
 import PushSetup from './PushSetup'
 
 // 💬 New messages (docs/specs/staff-alerts.md): texts, voicemails, missed
@@ -18,7 +19,7 @@ function when(iso) {
   return `${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}, ${time}`
 }
 
-export default function MessagesPanel({ user, alerts, names, onClose }) {
+export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
   // "New" as it was when the list opened: opening it clears your count.
   const [seenAtOpen] = useState(alerts.seenAt)
   const { markSeen } = alerts
@@ -66,6 +67,7 @@ export default function MessagesPanel({ user, alerts, names, onClose }) {
                       {previewOf(m) && <span className="mt-0.5 line-clamp-2 block break-words text-sm text-slate-400">{previewOf(m)}</span>}
                     </span>
                   </button>
+                  <div className="pl-13"><Handling m={m} who={whoOf(m, names)} feed={feed} user={user} /></div>
                 </li>
               )
             })}

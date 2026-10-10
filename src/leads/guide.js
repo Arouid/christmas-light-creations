@@ -2,10 +2,11 @@
 // Plain words for the team; update it whenever a feature changes.
 // tab: the #hash the "Open" link goes to (none = no link).
 
-export const GUIDE_UPDATED = 'October 9, 2026'
+export const GUIDE_UPDATED = 'October 10, 2026'
 
 // The jobs people actually do, each pointing at where to do it.
 export const TASKS = [
+  ['Before you call, text or email someone', 'Glance at **Home → Recent activity**: if someone already emailed, invoiced or called them, or is **on it**, leave it to them. On a new message in **💬** (or Unmatched on Leads), tap **I’ve got it** so everyone sees you’re answering it.'],
   ['A new estimate request came in', 'You get an email alert (and a phone notification if you turned them on in **💬**). Open **Leads**: call or text them, set the status (Called, Estimate sent…), add notes. When they say yes, tap **Make customer**.'],
   ['Find anyone fast', '**Accounts** → type a name, street, phone (any format), email, neighborhood or gate code. Opens their whole account with a photo of the house.'],
   ['Send a price / contract', 'Customer → **🎨 Light designs** (optional mockup) → **📝 Proposals & contracts** → **📝 New proposal** → **Send to customer**. They sign on their phone; you **Countersign**.'],
@@ -26,6 +27,20 @@ export const TASKS = [
 ]
 
 export const SECTIONS = [
+  {
+    id: 'home', icon: '🛰', title: 'Home (mission control)', tab: 'home',
+    summary: 'Where the app opens: what the team did lately, what needs attention, today’s routes and the season at a glance.',
+    items: [
+      '**Recent activity**: who emailed, invoiced, sent a proposal, changed a lead, logged or finished a service call, or started a text or call, and when; plus customers who signed or paid on the website. Tap one to open that account. It’s there so nobody does the same thing twice.',
+      'Texts and calls show as **started**: the app sees you tap Text or Call, not whether the text went or the call was answered.',
+      '**I’ve got it** (in 💬 and Unmatched): everyone sees “Katie is on it” on that message. Someone else can **Take it over**.',
+      '**Counters**: new messages (yours), new website requests, unpaid invoices (and how many overdue), open service calls. Tap one to go there.',
+      '**Today’s routes**: each route with stops done, skipped and left. **Season**: installs and takedowns by step, and money collected (season billing marked paid) next to last season.',
+      '**System status** lights: text/email sync, website problems, payments, the request-alert email list, the activity log, and notifications on this device. Green is good; amber means look; red means something broke (tap the red banner).',
+      '**⛶ Wall screen**: full screen with big numbers for a TV in the shop; it updates by itself. **✕** or Esc to leave.',
+      'Your name: the staff list’s name (owner: Firebase console → staff → add a `name` field), else the start of your email.',
+    ],
+  },
   {
     id: 'accounts', icon: '🔎', title: 'Accounts', tab: 'accounts',
     summary: 'Google-style search over every customer, website lead and old request. The best place to start.',

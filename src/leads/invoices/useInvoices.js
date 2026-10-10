@@ -5,7 +5,8 @@
 import { createContext, useContext } from 'react'
 import { newToken } from '../../proposals/model.js'
 import { todayISO } from '../../lib/customers'
-import { dueDateFor } from '../../lib/invoices'
+import { dueDateFor, invoiceCents, money } from '../../lib/invoices'
+import { customerTarget, logActivity } from '../activity'
 import { clearFields, createRecord, deleteRecord, saveRecord, useLiveCollection } from '../staffStore'
 
 const newestFirst = (a, b) => String(b.savedAt ?? '').localeCompare(String(a.savedAt ?? ''))
@@ -27,6 +28,12 @@ const pick = (inv) => Object.fromEntries(EDITABLE.filter((k) => k in inv).map((k
 export function useInvoices(user) {
   const { items, error } = useLiveCollection(user, 'invoices', newestFirst)
   const save = (token, data) => saveRecord(user, 'invoices', token, { ...data, savedAt: now() })
+  // Recent activity (docs/specs/dashboard.md), once the change is saved.
+  const logged = (action, token, inv, text) => (result) => {
+    const i = inv ?? items?.find((x) => x.id === token) ?? {}
+    logActivity(action, customerTarget(i.customerId, i.customer?.name), text ?? money(invoiceCents(i)))
+    return result
+  }
   return {
     invoices: items,
     error,
@@ -37,13 +44,14 @@ export function useInvoices(user) {
     },
     save: (token, inv) => save(token, pick(inv)),
     // Send: the due date counts from today; the server gives the number and emails it.
-    send: (token, inv) => save(token, { ...pick(inv), status: 'open', dueDate: dueDateFor(inv, todayISO()) }),
-    emailAgain: (token) => save(token, { emailAgainAt: new Date() }),
-    voidIt: (token) => save(token, { status: 'void' }),
+    send: (token, inv) => save(token, { ...pick(inv), status: 'open', dueDate: dueDateFor(inv, todayISO()) }).then(logged('invoice-sent', token, inv)),
+    emailAgain: (token) => save(token, { emailAgainAt: new Date() }).then(logged('invoice-again', token)),
+    voidIt: (token) => save(token, { status: 'void' }).then(logged('invoice-void', token)),
     remove: (token) => deleteRecord('invoices', token),
     // These three may only touch exactly these fields (firestore.rules), so no savedAt.
     setReminders: (token, on) => saveRecord(user, 'invoices', token, { remindersOff: !on }),
-    markPaid: (token, { method, date, note }) => saveRecord(user, 'invoices', token, { status: 'paid', offline: { method, date, note: note ?? '', by: user.email, at: Date.now() } }),
+    markPaid: (token, { method, date, note }) => saveRecord(user, 'invoices', token, { status: 'paid', offline: { method, date, note: note ?? '', by: user.email, at: Date.now() } })
+      .then((r) => { const i = items?.find((x) => x.id === token) ?? {}; return logged('invoice-paid', token, i, `${money(invoiceCents(i))} · ${method}`)(r) }),
     undoPaid: (token) => clearFields(user, 'invoices', token, ['offline'], { status: 'open' }),
   }
 }

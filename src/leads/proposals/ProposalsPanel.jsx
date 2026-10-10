@@ -10,6 +10,7 @@ import { designStats } from '../../designer/stats.js'
 import { useDesigns } from '../designs/useDesigns'
 import { TextButton } from '../Reach'
 import { useStaff } from '../staffContext'
+import { logActivity } from '../activity'
 import { canDeleteProposal, canVoidProposal, countersign, createProposal, deleteProposal, proposalLink, reviseProposal, saveProposal, sendProposal, useProposals } from './useProposals'
 
 const BIZ = { name: business.name, phone: business.phone, email: 'info@christmas-light-creations.com', logo: business.logo }
@@ -114,15 +115,18 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
     setBusy(null)
   }
   const saveDraft = () => run('Saving…', () => saveProposal(user, token, { ...d, termsTemplate }))
+  // Recent activity (docs/specs/dashboard.md): who it's for.
+  const target = { type: owner.type, id: owner.id, name: owner.name || d.customer?.name }
   const send = () => run('Sending…', async () => {
     await saveProposal(user, token, { ...d, termsTemplate })
     await sendProposal(user, token, { ...d, termsTemplate }, BIZ)
     set({ status: 'sent' })
+    logActivity('proposal-sent', target, d.title ?? '')
   })
   const revise = () => run('Reopening…', async () => { await reviseProposal(user, token, { ...d, termsTemplate }); set({ status: 'draft', terms: termsTemplate }) })
-  const voidIt = () => window.confirm('Void this proposal? The customer’s link will say it’s no longer active.') && run('Saving…', async () => { await saveProposal(user, token, { status: 'void' }); set({ status: 'void' }) })
+  const voidIt = () => window.confirm('Void this proposal? The customer’s link will say it’s no longer active.') && run('Saving…', async () => { await saveProposal(user, token, { status: 'void' }); set({ status: 'void' }); logActivity('proposal-void', target) })
   const remove = () => window.confirm('Delete this proposal for good? Its link will stop working. This can’t be undone.') && run('Deleting…', async () => { await deleteProposal(token); onClose() })
-  const cs = () => run('Signing…', async () => { await countersign(user, token, { name: csName.trim(), image: csImage }); set({ status: 'countersigned' }) })
+  const cs = () => run('Signing…', async () => { await countersign(user, token, { name: csName.trim(), image: csImage }); set({ status: 'countersigned' }); logActivity('proposal-countersigned', target) })
   async function copy() { try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* select instead */ } }
 
   return (

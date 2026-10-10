@@ -389,3 +389,33 @@ describe('staffPrefs: each staff member’s own alert state (docs/specs/staff-al
     await assertSucceeds(setDoc(doc(as.staffUpper(), 'staffPrefs', STAFF), { messagesSeenAt: serverTimestamp(), ...stamp('Boss@Example.com') }))
   })
 })
+
+describe('activity: recent staff actions on Home (docs/specs/dashboard.md)', () => {
+  const entry = (over = {}) => ({ at: serverTimestamp(), by: STAFF, action: 'email', target: { type: 'customer', id: 'pat-test', name: 'Pat Test' }, text: 'Your 2026 install', ...over })
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), 'activity', 'a1'), { ...entry(), at: new Date() }) })
+  })
+  test('staff add entries as themselves with the server time, known fields only', async () => {
+    const db = as.staff()
+    await assertSucceeds(getDocs(collection(db, 'activity')))
+    await assertSucceeds(setDoc(doc(db, 'activity', 'n1'), entry()))
+    await assertSucceeds(setDoc(doc(db, 'activity', 'n2'), entry({ action: 'call', target: { type: 'phone', id: '2815550166', name: '(281) 555-0166' }, text: '' })))
+    await assertSucceeds(setDoc(doc(db, 'activity', 'n3'), { at: serverTimestamp(), by: STAFF, action: 'handling', target: { type: 'message', id: 'gv-1' } }))
+    await assertFails(setDoc(doc(db, 'activity', 'n4'), entry({ by: 'someone@else.com' })))
+    await assertFails(setDoc(doc(db, 'activity', 'n5'), entry({ at: new Date(0) })))
+    await assertFails(setDoc(doc(db, 'activity', 'n6'), entry({ extra: true })))
+    await assertFails(setDoc(doc(db, 'activity', 'n7'), entry({ action: '' })))
+    await assertFails(setDoc(doc(db, 'activity', 'n8'), entry({ target: { type: 'customer', id: 'x', name: 'y', admin: true } })))
+    await assertFails(setDoc(doc(db, 'activity', 'n9'), entry({ text: 'x'.repeat(301) })))
+    await assertFails(setDoc(doc(db, 'activity', 'n10'), entry({ by: 'website' })))
+  })
+  test('nobody changes or deletes an entry; outsiders get nothing', async () => {
+    await assertFails(updateDoc(doc(as.staff(), 'activity', 'a1'), { text: 'changed' }))
+    await assertFails(deleteDoc(doc(as.staff(), 'activity', 'a1')))
+    for (const who of outsiders) {
+      await assertFails(getDoc(doc(as[who](), 'activity', 'a1')))
+      await assertFails(getDocs(collection(as[who](), 'activity')))
+      await assertFails(setDoc(doc(as[who](), 'activity', 'x'), entry()))
+    }
+  })
+})

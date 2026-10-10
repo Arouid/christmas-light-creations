@@ -6,13 +6,23 @@ import { customerEmailKeys } from '../../functions/account.js'
 import { getFirebaseApp } from '../lib/firebase'
 import { demoMode } from './demo'
 import { createRecord } from './staffStore'
+import { logActivity } from './activity'
 
 // Addresses the server will email for this person: their email field (which
 // may hold several), then "Also:" emails. The same list sendStaffEmail checks.
 export const emailsOnRecord = (person) => customerEmailKeys(person)
 
 // target: { customerId } | { leadId } | { pastRequestId }
-export async function sendEmail(user, { to, subject, text, target, template }) {
+// Recent activity (docs/specs/dashboard.md): who it went to.
+const activityTarget = (t = {}) => (t.customerId ? { type: 'customer', id: t.customerId } : t.leadId ? { type: 'lead', id: t.leadId } : t.pastRequestId ? { type: 'past', id: t.pastRequestId } : null)
+
+export async function sendEmail(user, args) {
+  const result = await deliver(user, args)
+  logActivity('email', activityTarget(args.target) && { ...activityTarget(args.target), name: args.name }, args.subject)
+  return result
+}
+
+async function deliver(user, { to, subject, text, target, template }) {
   if (demoMode) return demoSend(user, { to, subject, text, target, template })
   const [{ getFunctions, httpsCallable }, app] = await Promise.all([import('firebase/functions'), getFirebaseApp()])
   try {

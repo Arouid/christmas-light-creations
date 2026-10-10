@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { voiceUrl } from '../lib/messages'
 import Icon from '../components/Icon'
 import { useVoiceAccount } from './voice'
+import { byPhone, logActivity } from './activity'
 
 export const pill = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm font-medium hover:bg-white/15'
 
@@ -37,6 +38,7 @@ export function TextButton({ phone, message, label = 'Text', className = pill, o
 
   function openVoice() {
     window.open(voiceUrl(phone, account), '_blank', 'noopener')
+    logActivity('text', byPhone(phone)) // "started a text": Voice doesn't tell us it was sent
     onSent?.()
   }
 
