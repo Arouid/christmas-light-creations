@@ -11,7 +11,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 6 | **Test Text button** end to end (copy number → Send new message → paste → send) | First real test after the number moved |
 | 7 | **Review campaign** to last year's customers | Season tab → ✉ Email these → Review request, or ★ Review texts |
 | 9 | Watch for **Google support's reply** on merging the duplicate Business Profile | Don't edit/remove either listing until then |
-| 10 | Business Profile: photos (10+), services list, description, special hours | Text drafted in chat 2026-10-08 |
 | 11 | **Gift wrapping** answers | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/` |
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
