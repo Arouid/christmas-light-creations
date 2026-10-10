@@ -1,6 +1,6 @@
 # "Design your lights": the designer on the public website
 
-> Status: live 2026-10-10 (rules published, newLeadAlert deployed, site pushed) · approved 2026-10-10 by Scott (Finess) · owner phone test pending
+> Status: live 2026-10-10 (rules published, newLeadAlert deployed, site pushed; server check + 30-day delete live) · approved 2026-10-10 by Scott (Finess) · owner phone test pending
 
 ## The problem
 
