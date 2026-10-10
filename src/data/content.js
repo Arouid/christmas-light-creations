@@ -240,7 +240,7 @@ export const privacy = {
         '**When you sign a proposal:** your typed name, your drawn signature, the date and time, the browser you signed on, and a fingerprint of the exact document you agreed to.',
         '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',
         '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
-        '**When you text, call or email us:** we keep that conversation history with your customer record so anyone on our team can help you.',
+        '**When we text, call or email each other:** we keep that conversation history (including the emails we send you) with your customer record so anyone on our team can help you.',
         '**When you sign in to your account:** your email address and when you signed in. With “Sign in with Google”, Google tells us your name and email; we never see your Google password.',
       ],
     },

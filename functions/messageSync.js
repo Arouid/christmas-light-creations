@@ -39,7 +39,7 @@ const isoOf = (date) => {
   const d = new Date(date)
   return Number.isNaN(d.getTime()) ? '' : d.toISOString()
 }
-const cap = (s) => (s.length > MAX_TEXT ? `${s.slice(0, MAX_TEXT - 1)}…` : s)
+export const cap = (s) => (s.length > MAX_TEXT ? `${s.slice(0, MAX_TEXT - 1)}…` : s)
 
 // ---- Google Voice notifications ---------------------------------------------
 
@@ -127,8 +127,27 @@ function parseEmail(item) {
   return {
     source: 'gmail', kind: 'email', direction: out ? 'out' : 'in', at: isoOf(item.date),
     text: emailText(item.body), subject: subject.slice(0, 300), emails: counterparts,
-    idBase: `em-${sha(messageId)}`,
+    idBase: emailIdBase(messageId),
   }
+}
+
+// "em-" + hash of the Message-ID header ("<…@…>", any letter case). The id of
+// an email's history entry is this + "-<customer or lead id>".
+export const emailIdBase = (messageId) => `em-${sha(lower(messageId))}`
+
+// Emails staff send from the app (sendStaffEmail) are filed at once; the sync
+// must skip their copy in info@'s Sent folder. Matched by Message-ID, and by
+// this print (recipient, subject, start of the text) in case Gmail ever
+// changes the Message-ID. Spec: docs/specs/staff-email.md.
+const squash = (s) => String(s ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
+export const mailPrint = ({ to, subject, text }) =>
+  `ep-${sha(`${lower(to)}|${squash(subject)}|${squash(emailText(text)).slice(0, 120)}`)}`
+
+// An outgoing email the sync collected -> the keys an app entry for it would
+// carry, or null (app emails go to exactly one address).
+export function appSentKeys(event) {
+  if (event?.kind !== 'email' || event.direction !== 'out' || event.emails?.length !== 1) return null
+  return { mailId: event.idBase, mailPrint: mailPrint({ to: event.emails[0], subject: event.subject, text: event.text }) }
 }
 
 // One collected email -> an event, or { skip: reason }.

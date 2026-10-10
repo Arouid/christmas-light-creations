@@ -16,6 +16,8 @@
 // - messageSync: receives Google Voice notification emails and customer
 //   emails from the Apps Script in info@ (scripts/apps-script/messageSync.gs)
 //   and files them in customer history (docs/specs/message-sync.md).
+// - sendStaffEmail: staff email a customer from info@ without leaving the
+//   staff app; filed in their history at once (docs/specs/staff-email.md).
 //
 // Secrets (set with `firebase functions:secrets:set`, never in code):
 //   SMTP_PASSWORD  app password for info@ (Google Workspace SMTP)
@@ -31,14 +33,15 @@ import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { defineSecret, defineString } from 'firebase-functions/params'
 import { logger } from 'firebase-functions'
 import nodemailer from 'nodemailer'
-import { createHash, timingSafeEqual } from 'node:crypto'
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { dailyReport, incidentEmail, missedLeadAlerts, shouldMail, syncStale } from './health.js'
 import { bookedByDay, bookingSeason, openDays } from './availability.js'
 import { captureOrder, createOrder, getOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
-import { badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
+import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
+import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import {
   centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceSummary, KIND_SHORT, paidInfo,
@@ -669,6 +672,7 @@ async function syncBatch(req, res) {
     ? await Promise.all([db.collection('customers').select('phone', 'email').get(), db.collection('leads').select('phone', 'email', 'customerId').get()])
     : [{ docs: [] }, { docs: [] }]
   const dir = buildDirectory(cust.docs.map((d) => ({ id: d.id, ...d.data() })), leads.docs.map((d) => ({ id: d.id, ...d.data() })))
+  const fromApp = await sentFromApp(db, events)
 
   const count = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0 }
   const results = []
@@ -677,6 +681,7 @@ async function syncBatch(req, res) {
     const docs = event.skip ? [] : docsFor(event, dir)
     if (req.body.dryRun === true) { results.push({ gmailId, ...dryRunSummary(event, docs) }); continue }
     if (event.skip) { count.skipped++; results.push({ gmailId, status: 'skipped', reason: event.skip }); continue }
+    if (fromApp(event)) { count.duplicate++; results.push({ gmailId, status: 'duplicate', reason: 'sent-from-app' }); continue }
     if (!docs.length) { count.dropped++; results.push({ gmailId, status: 'dropped', reason: 'no-match' }); continue }
     let status = 'duplicate'
     for (const { id, data } of docs) {
@@ -694,6 +699,75 @@ async function syncBatch(req, res) {
   logger.info('messageSync', { items: events.length, dryRun: req.body.dryRun === true, ...count, reasons: events.filter((e) => e.skip).map((e) => e.skip) })
   res.json({ ok: true, ...count, results })
 }
+
+// Emails sent from the staff app are already in history (sendStaffEmail):
+// returns a test that's true for their copies in info@'s Sent folder, found
+// by Message-ID or by the recipient/subject/text print (`in` takes 30 values).
+async function sentFromApp(db, events) {
+  const keys = events.map(appSentKeys).filter(Boolean)
+  const found = new Set()
+  for (const field of ['mailId', 'mailPrint']) {
+    const values = [...new Set(keys.map((k) => k[field]))]
+    for (let i = 0; i < values.length; i += 30) {
+      const snap = await db.collection('messages').where(field, 'in', values.slice(i, i + 30)).select(field).get()
+      snap.docs.forEach((d) => found.add(d.get(field)))
+    }
+  }
+  return (event) => {
+    const k = found.size ? appSentKeys(event) : null
+    return Boolean(k) && (found.has(k.mailId) || found.has(k.mailPrint))
+  }
+}
+
+// ---- Staff email from the app (docs/specs/staff-email.md) -------------------
+// Staff send one plain email from info@ to an address on the person's record.
+// It goes in their history at once; the sync skips its Sent copy. Limited to
+// 300 a day and one a second per staff member (serverState/staffEmail: no
+// client rule matches it). Logs and problem reports carry no customer
+// address or message text.
+async function isStaffToken(token) {
+  if (token?.email_verified !== true || token.firebase?.sign_in_provider !== 'google.com' || !token.email) return false
+  return (await getFirestore().doc(`staff/${normEmail(token.email)}`).get()).exists
+}
+
+export const sendStaffEmail = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
+  if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Only staff can send email from the app.')
+  const staff = normEmail(req.auth.token.email)
+  const r = staffEmailRequest(req.data)
+  if (r.problem) throw new HttpsError(...r.problem)
+
+  const db = getFirestore()
+  const record = (await db.doc(`${r.target.coll}/${r.target.id}`).get()).data()
+  if (!record) throw new HttpsError('not-found', 'That record is gone. Refresh and try again.')
+  if (!recipientsOf(record).includes(r.to)) throw new HttpsError('failed-precondition', 'That email isn’t on their record. Fix it there first, or use Open in Gmail.')
+  const name = record.fullName || `${record.firstName ?? ''} ${record.lastName ?? ''}`.trim() || 'a customer'
+
+  const gate = db.doc('serverState/staffEmail')
+  await db.runTransaction(async (tx) => {
+    const allowed = sendAllowed((await tx.get(gate)).data(), staff, Date.now(), centralDay())
+    if (allowed.problem) throw new HttpsError(...allowed.problem)
+    tx.set(gate, allowed.next)
+  })
+
+  // Our own Message-ID, so the history entry gets the id the sync would give the Sent copy.
+  const messageId = `<${randomUUID()}@christmas-light-creations.com>`
+  try {
+    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, messageId })
+  } catch (e) {
+    await reportIncident('email', `An email from the staff app to ${name} (sent by ${staff}) didn't go out: ${e.message}`)
+    throw new HttpsError('unavailable', 'The email didn’t go out (Gmail didn’t take it). Try again in a minute, or use Open in Gmail.')
+  }
+
+  const { id, data } = historyEntry({ req: r, record, messageId, staff, at: new Date().toISOString() })
+  try {
+    await db.doc(`messages/${id}`).set(data, { merge: true })
+  } catch (e) {
+    await reportIncident('other', `An email from the staff app to ${name} went out, but saving it to their history failed (the text sync should add it within minutes): ${e.message}`)
+  }
+  logger.info('sendStaffEmail', { record: r.target.coll, template: r.template || 'none' })
+  return { ok: true, id }
+})
 
 // ---- Daily check (7:30 am Central) ------------------------------------------
 // Catches what fails silently: request alerts that never went out, the text

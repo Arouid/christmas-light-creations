@@ -25,7 +25,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 ## What we DON'T do
 
 - **Outgoing Voice texts and answered calls**: Voice doesn't email them. They still come from periodic Takeout imports (same ids, so no duplicates for the same event; see Contract).
-- No sending or replying from the app (decision 2026-10-08: texting stays in Voice).
+- No texting from the app (decision 2026-10-08: texting stays in Voice). Emails can be sent from the app since 2026-10-09 (`docs/specs/staff-email.md`); those are filed by the sending function, not by the sync.
 - No attachments (MMS pictures, email attachments): text only. MMS shows as whatever text Voice puts in the email.
 - No group texts (skipped, counted in the sync result).
 - No storing unmatched emails, and no full email threads: quoted replies ("On … wrote:", `>` lines) are cut, bodies capped at 4,000 characters.
@@ -40,6 +40,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 - **The sync function is down**: the script keeps its cursor and retries the whole window next run.
 - **Voice changes its email layout**: the parser is tolerant (looks for the sender address, subject words, any phone number) and anything it can't read is skipped with a reason, never stored wrong. The dry run (`testSync`) shows how the last Voice emails parse.
 - **Sign-in link emails** to customers (`sendAccountLink`) are skipped: the link must not sit in history.
+- **Emails sent from the staff app** (`sendStaffEmail`) are already in history when their copy shows up in info@'s Sent folder: the sync skips them (counted as duplicate, reason `sent-from-app`), matched by `mailId` (Message-ID) or `mailPrint` (recipient, subject, start of the text) on the app's entry.
 - **Our own numbers/addresses** (281-819-0163, info@, clc.voicemail.01@) never count as the customer.
 
 ## Decisions
@@ -92,14 +93,14 @@ At most 50 items per call. Answer: `{ ok: true, saved, duplicate, skipped, unmat
 | `name` | contact name Voice showed, when there was no number |
 | `customerId` or `leadId` or `unmatched: true` | where it shows |
 | `alsoMatches` | other customer ids with the same phone |
-| `source` | `voice-email` · `gmail` |
+| `source` | `voice-email` · `gmail` (· `app` for entries written by `sendStaffEmail`, which also carry `sentBy`, `template`, `mailId`, `mailPrint` and no `syncedAt`) |
 | `syncedAt` | server time |
 
 Staff edits on unmatched entries: `customerId` + `unmatched: false`, or `dismissed: true` (stamped `updatedAt`/`updatedBy`).
 
 **Ids** (`functions/messageSync.js`):
 - Voice: `gv-` + first 20 hex of SHA-256 of `kind|phone|minute (UTC, YYYY-MM-DDTHH:MM)|text`. The Takeout import (`scripts/old-site/voice-history.mjs`, parser `voiceTakeout.mjs`) uses the same function so the same event isn't stored twice. A Takeout timestamp a minute off from the email gives a second entry; accepted.
-- Email: `em-` + first 20 hex of SHA-256 of the lowercase Message-ID, + `-<customer or lead id>`.
+- Email: `em-` + first 20 hex of SHA-256 of the lowercase Message-ID, + `-<customer or lead id>` (`emailIdBase` in `functions/messageSync.js`; `sendStaffEmail` gives its entries the same id).
 
 ## Links
 

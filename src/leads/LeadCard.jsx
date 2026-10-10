@@ -100,7 +100,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {phoneDigits && <a className={action} href={`tel:${phoneDigits}`}><Icon name="phone" className="size-4" /> Call</a>}
             <TextButton phone={lead.phone} className={action} />
-            <ComposeEmail person={leadToCustomer(lead, seasonYear())} season={seasonYear()} start="estimate-thanks" className={action} />
+            <ComposeEmail person={leadToCustomer(lead, seasonYear())} season={seasonYear()} target={{ leadId: lead.id }} start="estimate-thanks" className={action} />
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}>Map</a>
           </div>
@@ -110,7 +110,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
               <p className="text-sm text-slate-300">Booked! Ask for a Google review:</p>
               <div className="mt-2 grid grid-cols-2 gap-2 sm:flex">
                 <TextButton phone={lead.phone} className={action} label="Text review link" message={textMessages.review(lead)} />
-                <ComposeEmail person={leadToCustomer(lead, seasonYear())} season={seasonYear()} start="review" label="Email review link" className={action} />
+                <ComposeEmail person={leadToCustomer(lead, seasonYear())} season={seasonYear()} target={{ leadId: lead.id }} start="review" label="Email review link" className={action} />
               </div>
             </div>
           )}

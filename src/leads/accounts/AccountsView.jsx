@@ -183,7 +183,7 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
         lines={[c.phone, c.email, (c.otherPhones?.length || c.otherEmails?.length) && `Also: ${[...(c.otherPhones ?? []), ...(c.otherEmails ?? [])].join(', ')}`, c.locationBlock, c.neighborhood && `Neighborhood: ${c.neighborhood}`, gate && `Gate ${gate.code}`, c.installType]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={c.phone} className={action} />
-        <ComposeEmail person={c} season={season} className={action} />
+        <ComposeEmail person={c} season={season} target={{ customerId: c.id }} className={action} />
         {c.address && <a className={action} href={mapLink(c.address)} target="_blank" rel="noreferrer">Map</a>}
         <AddToRoute customers={[c]} className={action} />
         {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}
@@ -225,7 +225,7 @@ function LeadAccount({ l, season, user, onMakeCustomer, onOpenAccount }) {
       <Header name={name} kind="lead" address={address} loginEmail={l.email} lines={[l.phone, l.email, l.contactMethod && `Prefers ${l.contactMethod}`, l.source && `Heard from: ${l.source}`, l.status]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={l.phone} className={action} />
-        <ComposeEmail person={{ fullName: name, firstName: l.firstName, email: l.email, address }} season={season} start="estimate-thanks" className={action} />
+        <ComposeEmail person={{ fullName: name, firstName: l.firstName, email: l.email, address }} season={season} target={{ leadId: l.id }} start="estimate-thanks" className={action} />
         <a className={action} href={mapLink(address)} target="_blank" rel="noreferrer">Map</a>
         {onMakeCustomer && <button type="button" disabled={busy} onClick={async () => { setBusy(true); const id = await onMakeCustomer(l); onOpenAccount(`customer:${id}`) }} className={primary}>{busy ? 'Adding…' : '＋ Make customer'}</button>}
       </Header>

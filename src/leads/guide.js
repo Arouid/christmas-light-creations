@@ -16,7 +16,7 @@ export const TASKS = [
   ['Plan installs or takedowns', '**Season** (filter by area, early/regular) → **＋ Route these N**, or **Routes** → New route → **⚡ Optimize** → **Send to the installer**.'],
   ['A customer’s lights are out', '**Service** → Log call → pick the customer and the problem → Done when fixed (then ask for a review).'],
   ['Text a customer', 'Tap **Text**: the message is copied and Google Voice opens as the business number. Paste and send.'],
-  ['Email a customer', 'Tap **Email**: Gmail opens as info@ with a template filled in. Check it and send.'],
+  ['Email a customer', 'Tap **Email**, pick a template (it fills in their name, dates and prices), check it, then **Send from info@**. It goes out right away without leaving the app and shows in their **Text & email history** with your name; their reply comes to info@. Need an attachment or Cc? **Open in Gmail instead**.'],
   ['Ask for a Google review', 'Shows up after an install is completed, a service call is done, or a lead is booked: **Text/Email review link**. Never offer anything for a review.'],
   ['A red “website problem” banner showed up', 'Tap it: it says in plain words what broke (a request alert email, a payment, the text sync). Deal with it (or forward it to whoever looks after the website), then tap **Dealt with ✓**. The alert list also gets an email, and every Monday an “all OK” email; if that stops coming, say so.'],
   ['A customer picked a date on the website', 'Their request says “Preferred install date: …” at the top. It’s a request, not a booking: confirm the date when you send the estimate, then put it in their Season planned date so the website stops offering it.'],
@@ -80,7 +80,7 @@ export const SECTIONS = [
     items: [
       'Switch between **Installs** and **Takedowns**; filter by area, early/regular, week.',
       'Change a status right in the list: everyone sees it within seconds.',
-      '**✉ Email these N** sends a template to each person one at a time (their own Gmail draft from info@); already-sent people are skipped.',
+      '**✉ Email these N** sends a template to each person, one email each from info@: check each and tap **Send ✓ Next** (or **Skip**), or **Send the rest** after one confirm. People with a blank in the template (e.g. no install rate on file) are skipped and listed; already-sent people are skipped. At most 300 emails a day from the app.',
       '**＋ Route these N** puts the filtered list on a route.',
       '**＋ New tab** (top bar) saves a filter as its own tab for everyone, e.g. “Needs scheduling”.',
     ],
@@ -148,7 +148,8 @@ export const SECTIONS = [
     summary: 'The email templates everyone uses, from estimate to thank-you.',
     items: [
       '**Edit** a template and save it for everyone. Placeholders like {first} fill in per customer.',
-      'Emails always open in Gmail as info@ so you check before sending.',
+      '**Send…**: tick who gets it, then each email is shown before it goes from info@ (or **Send the rest** in one go). Each one lands in that person’s Text & email history.',
+      'Emails are sent from the app as info@; **Open in Gmail instead** is always there for attachments or Cc.',
     ],
   },
   {

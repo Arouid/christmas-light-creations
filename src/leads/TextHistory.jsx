@@ -17,6 +17,8 @@ export function Bubble({ m, who }) {
   const [open, setOpen] = useState(false)
   const out = m.direction === 'out'
   const long = (m.text ?? '').length > 280
+  // Emails sent from the staff app carry who sent them.
+  const by = out && m.sentBy ? `Us · ${m.sentBy.split('@')[0]}` : null
   return (
     <div className={`max-w-[85%] min-w-0 rounded-2xl px-3 py-2 text-sm ${out ? 'bg-sky-500/20 text-sky-50' : 'bg-white/10'}`}>
       {m.kind && m.kind !== 'text' && <p className="text-xs font-semibold">{KIND[m.kind] ?? m.kind}{m.duration ? ` · ${m.duration}` : ''}</p>}
@@ -29,7 +31,7 @@ export function Bubble({ m, who }) {
           {open ? 'Show less' : 'Show all'}
         </button>
       )}
-      <p className="mt-1 text-[11px] text-slate-400">{who ?? (out ? 'Us' : 'Customer')} · {when(m.at)}</p>
+      <p className="mt-1 text-[11px] text-slate-400">{who ?? by ?? (out ? 'Us' : 'Customer')} · {when(m.at)}</p>
     </div>
   )
 }
@@ -57,7 +59,7 @@ export default function TextHistory({ user, customerId, field = 'customerId', va
           Show all {items.length}
         </button>
       )}
-      <p className="text-xs text-slate-500">Incoming texts, voicemails and info@ emails arrive within a few minutes. Our own texts and answered calls only show after a Google Voice export is imported.</p>
+      <p className="text-xs text-slate-500">Emails sent from the app show right away; incoming texts, voicemails and other info@ emails arrive within a few minutes. Our own texts and answered calls only show after a Google Voice export is imported.</p>
     </div>
   )
 }

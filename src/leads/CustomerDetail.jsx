@@ -132,7 +132,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
           <TextButton phone={customer.phone} className={action} />
-          <ComposeEmail person={customer} season={season} className={action} />
+          <ComposeEmail person={customer} season={season} target={{ customerId: customer.id }} className={action} />
           <AddToRoute customers={[customer]} className={action} />
           {customer.address && (
             <a className={action} target="_blank" rel="noreferrer"
@@ -155,7 +155,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <TextButton phone={customer.phone} className={action} label="Text review link" message={textMessages.review(customer)} onSent={markAsked} />
-              <ComposeEmail person={customer} season={reviewSeason} start="review" label="Email review link" className={action} onSent={markAsked} />
+              <ComposeEmail person={customer} season={reviewSeason} target={{ customerId: customer.id }} start="review" label="Email review link" className={action} onSent={markAsked} />
             </div>
           </div>
         )}

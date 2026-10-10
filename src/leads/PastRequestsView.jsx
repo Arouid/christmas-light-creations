@@ -99,7 +99,7 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {r.phone && !filed && <a className={action} href={`tel:${r.phone.replace(/\D/g, '')}`}><Icon name="phone" className="size-4" /> Call</a>}
             {!filed && <TextButton phone={r.phone} className={action} message={(r.payments?.length ? textMessages.comeback : textMessages.winback)(r, season)} />}
-            {!filed && <ComposeEmail person={r} season={season} start={r.payments?.length ? 'comeback' : 'winback'} className={action} />}
+            {!filed && <ComposeEmail person={r} season={season} target={{ pastRequestId: r.id }} start={r.payments?.length ? 'comeback' : 'winback'} className={action} />}
             {!customer && !filed && onMakeCustomer && (
               <button type="button" onClick={make} disabled={busy} className={`${action} text-glow-300`}>{busy ? 'Adding…' : '+ Make customer'}</button>
             )}
@@ -226,7 +226,7 @@ export default function PastRequestsView({ requests, error, customers, season, o
             onUpdate={onUpdate} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />
         ))}
       </ul>
-      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} templateId={group === 'winback' ? 'comeback' : 'winback'} onClose={() => setEmailing(false)} />}
+      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} targetOf={(x) => ({ pastRequestId: x.id })} templateId={group === 'winback' ? 'comeback' : 'winback'} onClose={() => setEmailing(false)} />}
     </>
   )
 }
