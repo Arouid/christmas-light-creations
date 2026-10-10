@@ -100,3 +100,10 @@ export const providerName = (p) => PROVIDER[p] ?? p ?? ''
 
 // Newest first (signed or sent date).
 export const byNewest = (a, b) => String(b.signedAt ?? b.sentAt ?? '').localeCompare(String(a.signedAt ?? a.sentAt ?? ''))
+
+// Lowercase emails stored on each proposal and customer (emailKeys), kept up
+// to date by the server, so sign-in looks people up instead of reading every
+// record (security review risk 2).
+export const proposalEmailKeys = (p) => [normEmail(p?.customer?.email)].filter((e) => EMAIL_RE.test(e))
+export const customerEmailKeys = (c) => [...new Set([...emailsOf(c?.email), ...(c?.otherEmails ?? []).flatMap(emailsOf)])].filter((e) => EMAIL_RE.test(e))
+export const sameKeys = (a, b) => (a ?? []).length === (b ?? []).length && (a ?? []).every((x, i) => x === b[i])

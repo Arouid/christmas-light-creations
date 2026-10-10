@@ -45,3 +45,14 @@ test('login record keeps the first sign-in and the latest one', () => {
   assert.equal(providerName('google.com'), 'Google')
   assert.equal(providerName('password'), 'email link')
 })
+
+test('email keys: lowercase, every email on a customer incl. linked ones, compared in order', async () => {
+  const { customerEmailKeys, proposalEmailKeys, sameKeys } = await import('../functions/account.js')
+  assert.deepEqual(proposalEmailKeys({ customer: { email: ' Pat@Example.COM ' } }), ['pat@example.com'])
+  assert.deepEqual(proposalEmailKeys({ customer: { email: 'not an email' } }), [])
+  assert.deepEqual(customerEmailKeys({ email: 'Pat@Example.com, pat.work@example.com', otherEmails: ['PAT.OLD@example.com', 'pat@example.com'] }),
+    ['pat@example.com', 'pat.work@example.com', 'pat.old@example.com'])
+  assert.equal(sameKeys(['a@b.co'], ['a@b.co']), true)
+  assert.equal(sameKeys(['a@b.co'], undefined), false)
+  assert.equal(sameKeys([], undefined), true)
+})

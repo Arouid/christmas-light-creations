@@ -22,18 +22,18 @@
 import { initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { FieldValue, getFirestore } from 'firebase-admin/firestore'
-import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore'
+import { onDocumentCreated, onDocumentUpdated, onDocumentWritten } from 'firebase-functions/v2/firestore'
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https'
 import { defineSecret, defineString } from 'firebase-functions/params'
 import { logger } from 'firebase-functions'
 import nodemailer from 'nodemailer'
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { alertRecipients, leadEmail } from './leadEmail.js'
-import { captureOrder, createOrder } from './paypal.js'
+import { captureOrder, createOrder, getOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
-import { PART_LABEL, captureProblem, customIdFor, payableProblem } from './payments.js'
+import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
-import { EMAIL_RE, accountSummary, accountUrl, addOnFromProposal, byNewest, customerForAccount, emailsOf, loginRecord, normEmail, providerName, shownInAccount } from './account.js'
+import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 
 initializeApp()
 const REGION = 'us-south1'
@@ -87,6 +87,8 @@ const paypalCfg = () => ({ env: PAYPAL_ENV.value(), clientId: PAYPAL_CLIENT_ID.v
 export const createDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const part = req.data?.part ?? 'deposit'
   const { p, amount } = await payableProposal(req.data?.token, part)
+  const busy = lockProblem(p.paymentLocks?.[part], null, Date.now())
+  if (busy) throw new HttpsError(...busy)
   try {
     const order = await createOrder(paypalCfg(), {
       token: req.data.token,
@@ -105,21 +107,54 @@ export const createDepositOrder = onCall({ region: REGION, invoker: 'public', se
 export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', secrets: [PAYPAL_SECRET], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const token = req.data?.token
   const part = req.data?.part ?? 'deposit'
+  const orderId = String(req.data?.orderId ?? '')
+  if (!validOrderId(orderId)) throw new HttpsError('invalid-argument', 'Bad payment reference')
   const { ref, amount } = await payableProposal(token, part)
-  const result = await captureOrder(paypalCfg(), String(req.data?.orderId ?? ''))
+  const customId = customIdFor(token, part)
+  const cfg = paypalCfg()
+
+  // 1. Look at the order first: a wrong one is refused before any money moves.
+  const order = await getOrder(cfg, orderId).catch((e) => { logger.error('getOrder', e); throw new HttpsError('unavailable', 'PayPal didn’t answer. Please try again.') })
+  const wrong = orderProblem(order, { customId, amount })
+  if (wrong) {
+    logger.error('Order refused before capture', { token, part, orderId, ...wrong, amount })
+    throw new HttpsError('failed-precondition', 'This payment doesn’t match what’s due. Nothing was charged. Please refresh and try again, or call us.')
+  }
+
+  // 2. One capture at a time per payment (a double click, two phones).
+  const db = getFirestore()
+  const lockPath = `paymentLocks.${part}`
+  await db.runTransaction(async (tx) => {
+    const p = (await tx.get(ref)).data()
+    const problem = payableProblem(p, part) ?? lockProblem(p?.paymentLocks?.[part], orderId, Date.now())
+    if (problem) throw new HttpsError(...problem)
+    tx.update(ref, { [lockPath]: { orderId, at: Date.now() } })
+  })
+  const unlock = () => ref.update({ [lockPath]: FieldValue.delete() }).catch((e) => logger.error('unlock', e))
+
+  // 3. Take the money, then check PayPal's answer once more.
+  let result
+  try {
+    result = await captureOrder(cfg, orderId)
+  } catch (e) {
+    logger.error('captureOrder', e)
+    await unlock()
+    throw new HttpsError('unavailable', 'PayPal couldn’t complete the payment. Please try again, or call us.')
+  }
   const capture = result.purchase_units?.[0]?.payments?.captures?.[0]
-  // Only accept a completed USD capture for this proposal, this part and the full amount.
-  const mismatch = captureProblem(result, { customId: customIdFor(token, part), amount })
+  const mismatch = captureProblem(result, { customId, amount })
   if (mismatch) {
     logger.error('Payment capture mismatch', { token, part, status: result.status, ...mismatch, amount })
+    await unlock()
     throw new HttpsError('failed-precondition', 'Payment could not be confirmed. Please call us.')
   }
-  const paidCents = amount
+
+  // 4. Record it and release the lock together.
   const record = {
-    status: 'paid', amount: paidCents, orderId: result.id, captureId: capture.id,
+    status: 'paid', amount, orderId: result.id, captureId: capture.id,
     payerEmail: result.payer?.email_address ?? null, env: PAYPAL_ENV.value(), paidAt: FieldValue.serverTimestamp(),
   }
-  await ref.update(part === 'deposit' ? { deposit: record } : { [`payments.${part}`]: record })
+  await ref.update({ ...(part === 'deposit' ? { deposit: record } : { [`payments.${part}`]: record }), [lockPath]: FieldValue.delete() })
   return { paid: true }
 })
 
@@ -173,18 +208,56 @@ export const proposalChanged = onDocumentUpdated({ document: 'proposals/{token}'
 
 // ---- Customer accounts (/account/) ------------------------------------------
 
-// Tokens of proposals sent to this email (any letter case). Reads only the
-// email field of each proposal, not the large signature images.
-async function proposalTokensFor(email) {
-  const snap = await getFirestore().collection('proposals').select('customer.email').get()
-  return snap.docs.filter((d) => normEmail(d.get('customer.email')) === email).map((d) => d.id)
+// emailKeys: lowercase emails on each proposal and customer, written only by
+// the server (triggers below), so a lookup is one query instead of reading
+// every record. The first lookup after this went live fills in records saved
+// before it (serverState/emailIndex; no client rule matches serverState).
+const EMAIL_INDEX_VERSION = 1
+async function ensureEmailIndex() {
+  const db = getFirestore()
+  const flag = db.doc('serverState/emailIndex')
+  if ((await flag.get()).data()?.version === EMAIL_INDEX_VERSION) return
+  const [props, custs] = await Promise.all([
+    db.collection('proposals').select('customer.email', 'emailKeys').get(),
+    db.collection('customers').select('email', 'otherEmails', 'emailKeys').get(),
+  ])
+  const writes = [
+    ...props.docs.map((d) => [d.ref, proposalEmailKeys(d.data()), d.get('emailKeys')]),
+    ...custs.docs.map((d) => [d.ref, customerEmailKeys(d.data()), d.get('emailKeys')]),
+  ].filter(([, keys, had]) => !sameKeys(keys, had))
+  for (let i = 0; i < writes.length; i += 400) {
+    const batch = db.batch()
+    writes.slice(i, i + 400).forEach(([ref, keys]) => batch.update(ref, { emailKeys: keys }))
+    await batch.commit()
+  }
+  await flag.set({ version: EMAIL_INDEX_VERSION, at: new Date(), filled: writes.length })
+  logger.info(`Email index filled for ${writes.length} records`)
 }
 
-// Customer records (old sheet + staff app) listing this email.
-async function customersFor(email) {
-  const snap = await getFirestore().collection('customers').select('email').get()
-  return snap.docs.filter((d) => emailsOf(d.get('email')).includes(email)).map((d) => d.id)
+// Tokens of proposals sent to this email (any letter case).
+async function proposalTokensFor(email) {
+  await ensureEmailIndex()
+  const snap = await getFirestore().collection('proposals').where('emailKeys', 'array-contains', email).select().get()
+  return snap.docs.map((d) => d.id)
 }
+
+// Customer records (old sheet + staff app) listing this email, incl. linked other emails.
+async function customersFor(email) {
+  await ensureEmailIndex()
+  const snap = await getFirestore().collection('customers').where('emailKeys', 'array-contains', email).select().get()
+  return snap.docs.map((d) => d.id)
+}
+
+// Keep emailKeys right whenever a proposal or customer is saved (writes only
+// when the emails changed, so it doesn't loop).
+const keepEmailKeys = (keysOf) => async (event) => {
+  const after = event.data?.after
+  if (!after?.exists) return
+  const keys = keysOf(after.data())
+  if (!sameKeys(keys, after.get('emailKeys'))) await after.ref.update({ emailKeys: keys })
+}
+export const proposalEmails = onDocumentWritten({ document: 'proposals/{token}', region: REGION }, keepEmailKeys(proposalEmailKeys))
+export const customerEmails = onDocumentWritten({ document: 'customers/{id}', region: REGION }, keepEmailKeys(customerEmailKeys))
 
 // Emails a one-time sign-in link from info@, but only to an email that has a
 // proposal or a customer record. The answer is the same either way, so nobody can test whether an

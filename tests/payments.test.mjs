@@ -72,3 +72,31 @@ test('accounts: sign-in link never returns to a foreign site', () => {
   assert.equal(accountUrl(undefined), 'https://christmas-light-creations.com/account/')
   assert.equal(accountUrl('http://localhost:5173'), 'http://localhost:5173/account/')
 })
+
+test('the order is checked before capturing: only an approved, single, USD, full-amount order for this payment', async () => {
+  const { orderProblem, validOrderId } = await import('../functions/payments.js')
+  const good = { status: 'APPROVED', intent: 'CAPTURE', purchase_units: [{ custom_id: 'TOK:balance', amount: { currency_code: 'USD', value: '267.30' } }] }
+  const want = { customId: 'TOK:balance', amount: 26730 }
+  assert.equal(orderProblem(good, want), null)
+  const bad = (change) => orderProblem({ ...good, ...change }, want)
+  assert.ok(bad({ status: 'CREATED' }), 'not approved by the payer yet')
+  assert.ok(bad({ intent: 'AUTHORIZE' }))
+  assert.ok(bad({ purchase_units: [{ ...good.purchase_units[0], amount: { currency_code: 'USD', value: '1.00' } }] }), 'wrong amount')
+  assert.ok(bad({ purchase_units: [{ ...good.purchase_units[0], amount: { currency_code: 'MXN', value: '267.30' } }] }), 'wrong currency')
+  assert.ok(bad({ purchase_units: [{ ...good.purchase_units[0], custom_id: 'TOK' }] }), 'deposit order used for the balance')
+  assert.ok(bad({ purchase_units: [good.purchase_units[0], good.purchase_units[0]] }), 'two purchases')
+  assert.ok(orderProblem(null, want))
+  assert.equal(validOrderId('5O190127TN364715T'), true)
+  assert.equal(validOrderId('../../v1/x'), false)
+  assert.equal(validOrderId(''), false)
+})
+
+test('one capture at a time per payment; an abandoned lock expires', async () => {
+  const { lockProblem, LOCK_MS } = await import('../functions/payments.js')
+  const now = 1_000_000_000
+  assert.equal(lockProblem(undefined, 'A', now), null)
+  assert.equal(lockProblem({ orderId: 'A', at: now - 1000 }, 'A', now), null) // same order retrying
+  assert.equal(lockProblem({ orderId: 'A', at: now - 1000 }, 'B', now)[0], 'aborted') // another order mid-capture
+  assert.equal(lockProblem({ orderId: 'A', at: now - 1000 }, null, now)[0], 'aborted') // new order while one is going through
+  assert.equal(lockProblem({ orderId: 'A', at: now - LOCK_MS - 1 }, 'B', now), null) // abandoned
+})

@@ -13,10 +13,10 @@ async function accessToken(env, clientId, secret) {
   return (await res.json()).access_token
 }
 
-async function call(env, clientId, secret, path, body) {
+async function call(env, clientId, secret, path, body, method = 'POST') {
   const token = await accessToken(env, clientId, secret)
   const res = await fetch(`${api(env)}${path}`, {
-    method: 'POST',
+    method,
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
     body: body ? JSON.stringify(body) : undefined,
   })
@@ -33,5 +33,8 @@ export const createOrder = (cfg, { token, customId = token, amount, description 
   // No payment_source: the PayPal buttons on the page offer PayPal, Venmo and cards.
   application_context: { brand_name: 'Christmas Light Creations', shipping_preference: 'NO_SHIPPING', user_action: 'PAY_NOW' },
 })
+
+// Read an order without touching the money (checked before capturing).
+export const getOrder = (cfg, orderId) => call(cfg.env, cfg.clientId, cfg.secret, `/v2/checkout/orders/${encodeURIComponent(orderId)}`, undefined, 'GET')
 
 export const captureOrder = (cfg, orderId) => call(cfg.env, cfg.clientId, cfg.secret, `/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`)

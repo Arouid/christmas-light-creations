@@ -29,3 +29,28 @@ export function captureProblem(result, { customId, amount }) {
     && unit?.custom_id === customId && capture?.amount?.currency_code === 'USD' && paidCents === amount
   return ok ? null : { paidCents, currency: capture?.amount?.currency_code ?? null }
 }
+
+// PayPal order ids are short upper-case letters and digits.
+export const validOrderId = (id) => typeof id === 'string' && /^[A-Z0-9]{8,40}$/.test(id)
+
+// Checked BEFORE capturing, so a wrong order is refused without taking the
+// money: approved by the payer, one purchase, this proposal and part, US
+// dollars, the full amount.
+export function orderProblem(order, { customId, amount }) {
+  const units = order?.purchase_units ?? []
+  const unit = units[0]
+  const cents = Math.round(Number(unit?.amount?.value ?? 0) * 100)
+  const ok = order?.status === 'APPROVED' && (order?.intent ?? 'CAPTURE') === 'CAPTURE' && units.length === 1
+    && unit?.custom_id === customId && unit?.amount?.currency_code === 'USD' && cents === amount
+  return ok ? null : { status: order?.status ?? null, customId: unit?.custom_id ?? null, currency: unit?.amount?.currency_code ?? null, cents }
+}
+
+// One capture at a time per payment: a lock (proposal paymentLocks.<part>)
+// is taken in a transaction before capturing and released after. A lock
+// older than LOCK_MS is treated as abandoned.
+export const LOCK_MS = 2 * 60 * 1000
+export function lockProblem(lock, orderId, now) {
+  if (!lock?.orderId || lock.orderId === orderId) return null
+  if (now - Number(lock.at ?? 0) > LOCK_MS) return null
+  return ['aborted', 'A payment for this is already going through. Please wait a minute and refresh.']
+}
