@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BLANK_LABEL, gateFor } from '../lib/customers'
 import { formatMiles, milesBetween } from '../lib/geo'
-import { loadMaps } from '../lib/streetView'
+import { loadMaps, streetViewLink } from '../lib/streetView'
 import HomeBase from './HomeBase'
 import { matchesView, statusKey, viewSeason } from '../lib/views'
 import { needsLocating } from './useCustomers'
@@ -93,6 +93,7 @@ export default function MapView({ customers, calls, gates, views, settings, seas
   const [showCalls, setShowCalls] = useState(true)
   const [satellite, setSatellite] = useState(false)
   const [picked, setPicked] = useState(null)
+  const [sv, setSv] = useState({ id: null, link: null }) // Street View link for the picked pin
   const [now, setNow] = useState(() => new Date())
   const [locating, setLocating] = useState(null)
 
@@ -188,6 +189,17 @@ export default function MapView({ customers, calls, gates, views, settings, seas
   const notFound = customers.filter((c) => c.geo?.missing || (c.geo && c.geo.exact === false && c.geo.address === c.address))
   const areas = [...new Set(customers.map((c) => c.locationBlock).filter(Boolean))].sort()
   const pc = picked && byId.get(picked.id)
+  // Look up the nearest street photo as soon as a pin is picked, so the
+  // Street View button opens it straight away (a plain link: no pop-up blocking).
+  const pcId = pc?.geo ? pc.id : null
+  useEffect(() => {
+    if (!pcId) return
+    let off = false
+    const geo = byId.get(pcId).geo
+    streetViewLink(geo).then((link) => !off && setSv({ id: pcId, link: link ?? 'none' })).catch(() => !off && setSv({ id: pcId, link: 'none' }))
+    return () => { off = true }
+  }, [pcId]) // eslint-disable-line react-hooks/exhaustive-deps -- byId is rebuilt each render; the id decides
+  const svLink = sv.id === pcId ? sv.link : null
 
   return (
     <div ref={wallRef} className="relative h-full w-full overflow-hidden bg-night-950">
@@ -296,8 +308,10 @@ export default function MapView({ customers, calls, gates, views, settings, seas
                 <button type="button" onClick={() => onOpen(pc.id)} className="rounded-full bg-glow-400 px-4 py-1.5 font-semibold text-night-950">Open customer</button>
                 <a target="_blank" rel="noreferrer" className="rounded-full bg-white/10 px-4 py-1.5"
                   href={`https://www.google.com/maps/dir/?api=1&destination=${pc.geo.lat},${pc.geo.lng}`}>Directions</a>
-                <a target="_blank" rel="noreferrer" className="rounded-full bg-white/10 px-4 py-1.5"
-                  href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${pc.geo.lat},${pc.geo.lng}`}>Street View</a>
+                {svLink === 'none'
+                  ? <span className="rounded-full bg-white/5 px-4 py-1.5 text-slate-400">No Street View here</span>
+                  : <a target="_blank" rel="noreferrer" className={`rounded-full bg-white/10 px-4 py-1.5 ${svLink ? '' : 'pointer-events-none opacity-50'}`}
+                      aria-disabled={!svLink} href={svLink ?? undefined}>{svLink ? 'Street View' : 'Street View…'}</a>}
               </div>
             </>
           )}

@@ -66,6 +66,18 @@ function bearing(from, to) {
   return ((Math.atan2(y, x) / rad + 360) % 360).toFixed(0)
 }
 
+// Google Maps Street View at the nearest street photo (within 100 m), facing
+// the house; null if there's none. Opening Street View at the house's own map
+// position often shows black: the house sits off the street, where Google has
+// no 360° photo. The metadata call is free.
+export async function streetViewLink(house) {
+  const meta = await fetch(`${BASE}/metadata?${new URLSearchParams({
+    location: `${house.lat},${house.lng}`, source: 'outdoor', radius: '100', key: MAPS_KEY,
+  })}`).then((r) => r.json())
+  if (meta.status !== 'OK') return null
+  return `https://www.google.com/maps/@?${new URLSearchParams({ api: '1', map_action: 'pano', pano: meta.pano_id, heading: bearing(meta.location, house) })}`
+}
+
 // Returns { kind: 'photo', image, link } | { kind: 'no-address' } | { kind: 'no-imagery' }
 export async function findStreetView(address) {
   const house = await locateHouse(address)
