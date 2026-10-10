@@ -14,15 +14,16 @@ export const CONTACT_GROUPS = [
 const LABEL = { customers: 'CLC customer', winback: 'CLC former customer', voice: 'CLC contact', asked: 'CLC estimate request' }
 
 // -> { customers: [...], winback: [...], voice: [...], asked: [...] } of
-// { name, first, last, phones, emails, note, group }. Only people with a phone or email.
+// { name, first, last, phones, emails, note, group }. Only people with a name and a
+// phone: a nameless contact adds nothing in Voice, a phoneless one doesn't help it.
 export function contactGroups(customers = [], past = []) {
   const out = Object.fromEntries(CONTACT_GROUPS.map(([k]) => [k, []]))
   const add = (group, p) => {
     const phones = phonesOf(p.phone)
     const emails = String(p.email ?? '').toLowerCase().match(/[^\s<>,;"']+@[^\s<>,;"']+\.[a-z]{2,}/g) ?? []
-    if (!phones.length && !emails.length) return
     const name = (p.fullName || [p.firstName, p.lastName].filter(Boolean).join(' ') || '').trim()
-    out[group].push({ name: name.includes('@') || /^\+?[\d\s()-]+$/.test(name) ? '' : name, first: p.firstName ?? '', last: p.lastName ?? '', phones, emails, note: p.note, group })
+    if (!phones.length || !name || name.includes('@') || /^\+?[\d\s()-]+$/.test(name)) return
+    out[group].push({ name, first: p.firstName ?? '', last: p.lastName ?? '', phones, emails, note: p.note, group })
   }
   for (const c of customers) {
     if (FILED_STATUSES.includes(c.status)) continue

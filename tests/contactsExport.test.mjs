@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { contactGroups, toVcard } from '../src/lib/contactsExport.js'
 
-test('contacts: grouped, filed-away and already-customers left out', () => {
+test('contacts: grouped; filed-away, already-customers, nameless and phoneless left out', () => {
   const customers = [{ id: 'pat', fullName: 'Pat Sample', firstName: 'Pat', lastName: 'Sample', phone: '555-010-0101', email: 'pat@example.com', since: '2019' }]
   const past = [
     { id: 'a', fullName: 'Winnie Back', phone: '555-010-0177', payments: [{ amount: 1 }], firstPaid: '2016-11-01', lastPaid: '2020-11-01', requests: [] },
@@ -13,7 +13,7 @@ test('contacts: grouped, filed-away and already-customers left out', () => {
   ]
   const g = contactGroups(customers, past)
   assert.deepEqual(Object.fromEntries(Object.entries(g).map(([k, v]) => [k, v.map((p) => p.name)])),
-    { customers: ['Pat Sample'], winback: ['Winnie Back'], voice: [''], asked: [] })
+    { customers: ['Pat Sample'], winback: ['Winnie Back'], voice: [], asked: [] })
   assert.equal(g.winback[0].note, 'CLC former customer · paid 2016–2020')
 })
 

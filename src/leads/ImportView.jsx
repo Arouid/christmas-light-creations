@@ -48,7 +48,7 @@ function ContactsExport({ customers, past }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
       <p className="font-semibold text-slate-100">Export contacts for Google Voice</p>
-      <p className="mt-1 text-slate-400">A contacts file (.vcf) for clc.voicemail.01, so texts and calls show names. People filed as Deceased, Personal or Junk are left out.</p>
+      <p className="mt-1 text-slate-400">A contacts file (.vcf) for clc.voicemail.01, so texts and calls show names. Only people with a name and a phone; anyone filed as Deceased, Personal or Junk is left out.</p>
       <div className="mt-3 space-y-1">
         {CONTACT_GROUPS.map(([k, label]) => (
           <label key={k} className="flex min-h-11 items-center gap-3">
