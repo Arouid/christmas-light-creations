@@ -25,7 +25,9 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   const canvas = useRef(null)
   const box = useRef(null) // the viewport the photo is zoomed/panned inside
   const [img, setImg] = useState(null)
-  const tools = simple ? TOOLS.filter(([k]) => k !== 'measure') : TOOLS
+  // The website's version (homeowners): no measuring or decorations, C9 bulbs only (owner 2026-10-10).
+  const tools = simple ? TOOLS.filter(([k]) => k !== 'measure' && k !== 'decor') : TOOLS
+  const styles = simple ? Object.entries(STYLES).filter(([k]) => k === 'c9') : Object.entries(STYLES)
   const [hist, setHist] = useState(() => ({
     list: [{ d: initial ? normalize(initial) : newDesign({ width: photo.width, height: photo.height, pricePerFoot: defaults.pricePerFoot ?? null }), label: initial ? 'Opened' : 'New design' }],
     at: 0,
@@ -168,7 +170,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     if (pointers.current.size > 2) return
     const p = toImg(e.clientX, e.clientY)
     const start = { sx: e.clientX, sy: e.clientY, p, v0: view }
-    if (tool === 'draw' || tool === 'decor') { gesture.current = { kind: 'tap', ...start }; return }
+    if (tool === 'draw' || tool === 'decor') { gesture.current = { kind: 'tap', grab: tool === 'draw' && !draft.length ? grabOn(p) : null, ...start }; return }
     if (tool === 'rect' || tool === 'oval') { gesture.current = { kind: 'newShape', ...start }; return }
     if (tool === 'measure') { setMeasure({ a: p, b: p }); gesture.current = { kind: 'measure', ...start }; return }
     if (tool === 'erase') { setBrush({ x: p[0], y: p[1] }); const n = eraseAt(design, p); setLive(n === design ? null : n); gesture.current = { kind: 'erase', ...start }; return }
@@ -203,6 +205,20 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       return
     }
     gesture.current = { kind: 'pan', deselect: true, ...start }
+  }
+
+  // Lights, nothing being drawn yet: what dragging the strand under the finger
+  // would do in Select (move a pin, bend the line, move a shape), or null.
+  // People forget to switch tools; a plain tap still adds a light point.
+  function grabOn(p) {
+    const hit = hitStrand(design.strands, p, tol())
+    const s = hit && design.strands.find((x) => x.id === hit.id)
+    if (!s) return null
+    if (s.shape) return { kind: 'move', id: s.id, orig: structuredClone(s) }
+    if (hit.pointIndex != null) return { kind: 'point', id: s.id, i: hit.pointIndex }
+    const on = hitOnStrand(pathOf(s), p, tol())
+    if (on?.pointIndex != null) return { kind: 'point', id: s.id, i: on.pointIndex === s.points.length ? 0 : on.pointIndex }
+    return on?.segment != null ? { kind: 'bend', id: s.id, seg: on.segment, at: on.at } : null
   }
 
   // Eraser: every bulb under the brush gets a gap around it (half a spacing
@@ -252,6 +268,11 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       return
     }
     const moved = Math.hypot(e.clientX - g.sx, e.clientY - g.sy) > TAP_SLOP
+    if (g.kind === 'tap' && g.grab && moved) {
+      // Dragging a strand while on Lights: adjust it, and switch to Select.
+      setTool('select'); setSelectedId(g.grab.id); setSelectedPoint(g.grab.i ?? null)
+      Object.assign(g, g.grab, { grab: null })
+    }
     if (g.kind === 'tap' || g.kind === 'pan') {
       // One finger dragging where a tap was expected: pan the photo.
       if (moved || g.kind === 'pan') { g.kind = 'pan'; g.panned = g.panned || moved; setView({ ...g.v0, x: g.v0.x + e.clientX - g.sx, y: g.v0.y + e.clientY - g.sy }) }
@@ -300,7 +321,15 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
       }
       return
     }
-    if (g.kind === 'pan') { if (g.deselect && !g.panned) setSelectedId(null); return }
+    if (g.kind === 'pan') {
+      // Select, tap on an empty spot: clears the selection; with nothing
+      // selected it starts drawing lights there (people forget to switch).
+      if (g.deselect && !g.panned) {
+        if (selectedId) setSelectedId(null)
+        else { setTool('draw'); setDraft([g.p]) }
+      }
+      return
+    }
     if (g.kind === 'measure') return
     if (g.kind === 'newShape') {
       const shape = draftShape
@@ -397,6 +426,17 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     }
   }
 
+  // Which tool you're on, on the photo itself, so you don't have to look up.
+  const modeHint = {
+    select: '👆 Select · tap an empty spot to draw',
+    draw: draft.length ? `✏️ Drawing · ${draft.length} point${draft.length === 1 ? '' : 's'} · tap the next corner` : '✏️ Lights · tap to draw · drag lights to adjust',
+    rect: '▭ Rectangle · drag corner to corner',
+    oval: '◯ Oval · drag corner to corner',
+    erase: '🧽 Erase · rub over bulbs',
+    decor: '🎀 Decorate · tap to place',
+    measure: '📏 Measure · drag across something you know',
+  }[tool]
+
   // The palette always stays on screen (it used to vanish after a delete):
   // it edits the selected strand, or sets up the next one when none is selected.
   // Hidden only while a decoration is selected or for measuring/decorating.
@@ -426,6 +466,11 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
           <canvas ref={canvas} width={photo.width} height={photo.height} className="block h-full w-full" />
         </div>
         {!img && <p className="absolute inset-0 grid place-items-center text-slate-400">Loading photo…</p>}
+        {img && !before && (
+          <p className="pointer-events-none absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-night-900/90 px-3 py-1.5 text-xs font-semibold shadow" role="status">
+            {modeHint}
+          </p>
+        )}
         <div className="absolute bottom-2 right-2 flex flex-col gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
           <button type="button" onClick={() => zoomButton(1.5)} className="grid size-10 place-items-center rounded-full bg-night-900/90 text-lg font-bold" aria-label="Zoom in">+</button>
           <button type="button" onClick={() => zoomButton(1 / 1.5)} className="grid size-10 place-items-center rounded-full bg-night-900/90 text-lg font-bold" aria-label="Zoom out">−</button>
@@ -498,14 +543,14 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
             <span className="text-slate-400">Tap the photo to place it.</span>
           </div>
         )}
-        {tool === 'select' && !selStrand && !selDecor && <p className="text-slate-400">Tap a strand, shape or decoration to change it. Drag empty space to move around the photo.</p>}
+        {tool === 'select' && !selStrand && !selDecor && <p className="text-slate-400">Tap a strand, shape or decoration to change it. Drag empty space to move around the photo. Tap an empty spot to start drawing lights there.</p>}
         {tool === 'select' && selStrand && !selStrand.shape && <p className="text-slate-400">Drag a {selStrand.closed ? 'corner' : 'pin'} to move just that one · drag {selStrand.closed ? 'a side' : 'the line between pins'} to bend it · drag ✥ to move the whole {selStrand.closed ? 'rectangle' : 'strand'}.</p>}
 
         {editing && (
           <div className="space-y-2 rounded-xl bg-white/5 p-2">
             <p className={selStrand ? 'font-semibold capitalize' : 'text-xs uppercase tracking-wider text-slate-400'}>{selStrand ? strandLabel(selStrand) : 'For the next strand'}</p>
             <div className="flex flex-wrap gap-1.5">
-              {Object.entries(STYLES).map(([k, v]) => (
+              {styles.map(([k, v]) => (
                 <button key={k} type="button" onClick={() => { setPen((p) => ({ ...p, style: k })); if (selStrand) patchStrand(`Style: ${v.label}`, { style: k, spacingIn: v.spacingIn }) }}
                   className={(selStrand?.style ?? pen.style) === k ? on : off}>{v.label}</button>
               ))}

@@ -128,7 +128,7 @@ export const SECTIONS = [
     id: 'proposals', icon: '📝', title: 'Light designs & proposals', tab: null,
     summary: 'Mockups on the customer’s own house photo, e-signed proposals and online payments. On any customer or lead.',
     items: [
-      '**🎨 New design from a photo**: draw light lines, rectangles (windows) and ovals; pinch to zoom; drag a pin to move it, drag a line to bend it; **Erase** lights behind a tree; **Measure** with a satellite view for real feet.',
+      '**🎨 New design from a photo**: draw light lines, rectangles (windows) and ovals; pinch to zoom; drag a pin to move it, drag a line to bend it; **Erase** lights behind a tree; **Measure** with a satellite view for real feet. The label on the photo says which tool you’re on; forgot to switch? On **Select**, tap an empty spot to start drawing; on **Lights**, drag a strand to adjust it.',
       '**📝 New proposal**: fill items from a design (feet × price per foot), takedown line, discount, deposit %. Tick **Add-on to their existing lights** for an add-on (it raises their yearly price from next season once signed).',
       '**Send to customer**, then send the link by **Text it** / **Email it** (or Copy link). Status shows Sent → Viewed → Signed. **Countersign** after they sign; **Open signed copy** to print or save a PDF.',
       'Payments box on the proposal: the deposit is due when they sign; **Ask for install balance** when the lights are up and **Ask for takedown payment** in January (then Text it / Email it; **Take back** if asked by mistake). Customers pay by PayPal, Venmo or card; the app records it and emails staff.',

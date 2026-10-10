@@ -33,8 +33,13 @@ const photo = await photoToDataUrl(file) // { dataUrl, width, height }, EXIF dro
 />
 ```
 
-- `simple` + `saveLabel` (public website, /design/): no measuring, history, feet,
-  bulb counts or prices; `onClose(design)` passes the current design back.
+- `simple` + `saveLabel` (public website, /design/): no measuring, decorating,
+  history, feet, bulb counts or prices, and C9 bulbs only; `onClose(design)`
+  passes the current design back.
+- Tools forgive forgetting to switch: on Select, a tap on an empty spot (nothing
+  selected) starts drawing lights there; on Lights with nothing being drawn,
+  dragging a strand moves its pin / bends it / moves the shape (and switches to
+  Select). A label on the photo always says which tool is on.
 - `designStats(design)` → feet (measured or estimated), bulbs, bulbs per
   color, ballpark price (`pricePerFoot`).
 - `renderDesign(ctx, design, image, opts)` draws a design on any canvas

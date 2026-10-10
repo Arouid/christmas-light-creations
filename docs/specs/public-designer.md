@@ -13,7 +13,7 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 1. It **opens on a sample house** with some lights already on it, so a visitor plays right away. **Use a photo of my home** swaps in their own photo.
 2. Next to the upload: **tips for a good photo** (whole front of the house, straight on from across the street, phone sideways, daylight or dusk, nothing parked in front).
 3. Every uploaded photo is **resized to one standard size** (1280 px on the long side, JPEG) before the designer opens; a photo that's too small (under 800 px) is refused with a tip. Phone location data is dropped (only pixels are kept).
-4. The **designer in a simple mode**: draw lights along rooflines, rectangles/ovals for windows, decorations, erase, colors and styles, night slider, hold-for-before, undo, download the picture. **No prices, no $/ft, no feet or bulb counts, no measuring tool**: we don't show how we price.
+4. The **designer in a simple mode**: draw lights along rooflines, rectangles/ovals for windows, erase, colors (C9 bulbs only; no decorations, owner 2026-10-10), night slider, hold-for-before, undo, download the picture. **No prices, no $/ft, no feet or bulb counts, no measuring tool**: we don't show how we price.
 5. **Get my free estimate with this design** → the usual estimate form on the same page, with a thumbnail "Your design is attached". On send, the design (and their photo) goes with the request.
 6. Staff see the design on the lead (Leads card and the lead's Accounts page) and can **open it in the staff designer** for that lead (it becomes one of the lead's designs), then make the proposal as usual.
 7. Phone number one tap away on the page, like everywhere.
@@ -47,6 +47,7 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 | 2026-10-10 | Public page /design/, sample house first, upload own photo, photo tips, standard size, no pricing | Owner |
 | 2026-10-10 | Standard size = 1280 px on the long side, JPEG ~0.8, re-encoded smaller if needed to fit; < 800 px refused | Sharp enough on phones and screens; a photo + finished picture fit one Firestore document (1 MB) |
 | 2026-10-10 | Simple mode is a `simple` prop of the existing designer module (hides measure, history, feet/bulbs, $/ft, price) | One designer to maintain; the module stays app-free |
+| 2026-10-10 | Simple mode also hides 🎀 Decorate and every bulb style but C9 | Owner (marked them off on a screenshot) |
 | 2026-10-10 | Sample house is a drawn illustration (`public/images/design/sample-house.jpg`, made from an SVG in `assets-source/`) until the owner sends a real daytime photo | Every photo we have is lit at night; a designer needs an unlit house |
 | 2026-10-10 | Designs travel in a new collection `leadDesigns/{id}` (public create only, staff read); the lead gets `designId` | Keeps the lead small; a design doc is ~0.6 MB |
 | 2026-10-10 | Server check on arrival (`leadDesignCreated`): sharp re-encodes photo and picture (metadata dropped, ≤ 1280 px, never larger than what arrived), `cleanDesign` keeps known fields only (styles/colors/decorations lists tested against the designer's); failures deleted | Owner asked whether uploads are sanitized; the page's own redraw can be skipped by writing to the database directly |
@@ -56,7 +57,7 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 
 1. [test] Standard size: long side 1280 (landscape and portrait), aspect kept, small photos refused; size checks for the stored photo/picture/design. → `tests/publicDesign.test.mjs`
 2. [test] Rules: anyone can add a design within the size limits and only the known fields; nobody but staff reads them; nobody updates or deletes; a lead may carry `designId`. → `npm run test:rules`
-3. [human] /design/ at 375px: sample house with lights shows; designer opens in simple mode with no $ / ft / bulbs / Measure anywhere; Upload a photo → tips visible → the photo opens resized; Get my free estimate shows the form with the thumbnail; no horizontal scroll; no console errors. Observer: agent, browser pane (dev, no real send).
+3. [human] /design/ at 375px: sample house with lights shows; designer opens in simple mode with no $ / ft / bulbs / Measure / Decorate anywhere, only C9 bulbs; Upload a photo → tips visible → the photo opens resized; Get my free estimate shows the form with the thumbnail; no horizontal scroll; no console errors. Observer: agent, browser pane (dev, no real send).
 4. [test] Server cleaning: design rebuilt from known fields (unknown styles/colors/decorations and off-photo points dropped, scale and price emptied, nonsense refused); only JPEG data URLs decoded; 30-day expiry. → `tests/leadDesigns.test.mjs`
 5. [agent] The same sharp pipeline strips EXIF/GPS from a test JPEG, caps it at 1280 px, and refuses a non-image. → checked 2026-10-10 (verified.md)
 6. [human] Live: owner designs on a photo of a test house, sends the request → the lead shows the design picture in Leads; Open in designer opens it for the lead. Known-good control: a request without a design still arrives normally. Observer: owner.
