@@ -75,7 +75,8 @@ export default function InvoiceDocument({ invoice: inv, business = {}, today = t
       {inv.note && <p className="whitespace-pre-wrap rounded-2xl bg-white/5 p-4 text-slate-300 print:bg-transparent print:p-0 print:text-black">{inv.note}</p>}
 
       <footer className="border-t border-white/10 pt-4 text-sm text-slate-400 print:border-black/20 print:text-black">
-        Thank you for choosing {business.name}! Questions about this invoice? Call or text {business.phone}.
+        Thank you for choosing {business.name}! Questions about this invoice? Call or text{' '}
+        <a href={`tel:+1${String(business.phone ?? '').replace(/\D/g, '')}`} className="whitespace-nowrap font-semibold text-slate-200 underline print:font-normal print:text-black print:no-underline">{business.phone}</a>.
       </footer>
     </article>
   )

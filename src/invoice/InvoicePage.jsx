@@ -99,13 +99,8 @@ export default function InvoicePage() {
         </div>
       </div>
       <InvoiceDocument invoice={inv} business={BIZ} today={today} />
-      <div className="mx-auto mt-8 max-w-3xl space-y-4 print:hidden">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-slate-400">Questions about this invoice?</span>
-          {call}
-        </div>
-        <RecaptchaNote />
-      </div>
+      {/* The phone is in the header (Call) and in the invoice's own footer, which also prints. */}
+      <RecaptchaNote className="mx-auto mt-8 max-w-3xl" />
     </main>
   )
 }
