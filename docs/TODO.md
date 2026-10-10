@@ -30,7 +30,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
-| K | **Home / mission control** (built 2026-10-10, `docs/specs/dashboard.md`; not live): (1) OK Claude to publish firestore.rules (new `activity`), deploy `proposalChanged` + `invoiceChanged` and push; (2) optional: Firebase console → Firestore → `staff` → each person's doc → add a `name` field (e.g. Scott, Katie) so Home shows names instead of the start of the email; (3) test with a second staff member: one emails a test customer from the app → it shows on the other's Home; tap **I've got it** on a message → the other sees "… is on it" | Test checklist #56–58 |
+| K | **Home / mission control** (live 2026-10-10, `docs/specs/dashboard.md`): (1) optional: Firebase console → Firestore → `staff` → each person's doc → add a `name` field (e.g. Scott, Katie) so Home shows names instead of the start of the email; (2) test with a second staff member: one emails a test customer from the app → it shows on the other's Home; tap **I've got it** on a message → the other sees "… is on it" | Test checklist #56–58 |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
 | E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
 | F | Export customers to a spreadsheet | |

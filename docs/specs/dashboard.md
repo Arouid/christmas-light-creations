@@ -1,6 +1,6 @@
 # Home: mission-control dashboard + recent staff activity
 
-> Status: approved 2026-10-10 by Scott (Finess) · built 2026-10-10, not live (needs: firestore.rules with `activity` published, proposalChanged + invoiceChanged deployed, push)
+> Status: approved 2026-10-10 by Scott (Finess) · live 2026-10-10 (rules with `activity` published, proposalChanged + invoiceChanged deployed, site pushed); two-person live test pending
 
 ## The problem
 
