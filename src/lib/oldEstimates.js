@@ -208,3 +208,13 @@ export function reuseIds(people, existing = []) {
     return id ? { ...p, id } : p
   })
 }
+
+// Statuses that file a person away for good: never contacted or exported.
+export const FILED_STATUSES = ['Deceased', 'Personal (family/friends)', 'Junk / spam']
+
+// Which Past requests view a person belongs to: paid or were invoiced before
+// (win-back), asked for an estimate, or only texted/called.
+export function pastGroup(r) {
+  if (r.payments?.length) return 'winback'
+  return r.requests?.length ? 'asked' : 'voice'
+}

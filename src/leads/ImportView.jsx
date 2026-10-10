@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { buildCustomers, buildGateCodes } from '../lib/importSheet'
+import { CONTACT_GROUPS, contactGroups, toVcard } from '../lib/contactsExport'
 import { matchMessages, unmatchedCsv } from '../lib/messageImport'
 import { cleanRow, mergePeople, reuseIds } from '../lib/oldEstimates'
 
@@ -20,8 +21,8 @@ async function readPastRequests(file, existingPast) {
   return { rows: data.length, kept: kept.length, winbacks: people.filter((p) => p.payments?.length).length, updates: people.filter((p) => known.has(p.id)).length, records: people.map(({ id, ...rest }) => ({ id, data: rest })) }
 }
 
-function downloadCsv(name, text) {
-  const url = URL.createObjectURL(new Blob([`﻿${text}`], { type: 'text/csv' }))
+function downloadCsv(name, text, type = 'text/csv') {
+  const url = URL.createObjectURL(new Blob([type === 'text/csv' ? `﻿${text}` : text], { type }))
   const a = Object.assign(document.createElement('a'), { href: url, download: name })
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
@@ -38,6 +39,32 @@ const FILES = [
   ['messages', 'Customer history (customer-history.json from old-site-backup: texts, calls, emails, payments, estimate requests), optional'],
   ['past', 'Past requests and win-backs (past-requests-plus.csv from old-site-backup), optional'],
 ]
+
+// Contacts for the business Google account, so Voice shows names.
+function ContactsExport({ customers, past }) {
+  const groups = contactGroups(customers, past)
+  const [pick, setPick] = useState({ customers: true, winback: true, voice: true, asked: false })
+  const chosen = CONTACT_GROUPS.filter(([k]) => pick[k]).flatMap(([k]) => groups[k])
+  return (
+    <div className="rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
+      <p className="font-semibold text-slate-100">Export contacts for Google Voice</p>
+      <p className="mt-1 text-slate-400">A contacts file (.vcf) for clc.voicemail.01, so texts and calls show names. People filed as Deceased, Personal or Junk are left out.</p>
+      <div className="mt-3 space-y-1">
+        {CONTACT_GROUPS.map(([k, label]) => (
+          <label key={k} className="flex min-h-11 items-center gap-3">
+            <input type="checkbox" checked={pick[k]} onChange={(e) => setPick({ ...pick, [k]: e.target.checked })} className="size-5" />
+            <span>{label} <span className="text-slate-500">{groups[k].length}</span></span>
+          </label>
+        ))}
+      </div>
+      <button type="button" disabled={!chosen.length} onClick={() => downloadCsv('clc-contacts.vcf', toVcard(chosen), 'text/vcard')}
+        className="mt-3 min-h-11 w-full rounded-full bg-white/10 px-4 font-semibold disabled:opacity-50">
+        Download {chosen.length} contacts (.vcf)
+      </button>
+      <p className="mt-2 text-xs text-slate-500">Then sign in to contacts.google.com as clc.voicemail.01 → Import → pick the file.</p>
+    </div>
+  )
+}
 
 export default function ImportView({ existing, existingPast = [], onImport, onImportGates, onImportMessages, onImportPast }) {
   const [files, setFiles] = useState({})
@@ -93,6 +120,7 @@ export default function ImportView({ existing, existingPast = [], onImport, onIm
 
   return (
     <div className="space-y-4">
+      {existing.length > 0 && <ContactsExport customers={existing} past={existingPast} />}
       <div className="rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
         <p className="font-semibold text-slate-100">From the Google Sheet</p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">

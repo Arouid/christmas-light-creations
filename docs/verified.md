@@ -139,3 +139,4 @@ What was actually checked working, and how. Newest first.
 
 - Demo at 375px: Status → Deceased moves the person to the Deceased chip (wins over "already a customer"); card shows no Call/Text/Email/Make customer; "Email these" leaves them out. No console errors, no horizontal scroll.
 - Same day: statuses Personal (family/friends) and Junk / spam added. Demo at 375px: Personal moves the person to the "Personal / junk" chip, no contact buttons, no "Email these". No console errors.
+- Same day: Import tab **Export contacts for Google Voice** (.vcf, vCard 3.0): Customers / Win-backs / Texted us / Past requests checkboxes; filed-away people and Past requests already customers left out. Demo at 375px: counts and download button show, no console errors. Not yet checked: importing the file into clc.voicemail.01.

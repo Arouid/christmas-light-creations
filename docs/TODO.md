@@ -40,7 +40,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
-| B | Customer contacts file for clc.voicemail.01 (Google Contacts CSV from the 114 customers) | So texts/calls show names |
+| B | Cross-reference the owner's exported Google Contacts (Lacie's account, Google CSV → `old-site-backup/`) with customers / win-backs / Past requests: which are business, which personal | Waiting on the export. Then: file personal ones as Personal in Past requests, and Import → **Export contacts for Google Voice** → import the .vcf into clc.voicemail.01 |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
 | E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
 | F | Export customers to a spreadsheet | |

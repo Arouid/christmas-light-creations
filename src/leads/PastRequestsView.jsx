@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { findCustomer } from '../lib/oldEstimates'
+import { FILED_STATUSES as FILED, findCustomer, pastGroup } from '../lib/oldEstimates'
 import { textMessages } from '../lib/messages'
 import Icon from '../components/Icon'
 import { EmailQueue } from './BulkEmail'
@@ -9,8 +9,6 @@ import { select } from './ui'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
 const PAST_STATUSES = ['', 'Interested', 'Estimate booked', 'Not interested', 'Moved / bad info', 'Deceased', 'Personal (family/friends)', 'Junk / spam']
-// Filed away for good: no call, text, email or make-customer; win over "already a customer".
-const FILED = ['Deceased', 'Personal (family/friends)', 'Junk / spam']
 // Never contacted again: no text, email or "Email these".
 const DO_NOT_CONTACT = ['customer', 'Not interested', 'Moved / bad info', ...FILED]
 const STATUS_LABEL = { '': 'Not contacted yet' }
@@ -27,9 +25,9 @@ function stateOf(r, customer, season) {
 // Who they were to us: paid or were invoiced before (win-backs), asked for an
 // estimate, or only texted/called the business line.
 const GROUPS = [
-  ['winback', 'Win-backs', 'Paid us or were invoiced before, not current customers now.', (r) => r.payments?.length > 0],
-  ['asked', 'Past requests', 'Asked for an estimate but never paid us.', (r) => !r.payments?.length && r.requests?.length > 0],
-  ['voice', 'Texted us', 'Texted or called the business line a lot, or a saved contact; no form or payment.', (r) => !r.payments?.length && !r.requests?.length],
+  ['winback', 'Win-backs', 'Paid us or were invoiced before, not current customers now.', (r) => pastGroup(r) === 'winback'],
+  ['asked', 'Past requests', 'Asked for an estimate but never paid us.', (r) => pastGroup(r) === 'asked'],
+  ['voice', 'Texted us', 'Texted or called the business line a lot, or a saved contact; no form or payment.', (r) => pastGroup(r) === 'voice'],
 ]
 const usd = (n) => `$${Math.round(n).toLocaleString('en-US')}`
 const yearsOf = (a, b) => (a && b && a.slice(0, 4) !== b.slice(0, 4) ? `${a.slice(0, 4)}–${b.slice(0, 4)}` : (b || a || '').slice(0, 4))
