@@ -3,6 +3,7 @@ import { buildIndex, searchAccounts } from '../../lib/accountSearch'
 import { seasonYear, todayISO } from '../../lib/customers'
 import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, listTotals, longDate, money, newInvoice, paidInfo, sendProblems } from '../../lib/invoices'
 import DataTable from '../DataTable'
+import { select } from '../ui'
 import InvoiceEditor from './InvoiceEditor'
 import { STATE_STYLE, numberLabel, useInvoicesContext } from './useInvoices'
 
@@ -55,15 +56,19 @@ export default function InvoicesView({ customers = [] }) {
   const [busy, setBusy] = useState(null)
   const today = todayISO()
   const all = useMemo(() => (ctx?.invoices ?? []).map((i) => ({ ...i, state: invoiceState(i, today) })), [ctx?.invoices, today])
+  const index = useMemo(() => buildIndex({ customers }), [customers])
   if (!ctx) return null
   if (ctx.error) return <p className="mt-6 text-slate-400">Invoices aren’t available yet: the database rules need publishing (firestore.rules). Everything else works.</p>
   if (!ctx.invoices) return <p className="mt-6 text-slate-400">Loading invoices…</p>
 
   const seasons = [...new Set(all.map((i) => i.season).filter(Boolean))].sort().reverse()
   const term = q.trim().toLowerCase()
-  const inSeason = all.filter((i) => (!season || i.season === season) && (!term || `${i.number} ${i.customer?.name} ${i.customer?.address}`.toLowerCase().includes(term)))
+  const inSeason = all.filter((i) => (!season || i.season === season) && (!term || `${i.number} ${i.customer?.name} ${i.customer?.address} ${i.customer?.email} ${i.customer?.phone}`.toLowerCase().includes(term)))
   const totals = listTotals(inSeason, today)
-  const shown = inSeason.filter((i) => matches(i.state, filter))
+  // While searching, every matching invoice shows (any status), then matching customers to start one.
+  const shown = term ? inSeason : inSeason.filter((i) => matches(i.state, filter))
+  const people = term ? searchAccounts(index, q, 6) : []
+  const startFor = (c) => setOpen({ id: null, invoice: newInvoice(c, { season: seasonYear() }) })
   const drafts = inSeason.filter((i) => i.state === 'draft')
   const ready = drafts.filter((i) => !sendProblems(i).length)
 
@@ -93,9 +98,9 @@ export default function InvoicesView({ customers = [] }) {
           <button type="button" onClick={() => setPicking(true)} className="min-h-11 shrink-0 rounded-full bg-glow-400 px-5 font-semibold text-night-950 hover:bg-glow-300">＋ New invoice</button>
         </div>
         <div className="flex w-full gap-2 sm:w-auto">
-          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, street or number" aria-label="Search invoices"
-            className="min-h-11 min-w-0 flex-1 rounded-full border border-white/20 bg-night-900 px-4 text-base sm:w-64" />
-          <select value={season} onChange={(e) => setSeason(e.target.value)} aria-label="Season" className="min-h-11 rounded-full border border-white/20 bg-night-900 px-3 text-base">
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find an invoice or customer" aria-label="Find an invoice or customer"
+            className="min-h-11 min-w-0 flex-1 rounded-xl border border-white/15 bg-night-900 px-3 text-base sm:w-72" />
+          <select value={season} onChange={(e) => setSeason(e.target.value)} aria-label="Season" className={`${select} min-h-11 shrink-0`}>
             <option value="">All seasons</option>
             {seasons.map((y) => <option key={y}>{y}</option>)}
           </select>
@@ -104,22 +109,26 @@ export default function InvoicesView({ customers = [] }) {
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[['open', 'Open (unpaid)'], ['overdue', 'Overdue'], ['paid', 'Paid'], ['draft', 'Drafts']].map(([k, label]) => (
-          <button key={k} type="button" onClick={() => setFilter(k)} aria-pressed={filter === k}
-            className={`rounded-2xl border p-3 text-left ${filter === k ? 'border-glow-400 bg-glow-400/10' : 'border-white/10 bg-night-900'}`}>
+          <button key={k} type="button" onClick={() => { setFilter(k); setQ('') }} aria-pressed={!term && filter === k}
+            className={`rounded-2xl border p-3 text-left ${!term && filter === k ? 'border-glow-400 bg-glow-400/10' : 'border-white/10 bg-night-900'}`}>
             <span className="block text-sm text-slate-400">{label} · {totals[k].n}</span>
             <span className={`block text-xl font-bold tabular-nums ${k === 'overdue' && totals[k].n ? 'text-berry-500' : ''}`}>{money(totals[k].cents)}</span>
           </button>
         ))}
       </div>
 
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4" aria-label="Show">
-        {FILTERS.map(([k, label]) => (
-          <button key={k} type="button" onClick={() => setFilter(k)}
-            className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium ${filter === k ? 'bg-glow-400 text-night-950' : 'bg-white/10'}`}>{label}</button>
-        ))}
-      </div>
+      {term ? (
+        <p className="text-sm text-slate-400">Invoices matching “{q.trim()}” (any status) · <button type="button" onClick={() => setQ('')} className="min-h-11 text-glow-300 underline">Clear search</button></p>
+      ) : (
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4" aria-label="Show">
+          {FILTERS.map(([k, label]) => (
+            <button key={k} type="button" onClick={() => setFilter(k)}
+              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium ${filter === k ? 'bg-glow-400 text-night-950' : 'bg-white/10'}`}>{label}</button>
+          ))}
+        </div>
+      )}
 
-      {filter === 'draft' && drafts.length > 0 && (
+      {!term && filter === 'draft' && drafts.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-glow-400/30 bg-glow-400/5 p-3">
           <button type="button" onClick={sendAll} disabled={!ready.length || !!busy} className="min-h-11 rounded-full bg-glow-400 px-5 font-semibold text-night-950 disabled:opacity-40">
             Send all {ready.length} draft{ready.length === 1 ? '' : 's'}
@@ -152,12 +161,32 @@ export default function InvoicesView({ customers = [] }) {
         </>
       ) : (
         <p className="rounded-2xl border border-white/10 p-4 text-sm text-slate-400">
-          {all.length ? 'Nothing here.' : 'No invoices yet. Tap ＋ New invoice and pick the customer, or Season → 🧾 Invoice these N for a whole season.'}
+          {term ? `No invoices for “${q.trim()}” yet.` : all.length ? 'Nothing here.' : 'No invoices yet. Tap ＋ New invoice and pick the customer, or Season → 🧾 Invoice these N for a whole season.'}
         </p>
       )}
 
+      {term && (
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Customers</h2>
+          {people.length ? (
+            <ul className="divide-y divide-white/5 rounded-2xl border border-white/10 bg-night-900">
+              {people.map((e) => (
+                <li key={e.key} className="flex items-center gap-3 px-3 py-2">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">{e.name || e.email || e.phone}</span>
+                    <span className="block truncate text-sm text-slate-400">{[e.address, e.phone].filter(Boolean).join(' · ')}</span>
+                  </span>
+                  <button type="button" onClick={() => startFor(customers.find((c) => c.id === e.id))}
+                    className="min-h-11 shrink-0 rounded-full bg-glow-400 px-4 text-sm font-semibold text-night-950 hover:bg-glow-300">＋ New invoice</button>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="text-sm text-slate-400">No customer matches “{q.trim()}”. A website lead must be made a customer first (Accounts → ＋ Make customer).</p>}
+        </section>
+      )}
+
       {picking && <PickCustomer customers={customers} onClose={() => setPicking(false)}
-        onPick={(c) => { setPicking(false); setOpen({ id: null, invoice: newInvoice(c, { season: seasonYear() }) }) }} />}
+        onPick={(c) => { setPicking(false); startFor(c) }} />}
       {open && <InvoiceEditor token={open.id} invoice={open.invoice ?? open} onClose={() => setOpen(null)} />}
     </div>
   )
