@@ -1,6 +1,6 @@
 # Message sync (texts, voicemails, missed calls, emails → customer history)
 
-Status: live 2026-10-09 (function, rules, Apps Script trigger). Owner: key swap pending (`docs/TODO.md` #36). Owner: Scott (Finess).
+Status: live 2026-10-09 (function, rules, Apps Script trigger). Key swapped 2026-10-09. Owner: Scott (Finess).
 
 ## The problem
 
