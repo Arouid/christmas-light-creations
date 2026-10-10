@@ -6,7 +6,10 @@ export default function Footer() {
     <footer className="border-t border-white/10 px-4 pb-28 pt-12 md:pb-12">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
         <div>
-          <img src={business.logo} alt={business.name} className="h-12 w-auto" loading="lazy" />
+          <div className="flex items-center gap-3">
+            <img src={business.logo} alt="" className="size-14" loading="lazy" />
+            <p className="font-display text-xl font-bold leading-tight">{business.name}</p>
+          </div>
           <p className="mt-3 text-sm text-slate-400">Professional • Experienced • Insured</p>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400" aria-label="Footer">

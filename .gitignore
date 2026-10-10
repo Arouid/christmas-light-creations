@@ -31,3 +31,6 @@ old-site-backup/
 
 # Security review: lists open weak spots; the repo is public, so keep it local
 docs/security-review.md
+
+# Upscaled (3x) copies of the 2012 backdrop art: 13 MB, rebuildable from the originals next to them
+assets-source/2012-backdrop/hi-res-3x/

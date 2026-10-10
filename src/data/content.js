@@ -19,7 +19,8 @@ export const business = {
   homesServed: '250+',
   // Google review link for the main Business Profile (listing without a store code).
   reviewLink: 'https://g.page/r/CWKRhzePqUvIEAI/review',
-  logo: `${base}images/clc-logo.png`,
+  // The neon cottage from the 2012 site (assets-source/2012-backdrop); square, transparent.
+  logo: `${base}images/clc-cottage.png`,
 }
 
 // In memory of the owner's brother and business partner. The owner's own

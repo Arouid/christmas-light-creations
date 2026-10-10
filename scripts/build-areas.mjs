@@ -54,7 +54,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 <body>
 <header class="border-b border-white/10 bg-night-950/90">
   <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-    <a href="${base}"><img src="${base}images/clc-logo.png" alt="${esc(business.name)}" class="h-10 w-auto" /></a>
+    <a href="${base}" class="flex items-center gap-2.5"><img src="${base}images/clc-cottage.png" alt="" class="size-11" /><span class="font-display text-lg font-bold">${esc(business.name)}</span></a>
     <div class="flex items-center gap-2">
       <a href="tel:+12818190163" class="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold">${business.phone}</a>
       <a href="${base}#estimate" class="hidden rounded-full bg-glow-400 px-4 py-2 text-sm font-semibold text-night-950 sm:inline-block">Free estimate</a>
