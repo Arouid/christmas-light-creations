@@ -66,9 +66,14 @@ export default function DesignPage() {
   return (
     <div className="min-h-svh">
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pt-5">
-        <a href={import.meta.env.BASE_URL} className="flex items-center gap-2">
-          <img src={business.logo} alt="" className="size-10" />
-          <span className="font-display text-lg font-extrabold leading-tight">{business.name}</span>
+        {/* The way back to the main site, said in words (owner: people couldn't tell how to get back). */}
+        <a href={import.meta.env.BASE_URL} className="group flex min-h-11 min-w-0 items-center gap-2">
+          <span className="text-xl text-glow-300" aria-hidden="true">←</span>
+          <img src={business.logo} alt="" className="size-10 shrink-0" />
+          <span className="min-w-0">
+            <span className="block font-display text-lg font-extrabold leading-tight">{business.name}</span>
+            <span className="block text-sm text-glow-300 group-hover:underline">{t.backHome}</span>
+          </span>
         </a>
         <a href={business.phoneHref} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-glow-400 px-4 font-semibold text-night-950" aria-label={`Call ${business.phone}`}>
           <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span><span className="sm:hidden">Call</span>

@@ -337,10 +337,11 @@ export const designPage = {
   ownNote: 'Your home',
   estimate: 'Get my free estimate with this design',
   saveLabel: 'Get my estimate →',
+  backHome: 'Back to the main site',
   how: [
     ['✏️', 'Lights', 'tap corner to corner along a roofline, then Done.'],
     ['▭', 'Rectangle / ◯ Oval', 'drag around a window, door or wreath.'],
-    ['🎀', 'Decorate', 'tap to place wreaths, bows and stars.'],
+    ['👆', 'Select', 'tap a strand to change it; tap an empty spot to start drawing.'],
     ['🎨', 'Colors', 'warm white, multicolor, red & white and more.'],
     ['🌙', 'Night', 'slide to see it after dark. Hold “before” to compare.'],
   ],
