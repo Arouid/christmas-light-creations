@@ -1,9 +1,10 @@
 // The 💬 New messages count and list for the signed-in staff member
-// (docs/specs/staff-alerts.md): incoming messages synced in the last 7 days,
+// (docs/specs/staff-alerts.md): incoming messages synced and website
+// estimate requests received in the last 7 days,
 // "new" since they last opened the list (kept in their staffPrefs doc, or on
 // this device if the database rules for it aren't published yet).
 import { useMemo, useState } from 'react'
-import { countNew, listSince, recentIncoming } from '../lib/staffAlerts'
+import { countNew, listSince, recentIncoming, requestItems } from '../lib/staffAlerts'
 import { prefsId } from './push'
 import { SERVER_TIME, mergePaths, useLiveDoc, useLiveSince } from './staffStore'
 
@@ -11,12 +12,12 @@ const LOCAL = 'clcMessagesSeenAt'
 const readLocal = () => { try { return Number(localStorage.getItem(LOCAL)) || null } catch { return null } }
 const bySynced = (a, b) => (b.syncedAt?.toMillis?.() ?? 0) - (a.syncedAt?.toMillis?.() ?? 0)
 
-export function useStaffAlerts(user) {
+export function useStaffAlerts(user, leads) {
   const [since] = useState(() => new Date(listSince()))
   const { items, error } = useLiveSince(user, 'messages', 'syncedAt', since, bySynced)
   const prefs = useLiveDoc(user, 'staffPrefs', prefsId(user))
   const [localSeen, setLocalSeen] = useState(readLocal)
-  const list = useMemo(() => recentIncoming(items ?? []), [items])
+  const list = useMemo(() => recentIncoming([...(items ?? []), ...requestItems(leads)]), [items, leads])
   const loading = !items || (prefs.data === undefined && !prefs.error)
   const seenAt = prefs.error ? localSeen : prefs.data?.messagesSeenAt ?? null
 

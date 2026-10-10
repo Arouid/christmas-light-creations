@@ -1,6 +1,6 @@
 # New-message alerts for staff (💬 badge + phone notifications)
 
-> Status: live 2026-10-09 (rules published, web push key set, messageSync + sendTestPush deployed, site pushed); owner's phone test pending · Decided on 2026-10-09 by Scott (Finess): "Badge + push"
+> Status: live 2026-10-09 (rules published, web push key set, messageSync + sendTestPush deployed, site pushed); estimate requests + new-sender emails added 2026-10-09 (deploy of messageSync + newLeadAlert and push pending owner OK); owner's phone test pending · Decided on 2026-10-09 by Scott (Finess): "Badge + push"
 
 ## The problem
 
@@ -10,7 +10,7 @@ Customer texts, voicemails, missed calls and emails to info@ are filed into the 
 
 **In the app (everyone, every device):**
 
-- A **💬 button** in the staff app header, on every tab, with a red count of **new** incoming messages: texts, voicemails, missed calls and emails that customers (or unknown numbers) sent and that arrived **since you last opened the list**. Per staff member (same count on your phone and computer), not shared: Scott opening it doesn't clear it for Katie.
+- A **💬 button** in the staff app header, on every tab, with a red count of **new** incoming messages: texts, voicemails, missed calls and emails that customers (or unknown numbers, or new email senders) sent, plus **website estimate requests**, that arrived **since you last opened the list**. Owner's aim: "I don't want to miss anyone's texts or emails if I'm only working from the app." Per staff member (same count on your phone and computer), not shared: Scott opening it doesn't clear it for Katie.
 - Tap it: **New messages** list, newest first, last 7 days. Each row: who (customer or lead name; unknown numbers as the number), what (text / voicemail / missed call / email), a short preview, when. New ones are marked. Tap a row → that person's account (Accounts page, with their full history); unknown numbers → the Unmatched list on Leads.
 - Opening the list clears the count (for you).
 - On an installed app, the home-screen icon shows the count too where the phone supports it.
@@ -29,7 +29,7 @@ Customer texts, voicemails, missed calls and emails to info@ are filed into the 
 - **No email alert per message** (option (b), not chosen: Gmail already notifies).
 - **No per-message "read" state** shared across staff, no assigning a message to someone, no replying from the list (texting stays in Voice, decision 2026-10-08).
 - **No quiet hours** in the app: use the phone's Do Not Disturb / Focus.
-- **No alert for website estimate requests** here: they already email the alert list (`newLeadAlert`). Could be added to push later.
+- **No alert for junk email** from unknown senders (no-reply, services, newsletters): the sync doesn't store it (`docs/specs/message-sync.md`), so it stays only in Gmail.
 - **No offline caching** in the service worker: it only shows notifications; the app always loads fresh.
 - Emails that match nobody aren't stored by the sync, so they never alert (unchanged from message-sync).
 
@@ -58,6 +58,8 @@ Customer texts, voicemails, missed calls and emails to info@ are filed into the 
 | 2026-10-09 | "New" = arrived (`syncedAt`) after you last opened the list; kept per person in `staffPrefs/{email}` | Same count on all your devices; doesn't depend on the phone's clock |
 | 2026-10-09 | One new collection `staffPrefs/{email}`: each staff member reads/writes only their own doc | Per-person state; the server reads all to find devices |
 | 2026-10-09 | Project web push key (VAPID) generated in the Firebase console, public half in `src/lib/firebase.js` | The SDK's default key isn't accepted by every push service (SDK docs) |
+| 2026-10-09 | Website estimate requests also notify phones (`newLeadAlert`, before its email) and show in 💬 (📝, from the leads list, spam left out) | Owner: "Yes, also notify" |
+| 2026-10-09 | Emails from unknown senders are kept as Unmatched (junk filtered) and so alert too | Owner: "Keep, with a junk filter"; see message-sync spec |
 
 ## Acceptance criteria
 
@@ -70,6 +72,8 @@ Customer texts, voicemails, missed calls and emails to info@ are filed into the 
 7. [human] On the owner's phone (installed app): Turn on → allow → **Send a test** → a "CLC Staff" test notification arrives within a minute. Known-good control: a Google Voice notification on the same phone. Observer: owner.
 8. [human] Owner texts the business number and emails info@ from a phone/address on a test customer → within 10 minutes: a notification "Text from <test customer>" (and one for the email), tapping it opens that customer's account; 💬 shows the count on the computer too. Known-good control: the same messages in that customer's Text & call history. Observer: owner.
 9. [human] Turn off on that phone → the next test text gives no notification there (the 💬 count still goes up). Observer: owner.
+10. [test] Estimate request: "New estimate request from <name>" + city and the first words, link to the lead's account; the 💬 list includes requests from the last 7 days (not spam). → `tests/staffAlerts.test.mjs`
+11. [human] A test estimate request on the website → a notification within a minute (plus the usual email); tapping opens that lead. An email to info@ from an address on no record → "Email from <address>" within ~10 minutes and it's in Leads → Unmatched. Known-good control: the alert email for the same request. Observer: owner.
 
 ## Contract
 

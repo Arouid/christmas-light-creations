@@ -112,6 +112,23 @@ export function emailText(body) {
   return cap(t.replace(/\n{3,}/g, '\n\n').trim())
 }
 
+// Emails from someone we don't know yet are kept as Unmatched (a new
+// customer's first email), unless they look automatic or bulk: no-reply and
+// notification senders, service companies, newsletter footers (owner
+// 2026-10-09). Known customers' emails are always kept, whatever they say.
+const AUTO_SENDER = /^(no-?reply|do-?not-?reply|donotreply|mailer-daemon|postmaster|bounces?|notifications?|alerts?|newsletters?|news|marketing|receipts?|billing|invoices?)([+._-][^@]*)?@/i
+const SERVICE_DOMAINS = ['google.com', 'paypal.com', 'intuit.com', 'squareup.com', 'godaddy.com', 'github.com', 'facebookmail.com', 'linkedin.com', 'amazon.com', 'yelp.com', 'nextdoor.com', 'apple.com', 'microsoft.com']
+const BULK_FOOTER = /view (this email )?in (your |a )?browser|(manage|update) (your )?(email )?(preferences|subscriptions?)|you('re| are) receiving this (email|message)|this (email|message) was sent to [^\s@]+@/i
+export function junkReason(from, body) {
+  const domain = from.split('@')[1] ?? ''
+  const text = String(body ?? '')
+  if (AUTO_SENDER.test(from)) return 'automatic'
+  if (SERVICE_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`))) return 'service'
+  // "Unsubscribe" alone could be a person asking; with a link it's a mailing list.
+  if (BULK_FOOTER.test(text) || (/unsubscribe/i.test(text) && /https?:\/\//i.test(text))) return 'bulk'
+  return ''
+}
+
 function parseEmail(item) {
   const subject = String(item.subject ?? '').trim()
   if (SKIP_SUBJECTS.some((re) => re.test(subject))) return { skip: 'automatic' }
@@ -127,7 +144,7 @@ function parseEmail(item) {
   return {
     source: 'gmail', kind: 'email', direction: out ? 'out' : 'in', at: isoOf(item.date),
     text: emailText(item.body), subject: subject.slice(0, 300), emails: counterparts,
-    idBase: emailIdBase(messageId),
+    idBase: emailIdBase(messageId), junk: out ? '' : junkReason(from, item.body),
   }
 }
 
@@ -188,11 +205,12 @@ export function buildDirectory(customers = [], leads = []) {
 const targetFields = (t) => (t.type === 'customer' ? { customerId: t.id } : { leadId: t.id })
 
 // An event -> the Firestore docs to create: [{ id, data }]. Voice: one doc
-// (unmatched if nobody has the number). Email: one per matched person; none
-// if nobody matches.
+// (unmatched if nobody has the number). Email: one per matched person; an
+// incoming one from nobody we know is unmatched unless it looks like junk;
+// an outgoing one to nobody we know isn't stored.
 export function docsFor(event, dir) {
   const { id, idBase, emails, ...rest } = event
-  const base = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== '' && v !== undefined))
+  const base = Object.fromEntries(Object.entries(rest).filter(([k, v]) => k !== 'junk' && v !== '' && v !== undefined))
   if (event.source === 'voice-email') {
     const [first, ...others] = dir.phone.get(event.phone) ?? []
     if (!first) return [{ id, data: { ...base, unmatched: true } }]
@@ -206,6 +224,9 @@ export function docsFor(event, dir) {
     if (!t || seen.has(`${t.type}:${t.id}`)) continue
     seen.add(`${t.type}:${t.id}`)
     docs.push({ id: `${idBase}-${t.id}`, data: { ...base, email: addr, ...targetFields(t) } })
+  }
+  if (!docs.length && event.direction === 'in' && !event.junk) {
+    docs.push({ id: `${idBase}-unmatched`, data: { ...base, email: emails[0], unmatched: true } })
   }
   return docs
 }
@@ -224,6 +245,6 @@ export function dryRunSummary(event, docs) {
   return {
     status: docs.length ? 'would-save' : 'would-drop', kind: event.kind, direction: event.direction,
     match: !d ? 'none' : d.customerId ? 'customer' : d.leadId ? 'lead' : 'unmatched',
-    chars: event.text.length, last4: (event.phone ?? '').slice(-4),
+    chars: event.text.length, last4: (event.phone ?? '').slice(-4), ...(event.junk ? { junk: event.junk } : {}),
   }
 }

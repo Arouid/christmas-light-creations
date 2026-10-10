@@ -20,7 +20,16 @@ export const toMs = (t) => {
 
 export const listSince = (now = Date.now()) => now - LIST_DAYS * DAY
 
-// Synced messages -> the ones the list shows: incoming, last 7 days, newest first.
+// Website estimate requests -> list entries shaped like messages (spam/test left out).
+export function requestItems(leads) {
+  return (leads ?? []).filter((l) => l.status !== 'spam' && toMs(l.createdAt)).map((l) => ({
+    id: `request-${l.id}`, kind: 'request', direction: 'in', leadId: l.id,
+    at: new Date(toMs(l.createdAt)).toISOString(), syncedAt: toMs(l.createdAt),
+    text: [l.city, l.message].filter(Boolean).join(' · '),
+  }))
+}
+
+// Synced messages and requests -> what the list shows: incoming, last 7 days, newest first.
 export function recentIncoming(items, now = Date.now()) {
   const since = listSince(now)
   const when = (m) => Date.parse(m.at) || toMs(m.syncedAt)

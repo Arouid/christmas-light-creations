@@ -1,7 +1,8 @@
 // Server code for the CLC site (Firebase Cloud Functions, region us-south1,
 // same as the Firestore database).
 //
-// - newLeadAlert: emails staff the moment a website estimate request arrives
+// - newLeadAlert: emails staff (and phones with notifications on) the moment
+//   a website estimate request arrives
 //   (the old site lost requests when its notification emails broke).
 // - createDepositOrder / captureDepositOrder: PayPal deposit for a signed
 //   proposal. The amount comes from the stored proposal, never the browser,
@@ -44,7 +45,7 @@ import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
-import { TEST_PUSH, devicesOf, deviceGone, fcmMessage, pushFor } from './staffPush.js'
+import { TEST_PUSH, devicesOf, deviceGone, fcmMessage, pushFor, requestPush } from './staffPush.js'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import {
   centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceSummary, KIND_SHORT, paidInfo,
@@ -102,6 +103,8 @@ export const newLeadAlert = onDocumentCreated(
   async (event) => {
     const lead = event.data?.data()
     if (!lead) return
+    // Phone notification first (staff-alerts.md): never throws, and doesn't wait on the email.
+    await alertStaff(requestPush(lead, event.params.leadId))
     const to = await staffEmails()
     const who = `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim() || 'someone'
     if (!to.length) {
@@ -686,7 +689,7 @@ async function syncBatch(req, res) {
     if (req.body.dryRun === true) { results.push({ gmailId, ...dryRunSummary(event, docs) }); continue }
     if (event.skip) { count.skipped++; results.push({ gmailId, status: 'skipped', reason: event.skip }); continue }
     if (fromApp(event)) { count.duplicate++; results.push({ gmailId, status: 'duplicate', reason: 'sent-from-app' }); continue }
-    if (!docs.length) { count.dropped++; results.push({ gmailId, status: 'dropped', reason: 'no-match' }); continue }
+    if (!docs.length) { count.dropped++; results.push({ gmailId, status: 'dropped', reason: event.junk ? `junk-${event.junk}` : 'no-match' }); continue }
     let status = 'duplicate'
     for (const { id, data } of docs) {
       try {

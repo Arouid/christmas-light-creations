@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { buildIndex, searchAccounts } from '../lib/accountSearch'
+import { gmailUrl } from '../lib/messages'
 import Icon from '../components/Icon'
 import { TextButton, pill } from './Reach'
 import { Bubble } from './TextHistory'
@@ -44,11 +45,12 @@ function Row({ m, user, customers }) {
   const digits = String(m.phone ?? '').replace(/\D/g, '')
   return (
     <li className="rounded-2xl bg-white/5 p-3">
-      <p className="mb-2 font-semibold">{m.phone ? prettyPhone(m.phone) : m.name || 'Unknown'}</p>
-      <Bubble m={m} who={m.phone ? 'Unknown number' : 'Unknown'} />
+      <p className="mb-2 break-all font-semibold">{m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'}</p>
+      <Bubble m={m} who={m.phone ? 'Unknown number' : m.email ? 'New sender' : 'Unknown'} />
       <div className="mt-2 flex flex-wrap gap-2">
         {digits && <a className={pill} href={`tel:${digits}`}><Icon name="phone" className="size-4" /> Call</a>}
         {m.phone && <TextButton phone={m.phone} />}
+        {m.email && <a className={pill} href={gmailUrl({ to: m.email, subject: m.subject && !/^re:/i.test(m.subject) ? `Re: ${m.subject}` : m.subject ?? '' })} target="_blank" rel="noreferrer">✉️ Reply in Gmail</a>}
         {customers && <button type="button" disabled={busy} onClick={() => setLinking(!linking)} className={pill}>Link to customer</button>}
         <button type="button" disabled={busy} onClick={() => save({ dismissed: true })} className={pill}>Dismiss</button>
       </div>
@@ -59,7 +61,8 @@ function Row({ m, user, customers }) {
 }
 
 // Texts, voicemails and missed calls from numbers that match no customer or
-// lead (filed by the message sync). Staff link one to a customer or dismiss it.
+// lead, and emails from new senders (junk filtered out by the sync; owner
+// 2026-10-09). Staff link one to a customer or dismiss it.
 export default function UnmatchedMessages({ user, customers }) {
   const items = useLiveQuery(user, 'messages', 'unmatched', true, newestFirst)
   const open = (items ?? []).filter((m) => !m.dismissed)
@@ -67,7 +70,7 @@ export default function UnmatchedMessages({ user, customers }) {
   return (
     <details className="mb-4 rounded-2xl border border-glow-400/30 bg-glow-400/5 p-3" open={open.length <= 3}>
       <summary className="min-h-11 cursor-pointer py-2 font-semibold text-glow-300">
-        📥 {open.length} {open.length === 1 ? 'message' : 'messages'} from unknown numbers
+        📥 {open.length} {open.length === 1 ? 'message' : 'messages'} from people we don’t know yet
       </summary>
       <ul className="mt-2 space-y-3">
         {open.map((m) => <Row key={m.id} m={m} user={user} customers={customers} />)}

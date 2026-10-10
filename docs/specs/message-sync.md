@@ -18,7 +18,7 @@ Within about 5 minutes, new customer contact shows in that customer's **Text & c
 | Customer emails to info@ | info@ inbox | in |
 | info@ emails to customers (To, Cc or Bcc) | info@ Sent | out |
 
-Messages from a number or contact that matches nobody go to an **Unmatched** list (top of the Leads tab), where staff can link one to a customer or dismiss it. Emails that match nobody are **not** stored (info@ gets vendor mail, receipts, spam).
+Messages from a number or contact that matches nobody go to an **Unmatched** list (top of the Leads tab), where staff can link one to a customer or dismiss it. Emails from someone who matches nobody go there too (a new customer's first email), unless they look like junk: no-reply/notification senders, service companies (PayPal, Google…), newsletters with an unsubscribe link or a "view in browser" footer. Those are not stored (owner 2026-10-09; before that, all unmatched emails were dropped).
 
 A message that matches a website lead (not yet a customer) is stored on that lead and shows on the lead's Accounts page. If the lead was already made a customer, it goes to the customer.
 
@@ -28,7 +28,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 - No texting from the app (decision 2026-10-08: texting stays in Voice). Emails can be sent from the app since 2026-10-09 (`docs/specs/staff-email.md`); those are filed by the sending function, not by the sync.
 - No attachments (MMS pictures, email attachments): text only. MMS shows as whatever text Voice puts in the email.
 - No group texts (skipped, counted in the sync result).
-- No storing unmatched emails, and no full email threads: quoted replies ("On … wrote:", `>` lines) are cut, bodies capped at 4,000 characters.
+- No storing junk from unknown senders (see above), no outgoing emails to unknown addresses, and no full email threads: quoted replies ("On … wrote:", `>` lines) are cut, bodies capped at 4,000 characters.
 - No real-time push: a 5-minute Apps Script timer is enough for a small business.
 
 ## Edge cases
@@ -51,14 +51,15 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 | 2026-10-09 | Apps Script only collects raw email fields; all parsing and matching happens in the function (tested in `tests/`) | One tested parser; the script stays short enough to paste |
 | 2026-10-09 | Script tracks a time cursor (Script Properties) with a 15-minute overlap instead of "processed" Gmail labels | Gmail labels are per thread: a labelled thread would hide a customer's next reply. Ids make re-sends harmless |
 | 2026-10-09 | Shared secret `MESSAGE_SYNC_KEY` in Firebase Secret Manager + Script Properties, sent as header `x-clc-sync-key` | No secret in the public repo; owner sets both, nobody prints it |
-| 2026-10-09 | Unmatched texts/voicemails kept in `messages` with `unmatched: true` (no new collection); unmatched emails dropped | Unknown numbers are likely new customers; unknown emails are mostly not |
+| 2026-10-09 | Unmatched texts/voicemails kept in `messages` with `unmatched: true` (no new collection); ~~unmatched emails dropped~~ superseded below | Unknown numbers are likely new customers |
+| 2026-10-09 | Incoming emails from unknown senders kept as unmatched too, with a junk filter (`junkReason`: automatic sender, service domain, bulk footer; "unsubscribe" only counts with a link, so a person asking is kept) | Owner: "I don't want to miss anyone's texts or emails if I'm only working from the app" |
 | 2026-10-09 | Missed calls use kind `missed` (same as the Takeout import) | One history format |
 
 ## Acceptance criteria
 
 1. [test] Sample Voice text, voicemail and missed-call emails parse to kind, phone (E.164), direction `in`, time and cleaned text; footers and links removed. → `tests/messageSync.test.mjs`
 2. [test] Customer emails: direction from info@ = out; quoted replies cut; sign-in link emails and Voice notifications are not treated as customer emails. → same file
-3. [test] Matching: phone in any format, email in any case, customers before leads, converted lead → its customer, nothing → unmatched (Voice) or dropped (email). → same file
+3. [test] Matching: phone in any format, email in any case, customers before leads, converted lead → its customer, nothing → unmatched (Voice, and incoming email unless junk); junk and outgoing-to-unknown dropped with the reason. → same file
 4. [test] Same input gives the same id; different text/time/kind gives a different id. → same file
 5. [test] Rules: staff can link an unmatched message to a customer or dismiss it; strangers can't read messages. → `npm run test:rules`
 6. [agent] The function logs only counts and reasons, never message text, phone numbers or addresses. → read `functions/index.js` `messageSync`
@@ -100,7 +101,7 @@ Staff edits on unmatched entries: `customerId` + `unmatched: false`, or `dismiss
 
 **Ids** (`functions/messageSync.js`):
 - Voice: `gv-` + first 20 hex of SHA-256 of `kind|phone|minute (UTC, YYYY-MM-DDTHH:MM)|text`. The Takeout import (`scripts/old-site/voice-history.mjs`, parser `voiceTakeout.mjs`) uses the same function so the same event isn't stored twice. A Takeout timestamp a minute off from the email gives a second entry; accepted.
-- Email: `em-` + first 20 hex of SHA-256 of the lowercase Message-ID, + `-<customer or lead id>` (`emailIdBase` in `functions/messageSync.js`; `sendStaffEmail` gives its entries the same id).
+- Email: `em-` + first 20 hex of SHA-256 of the lowercase Message-ID, + `-<customer or lead id>`, or `-unmatched` for an unknown sender (`emailIdBase` in `functions/messageSync.js`; `sendStaffEmail` gives its entries the same id).
 
 ## Links
 

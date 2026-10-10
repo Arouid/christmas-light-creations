@@ -3,9 +3,9 @@ import { KIND_WORD, LIST_DAYS, isNew, messageLink, previewOf, whoOf } from '../l
 import PushSetup from './PushSetup'
 
 // 💬 New messages (docs/specs/staff-alerts.md): texts, voicemails, missed
-// calls and emails customers sent in the last 7 days, newest first; the ones
+// calls, emails and website estimate requests from the last 7 days, newest first; the ones
 // that arrived since you last looked are marked. Tap one → their account.
-const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️' }
+const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝' }
 
 function when(iso) {
   const d = new Date(iso)
@@ -42,7 +42,7 @@ export default function MessagesPanel({ user, alerts, names, onClose }) {
 
         {alerts.error && <p className="text-berry-500" role="alert">Couldn’t load messages: {alerts.error === 'not-staff' ? 'refused by the database.' : alerts.error}</p>}
         {!alerts.error && !list.length && (
-          <p className="rounded-2xl bg-white/5 p-4 text-slate-400">{alerts.loading ? 'Loading…' : `No texts, voicemails, calls or emails from customers in the last ${LIST_DAYS} days.`}</p>
+          <p className="rounded-2xl bg-white/5 p-4 text-slate-400">{alerts.loading ? 'Loading…' : `No texts, voicemails, calls, emails or estimate requests in the last ${LIST_DAYS} days.`}</p>
         )}
         {list.length > 0 && (
           <ul className="space-y-2">
@@ -61,7 +61,7 @@ export default function MessagesPanel({ user, alerts, names, onClose }) {
                       <span className="block text-sm text-slate-300">
                         {fresh && <span className="mr-1.5 rounded-full bg-glow-400 px-1.5 text-xs font-bold text-night-950">New</span>}
                         <span className="font-medium">{KIND_WORD[m.kind]}</span>
-                        {m.unmatched && <span className="text-slate-400"> · unknown number</span>}
+                        {m.unmatched && <span className="text-slate-400"> · {m.email ? 'new sender' : 'unknown number'}</span>}
                       </span>
                       {previewOf(m) && <span className="mt-0.5 line-clamp-2 block break-words text-sm text-slate-400">{previewOf(m)}</span>}
                     </span>
@@ -72,7 +72,7 @@ export default function MessagesPanel({ user, alerts, names, onClose }) {
           </ul>
         )}
         <p className="text-xs text-slate-500">
-          What customers (and unknown numbers) sent in the last {LIST_DAYS} days; they arrive within about 5 minutes. Our own replies aren’t listed. Tap one to open their account and full history; unknown numbers open the Unmatched list on Leads.
+          What customers and new people sent in the last {LIST_DAYS} days: texts, voicemails and emails arrive within about 5 minutes, website estimate requests at once. Our own replies aren’t listed. Tap one to open their account and full history; unknown numbers and emails open the Unmatched list on Leads.
         </p>
       </div>
     </div>

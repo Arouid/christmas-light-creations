@@ -1,10 +1,11 @@
 // New-message alerts for staff (texts, voicemails, missed calls, emails
-// filed by messageSync): what the phone notification says, which devices get
+// filed by messageSync, and new website estimate requests): what the phone
+// notification says, which devices get
 // it, and which FCM answers mean a device is gone. Pure: no Firebase. Shared
 // with the staff app (src/lib/staffAlerts.js) so the 💬 list and the
 // notification say the same thing. Spec: docs/specs/staff-alerts.md.
 
-export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email' }
+export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email', request: 'Estimate request' }
 export const PREVIEW_CHARS = 120
 export const MAX_DEVICES = 10
 // A catch-up of old mail (sync down for a while) doesn't buzz phones.
@@ -24,10 +25,19 @@ export const messageLink = (m) => (m.customerId ? `#accounts/customer/${encodeUR
 export const whoOf = (m, names = {}) =>
   names[targetKey(m)] || (m.phone ? prettyPhone(m.phone) : '') || m.name || m.email || 'Unknown number'
 
+const clip = (s, max) => (s.length > max ? `${s.slice(0, max - 1)}…` : s)
+
 export function previewOf(m, max = PREVIEW_CHARS) {
   const text = [m.kind === 'email' ? m.subject : '', m.text].filter(Boolean).join(' · ').replace(/\s+/g, ' ').trim()
   if (!text) return m.kind === 'missed' ? 'No voicemail left' : ''
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text
+  return clip(text, max)
+}
+
+// A new website estimate request (newLeadAlert) -> its notification.
+export function requestPush(lead, id) {
+  const name = `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim() || 'someone'
+  const body = [lead.city, lead.message].filter(Boolean).join(' · ').replace(/\s+/g, ' ').trim()
+  return { title: `New estimate request from ${name}`, body: clip(body, PREVIEW_CHARS) || 'Tap to open', link: messageLink({ leadId: id }), tag: `lead:${id}` }
 }
 
 // Messages that alert: from a customer (or unknown number), a synced kind, not dismissed.

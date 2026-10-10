@@ -70,6 +70,8 @@ export const demoData = {
       subject: 'Re: Your 2026 install', text: 'Hi Sample, yes we can add the tree the same day. It adds $45 this year.' },
     { id: 'gv-demo-lead', leadId: 'demo-2', phone: '+15550102', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(20), syncedAt: hoursAgo(19.95), text: 'Hi, I sent the form on your website. Do you do roofline only?' },
     { id: 'gv-demo-unmatched-1', unmatched: true, phone: '+15550100166', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(2), syncedAt: hoursAgo(1.95), text: 'Hi! Saw your sign on Broadway. How much for a one story house?' },
+    { id: 'em-demo-new-unmatched', unmatched: true, email: 'pat.new@example.org', kind: 'email', direction: 'in', source: 'gmail', at: hoursAgo(1.2), syncedAt: hoursAgo(1.15),
+      subject: 'Christmas lights quote', text: 'Hi, a neighbor recommended you. Could you give us a quote for our roofline? Two-story house in Shadow Creek Ranch.' },
     { id: 'gv-demo-missed', customerId: 'sample-customer', phone: '+15550101', kind: 'missed', direction: 'in', source: 'voice-email', at: hoursAgo(0.7), syncedAt: hoursAgo(0.65) },
     { id: 'gv-demo-unmatched-2', unmatched: true, phone: '+15550100177', kind: 'voicemail', direction: 'in', source: 'voice-email', at: hoursAgo(9), syncedAt: hoursAgo(8.95), text: 'Hi, this is about getting lights put up on our house in Silverlake. Please call me back.' },
   ]),

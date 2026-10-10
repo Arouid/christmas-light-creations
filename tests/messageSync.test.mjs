@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { addressesOf, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem, phonesOf, voiceId } from '../functions/messageSync.js'
+import { addressesOf, badBatch, buildDirectory, docsFor, dryRunSummary, junkReason, parseItem, phonesOf, voiceId } from '../functions/messageSync.js'
 
 // Hand-written samples in the shapes Google Voice and Gmail use (no real data).
 const DATE = '2026-11-18T17:12:40.000Z'
@@ -118,7 +118,7 @@ test('sign-in link emails, internal mail and Voice notices are never stored as c
   assert.equal(parseItem(voiceText).source, 'voice-email')
 })
 
-test('matching: customers first, converted lead goes to its customer, unknown email dropped', () => {
+test('matching: customers first, converted lead goes to its customer, unknown sender unmatched', () => {
   const text = docsFor(parseItem(voiceText), dir)
   assert.equal(text[0].data.customerId, 'sample-customer')
   assert.equal(text[0].data.unmatched, undefined)
@@ -128,7 +128,13 @@ test('matching: customers first, converted lead goes to its customer, unknown em
   assert.equal(docsFor(parseItem(missed), dir)[0].data.leadId, 'lead1')
   const conv = docsFor(parseItem({ ...customerEmail, from: 'converted@example.com' }), dir)
   assert.equal(conv[0].data.customerId, 'example-family')
-  assert.deepEqual(docsFor(parseItem({ ...customerEmail, from: 'vendor@example.org' }), dir), [])
+  const stranger = docsFor(parseItem({ ...customerEmail, from: 'Pat New <Pat.New@Example.org>' }), dir)
+  assert.equal(stranger.length, 1)
+  assert.equal(stranger[0].id, `${parseItem(customerEmail).idBase}-unmatched`)
+  assert.equal(stranger[0].data.unmatched, true)
+  assert.equal(stranger[0].data.email, 'pat.new@example.org')
+  assert.equal(stranger[0].data.text, 'Thursday evening is perfect, thanks!')
+  assert.equal('junk' in stranger[0].data, false)
   const unknown = docsFor(parseItem({ ...voiceText, from: '12818190163.15550109999.a@txt.voice.google.com' }), dir)
   assert.equal(unknown[0].data.unmatched, true)
   assert.equal(unknown[0].data.phone, '+15550109999')
@@ -158,4 +164,29 @@ test('dry run shows kind and match but no text or full number', () => {
   assert.deepEqual(s, { status: 'would-save', kind: 'text', direction: 'in', match: 'customer', chars: e.text.length, last4: '0101' })
   assert.ok(!JSON.stringify(s).includes('gate code'))
   assert.deepEqual(dryRunSummary({ skip: 'group-text' }, []), { status: 'skipped', reason: 'group-text' })
+})
+
+test('unknown senders: automatic, service and bulk mail is dropped; a person asking to unsubscribe is kept', () => {
+  const footer = 'Big fall sale on LED strings!\n\nUnsubscribe: https://shop.example.com/u/123'
+  assert.equal(junkReason('noreply@shop.example.com', 'Your order shipped'), 'automatic')
+  assert.equal(junkReason('no-reply+abc@x.example.com', ''), 'automatic')
+  assert.equal(junkReason('notifications@app.example.com', ''), 'automatic')
+  assert.equal(junkReason('service@paypal.com', 'You received a payment'), 'service')
+  assert.equal(junkReason('team@mail.google.com', ''), 'service')
+  assert.equal(junkReason('deals@shop.example.com', footer), 'bulk')
+  assert.equal(junkReason('deals@shop.example.com', 'Hi!\nView this email in your browser'), 'bulk')
+  assert.equal(junkReason('pat.new@example.org', 'Please unsubscribe me from your emails'), '')
+  assert.equal(junkReason('pat.new@example.org', 'Hi, can you quote lights for 12 Oak St? https://maps.example.com/x'), '')
+  assert.equal(junkReason('googlefan@example.org', ''), '')
+  // Dropped with the reason; nothing is stored.
+  const ad = parseItem({ ...customerEmail, from: 'deals@shop.example.com', body: footer })
+  assert.equal(ad.junk, 'bulk')
+  assert.deepEqual(docsFor(ad, dir), [])
+  assert.equal(dryRunSummary(ad, []).junk, 'bulk')
+  // A known customer's email is kept even if it looks like bulk mail.
+  const known = docsFor(parseItem({ ...customerEmail, body: footer }), dir)
+  assert.equal(known[0].data.customerId, 'sample-customer')
+  assert.equal('junk' in known[0].data, false)
+  // Outgoing mail to someone we don't know is still not stored.
+  assert.deepEqual(docsFor(parseItem({ ...sentEmail, to: 'stranger@example.org', cc: '', bcc: '' }), dir), [])
 })

@@ -58,3 +58,5 @@
 | 51 | Text the business number and email info@ from a phone/address on a test customer | Within ~10 minutes: "Text from <test customer>" and "Email from <test customer>" notifications; tapping opens their account; 💬 count goes up on the computer too; control: the same messages in their Text & call history | Not checked |
 | 52 | Text from a number on no customer | "Text from (xxx) xxx-xxxx"; tap opens Leads → Unmatched | Not checked |
 | 53 | 💬 → Turn off on that phone, text again | No notification on that phone; 💬 count still goes up | Not checked |
+| 54 | Send a test estimate request on the website (mark it Spam / test after) | Phone notification "New estimate request from <name>" within a minute, plus the usual email; tap opens the lead; it's in 💬 as 📝 | Not checked |
+| 55 | Email info@ from an address that's on no customer or lead | Within ~10 minutes: "Email from <address>" notification; Leads → Unmatched shows it with Reply in Gmail / Link to customer / Dismiss; a newsletter or no-reply email does NOT show | Not checked |

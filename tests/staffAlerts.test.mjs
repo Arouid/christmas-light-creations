@@ -140,3 +140,26 @@ test('device names', () => {
   assert.equal(deviceName('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15'), 'Safari on Mac')
   assert.equal(deviceName(''), 'Browser')
 })
+
+test('website estimate requests: a notification of their own, and entries in the 💬 list (spam left out)', async () => {
+  const { requestPush } = await import('../functions/staffPush.js')
+  const { requestItems } = await import('../src/lib/staffAlerts.js')
+  const lead = { firstName: 'Pat', lastName: 'Sample', city: 'Pearland', message: 'Roofline and two trees,\n warm white.', createdAt: { toMillis: () => now - 2 * MIN } }
+  assert.deepEqual(requestPush(lead, 'L1'), {
+    title: 'New estimate request from Pat Sample', body: 'Pearland · Roofline and two trees, warm white.', link: '#accounts/lead/L1', tag: 'lead:L1',
+  })
+  assert.equal(requestPush({}, 'L2').title, 'New estimate request from someone')
+  assert.equal(requestPush({}, 'L2').body, 'Tap to open')
+
+  const items = requestItems([
+    { id: 'L1', ...lead }, { id: 'L2', ...lead, status: 'spam' }, { id: 'L3', firstName: 'Old', createdAt: new Date(now - 9 * 24 * HOUR) }, { id: 'L4', firstName: 'No time' },
+  ])
+  assert.deepEqual(items.map((m) => m.id), ['request-L1', 'request-L3'])
+  const list = recentIncoming(items, now)
+  assert.deepEqual(list.map((m) => [m.kind, m.leadId, m.text]), [['request', 'L1', 'Pearland · Roofline and two trees,\n warm white.']])
+  assert.equal(countNew(list, now - 5 * MIN), 1)
+  assert.equal(whoOf(list[0], { 'lead:L1': 'Pat Sample' }), 'Pat Sample')
+  assert.equal(messageLink(list[0]), '#accounts/lead/L1')
+  // A synced message never has kind 'request', but if one did it would read sensibly.
+  assert.equal(pushFor([{ ...list[0], at: iso(now - MIN) }], { 'lead:L1': 'Pat Sample' }, now).title, 'Estimate request from Pat Sample')
+})
