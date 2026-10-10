@@ -15,6 +15,7 @@ const btn = 'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-fu
 const primary = 'min-h-11 rounded-full bg-glow-400 px-5 py-2.5 text-sm font-semibold text-night-950 hover:bg-glow-300 disabled:opacity-40'
 const msDay = (ms) => (Number(ms) ? new Date(Number(ms)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '')
 const tsMs = (t) => (t?.toMillis ? t.toMillis() : t?.seconds != null ? t.seconds * 1000 : t ? Date.parse(t) : NaN)
+const EDITS = ['customer', 'season', 'kind', 'items', 'note', 'terms', 'dueDate']
 const seasons = () => { const y = new Date().getFullYear(); return [y + 1, y, y - 1, y - 2].map(String) }
 
 // What went out to the customer, from the server's log on the invoice.
@@ -70,7 +71,8 @@ export default function InvoiceEditor({ token: startToken, invoice, onClose }) {
   const today = todayISO()
   const state = invoiceState(live, today)
   const editable = status === 'draft' || status === 'open'
-  const shown = editable ? { ...live, ...d } : live
+  // Staff's unsaved edits over the stored invoice (never its status, number or payments).
+  const shown = editable ? { ...live, ...Object.fromEntries(EDITS.map((k) => [k, d[k]])) } : live
   const total = invoiceCents(shown)
   const problems = sendProblems(shown)
   const paid = paidInfo(live)

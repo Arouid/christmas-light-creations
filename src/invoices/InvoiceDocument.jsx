@@ -26,7 +26,7 @@ export default function InvoiceDocument({ invoice: inv, business = {}, today = t
         </div>
         <div className="text-right">
           <p className="font-display text-2xl font-extrabold tracking-wide">INVOICE</p>
-          <p className="font-semibold tabular-nums">{inv.number || 'Draft'}</p>
+          <p className="font-semibold tabular-nums">{inv.number || (inv.status === 'draft' ? 'Draft' : '')}</p>
           <span className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold print:border print:border-black/30 print:bg-transparent print:text-black ${STATE_CLASS[state]}`}>{STATE_LABEL[state]}</span>
         </div>
       </header>
