@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { KIND_WORD, LIST_DAYS, isNew, messageLink, previewOf, whoOf } from '../lib/staffAlerts'
+import { KIND_WORD, LIST_DAYS, isNew, messageLink, needsSomeone, previewOf, whoOf } from '../lib/staffAlerts'
 import Handling from './Handling'
 import PushSetup from './PushSetup'
 
@@ -48,7 +48,8 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
         {list.length > 0 && (
           <ul className="space-y-2">
             {list.map((m) => {
-              const fresh = isNew(m, seenAtOpen)
+              // Marked until someone takes it (or, without the activity log, until you've looked).
+              const fresh = alerts.openMode ? needsSomeone(m, feed?.handling) : isNew(m, seenAtOpen)
               return (
                 <li key={m.id}>
                   <button type="button" onClick={() => go(messageLink(m))}
@@ -60,7 +61,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
                         <span className="shrink-0 text-xs text-slate-400">{when(m.at)}</span>
                       </span>
                       <span className="block text-sm text-slate-300">
-                        {fresh && <span className="mr-1.5 rounded-full bg-glow-400 px-1.5 text-xs font-bold text-night-950">New</span>}
+                        {fresh && <span className="mr-1.5 rounded-full bg-glow-400 px-1.5 text-xs font-bold text-night-950">{alerts.openMode ? 'Needs someone' : 'New'}</span>}
                         <span className="font-medium">{KIND_WORD[m.kind]}</span>
                         {m.unmatched && <span className="text-slate-400"> · {m.email ? 'new sender' : 'unknown number'}</span>}
                       </span>

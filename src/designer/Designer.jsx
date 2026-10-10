@@ -24,6 +24,13 @@ const colorName = (list) => Object.entries(COLOR_SETS).find(([, v]) => v.join() 
 export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose, onSatelliteMeasure, simple = false, saveLabel = 'Save' }) {
   const canvas = useRef(null)
   const box = useRef(null) // the viewport the photo is zoomed/panned inside
+  // Keyboard focus moves into the dialog as it opens and back out as it closes.
+  const dialog = useRef(null)
+  useEffect(() => {
+    const before = document.activeElement
+    dialog.current?.querySelector('button')?.focus({ preventScroll: true })
+    return () => { if (before instanceof HTMLElement && document.contains(before)) before.focus({ preventScroll: true }) }
+  }, [])
   const [img, setImg] = useState(null)
   // The website's version (homeowners): no measuring or decorations, C9 bulbs only (owner 2026-10-10).
   const tools = simple ? TOOLS.filter(([k]) => k !== 'measure' && k !== 'decor') : TOOLS
@@ -443,7 +450,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   const editing = selStrand ?? (selDecor || tool === 'measure' || tool === 'decor' ? null : pen)
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-night-950" role="dialog" aria-modal="true" aria-label={title}>
+    <div ref={dialog} className="fixed inset-0 z-50 flex flex-col bg-night-950" role="dialog" aria-modal="true" aria-label={title}>
       <header className="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-white/10 px-3 py-2 [&>button]:shrink-0">
         <button type="button" onClick={() => onClose?.(design)} className={off} aria-label="Close designer">✕</button>
         <p className="min-w-0 flex-1 truncate font-semibold"><span className="hidden sm:inline">{title}</span></p>

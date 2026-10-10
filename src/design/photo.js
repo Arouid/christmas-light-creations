@@ -1,8 +1,12 @@
 // Photos on the public designer (docs/specs/public-designer.md): every upload
 // is redrawn at the standard size (which also drops the phone's location
 // data), and the finished picture is made from the design. Browser only.
+// DesignPage loads this file only when it has to draw (not at page load).
 import { renderDesign } from '../designer/render.js'
 import { LIMITS, QUALITIES, standardSize } from '../lib/publicDesign.js'
+
+export { renderDesign }
+export { loadImage } from '../designer/image.js'
 
 // JPEG data URL no longer than `max` characters (lower quality if needed).
 function encode(canvas, max) {

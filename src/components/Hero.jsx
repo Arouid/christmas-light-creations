@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { business, currentYear, designPage, gallery } from '../data/content'
+import { business, designPage, gallery } from '../data/content'
+import { useToday } from '../lib/prerendered'
 import { bookLine, fetchBooking, seasonBadge } from '../lib/urgency'
 import Availability from './Availability'
 import Icon from './Icon'
 import SignWelcome from './SignWelcome'
 
 export default function Hero() {
+  const today = useToday()
   // Staff's "how booked we are" line, fetched after the page has drawn.
   const [status, setStatus] = useState('')
   useEffect(() => {
@@ -22,7 +24,7 @@ export default function Hero() {
       <div className="mx-auto flex min-h-[88svh] max-w-6xl flex-col justify-end px-4 pb-14 pt-24 md:justify-center md:pb-24">
         <SignWelcome />
         <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-glow-400/30 bg-night-900/60 px-3 py-1 text-xs font-medium uppercase tracking-wider text-glow-300">
-          <span className="twinkle size-2 rounded-full bg-glow-400" /> {seasonBadge()}
+          <span className="twinkle size-2 rounded-full bg-glow-400" /> {seasonBadge(today)}
         </p>
         <h1 className="max-w-3xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl md:text-7xl">
           Holiday lights, <span className="text-glow-400 [text-shadow:0_0_28px_rgba(255,207,77,0.55)]">done for you.</span>
@@ -44,13 +46,13 @@ export default function Hero() {
         </a>
         <p className="mt-4 text-sm text-slate-300">
           {status && <span className="mr-2 font-semibold text-glow-300">🔥 {status}.</span>}
-          {bookLine()}
+          {bookLine(today)}
         </p>
         <Availability className="mt-4" />
 
         <dl className="mt-12 grid max-w-lg grid-cols-3 gap-4 border-t border-white/10 pt-6 text-center sm:text-left">
           {[
-            [`${currentYear - business.since}+`, 'years lighting homes'],
+            [`${today.getFullYear() - business.since}+`, 'years lighting homes'],
             [business.homesServed, 'homes each season'],
             ['$0', 'service calls'],
           ].map(([v, l]) => (

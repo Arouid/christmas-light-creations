@@ -1,6 +1,7 @@
 // Renders the public designer's sample house (assets-source/sample-house.svg)
 // to public/images/design/sample-house.jpg (1280x800, the standard size).
 // Run once after changing the SVG: node scripts/sample-house.mjs
+// (then node scripts/sample-design.mjs to redraw the page's opening picture).
 import { mkdir } from 'node:fs/promises'
 import sharp from 'sharp'
 

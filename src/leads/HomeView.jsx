@@ -53,7 +53,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
     { name: 'This device', color: pushOn ? 'green' : 'off', note: pushOn ? 'notifications on' : 'notifications off (💬)' },
   ]
   const tiles = [
-    { key: 'msgs', title: 'New messages', value: alerts.count, note: `${alerts.list.length} in 7 days`, onClick: onOpenMessages, alert: alerts.count > 0 },
+    { key: 'msgs', title: alerts.openMode ? 'To answer' : 'New messages', value: alerts.count, note: alerts.openMode ? `nobody on them yet · ${alerts.list.length} in 7 days` : `${alerts.list.length} in 7 days`, onClick: onOpenMessages, alert: alerts.count > 0 },
     { key: 'req', title: 'New requests', value: nums.openRequests, note: 'website, status New', link: '#leads', alert: nums.openRequests > 0 },
     { key: 'inv', title: 'Unpaid', value: money(nums.unpaidCents), note: `${nums.unpaid} invoice${nums.unpaid === 1 ? '' : 's'}${nums.overdue ? ` · ${nums.overdue} overdue` : ''}`, link: '#invoices', alert: nums.overdue > 0 },
     { key: 'svc', title: 'Service calls', value: nums.openCalls, note: 'open or scheduled', link: '#service' },

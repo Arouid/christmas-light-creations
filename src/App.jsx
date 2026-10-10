@@ -9,13 +9,15 @@ import ServiceAreas from './components/ServiceAreas'
 import Estimate from './components/Estimate'
 import Footer from './components/Footer'
 import MobileCta from './components/MobileCta'
+import SkipLink from './components/SkipLink'
 import Memorial from './components/Memorial'
 
 export default function App() {
   return (
     <>
+      <SkipLink />
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         <Hero />
         <Services />
         <HowItWorks />

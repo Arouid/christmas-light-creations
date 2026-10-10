@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { business, nav } from '../data/content'
+import { useFocusOnOpen } from '../lib/focus'
 import Icon from './Icon'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const menu = useRef(null)
+  useFocusOnOpen(menu, open)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -43,7 +46,7 @@ export default function Header() {
       </div>
 
       {open && (
-        <nav id="mobile-nav" className="border-t border-white/10 px-4 pb-6 pt-2 md:hidden" aria-label="Mobile">
+        <nav id="mobile-nav" ref={menu} className="border-t border-white/10 px-4 pb-6 pt-2 md:hidden" aria-label="Mobile">
           {nav.map((n) => (
             <a key={n.href} href={n.href} onClick={() => setOpen(false)}
               className="block border-b border-white/5 py-4 text-lg font-medium">{n.label}</a>

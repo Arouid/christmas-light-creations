@@ -163,3 +163,24 @@ test('website estimate requests: a notification of their own, and entries in the
   // A synced message never has kind 'request', but if one did it would read sensibly.
   assert.equal(pushFor([{ ...list[0], at: iso(now - MIN) }], { 'lead:L1': 'Pat Sample' }, now).title, 'Estimate request from Pat Sample')
 })
+
+test('the count is what nobody has taken yet: opening the list doesn’t clear it', async () => {
+  const { countOpen, needsSomeone, requestItems } = await import('../src/lib/staffAlerts.js')
+  const { handlers } = await import('../src/lib/activity.js')
+  const ts = (ms) => ({ toMillis: () => ms })
+  const list = [
+    { id: 'gv-1', kind: 'text', direction: 'in' },
+    { id: 'gv-2', kind: 'voicemail', direction: 'in' },
+    { id: 'em-3', kind: 'email', direction: 'in' },
+    ...requestItems([{ id: 'L1', createdAt: ts(now), status: 'new' }, { id: 'L2', createdAt: ts(now), status: 'called' }]),
+  ]
+  assert.equal(countOpen(list, new Map()), 4) // L2 was already called back
+  const h = handlers([
+    { action: 'handling', by: 'scott@x.com', at: ts(now), target: { type: 'message', id: 'gv-1' } },
+    { action: 'takeover', by: 'lacie@x.com', at: ts(now), target: { type: 'message', id: 'em-3' } },
+    { action: 'email', by: 'katie@x.com', at: ts(now), target: { type: 'customer', id: 'gv-2' } }, // not a claim
+  ])
+  assert.equal(countOpen(list, h), 2)
+  assert.deepEqual(list.filter((m) => needsSomeone(m, h)).map((m) => m.id), ['gv-2', 'request-L1'])
+  assert.equal(needsSomeone({ id: 'x', kind: 'text' }, undefined), true)
+})

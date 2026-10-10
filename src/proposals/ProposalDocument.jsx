@@ -59,7 +59,7 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
         <section className="space-y-2">
           <BeforeAfter render={images.render} photo={images.photo} />
           <img src={images.render} alt="" className="hidden w-full print:block" />
-          <p className="text-xs text-slate-500 print:text-black">Design mockup for illustration; final placement may vary slightly with your roofline.</p>
+          <p className="text-xs text-slate-400 print:text-black">Design mockup for illustration; final placement may vary slightly with your roofline.</p>
         </section>
       )}
 
@@ -127,7 +127,7 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
               <p className="text-xs text-slate-400 print:text-black">Signed electronically {when(p.countersignedAt)}</p>
             </div>
           )}
-          <p className="text-xs text-slate-500 sm:col-span-2 print:text-black">Document fingerprint (SHA-256): <span className="break-all font-mono">{p.docHash}</span></p>
+          <p className="text-xs text-slate-400 sm:col-span-2 print:text-black">Document fingerprint (SHA-256): <span className="break-all font-mono">{p.docHash}</span></p>
         </section>
       )}
     </article>

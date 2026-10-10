@@ -45,13 +45,13 @@ function page(a) {
 <meta property="og:type" content="website" />
 <meta property="og:url" content="${url}" />
 <link rel="icon" type="image/svg+xml" href="${base}favicon.svg" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="preload" href="${base}fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="${base}fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
 ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 <script type="application/ld+json">${JSON.stringify(schema)}</script>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 <header class="border-b border-white/10 bg-night-950/90">
   <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
     <a href="${base}" class="flex items-center gap-2.5"><img src="${base}images/clc-cottage.png" alt="" class="size-11" /><span class="font-display text-lg font-bold">${esc(business.name)}</span></a>
@@ -61,7 +61,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
     </div>
   </div>
 </header>
-<main>
+<main id="main" tabindex="-1">
   <section class="px-4 py-14 md:py-20">
     <div class="mx-auto max-w-6xl">
       <p class="mb-3 text-sm font-semibold uppercase tracking-wider text-glow-400">Christmas light installation · ${esc(a.name)}</p>
@@ -122,7 +122,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
     </div>
   </nav>
 </main>
-<footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-500">
+<footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-400">
   © ${new Date().getFullYear()} ${esc(business.name)} · ${esc(business.city)} · ${business.phone}
   · <a href="${base}account/" class="hover:text-glow-300">Customer login</a> · <a href="${base}privacy/" class="hover:text-glow-300">Privacy</a>
 </footer>

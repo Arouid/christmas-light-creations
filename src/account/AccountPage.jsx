@@ -19,7 +19,7 @@ const lib = demo ? null : import('../lib/account.js')
 const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown' }
 const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down and labeling and boxing them for you to keep.' }
 const STATE_TEXT = { paid: 'Paid', due: 'Due now', later: 'Not due yet', none: '—', free: '' }
-const STATE_CLASS = { paid: 'text-emerald-300', due: 'text-glow-300 font-semibold', later: 'text-slate-400', none: 'text-slate-500', free: '' }
+const STATE_CLASS = { paid: 'text-emerald-300', due: 'text-glow-300 font-semibold', later: 'text-slate-400', none: 'text-slate-400', free: '' }
 const proposalLink = (token) => `${import.meta.env.BASE_URL}proposal/?t=${token}`
 const btn = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold'
 

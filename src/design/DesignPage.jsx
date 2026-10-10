@@ -1,22 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { business, designPage as t, footerLinks } from '../data/content'
-import { Designer, loadImage, newDesign, renderDesign } from '../designer'
+import { newDesign } from '../designer/model.js'
 import { attachmentProblem } from '../lib/publicDesign'
 import EstimateForm from '../components/EstimateForm'
 import Icon from '../components/Icon'
-import { finishedPicture, standardPhoto } from './photo'
-import { SAMPLE_PHOTO, sampleDesign } from './sampleDesign'
+import SkipLink from '../components/SkipLink'
+import { SAMPLE_PHOTO, SAMPLE_PICTURE, sampleDesign } from './sampleDesign'
 
 // /design/: homeowners try our light designer on a sample house or a photo of
 // their own home (simple mode: no prices, feet or measuring), then ask for an
 // estimate with the design attached (docs/specs/public-designer.md).
+// Fast on phones: until the visitor changes something, the sample is a
+// ready-made picture; the designer and the drawing code load only when needed.
+const Designer = lazy(() => import('../designer/Designer.jsx'))
+const drawing = () => import('./photo.js')
 const BRAND = `${business.name} · christmas-light-creations.com`
 const primary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-glow-400 px-6 py-3 font-semibold text-night-950 shadow-[0_0_28px_-6px] shadow-glow-400 hover:bg-glow-300 disabled:opacity-60'
 const secondary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 px-6 py-3 font-semibold hover:bg-white/5 disabled:opacity-60'
 
 export default function DesignPage() {
+  const [start] = useState(sampleDesign) // the sample as the page opens
   const [photo, setPhoto] = useState(SAMPLE_PHOTO) // { src, width, height, sample? }
-  const [design, setDesign] = useState(sampleDesign)
+  const [design, setDesign] = useState(start)
+  const [draw, setDraw] = useState(null) // ./photo.js, once loaded
   const [img, setImg] = useState(null)
   const [open, setOpen] = useState(false)
   const [problem, setProblem] = useState('')
@@ -24,15 +30,21 @@ export default function DesignPage() {
   const [busy, setBusy] = useState(false)
   const canvas = useRef(null)
   const file = useRef(null)
+  const untouched = photo.sample && design === start // shown as SAMPLE_PICTURE, nothing to draw
 
   useEffect(() => {
+    if (untouched) return
     let live = true
-    loadImage(photo.src).then((i) => live && setImg(i)).catch(() => live && setProblem(t.errors.unreadable))
+    drawing()
+      .then(async (m) => { const i = await m.loadImage(photo.src); if (live) { setDraw(m); setImg(i) } })
+      .catch(() => live && setProblem(t.errors.unreadable))
     return () => { live = false }
-  }, [photo.src])
-  useEffect(() => { if (img && canvas.current) renderDesign(canvas.current.getContext('2d'), design, img) }, [img, design])
-  // The finished picture: the thumbnail on the form and what's sent with it.
-  const picture = useMemo(() => (img && !open ? finishedPicture(design, img) : null), [img, design, open])
+  }, [photo.src, untouched])
+  useEffect(() => { if (draw && img && canvas.current) draw.renderDesign(canvas.current.getContext('2d'), design, img) }, [draw, img, design])
+  // The finished picture: the thumbnail on the form and what's sent with it
+  // (the untouched sample's is drawn only when it's sent).
+  const picture = useMemo(() => (draw && img && !open && !untouched ? draw.finishedPicture(design, img) : null), [draw, img, design, open, untouched])
+  const preview = untouched ? SAMPLE_PICTURE : picture
 
   async function pick(e) {
     const f = e.target.files?.[0]
@@ -41,7 +53,7 @@ export default function DesignPage() {
     setBusy(true)
     setProblem('')
     try {
-      const p = await standardPhoto(f)
+      const p = await (await drawing()).standardPhoto(f)
       setImg(null)
       setPhoto(p)
       setPortrait(p.portrait)
@@ -55,16 +67,22 @@ export default function DesignPage() {
   }
   const toForm = () => document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
-  const attachment = picture && {
-    preview: picture,
+  const attachment = preview && {
+    preview,
     get: async () => {
-      const a = { design: JSON.stringify(design), photo: photo.sample ? 'sample' : photo.src, image: picture }
+      let image = picture
+      if (!image) {
+        const m = await drawing()
+        image = m.finishedPicture(design, await m.loadImage(photo.src))
+      }
+      const a = { design: JSON.stringify(design), photo: photo.sample ? 'sample' : photo.src, image }
       return attachmentProblem(a) ? null : a
     },
   }
 
   return (
     <div className="min-h-svh">
+      <SkipLink />
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pt-5">
         {/* The way back to the main site, said in words (owner: people couldn't tell how to get back). */}
         <a href={import.meta.env.BASE_URL} className="group flex min-h-11 min-w-0 items-center gap-2">
@@ -80,20 +98,24 @@ export default function DesignPage() {
         </a>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-28 pt-8 md:pb-16">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-28 pt-8 md:pb-16">
         <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-glow-400">Free light designer</p>
         <h1 className="font-display text-4xl font-extrabold tracking-tight md:text-6xl">{t.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-slate-300">{t.intro}</p>
+        <p className="mt-2 max-w-2xl text-slate-400">{t.noSight} <a href={business.phoneHref} className="font-semibold text-glow-300 underline">{business.phone}</a>.</p>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-5">
           <section className="lg:col-span-3" aria-label="Your design">
             <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-night-900">
-              <canvas ref={canvas} width={photo.width} height={photo.height} className="block h-auto w-full" aria-label={photo.sample ? 'Sample house with Christmas lights' : 'Your home with Christmas lights'} />
-              {!img && <p className="absolute inset-0 grid place-items-center text-slate-400">Loading…</p>}
+              {untouched
+                ? <img src={SAMPLE_PICTURE} width={photo.width} height={photo.height} fetchPriority="high" className="block h-auto w-full" alt="Sample house with Christmas lights" />
+                : <canvas ref={canvas} width={photo.width} height={photo.height} className="block h-auto w-full" aria-label={photo.sample ? 'Sample house with Christmas lights' : 'Your home with Christmas lights'} />}
+              {!untouched && !img && <p className="absolute inset-0 grid place-items-center text-slate-400">Loading…</p>}
               <span className="absolute left-3 top-3 rounded-full bg-night-950/80 px-3 py-1 text-xs font-semibold">{photo.sample ? t.sampleNote : t.ownNote}</span>
             </div>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <button type="button" onClick={() => setOpen(true)} disabled={!img} className={primary}>✏️ {photo.sample ? t.open : t.edit}</button>
+              {/* Never disabled: the designer waits for the photo itself, and focus returns here when it closes. */}
+              <button type="button" onClick={() => setOpen(true)} className={primary}>✏️ {photo.sample ? t.open : t.edit}</button>
               <button type="button" onClick={() => file.current?.click()} disabled={busy} className={secondary}>📷 {busy ? 'Opening…' : photo.sample ? t.upload : t.uploadAgain}</button>
               <input ref={file} type="file" accept="image/*" onChange={pick} className="hidden" />
             </div>
@@ -144,10 +166,12 @@ export default function DesignPage() {
         <button type="button" onClick={toForm} className="rounded-full bg-glow-400 py-3 text-center font-semibold text-night-950">Free estimate</button>
       </div>
 
-      {open && img && (
-        <Designer simple photo={photo} design={design} title="Your light design" brand={BRAND} saveLabel={t.saveLabel}
-          onSave={async (d) => { setDesign(d); setOpen(false); setTimeout(toForm, 50) }}
-          onClose={(d) => { if (d) setDesign(d); setOpen(false) }} />
+      {open && (untouched || img) && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 grid place-items-center bg-night-950 text-slate-400">Loading designer…</div>}>
+          <Designer simple photo={photo} design={design} title="Your light design" brand={BRAND} saveLabel={t.saveLabel}
+            onSave={async (d) => { setDesign(d); setOpen(false); setTimeout(toForm, 50) }}
+            onClose={(d) => { if (d) setDesign(d); setOpen(false) }} />
+        </Suspense>
       )}
     </div>
   )

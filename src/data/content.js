@@ -1,6 +1,5 @@
 // All site copy lives here so text can be edited without touching layout code.
-
-export const currentYear = new Date().getFullYear()
+// (Years and dates on prerendered pages come from useToday in lib/prerendered.js.)
 
 // Vite sets BASE_URL ('/' or the github.io sub-path); plain Node (tests) has none.
 const base = import.meta.env?.BASE_URL ?? '/'
@@ -262,7 +261,7 @@ export const privacy = {
         '**Google** (Firebase, Google Workspace, Google Voice, Google Maps): stores our customer records, sends and receives our email and texts, and shows addresses on a map for our crew.',
         '**PayPal** (including Venmo and card payments): processes online payments under PayPal’s own privacy policy.',
         '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
-        'Our pages load fonts from Google Fonts, and the home page asks our own server (on Google Cloud) for the line about how booked we are and the next open install dates (only dates, nothing about anyone). That’s all: no other outside services see your visit.',
+        'Our fonts come from our own website (no font service sees your visit), and the home page asks our own server (on Google Cloud) for the line about how booked we are and the next open install dates (only dates, nothing about anyone). That’s all: no other outside services see your visit.',
       ],
     },
     {
@@ -338,6 +337,7 @@ export const designPage = {
   ownNote: 'Your home',
   estimate: 'Get my free estimate with this design',
   saveLabel: 'Get my estimate →',
+  noSight: 'The designer is a drawing tool, so it doesn’t work with a screen reader. If you can’t see the picture, call us and describe the look you want:',
   backHome: 'Back to the main site',
   how: [
     ['✏️', 'Lights', 'tap corner to corner along a roofline, then Done.'],

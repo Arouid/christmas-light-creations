@@ -1,12 +1,11 @@
-import { useState } from 'react'
 import { business } from '../data/content'
-import { signCode } from '../lib/sign'
+import { useSign } from '../lib/prerendered'
 import Icon from './Icon'
 
 // Shown at the top of the page to people who came from a road sign: most of
 // them want to text or call from the car, not fill in a form.
 export default function SignWelcome() {
-  const [sign] = useState(signCode)
+  const sign = useSign()
   if (!sign) return null
   return (
     <div className="mb-6 max-w-xl rounded-2xl border border-glow-400/40 bg-night-900/85 p-4 backdrop-blur md:p-5">

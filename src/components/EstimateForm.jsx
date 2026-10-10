@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { HEARD_FROM, business, designPage, urgency } from '../data/content'
 import { firebaseReady, getFirebaseApp, submitLead } from '../lib/firebase'
-import { signCode, signSource } from '../lib/sign'
+import { useSign, useTakenOver } from '../lib/prerendered'
+import { signSource } from '../lib/sign'
 import Icon from './Icon'
 import RecaptchaNote from './RecaptchaNote'
 
@@ -13,7 +14,8 @@ const label = 'block text-sm font-medium text-slate-300'
 // sends their light design with the request (docs/specs/public-designer.md).
 export default function EstimateForm({ design, defaultMessage = '' }) {
   const [status, setStatus] = useState('idle') // idle | sending | sent | error
-  const [sign] = useState(signCode)
+  const sign = useSign()
+  const takenOver = useTakenOver()
   const [attach, setAttach] = useState(true)
   const message = useRef(null)
   const first = useRef(null)
@@ -98,7 +100,8 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
           </div>
         </fieldset>
         <label className={`${label} sm:col-span-2`}>How did you hear about us?
-          <select name="source" defaultValue={sign ? signSource(sign) : ''} className={field}>
+          {/* key: a sign code known only after the page is taken over still preselects "Road sign" */}
+          <select key={sign} name="source" defaultValue={sign ? signSource(sign) : ''} className={field}>
             <option value="">Choose one (optional)</option>
             {sign && <option value={signSource(sign)}>Road sign</option>}
             {HEARD_FROM.filter((h) => !(sign && h === 'Road sign')).map((h) => <option key={h}>{h}</option>)}
@@ -110,7 +113,8 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
 
         <div className="sm:col-span-2">
           {firebaseReady ? (
-            <button type="submit" disabled={status === 'sending'}
+            // Off until React has taken the page over: a plain-HTML send would put their details in the URL.
+            <button type="submit" disabled={!takenOver || status === 'sending'}
               className="w-full rounded-full bg-glow-400 py-4 font-semibold text-night-950 shadow-[0_0_28px_-6px] shadow-glow-400 hover:bg-glow-300 disabled:opacity-60">
               {status === 'sending' ? 'Sending…' : 'Request my free estimate'}
             </button>

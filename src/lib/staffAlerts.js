@@ -23,7 +23,7 @@ export const listSince = (now = Date.now()) => now - LIST_DAYS * DAY
 // Website estimate requests -> list entries shaped like messages (spam/test left out).
 export function requestItems(leads) {
   return (leads ?? []).filter((l) => l.status !== 'spam' && toMs(l.createdAt)).map((l) => ({
-    id: `request-${l.id}`, kind: 'request', direction: 'in', leadId: l.id,
+    id: `request-${l.id}`, kind: 'request', direction: 'in', leadId: l.id, status: l.status ?? 'new',
     at: new Date(toMs(l.createdAt)).toISOString(), syncedAt: toMs(l.createdAt),
     text: [l.city, l.message].filter(Boolean).join(' · '),
   }))
@@ -36,7 +36,15 @@ export function recentIncoming(items, now = Date.now()) {
   return (items ?? []).filter((m) => isAlert(m) && toMs(m.syncedAt) >= since).sort((a, b) => when(b) - when(a))
 }
 
+// Still needs someone (owner 2026-10-10: just opening the list mustn't clear
+// it): nobody has tapped I've got it / Take it over, and an estimate request
+// is still New. Dismissed ones are already out of the list. `handling` is the
+// Map from src/lib/activity.js handlers().
+export const needsSomeone = (m, handling) => !handling?.has?.(m.id) && !(m.kind === 'request' && m.status && m.status !== 'new')
+export const countOpen = (list, handling) => list.filter((m) => needsSomeone(m, handling)).length
+
 // New = arrived after you last opened the list (never opened: all of them).
+// Only used while the activity log isn't available (rules not published).
 export const isNew = (m, seenAt) => toMs(m.syncedAt) > toMs(seenAt)
 export const countNew = (list, seenAt) => list.filter((m) => isNew(m, seenAt)).length
 

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { business, urgency } from '../data/content'
+import { useFocusOnOpen } from '../lib/focus'
 import { dayLabel, fetchBooking, pickDate } from '../lib/urgency'
 import Icon from './Icon'
 
@@ -10,6 +11,8 @@ const T = urgency.availability
 export default function Availability({ className = '' }) {
   const [open, setOpen] = useState(false)
   const [days, setDays] = useState(undefined) // undefined = not asked yet, null = couldn't load
+  const panel = useRef(null)
+  useFocusOnOpen(panel, open)
   const show = () => {
     setOpen(!open)
     if (days === undefined) fetchBooking().then((b) => setDays(b.openDays))
@@ -21,7 +24,7 @@ export default function Availability({ className = '' }) {
         📅 {T.button}
       </button>
       {open && (
-        <div className="mt-3 max-w-md rounded-2xl border border-white/10 bg-night-900/95 p-4 text-sm">
+        <div ref={panel} tabIndex={-1} aria-live="polite" className="mt-3 max-w-md rounded-2xl border border-white/10 bg-night-900/95 p-4 text-sm outline-none">
           {days === undefined && <p className="text-slate-400">{T.loading}</p>}
           {days?.length > 0 && (
             <>
