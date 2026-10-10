@@ -22,7 +22,7 @@ import { cleanRow } from '../../src/lib/oldEstimates.js'
 const DIR = 'old-site-backup'
 const inputs = process.argv.slice(2)
 if (!inputs.length) {
-  console.error('Usage: node scripts/old-site/old-history.mjs <takeout .zip | .mbox> …')
+  console.error('Usage: node scripts/old-site/old-history.mjs <takeout .zip | .mbox | contacts .csv> …')
   process.exit(1)
 }
 const walk = (dir) => readdirSync(dir).flatMap((f) => {
@@ -70,9 +70,11 @@ const want = (head) => {
 const temps = []
 try {
   const mboxes = []
+  const contactFiles = [] // Google Contacts exports (Google CSV): saved names for numbers
   const voiceHtml = []
   for (const input of inputs) {
     if (input.endsWith('.mbox')) { mboxes.push(input); continue }
+    if (input.endsWith('.csv')) { contactFiles.push(input); continue }
     const dir = mkdtempSync(join(tmpdir(), 'clc-takeout-'))
     temps.push(dir)
     if (process.platform === 'win32') execFileSync(join(process.env.SystemRoot, 'System32', 'tar.exe'), ['-xf', input, '-C', dir])
@@ -127,6 +129,13 @@ try {
   }
   // Voice: numbers with a saved contact name, or real back-and-forth texting.
   const names = new Map([...namesToPhones(voiceHtml.map((f) => readFileSync(f, 'utf8')))].map(([n, p]) => [p, n]))
+  for (const f of contactFiles) {
+    for (const c of Papa.parse(readFileSync(f, 'utf8').replace(/^﻿/, ''), { header: true, skipEmptyLines: true }).data) {
+      const name = [c['First Name'], c['Middle Name'], c['Last Name']].filter(Boolean).join(' ').trim() || c.Nickname || c['Organization Name'] || ''
+      if (!name) continue
+      for (const p of phonesOf([c['Phone 1 - Value'], c['Phone 2 - Value']].filter(Boolean).join(' / ').replace(/:::/g, ' / '))) if (!names.has(p)) names.set(p, name)
+    }
+  }
   const byPhone = new Map()
   for (const v of voice) {
     const u = byPhone.get(v.data.phone) ?? { n: 0, textsIn: 0, first: v.data.at, last: v.data.at }

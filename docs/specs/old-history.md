@@ -29,6 +29,8 @@ node scripts/old-site/voice-history.mjs old-site-backup/takeout-*.zip old-site-b
 node scripts/old-site/old-history.mjs old-site-backup/takeout-*.zip old-site-backup/Archived-002.mbox
 ```
 
+Add a Google Contacts export (Google CSV, e.g. `old-site-backup/old-contacts.csv`) to the second command to name more Voice numbers.
+
 Outputs `customer-history.json` (Import → Customer history) and `past-requests-plus.csv` (Import → Past requests and win-backs).
 
 ## Matching (Import tab, `src/lib/messageImport.js`)

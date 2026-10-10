@@ -167,7 +167,11 @@ export default function PastRequestsView({ requests, error, customers, season, o
   const inYear = inGroup.filter(({ r }) => (!year || r.year === year)
     && (!q || [r.fullName, r.email, r.phone, r.address, r.requests?.map((x) => x.message).join(' ')].join(' ').toLowerCase().includes(q)))
   const test = Object.fromEntries(FILTERS.map(([k, , t]) => [k, t]))
-  const shown = inYear.filter(({ state }) => test[filter](state)).sort((a, b) => Number(Boolean(b.r.missed)) - Number(Boolean(a.r.missed)))
+  // Missed requests first; in "Texted us", named people (saved contacts) before
+  // bare numbers, most texts first.
+  const named = (r) => Number(!/^[\d\s()+-]*$/.test(r.fullName ?? ''))
+  const shown = inYear.filter(({ state }) => test[filter](state)).sort((a, b) => Number(Boolean(b.r.missed)) - Number(Boolean(a.r.missed))
+    || (group === 'voice' ? named(b.r) - named(a.r) || (b.r.voice?.entries ?? 0) - (a.r.voice?.entries ?? 0) : 0))
   const emailable = shown.filter(({ r, state }) => r.email && !DO_NOT_CONTACT.includes(state)).map(({ r }) => r)
 
   if (error) return <p className="mt-6 text-berry-500" role="alert">Couldn’t load past requests: {error}</p>

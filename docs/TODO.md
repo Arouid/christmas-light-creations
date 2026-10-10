@@ -6,7 +6,6 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
-| 1 | **Import the old history** (spec `docs/specs/old-history.md`), after this version is live: staff app → Import → (a) **Customer history** → `old-site-backup/customer-history.json` (texts, calls, emails, payments, estimate requests; 37,393 entries) → check counts → Import; (b) **Past requests and win-backs** → `past-requests-plus.csv` → Import. Then Past requests → **Win-backs** | Already imported `voice-history.json`? Fine: same ids, nothing doubled. Rebuild both: `voice-history.mjs` then `old-history.mjs` (commands in the spec) |
 | 4 | **Voice account setup**: record a new voicemail greeting; add linked numbers if calls should ring cells | voice.google.com as clc.voicemail.01 |
 | 5 | **Each staff phone/computer**: sign into clc.voicemail.01 (Voice app + browser) | Katie: ⚙ "My own Google Voice number" if she uses hers |
 | 3 | Change info@'s sender name from "CustomerService" to "Christmas Light Creations" | Gmail ⚙ → Accounts → Send mail as → edit info |
