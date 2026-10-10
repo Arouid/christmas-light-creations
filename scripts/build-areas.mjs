@@ -51,6 +51,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 <script type="application/ld+json">${JSON.stringify(schema)}</script>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 <header class="border-b border-white/10 bg-night-950/90">
   <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
     <a href="${base}"><img src="${base}images/clc-logo.png" alt="${esc(business.name)}" class="h-10 w-auto" /></a>
@@ -60,7 +61,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
     </div>
   </div>
 </header>
-<main>
+<main id="main" tabindex="-1">
   <section class="px-4 py-14 md:py-20">
     <div class="mx-auto max-w-6xl">
       <p class="mb-3 text-sm font-semibold uppercase tracking-wider text-glow-400">Christmas light installation · ${esc(a.name)}</p>

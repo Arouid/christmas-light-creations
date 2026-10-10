@@ -336,6 +336,7 @@ export const designPage = {
   ownNote: 'Your home',
   estimate: 'Get my free estimate with this design',
   saveLabel: 'Get my estimate →',
+  noSight: 'The designer is a drawing tool, so it doesn’t work with a screen reader. If you can’t see the picture, call us and describe the look you want:',
   backHome: 'Back to the main site',
   how: [
     ['✏️', 'Lights', 'tap corner to corner along a roofline, then Done.'],

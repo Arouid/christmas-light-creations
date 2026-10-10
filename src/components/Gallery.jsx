@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { gallery } from '../data/content'
+import { useFocusOnOpen } from '../lib/focus'
 import Icon from './Icon'
 import Section from './Section'
 
@@ -9,6 +10,8 @@ export default function Gallery() {
   const [showAll, setShowAll] = useState(false)
   const [active, setActive] = useState(null)
   const photos = showAll ? gallery : gallery.slice(0, INITIAL)
+  const dialog = useRef(null)
+  useFocusOnOpen(dialog, active !== null)
 
   const step = useCallback((d) => setActive((i) => (i + d + gallery.length) % gallery.length), [])
 
@@ -51,7 +54,7 @@ export default function Gallery() {
       )}
 
       {active !== null && (
-        <div role="dialog" aria-modal="true" aria-label={gallery[active].alt}
+        <div ref={dialog} role="dialog" aria-modal="true" aria-label={gallery[active].alt}
           className="fixed inset-0 z-50 flex items-center justify-center bg-night-950/95 p-2"
           onClick={() => setActive(null)}>
           <img src={gallery[active].src} alt={gallery[active].alt}

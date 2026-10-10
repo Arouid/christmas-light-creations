@@ -4,6 +4,7 @@ import { newDesign } from '../designer/model.js'
 import { attachmentProblem } from '../lib/publicDesign'
 import EstimateForm from '../components/EstimateForm'
 import Icon from '../components/Icon'
+import SkipLink from '../components/SkipLink'
 import { SAMPLE_PHOTO, SAMPLE_PICTURE, sampleDesign } from './sampleDesign'
 
 // /design/: homeowners try our light designer on a sample house or a photo of
@@ -81,6 +82,7 @@ export default function DesignPage() {
 
   return (
     <div className="min-h-svh">
+      <SkipLink />
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pt-5">
         {/* The way back to the main site, said in words (owner: people couldn't tell how to get back). */}
         <a href={import.meta.env.BASE_URL} className="group flex min-h-11 min-w-0 items-center gap-2">
@@ -96,10 +98,11 @@ export default function DesignPage() {
         </a>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-28 pt-8 md:pb-16">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-28 pt-8 md:pb-16">
         <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-glow-400">Free light designer</p>
         <h1 className="font-display text-4xl font-extrabold tracking-tight md:text-6xl">{t.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-slate-300">{t.intro}</p>
+        <p className="mt-2 max-w-2xl text-slate-400">{t.noSight} <a href={business.phoneHref} className="font-semibold text-glow-300 underline">{business.phone}</a>.</p>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-5">
           <section className="lg:col-span-3" aria-label="Your design">
@@ -111,7 +114,8 @@ export default function DesignPage() {
               <span className="absolute left-3 top-3 rounded-full bg-night-950/80 px-3 py-1 text-xs font-semibold">{photo.sample ? t.sampleNote : t.ownNote}</span>
             </div>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <button type="button" onClick={() => setOpen(true)} disabled={!untouched && !img} className={primary}>✏️ {photo.sample ? t.open : t.edit}</button>
+              {/* Never disabled: the designer waits for the photo itself, and focus returns here when it closes. */}
+              <button type="button" onClick={() => setOpen(true)} className={primary}>✏️ {photo.sample ? t.open : t.edit}</button>
               <button type="button" onClick={() => file.current?.click()} disabled={busy} className={secondary}>📷 {busy ? 'Opening…' : photo.sample ? t.upload : t.uploadAgain}</button>
               <input ref={file} type="file" accept="image/*" onChange={pick} className="hidden" />
             </div>
