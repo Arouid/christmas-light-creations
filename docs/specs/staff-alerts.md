@@ -1,6 +1,6 @@
 # New-message alerts for staff (💬 badge + phone notifications)
 
-> Status: live 2026-10-09 (rules published, web push key set, messageSync + sendTestPush deployed, site pushed); estimate requests + new-sender emails added 2026-10-09 (deploy of messageSync + newLeadAlert and push pending owner OK); owner's phone test pending · Decided on 2026-10-09 by Scott (Finess): "Badge + push"
+> Status: live 2026-10-09 (rules published, web push key set, messageSync + sendTestPush deployed, site pushed); estimate requests + new-sender emails live 2026-10-09 (messageSync + newLeadAlert deployed, site pushed); owner's phone test pending · Decided on 2026-10-09 by Scott (Finess): "Badge + push"
 
 ## The problem
 
