@@ -1,9 +1,18 @@
 // Firebase web config. These values are public by design: access is enforced
 // by firestore.rules, not by keeping this secret. Paste the config from
 // Firebase console → Project settings → Your apps → Web app.
+// Google sign-in runs through our own domain on the live site (helper files in
+// public/__/auth, copied from clc-leads-site.firebaseapp.com/__/auth), so
+// iPhone Safari doesn't block it as a third-party site. Needs
+// https://christmas-light-creations.com/__/auth/handler in the OAuth client's
+// authorized redirect URIs (Google Cloud → Credentials → Web client).
+const SITE_HOST = 'christmas-light-creations.com'
+const AUTH_ON_SITE = false
+const onSite = typeof window !== 'undefined' && window.location.hostname === SITE_HOST
+
 export const firebaseConfig = {
   apiKey: 'AIzaSyBiaZL1UuwcZ6Y0p9pRORA2lzUobp8K3zc',
-  authDomain: 'clc-leads-site.firebaseapp.com',
+  authDomain: AUTH_ON_SITE && onSite ? SITE_HOST : 'clc-leads-site.firebaseapp.com',
   projectId: 'clc-leads-site',
   storageBucket: 'clc-leads-site.firebasestorage.app',
   messagingSenderId: '448935757441',

@@ -5,6 +5,7 @@
 // Firebase loads only on this page, by dynamic import.
 import { callDeposit } from './paypal.js'
 import { getFirebaseApp } from './firebase.js'
+import { signInWithGoogle } from './googleSignIn.js'
 
 const EMAIL_KEY = 'clcAccountEmail'
 const remember = (e) => { try { localStorage.setItem(EMAIL_KEY, e) } catch { /* private mode */ } }
@@ -21,18 +22,11 @@ export async function sendLink(email) {
   await callDeposit('sendAccountLink', { email: email.trim(), origin: window.location.origin })
 }
 
-// Google, like the staff app: popup, or a full-page sign-in that returns here
-// when the phone can't open a popup.
+// Google, like the staff app (src/lib/googleSignIn.js): popup on computers,
+// same-page sign-in on iPhones and the home-screen app.
 export async function signInGoogle() {
   const a = await auth()
-  const provider = new a.GoogleAuthProvider()
-  provider.setCustomParameters({ prompt: 'select_account' })
-  try {
-    await a.signInWithPopup(a.auth, provider)
-  } catch (err) {
-    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'].includes(err?.code)) await a.signInWithRedirect(a.auth, provider)
-    else if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') throw err
-  }
+  await signInWithGoogle(a, a.auth)
 }
 
 export async function isLinkInUrl() {

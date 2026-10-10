@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { STATUS_LABELS, getFirebaseApp } from '../lib/firebase'
+import { redirectError, signInWithGoogle } from '../lib/googleSignIn'
 import { logActivity } from './activity'
 import { demoMode } from './demo'
 import { demoLeads } from './demoLeads'
@@ -10,6 +11,7 @@ export function useLeads() {
   const [user, setUser] = useState(demoMode ? { email: 'demo@example.com' } : undefined)
   const [leads, setLeads] = useState(demoMode ? demoLeads : null)
   const [error, setError] = useState(null)
+  const [authError, setAuthError] = useState(null)
 
   useEffect(() => {
     if (demoMode) return
@@ -19,11 +21,14 @@ export function useLeads() {
 
     ;(async () => {
       const app = await getFirebaseApp()
-      const { getAuth, onAuthStateChanged } = await import('firebase/auth')
+      const fb = await import('firebase/auth')
       const { getFirestore, collection, query, orderBy, onSnapshot } = await import('firebase/firestore')
       if (cancelled) return
       const db = getFirestore(app)
-      unsubAuth = onAuthStateChanged(getAuth(app), (u) => {
+      const auth = fb.getAuth(app)
+      // Back from a same-page Google sign-in (iPhone): say so if it failed.
+      redirectError(fb, auth).then((msg) => { if (!cancelled) setAuthError(msg) })
+      unsubAuth = fb.onAuthStateChanged(auth, (u) => {
         unsubLeads()
         setUser(u)
         setLeads(null)
@@ -46,21 +51,9 @@ export function useLeads() {
 
   async function signIn() {
     const app = await getFirebaseApp()
-    const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth')
-    const auth = getAuth(app)
-    const provider = new GoogleAuthProvider()
-    provider.setCustomParameters({ prompt: 'select_account' })
-    try {
-      await signInWithPopup(auth, provider)
-    } catch (err) {
-      // The installed app (home-screen mode) can't always open a popup:
-      // fall back to a full-page Google sign-in that returns here.
-      if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'].includes(err?.code)) {
-        await signInWithRedirect(auth, provider)
-      } else {
-        throw err
-      }
-    }
+    const fb = await import('firebase/auth')
+    setAuthError(null)
+    await signInWithGoogle(fb, fb.getAuth(app))
   }
 
   async function signOutUser() {
@@ -102,5 +95,5 @@ export function useLeads() {
     await deleteDoc(doc(getFirestore(app), 'leads', id))
   }
 
-  return { user, leads, error, signIn, signOut: signOutUser, updateLead, deleteLead, demo: demoMode }
+  return { user, leads, error, authError, signIn, signOut: signOutUser, updateLead, deleteLead, demo: demoMode }
 }
