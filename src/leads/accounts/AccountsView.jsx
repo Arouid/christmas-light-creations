@@ -168,7 +168,7 @@ function LoginLine({ email }) {
 
 const mapLink = (address) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 
-function CustomerAccount({ c, leads, past, calls, gates, season, user, onOpenCustomer }) {
+function CustomerAccount({ c, customers, leads, past, calls, gates, season, user, onOpenCustomer }) {
   const gate = gateFor(c, gates)
   const phone = String(c.phone ?? '').replace(/\D/g, '')
   const myCalls = calls.filter((x) => x.customerId === c.id)
@@ -186,7 +186,7 @@ function CustomerAccount({ c, leads, past, calls, gates, season, user, onOpenCus
         <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>
       </Header>
       <Section title="Seasons"><SeasonRows customer={c} /></Section>
-      <OldRecordsPanel customer={c} user={user} past={myPast} />
+      <OldRecordsPanel customer={c} customers={customers} user={user} past={myPast} />
       <Section title="💲 Yearly price & add-ons" open={needsAddOnCheck(c)}><AddOnsPanel customer={c} user={user} /></Section>
       {c.notes && <Section title="Notes"><p className="whitespace-pre-wrap text-sm text-slate-300">{c.notes}</p></Section>}
       <Section title={`Service calls (${myCalls.length})`} open={myCalls.some((x) => x.status === 'Open' || x.status === 'Scheduled')}>
@@ -306,7 +306,7 @@ export default function AccountsView({ customers, leads = [], past = [], calls =
         <a href="#accounts" className="shrink-0 rounded-full bg-white/10 px-3 py-2.5 text-sm font-semibold" aria-label="Back to search">←</a>
         <div className="flex-1"><SearchBox index={index} compact onPick={open} /></div>
       </div>
-      {c ? <CustomerAccount c={c} leads={leads} past={past} calls={calls} gates={gates} season={season} user={user} onOpenCustomer={onOpenCustomer} />
+      {c ? <CustomerAccount c={c} customers={customers} leads={leads} past={past} calls={calls} gates={gates} season={season} user={user} onOpenCustomer={onOpenCustomer} />
         : l ? <LeadAccount l={l} season={season} user={user} onMakeCustomer={onMakeLeadCustomer} onOpenAccount={open} />
           : p ? <PastAccount p={p} onMakeCustomer={onMakePastCustomer} onOpenAccount={open} />
             : <p className="text-slate-400">{entry === undefined && customers ? 'This account isn’t loaded yet, or it was removed.' : 'Loading…'}</p>}

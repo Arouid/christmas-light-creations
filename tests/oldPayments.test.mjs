@@ -69,3 +69,25 @@ test('re-importing history matches texts by a linked other phone or email', () =
   const out = matchMessages(list, customers)
   assert.deepEqual(out.records.map((r) => [r.id, r.data.customerId]), [['v1', 'pat'], ['p1', 'pat']])
 })
+
+test('bringing over old texts: only entries the linked phones/emails newly match', async () => {
+  const { newFromLinks, needsOldTexts } = await import('../src/lib/oldPayments.js')
+  const customers = [
+    { id: 'pat', fullName: 'Pat Sample', phone: '281-555-0101', otherPhones: ['713-555-0123'] },
+    { id: 'lee', fullName: 'Lee Other', phone: '409-555-0000' },
+  ]
+  const list = [
+    { id: 'v1', data: { kind: 'text', phone: '+17135550123', at: '2020-12-01' } }, // via the linked phone: new
+    { id: 'v2', data: { kind: 'text', phone: '+12815550101', at: '2021-12-01' } }, // main phone: already imported before
+    { id: 'v3', data: { kind: 'call', phone: '+14095550000', at: '2021-12-02' } }, // another customer
+    { id: 'v4', data: { kind: 'text', phone: '+18325559999', at: '2021-12-03' } }, // nobody
+  ]
+  const out = newFromLinks(list, customers)
+  assert.deepEqual(out.records.map((r) => [r.id, r.data.customerId]), [['v1', 'pat']])
+  assert.deepEqual(out.byKind, { text: 1 })
+  assert.equal(out.customers, 1)
+  assert.equal(newFromLinks(list, customers, ['lee']).records.length, 0)
+  assert.equal(needsOldTexts(customers[0]), true)
+  assert.equal(needsOldTexts({ ...customers[0], oldTextsAt: '2026-10-09' }), false)
+  assert.equal(needsOldTexts(customers[1]), false)
+})

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { FILED_STATUSES, findCustomer } from '../../lib/oldEstimates'
-import { contactLinks, matchedBy, paymentsFromPast, seasonFills, uniquePayments } from '../../lib/oldPayments'
-import { queryOnce, updateField } from '../staffStore'
+import { todayISO } from '../../lib/customers'
+import { contactLinks, matchedBy, needsOldTexts, newFromLinks, paymentsFromPast, seasonFills, uniquePayments } from '../../lib/oldPayments'
+import { mergeMany, queryOnce, updateField } from '../staffStore'
 
 // "From old records": what the old-history import found about a customer that
 // isn't on their record yet (src/lib/oldPayments.js):
@@ -19,6 +20,66 @@ async function applyFills(user, customerId, fills) {
 async function applyLinks(user, c, links) {
   if (links.phones.length) await updateField(user, 'customers', c.id, 'otherPhones', [...(c.otherPhones ?? []), ...links.phones])
   if (links.emails.length) await updateField(user, 'customers', c.id, 'otherEmails', [...(c.otherEmails ?? []), ...links.emails])
+  // New links: their old texts haven't been brought over yet.
+  if ((links.phones.length || links.emails.length) && c.oldTextsAt) await updateField(user, 'customers', c.id, 'oldTextsAt', null)
+}
+
+const KIND = { text: 'text', call: 'call', missed: 'missed call', voicemail: 'voicemail', email: 'email', payment: 'payment', invoice: 'invoice', request: 'estimate request' }
+const count = (n, k) => `${n} ${KIND[k] ?? k}${n === 1 ? '' : 's'}`
+
+// Old texts, calls and emails from linked phones/emails: they're only in
+// customer-history.json (old-site-backup/), so staff pick it once; only the
+// entries the links newly match are written (same ids as the Import tab).
+export function OldTextsImport({ customers, targets, user }) {
+  const [found, setFound] = useState(null)
+  const [msg, setMsg] = useState(null)
+  const [progress, setProgress] = useState(null)
+  const ids = targets.map((c) => c.id)
+  if (!ids.length && !msg) return null
+  const pick = async (file) => {
+    setMsg(null)
+    setFound(null)
+    try {
+      const parsed = JSON.parse(await file.text())
+      setFound(newFromLinks(parsed.messages, customers, ids))
+    } catch (err) {
+      setMsg(`Couldn’t read that file (${err.message}). Pick customer-history.json from old-site-backup.`)
+    }
+  }
+  const bring = async () => {
+    setProgress(0)
+    try {
+      if (found.records.length) await mergeMany(user, 'messages', found.records, setProgress)
+      for (const id of ids) await updateField(user, 'customers', id, 'oldTextsAt', todayISO())
+      setMsg(`Done ✓ ${found.records.length} ${found.records.length === 1 ? 'entry' : 'entries'} brought over. They’re in each customer’s Text & call history.`)
+      setFound(null)
+    } catch (err) {
+      setMsg(err.message)
+    } finally {
+      setProgress(null)
+    }
+  }
+  return (
+    <div className="space-y-2 rounded-xl border border-white/10 p-3 text-sm">
+      <p className="font-semibold">Old texts, calls and emails from the linked phones/emails{ids.length > 1 ? ` (${ids.length} customers)` : ''}</p>
+      {ids.length > 0 && !found && (
+        <>
+          <p className="text-slate-400">They’re in <strong>customer-history.json</strong> in the old-site-backup folder on the office computer. Pick it once; only what the new links match is added.</p>
+          <input type="file" accept=".json,application/json" onChange={(e) => e.target.files[0] && pick(e.target.files[0])}
+            className="block w-full text-sm file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:text-slate-100" />
+        </>
+      )}
+      {found && (
+        <div className="space-y-2">
+          <p>{found.records.length
+            ? `Found ${Object.entries(found.byKind).map(([k, n]) => count(n, k)).join(', ')} for ${found.customers} customer${found.customers === 1 ? '' : 's'}.`
+            : 'Nothing new in that file for these phones/emails.'}</p>
+          <button type="button" disabled={progress != null} onClick={bring} className={btn}>{progress != null ? `Adding… ${progress}` : found.records.length ? 'Bring them over' : 'OK, mark as done'}</button>
+        </div>
+      )}
+      {msg && <p className="text-slate-300">{msg}</p>}
+    </div>
+  )
 }
 const usePaymentMessages = (field, value) => {
   const [list, setList] = useState(null)
@@ -45,14 +106,14 @@ function SeasonRow({ s, onAdd, busy }) {
 }
 
 // On a customer's account page. `past` = Past requests cards matched to them.
-export function OldRecordsPanel({ customer: c, user, past = [] }) {
+export function OldRecordsPanel({ customer: c, customers = [], user, past = [] }) {
   const messages = usePaymentMessages('customerId', c.id)
   const [busy, setBusy] = useState(false)
   const kept = past.filter((r) => !FILED_STATUSES.includes(r.status))
   const seasons = seasonFills(uniquePayments([...(messages ?? []).map((m) => ({ ...m, customerId: c.id })), ...kept.flatMap((r) => paymentsFromPast(r, c.id))]), c)
   const links = contactLinks(kept, c)
   const nameOnly = kept.some((r) => matchedBy(r, c) === 'name')
-  if (!seasons.length && !links.phones.length && !links.emails.length) return null
+  if (!seasons.length && !links.phones.length && !links.emails.length && !needsOldTexts(c)) return null
   const run = async (fn) => { setBusy(true); try { await fn() } finally { setBusy(false) } }
   return (
     <details open className="rounded-2xl border border-glow-400/30 bg-night-900">
@@ -71,10 +132,11 @@ export function OldRecordsPanel({ customer: c, user, past = [] }) {
             <p className="font-semibold">Other phones / emails on their old records</p>
             <p className="text-slate-300">{[...links.phones, ...links.emails].join(' · ')}</p>
             {nameOnly && <p className="text-glow-300">Matched by name only: make sure this is the same person.</p>}
-            <p className="text-slate-400">Link them, then re-import the customer history (Import tab) to bring over texts, calls and emails from them.</p>
+            <p className="text-slate-400">Link them, then bring over their old texts, calls and emails (next step appears here).</p>
             <button type="button" disabled={busy} onClick={() => run(() => applyLinks(user, c, links))} className={btn}>Link to {c.fullName}</button>
           </div>
         )}
+        <OldTextsImport customers={customers.length ? customers : [c]} targets={needsOldTexts(c) ? [c] : []} user={user} />
       </div>
     </details>
   )
@@ -102,7 +164,8 @@ export function OldRecordsToFill({ customers, past = [], user, open }) {
     const nameOnly = contactLinks(mine.filter((r) => matchedBy(r, c) === 'name'), c)
     return { c, seasons, links, check: nameOnly.phones.length + nameOnly.emails.length > 0 }
   }).filter((x) => x.seasons.length || x.links.phones.length || x.links.emails.length || x.check)
-  if (!todo.length) return null
+  const textTargets = (customers ?? []).filter(needsOldTexts)
+  if (!todo.length) return <OldTextsImport customers={customers ?? []} targets={textTargets} user={user} />
   const bulk = todo.filter((x) => x.seasons.length || x.links.phones.length || x.links.emails.length)
   const fillAll = async () => {
     const s = bulk.reduce((t, x) => t + x.seasons.length, 0)
@@ -124,7 +187,7 @@ export function OldRecordsToFill({ customers, past = [], user, open }) {
     <details className="mt-4 rounded-2xl border border-white/10 bg-night-900">
       <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">From old records: {todo.length} customer{todo.length === 1 ? '' : 's'} to update</summary>
       <div className="space-y-2 border-t border-white/10 p-3 text-sm">
-        <p className="text-slate-400">Old payments go into Seasons (empty boxes only); old phones/emails are linked so re-importing the customer history (Import tab) brings their texts and emails over.</p>
+        <p className="text-slate-400">Step 1: Add all puts old payments into Seasons (empty boxes only) and links old phones/emails. Step 2 (below, after linking): bring over their old texts, calls and emails.</p>
         {bulk.length > 0 && <button type="button" disabled={Boolean(progress)} onClick={fillAll} className={btn}>{progress ? `Adding… ${progress}` : `Add all (${bulk.length} customer${bulk.length === 1 ? '' : 's'})`}</button>}
         <ul className="divide-y divide-white/5">
           {todo.map((x) => (
@@ -135,6 +198,7 @@ export function OldRecordsToFill({ customers, past = [], user, open }) {
             </button></li>
           ))}
         </ul>
+        <OldTextsImport customers={customers ?? []} targets={textTargets} user={user} />
       </div>
     </details>
   )

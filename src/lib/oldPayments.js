@@ -1,3 +1,5 @@
+import { matchMessages } from './messageImport.js'
+
 // Old PayPal/Square payments (messages of kind 'payment', from the old-history
 // import, docs/specs/old-history.md) → the customer's season billing, so the
 // Seasons table and the customer's "What you've paid" show them.
@@ -109,4 +111,21 @@ export function matchedBy(r, c) {
   const cp = new Set([...phonesIn(c.phone), ...(c.otherPhones ?? []).flatMap(phonesIn)])
   if (phonesIn(r.phone).some((d) => cp.has(d))) return 'phone'
   return 'name'
+}
+
+// History entries (customer-history.json) that reach a customer only through
+// the phones/emails linked from old records (otherPhones / otherEmails): the
+// ones a normal import skipped. Same ids as the Import tab, so bringing them
+// over twice changes nothing.
+// `only`: limit to these customer ids (default: every linked customer).
+export const needsOldTexts = (c) => Boolean((c.otherPhones?.length || c.otherEmails?.length) && !c.oldTextsAt)
+export function newFromLinks(list, customers, only) {
+  const linked = (customers ?? []).filter((c) => (c.otherPhones?.length || c.otherEmails?.length) && (!only || only.includes(c.id)))
+  if (!linked.length) return { records: [], customers: 0, byKind: {} }
+  const ids = new Set(linked.map((c) => c.id))
+  const before = new Set(matchMessages(list, (customers ?? []).map(({ otherPhones: _p, otherEmails: _e, ...c }) => c)).records.map((r) => r.id))
+  const records = matchMessages(list, customers).records.filter((r) => ids.has(r.data.customerId) && !before.has(r.id))
+  const byKind = {}
+  for (const r of records) byKind[r.data.kind] = (byKind[r.data.kind] ?? 0) + 1
+  return { records, customers: new Set(records.map((r) => r.data.customerId)).size, byKind }
 }
