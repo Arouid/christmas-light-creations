@@ -41,6 +41,7 @@ import { refreshDevice, setIconBadge } from './push'
 import { useStaffAlerts } from './useStaffAlerts'
 import HomeView from './HomeView'
 import { byPhone, logActivity, setActivityContext, useActivityFeed } from './activity'
+import { staffName } from '../lib/activity'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
 // The app opens on Home (docs/specs/dashboard.md).
@@ -273,7 +274,7 @@ export default function LeadsApp() {
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 lg:max-w-7xl">
           <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
           <div className="flex min-w-0 items-center gap-2 text-sm sm:gap-3">
-            <span className="hidden truncate text-slate-400 sm:inline">{user.email}</span>
+            <span className="hidden truncate text-slate-400 sm:inline" title={user.email}>{staffName(user.email, feed.names)}</span>
             <button type="button" onClick={() => setShowMessages(true)} title="New messages from customers"
               aria-label={alerts.count ? `New messages: ${alerts.count}` : 'Messages from customers'}
               className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-base">

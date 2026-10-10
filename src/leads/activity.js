@@ -29,7 +29,8 @@ export function logActivity(action, target, text = '') {
   const user = state.user
   if (!user || !target?.type) return
   const id = String(target.id ?? '')
-  if (!firstInWindow(state.seen, `${action}|${target.type}|${id}`)) return
+  // Per person: two people (or two accounts on one phone) are never merged.
+  if (!firstInWindow(state.seen, `${user.email}|${action}|${target.type}|${id}`)) return
   const name = String(target.name || state.names.get(`${target.type}:${id}`) || '').slice(0, 200)
   appendLog(user, 'activity', { action, target: { type: target.type, id, name }, text: String(text ?? '').slice(0, 300) })
     .catch((e) => console.warn('Activity not logged', e.code ?? e.message))

@@ -29,12 +29,14 @@ test('phone → person: customers first, several numbers per box, leads, unknown
   assert.equal(whoByPhone(dir, '555-0101'), null)
 })
 
-test('staff names: the staff list’s name, the team’s email starts, else the first part of the email', () => {
-  assert.equal(staffName('katie.smith@gmail.com'), 'Katie')
-  assert.equal(staffName('Exatrum@gmail.com'), 'Scott')
-  assert.equal(staffName('laciexyz123@gmail.com'), 'Lacie')
-  assert.equal(staffName('katiepq@gmail.com'), 'Katie')
-  assert.equal(staffName('pat.helper@gmail.com'), 'Pat')
+test('staff names: first name + last initial: Settings/staff list, the team’s email starts, else from the email', () => {
+  assert.equal(staffName('katie.smith@gmail.com'), 'Katie S.')
+  assert.equal(staffName('Exatrum@gmail.com'), 'Scott M.')
+  assert.equal(staffName('lacie.jaye.mccloud@gmail.com'), 'Lacie M.')
+  assert.equal(staffName('laciexyz123@gmail.com'), 'Lacie M.')
+  assert.equal(staffName('katiepq@gmail.com'), 'Katie P.')
+  assert.equal(staffName('pat.helper@gmail.com'), 'Pat H.')
+  assert.equal(staffName('pat@gmail.com'), 'Pat')
   assert.equal(staffName('katiepq@gmail.com', { 'katiepq@gmail.com': 'Katie P.' }), 'Katie P.')
   assert.equal(staffName('Boss@Example.com', { 'boss@example.com': 'Scott' }), 'Scott')
   assert.equal(staffName('website'), 'Website')
@@ -72,9 +74,27 @@ test('I’ve got it: the newest one wins, earlier people are remembered', () => 
     { action: 'email', by: 'katie@x.com', at: ts(now), target: { type: 'message', id: 'gv-2' } },
     { action: 'handling', by: 'katie@x.com', at: ts(now - MIN), target: { type: 'message', id: 'request-L1' } },
   ])
-  assert.deepEqual(h.get('gv-1'), { by: 'scott@x.com', at: now - 2 * MIN, before: ['katie@x.com'] })
+  assert.deepEqual(h.get('gv-1'), { by: 'scott@x.com', at: now - 2 * MIN, from: 'katie@x.com', before: ['katie@x.com'] })
   assert.equal(h.has('gv-2'), false)
   assert.equal(h.get('request-L1').by, 'katie@x.com')
+  assert.equal(h.get('request-L1').from, null)
+})
+
+test('take it over: counts as the newest claim, says whose it was, reads as a take-over', () => {
+  const h = handlers([
+    { action: 'handling', by: 'Exatrum@gmail.com', at: ts(now - 10 * MIN), target: { type: 'message', id: 'gv-9' } },
+    { action: 'takeover', by: 'lacie1@gmail.com', at: ts(now - MIN), target: { type: 'message', id: 'gv-9' }, text: 'was Scott M.’s · Text' },
+    { action: 'handling', by: 'exatrum@gmail.com', at: ts(now - 20 * MIN), target: { type: 'message', id: 'gv-9' } },
+  ])
+  assert.deepEqual(h.get('gv-9'), { by: 'lacie1@gmail.com', at: now - MIN, from: 'Exatrum@gmail.com', before: ['Exatrum@gmail.com'] })
+  const d = describe({ action: 'takeover', by: 'lacie1@gmail.com', at: ts(now), target: { type: 'message', id: 'gv-9', name: 'Pat Sample' }, text: 'was Scott M.’s · Text' })
+  assert.deepEqual([d.actor, d.did, d.name, d.detail], ['Lacie M.', 'took over the message from', 'Pat Sample', 'was Scott M.’s · Text'])
+  // Same person claiming again isn't a take-over.
+  const again = handlers([
+    { action: 'handling', by: 'katie@x.com', at: ts(now - 5 * MIN), target: { type: 'message', id: 'gv-1' } },
+    { action: 'handling', by: 'KATIE@x.com', at: ts(now - MIN), target: { type: 'message', id: 'gv-1' } },
+  ])
+  assert.equal(again.get('gv-1').from, null)
 })
 
 test('repeats within 2 minutes are logged once; the list keeps 7 days, newest first', () => {
@@ -155,5 +175,6 @@ test('staff names: Settings first, then the staff list, by lowercase email', () 
   )
   assert.deepEqual(map, { 'exatrum@gmail.com': 'Scott', 'katie@x.com': 'Katie', 'lacie@x.com': 'Lacie' })
   assert.equal(staffName('Exatrum@Gmail.com', map), 'Scott')
+  assert.equal(staffName('Exatrum@Gmail.com'), 'Scott M.')
   assert.deepEqual(staffNamesMap(), {})
 })

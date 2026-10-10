@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
-import { STAFF_FIRST_NAMES, staffName } from '../lib/activity'
+import { STAFF_NAMES, staffName } from '../lib/activity'
 import { useStaff } from './staffContext'
 import { useLiveCollection } from './staffStore'
 import HomeBase from './HomeBase'
@@ -180,7 +180,7 @@ function StaffNames({ settings, onSave }) {
   return (
     <div className={box}>
       <p className="font-semibold">Staff names</p>
-      <p className="text-sm text-slate-400">How each person shows on Home (“Katie emailed…”, “Scott is on it”). Empty = the name shown in grey (Scott, Lacie and Katie are known by their email).</p>
+      <p className="text-sm text-slate-400">How each person shows on Home (“Katie emailed…”, “Scott is on it”). First name and last initial. Empty = the name shown in grey (Scott M., Lacie M. and Katie P. are known by their email).</p>
       {staff.error && <p className="text-sm text-berry-500">Couldn’t load the staff list.</p>}
       {!staff.error && !emails.length && <p className="text-sm text-slate-400">Loading the staff list…</p>}
       {emails.map((email) => (
@@ -189,7 +189,7 @@ function StaffNames({ settings, onSave }) {
             onChange={(e) => { setNames({ ...names, [email]: e.target.value }); setMsg(null) }} className={field} />
         </label>
       ))}
-      <datalist id="staff-first-names">{STAFF_FIRST_NAMES.map((n) => <option key={n} value={n} />)}</datalist>
+      <datalist id="staff-first-names">{STAFF_NAMES.map((n) => <option key={n} value={n} />)}</datalist>
       {emails.length > 0 && (
         <div className="flex items-center gap-2">
           <button type="button" onClick={save} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950">Save</button>

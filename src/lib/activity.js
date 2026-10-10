@@ -45,11 +45,12 @@ export function whoByPhone(dir, phone) {
   return dir.get(k) ?? { type: 'phone', id: k, name: prettyPhone(k) }
 }
 
-// The team (owner, 2026-10-10): how each email starts -> their name, so Home
-// shows names with no setup (no full addresses here: the repo is public).
-// Also the suggestions in ⚙ Settings → Staff names.
-const STAFF_PREFIXES = [['exatrum', 'Scott'], ['lacie', 'Lacie'], ['katie', 'Katie']]
-export const STAFF_FIRST_NAMES = STAFF_PREFIXES.map(([, n]) => n)
+// The team (owner, 2026-10-10), shown as first name + last initial: how each
+// email starts -> their name, so the app shows names with no setup (no full
+// addresses here: the repo is public). Also the suggestions in ⚙ Settings → Staff names.
+const STAFF_PREFIXES = [['exatrum', 'Scott M.'], ['katiep', 'Katie P.'], ['lacie', 'Lacie M.']]
+export const STAFF_NAMES = STAFF_PREFIXES.map(([, n]) => n)
+const cap = (w) => (w ? w[0].toUpperCase() + w.slice(1) : '')
 
 // Email -> name: ⚙ Settings → Staff names ([{ email, name }], shared) first,
 // then a `name` on the staff list doc (Firebase console).
@@ -60,8 +61,8 @@ export function staffNamesMap(staffDocs = [], settingNames = []) {
   return out
 }
 
-// Staff email -> a first name: the staff list's `name` if set, else the
-// address before @ ("katie.smith@…" -> "Katie").
+// Staff email -> "First L.": ⚙ Settings / the staff list's `name` if set, the
+// team above, else from the address ("pat.helper@…" -> "Pat H.", "pat@…" -> "Pat").
 export function staffName(email, names = {}) {
   if (!email) return 'Someone'
   if (email === 'website') return 'Website'
@@ -70,8 +71,9 @@ export function staffName(email, names = {}) {
   const local = String(email).split('@')[0].toLowerCase()
   const known = STAFF_PREFIXES.find(([p]) => local.startsWith(p))
   if (known) return known[1]
-  const first = String(email).split('@')[0].split(/[._-]/)[0]
-  return first ? first[0].toUpperCase() + first.slice(1) : email
+  const parts = local.split(/[._-]+/).filter(Boolean)
+  if (!parts.length) return email
+  return parts.length > 1 ? `${cap(parts[0])} ${parts.at(-1)[0].toUpperCase()}.` : cap(parts[0])
 }
 
 // ---- Entries ----------------------------------------------------------------------
@@ -83,7 +85,7 @@ const VERB = {
   'invoice-paid': 'marked paid the invoice for', 'invoice-void': 'voided the invoice for',
   'proposal-sent': 'sent a proposal to', 'proposal-void': 'voided the proposal for', 'proposal-countersigned': 'countersigned the proposal for',
   'lead-status': 'updated', 'make-customer': 'made a customer of', 'service-logged': 'logged a service call for',
-  'service-done': 'finished the service call for', handling: 'is on the message from', text: 'started a text to', call: 'started a call to',
+  'service-done': 'finished the service call for', handling: 'is on the message from', takeover: 'took over the message from', text: 'started a text to', call: 'started a call to',
 }
 export const ACTIONS = [...Object.keys(VERB), ...Object.keys(WEBSITE)]
 
@@ -112,14 +114,20 @@ export function describe(entry, { names = {}, messages = [] } = {}) {
   return { actor, did: VERB[entry.action] ?? entry.action, name, detail: entry.text ?? '', link }
 }
 
-// Newest "I've got it" per message: Map id -> { by, at, before: [earlier emails] }.
+// Newest "I've got it" / "Take it over" per message:
+// Map id -> { by, at, from (who had it before, if someone else), before: [earlier emails, newest first] }.
+const CLAIMS = ['handling', 'takeover']
+const same = (a, b) => String(a ?? '').toLowerCase() === String(b ?? '').toLowerCase()
 export function handlers(entries) {
   const out = new Map()
-  const sorted = [...(entries ?? [])].filter((e) => e.action === 'handling' && e.target?.id).sort((a, b) => toMs(b.at) - toMs(a.at))
+  const sorted = [...(entries ?? [])].filter((e) => CLAIMS.includes(e.action) && e.target?.id).sort((a, b) => toMs(b.at) - toMs(a.at))
   for (const e of sorted) {
     const cur = out.get(e.target.id)
-    if (!cur) out.set(e.target.id, { by: e.by, at: toMs(e.at), before: [] })
-    else if (e.by !== cur.by && !cur.before.includes(e.by)) cur.before.push(e.by)
+    if (!cur) out.set(e.target.id, { by: e.by, at: toMs(e.at), from: null, before: [] })
+    else if (!same(e.by, cur.by) && !cur.before.some((b) => same(b, e.by))) {
+      cur.before.push(e.by)
+      cur.from ??= e.by
+    }
   }
   return out
 }

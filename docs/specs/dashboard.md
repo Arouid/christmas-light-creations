@@ -25,7 +25,7 @@ A **Home** tab, first in the staff app, where the app opens (installer route lin
 | Kind | Entry |
 |---|---|
 | Emails & invoices | Emailed someone from the app (subject); invoice sent / emailed again / marked paid (how) / voided; proposal sent / voided / countersigned; *website*: a customer signed a proposal, paid a proposal payment or an invoice online |
-| Messages handled | **I've got it** on a message in 💬 or Unmatched → everyone sees "Katie is on it" on that message, and it's an entry |
+| Messages handled | **I've got it** on a message in 💬 or Unmatched → everyone sees "Katie is on it" on that message, and it's an entry. **Take it over** (someone else has it) → "Lacie took it over from Katie" ("… from you" for Katie) and its own entry "Lacie took over the message from … · was Katie's" |
 | Leads & service | Lead status changed (Called, Estimate sent, Booked, Lost), Make customer, service call logged / marked Done |
 | Texts & calls started | Tapped **Text** (opened Google Voice) or a **Call** link on someone. The app can't see whether the text was sent or the call answered, so it says "started a text/call" |
 
@@ -57,7 +57,8 @@ A **Home** tab, first in the staff app, where the app opens (installer route lin
 | 2026-10-10 | Entries are written where the action happens in the app (after it succeeds), not reconstructed from records | Records keep only the last change; the log needs each action and who did it |
 | 2026-10-10 | "I've got it" is an activity entry (action `handling`, target = the message), not a field on the message | Works for messages, unmatched numbers and estimate requests alike, with no rules change on those collections |
 | 2026-10-10 | Text/Call are "started" entries (tap on Text/Call), with the person found by phone number | The app can't see Google Voice or the phone dialer |
-| 2026-10-10 | Staff names: the team is known by how their email starts (exatrum → Scott, lacie → Lacie, katie → Katie; no full addresses in the public repo); ⚙ Settings → Staff names (settings/app.staffNames) overrides or adds people; else the start of the email | Owner gave the three names; works with no setup |
+| 2026-10-10 | Staff names are first name + last initial (Scott M., Lacie M., Katie P.), everywhere incl. the header instead of the email. The team is known by how their email starts (exatrum, katiep, lacie; no full addresses in the public repo); ⚙ Settings → Staff names (settings/app.staffNames) overrides or adds people; else from the email ("pat.helper@" → Pat H.) | Owner: "First name, last initial" |
+| 2026-10-10 | Take it over is its own action (`takeover`, text "was Katie's · Text") and repeats are filtered per person | Owner tested: a take-over looked like any claim, and two accounts on one device within 2 minutes were merged |
 | 2026-10-10 | Look: existing theme tokens (night/glow/berry/pine), Inter with tabular numbers and uppercase spaced labels, thin panel borders, glowing status lights; no new fonts or libraries | CLAUDE.md theme rules; fast on phones |
 
 ## Acceptance criteria
@@ -77,7 +78,7 @@ A **Home** tab, first in the staff app, where the app opens (installer route lin
 |---|---|
 | `at` | server time |
 | `by` | staff email (as signed in), or `website` (server) |
-| `action` | `email`, `invoice-sent`, `invoice-again`, `invoice-paid`, `invoice-void`, `proposal-sent`, `proposal-void`, `proposal-countersigned`, `proposal-signed`*, `proposal-paid`* (deposit/balance/takedown paid online), `invoice-paid-online`*, `lead-status`, `make-customer`, `service-logged`, `service-done`, `handling`, `text`, `call` (* website) |
+| `action` | `email`, `invoice-sent`, `invoice-again`, `invoice-paid`, `invoice-void`, `proposal-sent`, `proposal-void`, `proposal-countersigned`, `proposal-signed`*, `proposal-paid`* (deposit/balance/takedown paid online), `invoice-paid-online`*, `lead-status`, `make-customer`, `service-logged`, `service-done`, `handling`, `takeover`, `text`, `call` (* website) |
 | `target` | `{ type: customer \| lead \| past \| message \| phone, id?, name? }` (`message` id = the message id, or `request-<leadId>` for an estimate request) |
 | `text` | optional detail ≤ 300 chars: subject, amount and method, new status, issue |
 

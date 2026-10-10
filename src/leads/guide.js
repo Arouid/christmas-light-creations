@@ -34,12 +34,12 @@ export const SECTIONS = [
     items: [
       '**Recent activity**: who emailed, invoiced, sent a proposal, changed a lead, logged or finished a service call, or started a text or call, and when; plus customers who signed or paid on the website. Tap one to open that account. It’s there so nobody does the same thing twice.',
       'Texts and calls show as **started**: the app sees you tap Text or Call, not whether the text went or the call was answered.',
-      '**I’ve got it** (in 💬 and Unmatched): everyone sees “Katie is on it” on that message. Someone else can **Take it over**.',
+      '**I’ve got it** (in 💬 and Unmatched): everyone sees “Katie is on it” on that message. Someone else can **Take it over**: then it says “Lacie took it over from Katie” (Katie sees “… from you”) and Recent activity gets “Lacie took over the message from …”.',
       '**Counters**: new messages (yours), new website requests, unpaid invoices (and how many overdue), open service calls. Tap one to go there.',
       '**Today’s routes**: each route with stops done, skipped and left. **Season**: installs and takedowns by step, and money collected (season billing marked paid) next to last season.',
       '**System status** lights: text/email sync, website problems, payments, the request-alert email list, the activity log, and notifications on this device. Green is good; amber means look; red means something broke (tap the red banner).',
       '**⛶ Wall screen**: full screen with big numbers for a TV in the shop; it updates by itself. **✕** or Esc to leave.',
-      'Names: Scott, Lacie and Katie are known by their email. Anyone else (or a different name): **⚙ Settings → Staff names**.',
+      'Names show as first name + last initial (Scott M., Lacie M., Katie P.), also at the top right instead of your email. Anyone new (or a different name): **⚙ Settings → Staff names**.',
     ],
   },
   {

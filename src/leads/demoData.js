@@ -79,15 +79,19 @@ export const demoData = {
     { id: 'gv-demo-unmatched-2', unmatched: true, phone: '+15550100177', kind: 'voicemail', direction: 'in', source: 'voice-email', at: hoursAgo(9), syncedAt: hoursAgo(8.95), text: 'Hi, this is about getting lights put up on our house in Silverlake. Please call me back.' },
   ]),
   // Staff list (ids = emails), named in ⚙ Settings → Staff names.
-  staff: { 'demo@example.com': {}, 'katie@example.com': {}, 'lacie@example.com': {} },
+  staff: { 'demo@example.com': {}, 'katiep@example.com': {}, 'lacie@example.com': {} },
   // Home: recent staff activity and a route for today (docs/specs/dashboard.md).
   activity: byId([
-    { id: 'demo-act-1', at: minAgo(4), by: 'katie@example.com', action: 'email', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Re: Your 2026 install' },
-    { id: 'demo-act-2', at: minAgo(12), by: 'katie@example.com', action: 'handling', target: { type: 'message', id: 'gv-demo-unmatched-1', name: '(555) 010-0166' }, text: 'Text' },
+    { id: 'demo-act-1', at: minAgo(4), by: 'katiep@example.com', action: 'email', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Re: Your 2026 install' },
+    { id: 'demo-act-2', at: minAgo(12), by: 'katiep@example.com', action: 'handling', target: { type: 'message', id: 'gv-demo-unmatched-1', name: '(555) 010-0166' }, text: 'Text' },
     { id: 'demo-act-3', at: minAgo(35), by: 'website', action: 'proposal-signed', target: { type: 'customer', id: 'example-family', name: 'Example Family' }, text: '2026 lights' },
-    { id: 'demo-act-4', at: minAgo(80), by: 'katie@example.com', action: 'invoice-sent', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: '$150.00' },
+    { id: 'demo-act-4', at: minAgo(80), by: 'katiep@example.com', action: 'invoice-sent', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: '$150.00' },
     { id: 'demo-act-5', at: minAgo(140), by: 'demo@example.com', action: 'lead-status', target: { type: 'lead', id: 'demo-2', name: 'Test Lead' }, text: 'Called' },
-    { id: 'demo-act-6', at: minAgo(200), by: 'katie@example.com', action: 'call', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: '' },
+    { id: 'demo-act-6', at: minAgo(200), by: 'katiep@example.com', action: 'call', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: '' },
+    { id: 'demo-act-8', at: minAgo(40), by: 'demo@example.com', action: 'handling', target: { type: 'message', id: 'em-demo-new-unmatched', name: 'pat.new@example.org' }, text: 'Email' },
+    { id: 'demo-act-9', at: minAgo(15), by: 'lacie@example.com', action: 'takeover', target: { type: 'message', id: 'em-demo-new-unmatched', name: 'pat.new@example.org' }, text: 'was Demo’s · Email' },
+    { id: 'demo-act-10', at: minAgo(30), by: 'lacie@example.com', action: 'handling', target: { type: 'message', id: 'gv-demo-unmatched-2', name: '(555) 010-0177' }, text: 'Voicemail' },
+    { id: 'demo-act-11', at: minAgo(20), by: 'katiep@example.com', action: 'takeover', target: { type: 'message', id: 'gv-demo-unmatched-2', name: '(555) 010-0177' }, text: 'was Lacie M.’s · Voicemail' },
     { id: 'demo-act-7', at: minAgo(26 * 60), by: 'demo@example.com', action: 'service-done', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Lights out on the left side' },
   ]),
   routes: byId([
