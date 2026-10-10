@@ -6,7 +6,7 @@ export const demoLeads = [
     id: 'demo-1', firstName: 'Sample', lastName: 'Customer', email: 'sample@example.com', phone: '555-0101',
     address: '123 Example St', city: 'Pearland', zip: '77581', contactMethod: 'Text',
     message: 'Roofline and two oak trees in front, warm white. Two-story house.',
-    status: 'new', notes: '', createdAt: daysAgo(0), source: 'Road sign (Broadway 288)',
+    status: 'new', notes: '', createdAt: daysAgo(0), source: 'Road sign (Broadway 288)', designId: 'demo-design',
   },
   {
     id: 'demo-2', firstName: 'Test', lastName: 'Lead', email: 'test@example.com', phone: '555-0102',

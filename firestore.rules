@@ -26,7 +26,7 @@ service cloud.firestore {
     match /leads/{leadId} {
       allow create: if request.resource.data.keys().hasOnly([
             'firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip',
-            'contactMethod', 'message', 'source', 'status', 'notes', 'createdAt'])
+            'contactMethod', 'message', 'source', 'status', 'notes', 'createdAt', 'designId'])
         && filledStr(request.resource.data.firstName, 80)
         && filledStr(request.resource.data.lastName, 80)
         && filledStr(request.resource.data.email, 200)
@@ -38,6 +38,7 @@ service cloud.firestore {
         && request.resource.data.contactMethod in ['Phone', 'Text', 'Email']
         && filledStr(request.resource.data.message, 3000)
         && (!('source' in request.resource.data) || shortStr(request.resource.data.source, 60))
+        && (!('designId' in request.resource.data) || filledStr(request.resource.data.designId, 60))
         && request.resource.data.status == 'new'
         && request.resource.data.notes == ''
         && request.resource.data.createdAt == request.time;
@@ -55,6 +56,21 @@ service cloud.firestore {
       // Only leads first marked Spam / test can be deleted (two steps, so a
       // real request can't vanish with one tap). Owner approved 2026-10-09.
       allow delete: if isStaff() && resource.data.status == 'spam';
+    }
+
+    // A light design a homeowner made on /design/ and sent with their estimate
+    // request (docs/specs/public-designer.md): anyone can add one within the
+    // size limits (src/lib/publicDesign.js); only staff read; nobody changes it.
+    match /leadDesigns/{designId} {
+      allow create: if request.resource.data.keys().hasOnly(['design', 'photo', 'image', 'createdAt'])
+        && filledStr(request.resource.data.design, 100000)
+        && (request.resource.data.photo == 'sample'
+          || (shortStr(request.resource.data.photo, 450000) && request.resource.data.photo.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')))
+        && shortStr(request.resource.data.image, 450000)
+        && request.resource.data.image.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
+        && request.resource.data.createdAt == request.time;
+      allow read: if isStaff();
+      allow update, delete: if false;
     }
 
     // Customer records (the old Google Sheet). Staff only; every change is

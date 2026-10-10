@@ -230,7 +230,7 @@ function LeadAccount({ l, season, user, onMakeCustomer, onOpenAccount }) {
         {onMakeCustomer && <button type="button" disabled={busy} onClick={async () => { setBusy(true); const id = await onMakeCustomer(l); onOpenAccount(`customer:${id}`) }} className={primary}>{busy ? 'Adding…' : '＋ Make customer'}</button>}
       </Header>
       {l.message && <Section title="Their request"><p className="whitespace-pre-wrap text-sm text-slate-300">{l.message}</p>{l.notes && <p className="mt-2 text-sm text-slate-400">Notes: {l.notes}</p>}</Section>}
-      <Section title="🎨 Light designs" open={false}><DesignsPanel owner={{ type: 'lead', id: l.id, name, address }} /></Section>
+      <Section title="🎨 Light designs" open={Boolean(l.designId)}><DesignsPanel owner={{ type: 'lead', id: l.id, name, address }} websiteDesignId={l.designId} /></Section>
       <Section title="📝 Proposals & contracts" open={false}><ProposalsPanel owner={{ type: 'lead', id: l.id, name, address, email: l.email, phone: l.phone }} /></Section>
       <Section title="Text & email history" open={false}><TextHistory user={user} field="leadId" value={l.id} /></Section>
     </div>

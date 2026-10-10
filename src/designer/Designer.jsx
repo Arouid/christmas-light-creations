@@ -19,10 +19,13 @@ const colorName = (list) => Object.entries(COLOR_SETS).find(([, v]) => v.join() 
 // onSave(design, { blob, stats }) and onClose(). No app/database code here.
 // onSatelliteMeasure (optional): the host measures the house from above and
 // resolves { feet, label } (or null); the designer offers it as a measure preset.
-export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose, onSatelliteMeasure }) {
+// simple: the public website's version (homeowners): no measuring, history,
+// feet, bulb counts or prices anywhere. saveLabel: the Save button's text.
+export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose, onSatelliteMeasure, simple = false, saveLabel = 'Save' }) {
   const canvas = useRef(null)
   const box = useRef(null) // the viewport the photo is zoomed/panned inside
   const [img, setImg] = useState(null)
+  const tools = simple ? TOOLS.filter(([k]) => k !== 'measure') : TOOLS
   const [hist, setHist] = useState(() => ({
     list: [{ d: initial ? normalize(initial) : newDesign({ width: photo.width, height: photo.height, pricePerFoot: defaults.pricePerFoot ?? null }), label: initial ? 'Opened' : 'New design' }],
     at: 0,
@@ -402,17 +405,17 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-night-950" role="dialog" aria-modal="true" aria-label={title}>
       <header className="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-white/10 px-3 py-2 [&>button]:shrink-0">
-        <button type="button" onClick={onClose} className={off} aria-label="Close designer">✕</button>
+        <button type="button" onClick={() => onClose?.(design)} className={off} aria-label="Close designer">✕</button>
         <p className="min-w-0 flex-1 truncate font-semibold"><span className="hidden sm:inline">{title}</span></p>
         <button type="button" onClick={undo} disabled={hist.at === 0} className={`${off} disabled:opacity-30`} aria-label="Undo">↶</button>
         <button type="button" onClick={redo} disabled={hist.at >= hist.list.length - 1} className={`${off} disabled:opacity-30`} aria-label="Redo">↷</button>
-        <button type="button" onClick={() => setShowHistory((v) => !v)} className={showHistory ? on : off} aria-label="History">🕘<span className="hidden sm:inline"> History</span></button>
+        {!simple && <button type="button" onClick={() => setShowHistory((v) => !v)} className={showHistory ? on : off} aria-label="History">🕘<span className="hidden sm:inline"> History</span></button>}
         <button type="button" onClick={download} className={off} aria-label="Download image">⬇<span className="hidden sm:inline"> Image</span></button>
-        {onSave && <button type="button" onClick={save} className={on}>Save</button>}
+        {onSave && <button type="button" onClick={save} className={on}>{saveLabel}</button>}
       </header>
 
       <div className="flex gap-1.5 overflow-x-auto border-b border-white/10 px-3 py-2">
-        {TOOLS.map(([k, label]) => <button key={k} type="button" onClick={() => pickTool(k)} className={`${tool === k ? on : off} shrink-0`}>{label}</button>)}
+        {tools.map(([k, label]) => <button key={k} type="button" onClick={() => pickTool(k)} className={`${tool === k ? on : off} shrink-0`}>{label}</button>)}
       </div>
 
       <div ref={box} className="relative min-h-0 flex-1 touch-none select-none overflow-hidden"
@@ -531,7 +534,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
                     <input type="range" min="0.5" max="2.5" step="0.1" value={selStrand.size} onChange={(e) => setLive({ ...design, strands: design.strands.map((s) => (s.id === selectedId ? { ...s, size: Number(e.target.value) } : s)) })}
                       onPointerUp={(e) => patchStrand('Changed bulb size', { size: Number(e.target.value) })} />
                   </label>
-                  <span className="text-slate-400">{Math.round(stats.perStrand.find((s) => s.id === selStrand.id)?.feet ?? 0)} ft</span>
+                  {!simple && <span className="text-slate-400">{Math.round(stats.perStrand.find((s) => s.id === selStrand.id)?.feet ?? 0)} ft</span>}
                   <span className="ml-auto flex gap-1.5">
                     {selStrand.gaps?.length > 0 && <button type="button" onClick={() => patchStrand('Restored erased lights', { gaps: [] })} className={off}>Restore erased lights</button>}
                     {!selStrand.shape && selectedPoint != null && <button type="button" onClick={deletePin} className={`${off} text-berry-500`}>Delete pin</button>}
@@ -555,11 +558,15 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
           <label className="flex items-center gap-2">🌙 Night
             <input type="range" min="0" max="1" step="0.05" value={shown.night} onChange={(e) => setLive({ ...design, night: Number(e.target.value) })} onPointerUp={(e) => commit({ ...design, night: Number(e.target.value) }, 'Changed night level')} />
           </label>
-          <span><strong>{stats.measured ? '' : '≈ '}{Math.round(stats.feet)} ft</strong> · {stats.bulbs} bulbs{stats.measured ? '' : <span className="text-glow-300"> (📏 Measure for real feet)</span>}</span>
-          <label className="flex items-center gap-1.5">$/ft
-            <input type="number" min="0" step="0.25" value={design.pricePerFoot ?? ''} onChange={(e) => update('Changed price per foot', (x) => { x.pricePerFoot = e.target.value ? Number(e.target.value) : null; return x })} className="w-20 rounded-lg border border-white/15 bg-night-900 px-2 py-1" />
-          </label>
-          {stats.price != null && <strong className="text-glow-300">≈ ${stats.price.toLocaleString()}</strong>}
+          {!simple && (
+            <>
+              <span><strong>{stats.measured ? '' : '≈ '}{Math.round(stats.feet)} ft</strong> · {stats.bulbs} bulbs{stats.measured ? '' : <span className="text-glow-300"> (📏 Measure for real feet)</span>}</span>
+              <label className="flex items-center gap-1.5">$/ft
+                <input type="number" min="0" step="0.25" value={design.pricePerFoot ?? ''} onChange={(e) => update('Changed price per foot', (x) => { x.pricePerFoot = e.target.value ? Number(e.target.value) : null; return x })} className="w-20 rounded-lg border border-white/15 bg-night-900 px-2 py-1" />
+              </label>
+              {stats.price != null && <strong className="text-glow-300">≈ ${stats.price.toLocaleString()}</strong>}
+            </>
+          )}
         </div>
       </div>
     </div>

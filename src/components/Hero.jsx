@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { business, currentYear, gallery } from '../data/content'
+import { business, currentYear, designPage, gallery } from '../data/content'
 import { bookLine, fetchBooking, seasonBadge } from '../lib/urgency'
 import Availability from './Availability'
 import Icon from './Icon'
@@ -39,6 +39,9 @@ export default function Hero() {
             <Icon name="phone" className="size-5" /> {business.phone}
           </a>
         </div>
+        <a href={`${import.meta.env.BASE_URL}design/`} className="mt-4 inline-flex min-h-11 w-fit items-center gap-2 font-semibold text-glow-300 underline-offset-4 hover:underline">
+          ✨ {designPage.heroLink} →
+        </a>
         <p className="mt-4 text-sm text-slate-300">
           {status && <span className="mr-2 font-semibold text-glow-300">🔥 {status}.</span>}
           {bookLine()}

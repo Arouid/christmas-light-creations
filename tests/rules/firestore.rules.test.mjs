@@ -419,3 +419,40 @@ describe('activity: recent staff actions on Home (docs/specs/dashboard.md)', () 
     }
   })
 })
+
+describe('leadDesigns: a design sent with an estimate request (docs/specs/public-designer.md)', () => {
+  const jpeg = (n = 100) => `data:image/jpeg;base64,${'A'.repeat(n)}`
+  const design = (over = {}) => ({ design: '{"version":1,"strands":[]}', photo: jpeg(), image: jpeg(), createdAt: serverTimestamp(), ...over })
+  test('anyone can add one within the limits; the sample house needs no photo', async () => {
+    for (const who of ['anon', 'customer', 'staff']) await assertSucceeds(setDoc(doc(as[who](), 'leadDesigns', `d-${who}`), design()))
+    await assertSucceeds(setDoc(doc(as.anon(), 'leadDesigns', 'sample'), design({ photo: 'sample' })))
+  })
+  test('refused: extra fields, too big, not a JPEG, empty design, made-up time', async () => {
+    const db = as.anon()
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x1'), design({ admin: true })))
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x2'), design({ photo: jpeg(450001) })))
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x3'), design({ image: jpeg(450001) })))
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x4'), design({ image: 'data:image/png;base64,AAAA' })))
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x5'), design({ photo: 'https://evil.example.com/x.jpg' })))
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x6'), design({ design: '' })))
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x7'), design({ design: 'x'.repeat(100001) })))
+    await assertFails(setDoc(doc(db, 'leadDesigns', 'x8'), design({ createdAt: new Date(0) })))
+  })
+  test('only staff read them; nobody changes or deletes one', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), 'leadDesigns', 'kept'), { ...design(), createdAt: new Date() }) })
+    for (const who of outsiders) {
+      await assertFails(getDoc(doc(as[who](), 'leadDesigns', 'kept')))
+      await assertFails(getDocs(collection(as[who](), 'leadDesigns')))
+    }
+    await assertSucceeds(getDoc(doc(as.staff(), 'leadDesigns', 'kept')))
+    for (const who of ['anon', 'staff']) {
+      await assertFails(updateDoc(doc(as[who](), 'leadDesigns', 'kept'), { design: '{}' }))
+      await assertFails(deleteDoc(doc(as[who](), 'leadDesigns', 'kept')))
+    }
+  })
+  test('an estimate request may point to its design', async () => {
+    await assertSucceeds(setDoc(doc(as.anon(), 'leads', 'with-design'), lead({ designId: 'abc123' })))
+    await assertFails(setDoc(doc(as.anon(), 'leads', 'bad-design'), lead({ designId: 'x'.repeat(61) })))
+    await assertFails(setDoc(doc(as.anon(), 'leads', 'empty-design'), lead({ designId: '' })))
+  })
+})

@@ -4,6 +4,7 @@ import { business } from '../../data/content'
 import { useStaff } from '../staffContext'
 import SatelliteMeasure from './SatelliteMeasure'
 import { blobToDataUrl, loadDesignPhoto, loadDesignRender, removeDesign, saveDesign, useDesigns } from './useDesigns'
+import { getRecord } from '../staffStore'
 
 // The editor is big (canvas code): load it only when someone opens a design.
 const Designer = lazy(() => import('../../designer/Designer.jsx'))
@@ -11,9 +12,36 @@ const Designer = lazy(() => import('../../designer/Designer.jsx'))
 const shape = 'inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold'
 const when = (d) => (d.savedAt ? new Date(d.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '')
 
+// The design a homeowner made on /design/ and sent with their request
+// (leadDesigns, docs/specs/public-designer.md). Loaded only when asked: it's big.
+const SAMPLE_SRC = `${import.meta.env.BASE_URL}images/design/sample-house.jpg`
+function WebsiteDesign({ id, onOpen }) {
+  const [rec, setRec] = useState(null) // null | 'loading' | 'missing' | record
+  const show = async () => {
+    setRec('loading')
+    try { setRec((await getRecord('leadDesigns', id)) ?? 'missing') } catch { setRec('missing') }
+  }
+  return (
+    <div className="rounded-xl border border-glow-400/30 bg-glow-400/5 p-3">
+      <p className="text-sm font-semibold text-glow-300">🌐 They designed their lights on the website</p>
+      {!rec && <button type="button" onClick={show} className={`${shape} mt-2 bg-white/10`}>Show their design</button>}
+      {rec === 'loading' && <p className="mt-2 text-sm text-slate-400">Loading…</p>}
+      {rec === 'missing' && <p className="mt-2 text-sm text-berry-500">Couldn’t load it (the database rules may need publishing).</p>}
+      {rec?.image && (
+        <div className="mt-2 space-y-2">
+          <img src={rec.image} alt="Their light design" className="w-full rounded-lg" />
+          <p className="text-xs text-slate-400">{rec.photo === 'sample' ? 'On our sample house (they liked this look).' : 'On a photo of their home.'}</p>
+          <button type="button" onClick={() => onOpen(rec)} className={`${shape} bg-glow-400 text-night-950`}>🎨 Open in designer</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Light designs for one customer or lead: list, new from a photo, open, save.
 // owner: { type: 'customer' | 'lead', id, name, address }
-export default function DesignsPanel({ owner }) {
+// websiteDesignId: a lead's design from the website (opened, then saved as one of theirs).
+export default function DesignsPanel({ owner, websiteDesignId }) {
   const { user, settings } = useStaff()
   const { designs, error } = useDesigns(user, owner.id)
   const [open, setOpen] = useState(null) // { id?, photo, design? }
@@ -45,6 +73,13 @@ export default function DesignsPanel({ owner }) {
     setOpen({ id: d.id, photo: { src, width: design.photo.width, height: design.photo.height }, design })
   }
 
+  // Their website design in the staff designer; Save keeps it as one of this owner's designs.
+  function openWebsite(rec) {
+    const design = JSON.parse(rec.design)
+    const src = rec.photo === 'sample' ? SAMPLE_SRC : rec.photo
+    setOpen({ photo: { src, width: design.photo.width, height: design.photo.height }, design: { ...design, name: 'Their website design', pricePerFoot: settings.designPricePerFoot ?? null } })
+  }
+
   async function save(design, { blob, stats }) {
     const [renderDataUrl, thumb] = await Promise.all([blobToDataUrl(blob, 1600, 0.85), blobToDataUrl(blob, 360, 0.75)])
     const id = await saveDesign(user, {
@@ -67,6 +102,7 @@ export default function DesignsPanel({ owner }) {
         <input ref={file} type="file" accept="image/*" onChange={pickPhoto} className="hidden" />
         {busy && <span className="text-sm text-glow-300" role="status">{busy}</span>}
       </div>
+      {websiteDesignId && <WebsiteDesign id={websiteDesignId} onOpen={openWebsite} />}
       {error && error !== 'not-staff' && <p className="text-sm text-berry-500">Couldn’t load designs: {error}</p>}
       {error === 'not-staff' && <p className="text-sm text-glow-300">Designs need the updated database rules (Firebase → Firestore → Rules).</p>}
       {designs?.length > 0 && (

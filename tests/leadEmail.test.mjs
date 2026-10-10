@@ -27,3 +27,11 @@ test('recipients come from settings, cleaned and de-duplicated', () => {
   assert.deepEqual(alertRecipients({ alertEmails: [' A@x.com', 'a@x.com', 'bad', 'b@y.org'] }), ['a@x.com', 'b@y.org'])
   assert.deepEqual(alertRecipients(undefined), [])
 })
+
+test('a request with a design from the website says so (subject and a Design row)', () => {
+  const m = leadEmail({ firstName: 'Pat', lastName: 'Sample', city: 'Pearland', message: 'Hi', designId: 'abc' })
+  assert.match(m.subject, /^New estimate 🎨: Pat Sample, Pearland/)
+  assert.match(m.text, /Design: They designed their lights on the website/)
+  assert.match(m.html, /They designed their lights on the website/)
+  assert.doesNotMatch(leadEmail({ firstName: 'Pat', message: 'Hi' }).text, /Design:/)
+})

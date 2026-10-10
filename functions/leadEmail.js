@@ -11,7 +11,7 @@ export function leadEmail(lead) {
   const name = oneLine(`${lead.firstName ?? ''} ${lead.lastName ?? ''}`) || 'Someone'
   const where = oneLine(lead.city) || oneLine(lead.zip)
   const source = oneLine(lead.source)
-  const subject = `New estimate: ${name}${where ? `, ${where}` : ''}${source ? ` (${source})` : ''}`.slice(0, 180)
+  const subject = `New estimate${lead.designId ? ' 🎨' : ''}: ${name}${where ? `, ${where}` : ''}${source ? ` (${source})` : ''}`.slice(0, 180)
   const address = oneLine([lead.address, lead.city, 'TX', lead.zip].filter(Boolean).join(', '))
   const phoneDigits = String(lead.phone ?? '').replace(/\D/g, '')
   const map = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
@@ -23,6 +23,8 @@ export function leadEmail(lead) {
     ['Address', address, address && map],
     ['Prefers', lead.contactMethod],
     ['Heard from', source],
+    // Made on /design/ (docs/specs/public-designer.md): open the lead to see it.
+    ['Design', lead.designId ? 'They designed their lights on the website (in the staff app, on their lead)' : ''],
   ].filter(([, v]) => oneLine(v))
 
   const text = [

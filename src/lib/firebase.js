@@ -56,14 +56,29 @@ export function getFirebaseApp() {
 // Fields a customer may send; must match the create rule in firestore.rules.
 const LEAD_FIELDS = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip', 'contactMethod', 'message', 'source']
 
-export async function submitLead(formData) {
+// attachment (optional, /design/): { design, photo, image } from the public
+// designer (docs/specs/public-designer.md). It's saved first (leadDesigns) and
+// the lead points to it; if that fails the request still goes out without it.
+export async function submitLead(formData, attachment = null) {
   const [{ getFirestore, collection, addDoc, serverTimestamp }, fbApp] = await Promise.all([
     import('firebase/firestore'),
     getFirebaseApp(),
   ])
+  const db = getFirestore(fbApp)
   const lead = Object.fromEntries(LEAD_FIELDS.map((k) => [k, String(formData.get(k) ?? '').trim()]))
-  await addDoc(collection(getFirestore(fbApp), 'leads'), {
+  let designId = null
+  if (attachment) {
+    try {
+      const ref = await addDoc(collection(db, 'leadDesigns'), { ...attachment, createdAt: serverTimestamp() })
+      designId = ref.id
+    } catch (err) {
+      console.warn('Design not attached', err.code ?? err.message)
+      lead.message = `${lead.message}\n\n(They made a design on the website, but it couldn’t be attached.)`.slice(0, 3000)
+    }
+  }
+  await addDoc(collection(db, 'leads'), {
     ...lead,
+    ...(designId ? { designId } : {}),
     status: 'new',
     notes: '',
     createdAt: serverTimestamp(),

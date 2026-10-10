@@ -8,6 +8,7 @@ export const GUIDE_UPDATED = 'October 10, 2026'
 export const TASKS = [
   ['Before you call, text or email someone', 'Glance at **Home → Recent activity**: if someone already emailed, invoiced or called them, or is **on it**, leave it to them. On a new message in **💬** (or Unmatched on Leads), tap **I’ve got it** so everyone sees you’re answering it.'],
   ['A new estimate request came in', 'You get an email alert (and a phone notification if you turned them on in **💬**). Open **Leads**: call or text them, set the status (Called, Estimate sent…), add notes. When they say yes, tap **Make customer**.'],
+  ['A request says “🎨 sent a design”', 'They designed their lights on the website (christmas-light-creations.com/design/). Open the lead → **🌐 Show their design** → **🎨 Open in designer** → measure and adjust → **Save** (it becomes one of their designs) → **📝 New proposal** from it.'],
   ['Find anyone fast', '**Accounts** → type a name, street, phone (any format), email, neighborhood or gate code. Opens their whole account with a photo of the house.'],
   ['Send a price / contract', 'Customer → **🎨 Light designs** (optional mockup) → **📝 Proposals & contracts** → **📝 New proposal** → **Send to customer**. They sign on their phone; you **Countersign**.'],
   ['Get paid', 'The deposit is paid by PayPal/Venmo/card when they sign. For the rest, open the proposal → Payments → **Ask for install balance** (or takedown payment) → **Text it** / **Email it**. No proposal (returning customers)? Send an **invoice**. You get a "paid" email.'],
@@ -77,6 +78,7 @@ export const SECTIONS = [
       'Set the status: **New → Called → Estimate sent → Booked**, or **Lost**. Notes save for everyone; you see who changed what.',
       'Street View photo of the house on each card.',
       '**Make customer** turns a lead into a customer (or links the existing one).',
+      '**🎨 sent a design**: they used the free designer on the website (/design/, no prices shown there). Their picture is under Light designs; **Open in designer**, then Save, to make it one of theirs for a proposal.',
       'Junk or a test? Mark it **Spam / test**, then **Delete**. Real requests can’t be deleted by accident.',
       'Booked leads show a **review request** button.',
     ],

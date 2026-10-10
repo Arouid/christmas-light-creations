@@ -1,4 +1,5 @@
 // Made-up records for previewing the staff app (?demo in development).
+import { SAMPLE_PHOTO, sampleDesign } from '../design/sampleDesign'
 const customers = [
   {
     id: 'sample-customer', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer',
@@ -94,6 +95,8 @@ export const demoData = {
       { id: 's3', customerId: 'test-homeowner', name: 'Test Homeowner', address: '456 Sample Ln League City, TX 77573', kind: 'service', minutes: 20, status: 'todo' },
     ] },
   ]),
+  // A design sent from /design/ with Sample Customer's request (demo-1).
+  leadDesigns: byId([{ id: 'demo-design', design: JSON.stringify(sampleDesign()), photo: 'sample', image: SAMPLE_PHOTO.src }]),
   incidents: byId([
     { id: 'demo-incident-1', kind: 'lead-alert', open: true, message: 'New request from Pat Sample (555-0101) is in the staff app, but the alert email failed: Invalid login (sample).' },
   ]),

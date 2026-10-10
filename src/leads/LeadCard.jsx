@@ -81,7 +81,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
         className="flex w-full items-start justify-between gap-3 p-4 text-left">
         <div className="min-w-0">
           <p className="truncate font-semibold">{lead.firstName} {lead.lastName}</p>
-          <p className="mt-0.5 truncate text-sm text-slate-400">{lead.city || 'No city'} · {when(lead.createdAt)}</p>
+          <p className="mt-0.5 truncate text-sm text-slate-400">{lead.city || 'No city'} · {when(lead.createdAt)}{lead.designId && <span className="text-glow-300"> · 🎨 sent a design</span>}</p>
         </div>
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${statusColor[lead.status]}`}>
           {STATUS_LABELS[lead.status]}
@@ -91,7 +91,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
       {open && (
         <div className="space-y-4 border-t border-white/10 p-4">
           <StreetViewPhoto address={fullAddress} />
-          <DesignsPanel owner={{ type: 'lead', id: lead.id, name: `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim(), address: fullAddress }} />
+          <DesignsPanel owner={{ type: 'lead', id: lead.id, name: `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim(), address: fullAddress }} websiteDesignId={lead.designId} />
           <ProposalsPanel owner={{ type: 'lead', id: lead.id, name: `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim(), address: fullAddress, email: lead.email, phone: lead.phone }} />
           <p className="text-sm text-slate-400">
             Prefers: <span className="font-medium text-slate-200">{lead.contactMethod}</span>

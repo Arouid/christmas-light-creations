@@ -40,6 +40,7 @@ export const HEARD_FROM = ['Road sign', 'Google search', 'Google Maps / Business
 
 export const nav = [
   { label: 'Services', href: '#services' },
+  { label: 'Design yours', href: `${base}design/` },
   { label: 'How it works', href: '#how' },
   { label: 'Photos', href: '#gallery' },
   { label: 'FAQ', href: '#faq' },
@@ -235,7 +236,7 @@ export const privacy = {
     {
       title: 'What we collect',
       items: [
-        '**When you ask for an estimate:** your name, email, phone, address, how you’d like us to contact you, your message, and how you heard about us.',
+        '**When you ask for an estimate:** your name, email, phone, address, how you’d like us to contact you, your message, and how you heard about us. If you used our light designer and send your design with the request, we also keep your design and the photo of your home you used.',
         '**When you’re a customer:** your contact and property details (like a gate code), what we installed, your season schedule, prices and what you’ve paid, and notes we need to do the job.',
         '**When you sign a proposal:** your typed name, your drawn signature, the date and time, the browser you signed on, and a fingerprint of the exact document you agreed to.',
         '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',
@@ -266,7 +267,7 @@ export const privacy = {
     {
       title: 'What your browser keeps',
       items: [
-        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you came from one of our road signs, the page remembers which sign for that visit. Nothing else is stored.',
+        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. Nothing else is stored.',
       ],
     },
     {
@@ -320,4 +321,46 @@ export const urgency = {
     loading: 'Checking the calendar…',
     request: 'Preferred install date: {date}',
   },
+}
+
+// "Design your lights" page (/design/, docs/specs/public-designer.md).
+// No prices or feet anywhere on it (owner, 2026-10-10).
+export const designPage = {
+  heroLink: 'Try our free light designer on your own home',
+  title: 'Design your Christmas lights',
+  intro: 'See the look before you book. Try lights on our sample house, or on a photo of your own home. Free, no sign-up, and your photo stays on your phone unless you send it to us.',
+  open: 'Open the designer',
+  edit: 'Keep designing',
+  upload: 'Use a photo of my home',
+  uploadAgain: 'Use a different photo',
+  sampleNote: 'Our sample house',
+  ownNote: 'Your home',
+  estimate: 'Get my free estimate with this design',
+  saveLabel: 'Get my estimate →',
+  how: [
+    ['✏️', 'Lights', 'tap corner to corner along a roofline, then Done.'],
+    ['▭', 'Rectangle / ◯ Oval', 'drag around a window, door or wreath.'],
+    ['🎀', 'Decorate', 'tap to place wreaths, bows and stars.'],
+    ['🎨', 'Colors', 'warm white, multicolor, red & white and more.'],
+    ['🌙', 'Night', 'slide to see it after dark. Hold “before” to compare.'],
+  ],
+  tipsTitle: 'Tips for a great photo of your home',
+  tips: [
+    'Stand across the street so the whole front of the house fits, roof to ground.',
+    'Face the house straight on, not from a corner.',
+    'Hold your phone sideways (landscape).',
+    'Daylight or early dusk works best; skip night photos.',
+    'Move cars out of the driveway if you can, and keep people out of the shot.',
+  ],
+  errors: {
+    'too-small': 'That photo is too small to design on. Take a new one with your phone’s camera (the whole house, from across the street).',
+    unreadable: 'This photo type can’t be opened here. Take a regular photo or a screenshot of it, then try again.',
+    'too-big': 'That photo is too detailed to send. Try a different photo, or take a screenshot of it.',
+  },
+  portraitTip: 'Tip: holding your phone sideways fits more of the house.',
+  formTitle: 'Get your free estimate',
+  formIntro: 'Tell us where you are and we’ll measure and send a price. Your design comes with your request, so we see exactly the look you want.',
+  attached: 'Your design is attached',
+  attach: 'Send my design with the request',
+  message: 'I designed my lights on your website (attached).',
 }

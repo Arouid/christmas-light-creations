@@ -33,6 +33,8 @@ const photo = await photoToDataUrl(file) // { dataUrl, width, height }, EXIF dro
 />
 ```
 
+- `simple` + `saveLabel` (public website, /design/): no measuring, history, feet,
+  bulb counts or prices; `onClose(design)` passes the current design back.
 - `designStats(design)` → feet (measured or estimated), bulbs, bulbs per
   color, ballpark price (`pricePerFoot`).
 - `renderDesign(ctx, design, image, opts)` draws a design on any canvas
