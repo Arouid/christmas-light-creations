@@ -236,7 +236,7 @@ export const privacy = {
     {
       title: 'What we collect',
       items: [
-        '**When you ask for an estimate:** your name, email, phone, address, how you’d like us to contact you, your message, and how you heard about us. If you used our light designer and send your design with the request, we also keep your design and the photo of your home you used.',
+        '**When you ask for an estimate:** your name, email, phone, address, how you’d like us to contact you, your message, and how you heard about us. If you used our light designer and send your design with the request, we also keep your design and the photo of your home you used, for 30 days (longer only if we use it for your proposal).',
         '**When you’re a customer:** your contact and property details (like a gate code), what we installed, your season schedule, prices and what you’ve paid, and notes we need to do the job.',
         '**When you sign a proposal:** your typed name, your drawn signature, the date and time, the browser you signed on, and a fingerprint of the exact document you agreed to.',
         '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',

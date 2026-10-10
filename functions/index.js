@@ -19,6 +19,8 @@
 //   and files them in customer history (docs/specs/message-sync.md), then
 //   sends staff a phone notification (docs/specs/staff-alerts.md).
 // - sendTestPush: a test notification to the calling staff member's devices.
+// - leadDesignCreated / cleanupLeadDesigns: designs sent from /design/ are
+//   re-encoded and rebuilt on arrival, and deleted after 30 days.
 // - sendStaffEmail: staff email a customer from info@ without leaving the
 //   staff app; filed in their history at once (docs/specs/staff-email.md).
 //
@@ -46,6 +48,8 @@ import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, pay
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
 import { TEST_PUSH, devicesOf, deviceGone, fcmMessage, pushFor, requestPush } from './staffPush.js'
+import { MAX_SIDE, cleanDesign, cutoff, jpegBytes } from './leadDesigns.js'
+import sharp from 'sharp'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import {
   centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceSummary, KIND_SHORT, paidInfo,
@@ -899,6 +903,59 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
   } catch (e) {
     await reportIncident('other', `The daily check email couldn't be sent: ${e.message}`)
   }
+})
+
+// ---- Designs sent from /design/ (docs/specs/public-designer.md) ------------
+// The page already redraws photos in the browser, but anyone can write to
+// leadDesigns directly, so the server checks each one as it arrives: both
+// pictures re-encoded as real JPEGs (no hidden data, at most 1280 px), the
+// design rebuilt from known fields. Anything that fails is deleted. Uploads
+// are deleted after 30 days; a copy staff saved into the lead's designs stays.
+
+// A JPEG data URL -> the same picture re-encoded (metadata dropped), or null.
+async function cleanJpeg(dataUrl) {
+  const bytes = jpegBytes(dataUrl)
+  if (!bytes) return null
+  try {
+    const img = sharp(bytes, { limitInputPixels: 40e6, failOn: 'error' })
+      .resize({ width: MAX_SIDE, height: MAX_SIDE, fit: 'inside', withoutEnlargement: true })
+    // Never bigger than what arrived (the document must stay under 1 MB).
+    let out
+    for (const quality of [80, 70, 60, 50, 40]) {
+      out = await img.clone().jpeg({ quality, mozjpeg: true }).toBuffer()
+      if (out.length <= bytes.length) break
+    }
+    return `data:image/jpeg;base64,${out.toString('base64')}`
+  } catch {
+    return null
+  }
+}
+
+export const leadDesignCreated = onDocumentCreated({ document: 'leadDesigns/{id}', region: REGION, memory: '512MiB' }, async (event) => {
+  const d = event.data?.data()
+  if (!d) return
+  const design = cleanDesign(d.design)
+  const image = await cleanJpeg(d.image)
+  const photo = d.photo === 'sample' ? 'sample' : await cleanJpeg(d.photo)
+  if (!design || !image || !photo) {
+    await event.data.ref.delete()
+    logger.warn('leadDesign refused', { id: event.params.id, design: Boolean(design), image: Boolean(image), photo: Boolean(photo) })
+    return
+  }
+  await event.data.ref.update({ design, image, photo, checkedAt: FieldValue.serverTimestamp() })
+  logger.info('leadDesign checked', { id: event.params.id, sample: photo === 'sample' })
+})
+
+// 3:15 am Central: delete uploads older than 30 days (owner, 2026-10-10).
+export const cleanupLeadDesigns = onSchedule({ schedule: '15 3 * * *', timeZone: 'America/Chicago', region: REGION }, async () => {
+  const db = getFirestore()
+  const old = await db.collection('leadDesigns').where('createdAt', '<', cutoff()).select().get()
+  for (let i = 0; i < old.docs.length; i += 400) {
+    const batch = db.batch()
+    old.docs.slice(i, i + 400).forEach((doc) => batch.delete(doc.ref))
+    await batch.commit()
+  }
+  logger.info('cleanupLeadDesigns', { deleted: old.size })
 })
 
 // ---- Booking info for the home page ----------------------------------------

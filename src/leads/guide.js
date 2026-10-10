@@ -78,7 +78,7 @@ export const SECTIONS = [
       'Set the status: **New → Called → Estimate sent → Booked**, or **Lost**. Notes save for everyone; you see who changed what.',
       'Street View photo of the house on each card.',
       '**Make customer** turns a lead into a customer (or links the existing one).',
-      '**🎨 sent a design**: they used the free designer on the website (/design/, no prices shown there). Their picture is under Light designs; **Open in designer**, then Save, to make it one of theirs for a proposal.',
+      '**🎨 sent a design**: they used the free designer on the website (/design/, no prices shown there). Their picture is under Light designs; **Open in designer**, then Save, to make it one of theirs for a proposal. Website uploads are deleted after **30 days**, so save it if you’ll need it.',
       'Junk or a test? Mark it **Spam / test**, then **Delete**. Real requests can’t be deleted by accident.',
       'Booked leads show a **review request** button.',
     ],

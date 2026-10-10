@@ -17,6 +17,7 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 5. **Get my free estimate with this design** → the usual estimate form on the same page, with a thumbnail "Your design is attached". On send, the design (and their photo) goes with the request.
 6. Staff see the design on the lead (Leads card and the lead's Accounts page) and can **open it in the staff designer** for that lead (it becomes one of the lead's designs), then make the proposal as usual.
 7. Phone number one tap away on the page, like everywhere.
+8. **Checked and temporary** (owner, 2026-10-10): when a design arrives, the server re-encodes both pictures as real JPEGs (no hidden data, at most 1280 px) and rebuilds the design from known fields; anything that fails is deleted. Uploads are **deleted 30 days** after they arrive; a copy staff saved into the lead's designs stays with the lead.
 
 ## What we DON'T do
 
@@ -25,6 +26,7 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 - **No accounts or saving** a design to come back to; they can download the picture.
 - **Nothing leaves the visitor's phone** unless they send the estimate request (photo and design stay in the browser until then).
 - **No design without a request**: we don't collect designs from people who don't ask for an estimate.
+- **No keeping uploads**: website photos/designs go after 30 days (staff save a copy if they need it for a proposal).
 - The staff designer itself doesn't change (simple mode is an option of the same module).
 
 ## Edge cases
@@ -35,6 +37,8 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 - **Design attached but the request fails**: the visitor sees the usual "Something went wrong, call us"; nothing half-saved shows to staff (the lead is what staff see; an orphan design without a lead is harmless).
 - **Spam**: same anti-spam check as the form (App Check), the honeypot field, and size limits in the rules (photo ≤ 450 KB, picture ≤ 450 KB, design ≤ 100 KB).
 - **No Firebase config** (dev): the estimate step shows the call button, like the home page.
+- **Someone writes to the database directly** (skipping the page): the server re-encodes the pictures and rebuilds the design; a fake picture or nonsense design is deleted, and the lead's box says it isn't available.
+- **After 30 days**: the lead keeps `designId`; its box says the upload was deleted and points to saved copies.
 
 ## Decisions
 
@@ -45,13 +49,17 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 | 2026-10-10 | Simple mode is a `simple` prop of the existing designer module (hides measure, history, feet/bulbs, $/ft, price) | One designer to maintain; the module stays app-free |
 | 2026-10-10 | Sample house is a drawn illustration (`public/images/design/sample-house.jpg`, made from an SVG in `assets-source/`) until the owner sends a real daytime photo | Every photo we have is lit at night; a designer needs an unlit house |
 | 2026-10-10 | Designs travel in a new collection `leadDesigns/{id}` (public create only, staff read); the lead gets `designId` | Keeps the lead small; a design doc is ~0.6 MB |
+| 2026-10-10 | Server check on arrival (`leadDesignCreated`): sharp re-encodes photo and picture (metadata dropped, ≤ 1280 px, never larger than what arrived), `cleanDesign` keeps known fields only (styles/colors/decorations lists tested against the designer's); failures deleted | Owner asked whether uploads are sanitized; the page's own redraw can be skipped by writing to the database directly |
+| 2026-10-10 | Uploads deleted 30 days after arrival (`cleanupLeadDesigns`, daily 3:15 am Central); staff-saved copies (designs/designFiles) stay | Owner: "only keep those pictures around temporarily", 30 days |
 
 ## Acceptance criteria
 
 1. [test] Standard size: long side 1280 (landscape and portrait), aspect kept, small photos refused; size checks for the stored photo/picture/design. → `tests/publicDesign.test.mjs`
 2. [test] Rules: anyone can add a design within the size limits and only the known fields; nobody but staff reads them; nobody updates or deletes; a lead may carry `designId`. → `npm run test:rules`
 3. [human] /design/ at 375px: sample house with lights shows; designer opens in simple mode with no $ / ft / bulbs / Measure anywhere; Upload a photo → tips visible → the photo opens resized; Get my free estimate shows the form with the thumbnail; no horizontal scroll; no console errors. Observer: agent, browser pane (dev, no real send).
-4. [human] Live: owner designs on a photo of a test house, sends the request → the lead shows the design picture in Leads; Open in designer opens it for the lead. Known-good control: a request without a design still arrives normally. Observer: owner.
+4. [test] Server cleaning: design rebuilt from known fields (unknown styles/colors/decorations and off-photo points dropped, scale and price emptied, nonsense refused); only JPEG data URLs decoded; 30-day expiry. → `tests/leadDesigns.test.mjs`
+5. [agent] The same sharp pipeline strips EXIF/GPS from a test JPEG, caps it at 1280 px, and refuses a non-image. → checked 2026-10-10 (verified.md)
+6. [human] Live: owner designs on a photo of a test house, sends the request → the lead shows the design picture in Leads; Open in designer opens it for the lead. Known-good control: a request without a design still arrives normally. Observer: owner.
 
 ## Contract
 
@@ -63,6 +71,7 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 | `photo` | `data:image/jpeg;base64,…` (≤ 450,000 chars) or `sample` |
 | `image` | finished picture with lights, `data:image/jpeg;base64,…` (≤ 450,000 chars) |
 | `createdAt` | server time |
+| `checkedAt` | server time, set by `leadDesignCreated` after it re-encoded `photo`/`image` and rebuilt `design` (a doc that fails is deleted) |
 
 `leads/{id}.designId`: optional, the `leadDesigns` id (string ≤ 60).
 

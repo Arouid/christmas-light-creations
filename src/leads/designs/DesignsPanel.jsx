@@ -15,6 +15,11 @@ const when = (d) => (d.savedAt ? new Date(d.savedAt).toLocaleDateString('en-US',
 // The design a homeowner made on /design/ and sent with their request
 // (leadDesigns, docs/specs/public-designer.md). Loaded only when asked: it's big.
 const SAMPLE_SRC = `${import.meta.env.BASE_URL}images/design/sample-house.jpg`
+// Uploads are deleted 30 days after they arrive (functions/leadDesigns.js KEEP_DAYS).
+const keptUntil = (t) => {
+  const ms = t?.toMillis ? t.toMillis() : Date.parse(t) || Date.now()
+  return new Date(ms + 30 * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
 function WebsiteDesign({ id, onOpen }) {
   const [rec, setRec] = useState(null) // null | 'loading' | 'missing' | record
   const show = async () => {
@@ -26,11 +31,11 @@ function WebsiteDesign({ id, onOpen }) {
       <p className="text-sm font-semibold text-glow-300">🌐 They designed their lights on the website</p>
       {!rec && <button type="button" onClick={show} className={`${shape} mt-2 bg-white/10`}>Show their design</button>}
       {rec === 'loading' && <p className="mt-2 text-sm text-slate-400">Loading…</p>}
-      {rec === 'missing' && <p className="mt-2 text-sm text-berry-500">Couldn’t load it (the database rules may need publishing).</p>}
+      {rec === 'missing' && <p className="mt-2 text-sm text-slate-400">Not available any more: website uploads are deleted 30 days after they’re sent (or it didn’t pass our checks). A copy you saved stays under Light designs.</p>}
       {rec?.image && (
         <div className="mt-2 space-y-2">
           <img src={rec.image} alt="Their light design" className="w-full rounded-lg" />
-          <p className="text-xs text-slate-400">{rec.photo === 'sample' ? 'On our sample house (they liked this look).' : 'On a photo of their home.'}</p>
+          <p className="text-xs text-slate-400">{rec.photo === 'sample' ? 'On our sample house (they liked this look).' : 'On a photo of their home.'} Kept until {keptUntil(rec.createdAt)}; open it and Save to keep a copy.</p>
           <button type="button" onClick={() => onOpen(rec)} className={`${shape} bg-glow-400 text-night-950`}>🎨 Open in designer</button>
         </div>
       )}
