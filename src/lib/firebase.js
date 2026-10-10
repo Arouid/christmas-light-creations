@@ -35,7 +35,8 @@ export const APP_CHECK_SITE_KEY = '6Le6IuctAAAAAG-n1sS8J5Gjg-IvFXnnHqgI9uxR'
 // of the project's web push key, from Firebase console → Project settings →
 // Cloud Messaging → Web configuration → Web Push certificates. Public by
 // design. Empty = the staff app says notifications aren't set up yet.
-export const PUSH_VAPID_KEY = ''
+// Generated 2026-10-09.
+export const PUSH_VAPID_KEY = 'BF6QFVaqOyLPLtXF_x2TrmgtQpnDUFPBHqqKtSn0AK9i2VtLZzMDnVTKGqA-bCkaq-5Svsrcn0qYAJ_jG0qkPXQ'
 
 let appPromise
 export function getFirebaseApp() {
