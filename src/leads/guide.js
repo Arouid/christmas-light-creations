@@ -153,6 +153,7 @@ export const SECTIONS = [
       '**Install the app** on your phone (Android: Install; iPhone: Share → Add to Home Screen).',
       '**New-request alerts**: who gets the email when a website request comes in.',
       '**Business texting**: the Google Voice account; **on this device, text from** the business number or your own.',
+      '**How booked we are (home page)**: a short, true line like “October is 80% booked” under the main buttons on the website. Update it weekly; it hides itself after 14 days.',
       '**Home base** (for distances and routes), **price per foot** for designs, **early-install discounts**.',
       '**Proposals & contracts**: deposit %, takedown % and minimum (set both to 0 if takedown is ever included), countersigner, contract terms.',
     ],

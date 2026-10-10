@@ -258,7 +258,7 @@ export const privacy = {
         '**Google** (Firebase, Google Workspace, Google Voice, Google Maps): stores our customer records, sends and receives our email and texts, and shows addresses on a map for our crew.',
         '**PayPal** (including Venmo and card payments): processes online payments under PayPal’s own privacy policy.',
         '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
-        'Our pages load fonts from Google Fonts. That’s all: no other outside services see your visit.',
+        'Our pages load fonts from Google Fonts, and the home page asks our own server (on Google Cloud) for the line about how booked we are. That’s all: no other outside services see your visit.',
       ],
     },
     {
@@ -285,4 +285,27 @@ export const privacy = {
       items: ['Email info@christmas-light-creations.com or call 281-819-0163. If this policy changes, the date at the top changes too.'],
     },
   ],
+}
+
+// Booking urgency on the home page: real dates only, so it's always true.
+// discountEnd must match staff Settings → Early-install discounts.
+// {n} = days left, {season} = season year. Logic in src/lib/urgency.js.
+export const urgency = {
+  installStart: { month: 10, day: 15 },
+  discountEnd: { month: 10, day: 31 },
+  bookingClose: { month: 12, day: 15 }, // after this, we book for next season
+  badge: {
+    before: 'Booking now · Early install discount through Oct 31',
+    countdown: 'Early install discount: {n} days left',
+    lastDay: 'Early install discount ends today',
+    season: 'Booking now for the {season} season',
+    next: 'Booking for the {season} season',
+  },
+  line: {
+    early: 'October dates fill first. Request yours today.',
+    season: 'Dates fill fast this time of year. Request yours today.',
+    next: 'Get on the list early for next season.',
+  },
+  // Staff's "how full we are" line (⚙ Settings) hides itself if not updated for this long.
+  statusMaxDays: 14,
 }

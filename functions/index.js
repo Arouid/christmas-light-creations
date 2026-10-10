@@ -476,3 +476,14 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
     await reportIncident('other', `The daily check email couldn't be sent: ${e.message}`)
   }
 })
+
+// ---- Booking status line for the home page --------------------------------
+// Staff set it in ⚙ Settings (settings/app.bookingStatus = { text, updatedAt });
+// the public home page reads it here without loading Firebase. The page hides
+// it if it hasn't been updated for 14 days.
+export const bookingStatus = onRequest({ region: REGION, invoker: 'public', maxInstances: 2, cors: [SITE, 'http://localhost:5173'] }, async (req, res) => {
+  if (req.method !== 'GET') { res.status(405).end(); return }
+  const s = (await getFirestore().doc('settings/app').get()).get('bookingStatus') ?? {}
+  res.set('Cache-Control', 'public, max-age=300')
+  res.json({ text: String(s.text ?? '').slice(0, 120), updatedAt: s.updatedAt ?? null })
+})

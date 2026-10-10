@@ -52,6 +52,35 @@ function DiscountSchedule({ settings, onSave }) {
   )
 }
 
+// "How full we are" line on the home page (settings/app.bookingStatus, read
+// by the bookingStatus function). Must be true; hides itself after 14 days.
+function BookingStatus({ settings, onSave }) {
+  const cur = settings.bookingStatus ?? {}
+  const [text, setText] = useState(cur.text ?? '')
+  const [msg, setMsg] = useState(null)
+  const [opened] = useState(() => Date.now())
+  const age = cur.updatedAt ? Math.max(0, Math.floor((opened - Date.parse(cur.updatedAt)) / 86400000)) : null
+  async function save(value) {
+    await onSave({ bookingStatus: { text: value.trim().slice(0, 120), updatedAt: new Date().toISOString() } })
+    setText(value.trim())
+    setMsg(value.trim() ? 'Saved ✓ It shows on the website within 5 minutes.' : 'Removed ✓')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">How booked we are (home page)</p>
+      <p className="text-sm text-slate-400">
+        A short, true line under the main buttons, like “October is 80% booked” or “Only weekends left in November”. It hides itself if nobody updates it for 14 days{cur.text && age != null ? ` (last updated ${age === 0 ? 'today' : `${age} day${age === 1 ? '' : 's'} ago`})` : ''}.
+      </p>
+      <input value={text} maxLength={120} onChange={(e) => { setText(e.target.value); setMsg(null) }} className={field} placeholder="October is 80% booked" />
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={() => save(text)} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950">Save</button>
+        {cur.text && <button type="button" onClick={() => save('')} className="rounded-full bg-white/10 px-5 py-2 text-sm font-semibold">Remove from website</button>}
+        {msg && <span className="text-sm text-emerald-400">{msg}</span>}
+      </div>
+    </div>
+  )
+}
+
 // Who gets an email the moment a website estimate request comes in
 // (functions/index.js reads settings/app.alertEmails).
 function AlertEmails({ settings, onSave }) {
@@ -129,6 +158,8 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
         <div className={box}><InstallApp /></div>
 
         <AlertEmails settings={settings} onSave={onSave} />
+
+        <BookingStatus settings={settings} onSave={onSave} />
 
         <form onSubmit={saveAccount} className={box}>
           <p className="font-semibold">Business texting (Google Voice)</p>
