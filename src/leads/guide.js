@@ -10,7 +10,7 @@ export const TASKS = [
   ['Find anyone fast', '**Accounts** → type a name, street, phone (any format), email, neighborhood or gate code. Opens their whole account with a photo of the house.'],
   ['Send a price / contract', 'Customer → **🎨 Light designs** (optional mockup) → **📝 Proposals & contracts** → **📝 New proposal** → **Send to customer**. They sign on their phone; you **Countersign**.'],
   ['Get paid', 'The deposit is paid by PayPal/Venmo/card when they sign. For the rest, open the proposal → Payments → **Ask for install balance** (or takedown payment) → **Text it** / **Email it**. No proposal (returning customers)? Send an **invoice**. You get a "paid" email.'],
-  ['Bill a customer (invoice)', 'Their account (**Accounts**) → **🧾 Invoices** → **＋ New invoice**: what it’s for, season, lines (a discount is a minus line), due → **Send to customer**. It’s emailed from info@ with a Pay button (PayPal, Venmo, card) and gets a number like CLC-2026-0001. No email on file? **Text it**. Reminders go out 7 and 14 days after the due date until it’s paid.'],
+  ['Bill a customer (invoice)', '**Invoices** → **＋ New invoice** → type their name, street or phone and tap them (or from their account: **🧾 Invoices** → **＋ New invoice**). Then: what it’s for, season, lines (a discount is a minus line), due → **Send to customer**. It’s emailed from info@ with a Pay button (PayPal, Venmo, card) and gets a number like CLC-2026-0001. No email on file? **Text it**. Reminders go out 7 and 14 days after the due date until it’s paid.'],
   ['Bill everyone for the season', '**Season** → filter (installs or takedowns) → **🧾 Invoice these N** → check the list (unticked ones say why) → **Make N drafts**. Then **Invoices** → Drafts → check the amounts → **Send all drafts**.'],
   ['They paid cash, check or Zelle', 'Open their invoice → **Mark paid…** → how, when, check # → Mark paid. They get a receipt and their Seasons billing fills in. Wrong invoice? **Undo “Mark paid”**. No invoice? Type it in their Seasons (Edit details).'],
   ['Plan installs or takedowns', '**Season** (filter by area, early/regular) → **＋ Route these N**, or **Routes** → New route → **⚡ Optimize** → **Send to the installer**.'],
@@ -42,6 +42,7 @@ export const SECTIONS = [
     id: 'invoices', icon: '🧾', title: 'Invoices', tab: 'invoices',
     summary: 'Our own invoices (instead of PayPal invoices): emailed from info@, paid online by PayPal, Venmo or card, or marked paid by you.',
     items: [
+      '**＋ New invoice**: search the customer (name, street, phone or email) and tap them to start their invoice.',
       'Boxes at the top: **Open** (unpaid), **Overdue**, **Paid**, **Drafts**, each with its total. Search by name, street or number; pick a season.',
       'Tap an invoice to see what went out (invoice emailed, reminders, receipt), when the customer opened it, and to **Text it**, **Copy link**, **Email again**, **Mark paid…**, **Void**, or turn reminders off.',
       'Numbers come from the website when you press Send: CLC-2026-0001, CLC-2026-0002… (a new count each January). Voided ones keep their number; only never-sent drafts can be deleted.',

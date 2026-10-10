@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { todayISO } from '../../lib/customers'
-import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, listTotals, longDate, money, paidInfo, sendProblems } from '../../lib/invoices'
+import { buildIndex, searchAccounts } from '../../lib/accountSearch'
+import { seasonYear, todayISO } from '../../lib/customers'
+import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, listTotals, longDate, money, newInvoice, paidInfo, sendProblems } from '../../lib/invoices'
 import DataTable from '../DataTable'
 import InvoiceEditor from './InvoiceEditor'
 import { STATE_STYLE, numberLabel, useInvoicesContext } from './useInvoices'
@@ -9,13 +10,48 @@ const FILTERS = [['open', 'Open'], ['overdue', 'Overdue'], ['paid', 'Paid'], ['d
 const matches = (s, f) => f === 'all' || s === f || (f === 'open' && s === 'overdue')
 const when = (i, s) => (s === 'paid' ? `paid ${longDate(paidInfo(i)?.date)}` : s === 'draft' ? 'not sent' : s === 'void' ? 'cancelled' : `due ${longDate(i.dueDate)}`)
 
+// "＋ New invoice": search a customer (same search as Accounts), tap to start.
+function PickCustomer({ customers, onPick, onClose }) {
+  const [q, setQ] = useState('')
+  const index = useMemo(() => buildIndex({ customers }), [customers])
+  const results = useMemo(() => searchAccounts(index, q, 12), [index, q])
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-night-950/95 p-3 backdrop-blur sm:p-6" role="dialog" aria-modal="true" aria-label="New invoice: pick a customer">
+      <div className="mx-auto max-w-xl space-y-4 rounded-3xl border border-white/10 bg-night-900 p-4 sm:p-6">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-display text-2xl font-extrabold">New invoice for…</h2>
+          <button type="button" onClick={onClose} className="min-h-11 rounded-full bg-white/10 px-4 text-sm font-semibold">Close</button>
+        </div>
+        <input type="search" autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, street, phone or email" aria-label="Search customers"
+          className="block min-h-11 w-full rounded-full border border-white/20 bg-night-950 px-4 text-base" />
+        {q.trim() ? (
+          <ul className="divide-y divide-white/5 rounded-2xl border border-white/10">
+            {results.map((e) => (
+              <li key={e.key}>
+                <button type="button" onClick={() => onPick(customers.find((c) => c.id === e.id))} className="block min-h-11 w-full px-4 py-2.5 text-left hover:bg-white/5">
+                  <span className="block truncate font-medium">{e.name || e.email || e.phone}</span>
+                  <span className="block truncate text-sm text-slate-400">{[e.address, e.phone].filter(Boolean).join(' · ')}</span>
+                </button>
+              </li>
+            ))}
+            {!results.length && <li className="px-4 py-4 text-sm text-slate-400">No customer matches “{q}”. A website lead must be made a customer first (Accounts → ＋ Make customer).</li>}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-400">Start typing to find the customer. Billing a whole season? <a href="#season" onClick={onClose} className="text-glow-300 underline">Season → 🧾 Invoice these N</a>.</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // Invoices tab: what's owed (open, overdue), what came in, drafts to send.
-export default function InvoicesView() {
+export default function InvoicesView({ customers = [] }) {
   const ctx = useInvoicesContext()
   const [filter, setFilter] = useState('open')
   const [season, setSeason] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(null)
+  const [picking, setPicking] = useState(false)
   const [busy, setBusy] = useState(null)
   const today = todayISO()
   const all = useMemo(() => (ctx?.invoices ?? []).map((i) => ({ ...i, state: invoiceState(i, today) })), [ctx?.invoices, today])
@@ -52,7 +88,10 @@ export default function InvoicesView() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="font-display text-3xl font-extrabold">Invoices</h1>
+        <div className="flex w-full items-center justify-between gap-3 sm:w-auto">
+          <h1 className="font-display text-3xl font-extrabold">Invoices</h1>
+          <button type="button" onClick={() => setPicking(true)} className="min-h-11 shrink-0 rounded-full bg-glow-400 px-5 font-semibold text-night-950 hover:bg-glow-300">＋ New invoice</button>
+        </div>
         <div className="flex w-full gap-2 sm:w-auto">
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, street or number" aria-label="Search invoices"
             className="min-h-11 min-w-0 flex-1 rounded-full border border-white/20 bg-night-900 px-4 text-base sm:w-64" />
@@ -113,11 +152,13 @@ export default function InvoicesView() {
         </>
       ) : (
         <p className="rounded-2xl border border-white/10 p-4 text-sm text-slate-400">
-          {all.length ? 'Nothing here.' : 'No invoices yet. Open a customer (Accounts) → 🧾 Invoices → ＋ New invoice, or Season → 🧾 Invoice these N for a whole season.'}
+          {all.length ? 'Nothing here.' : 'No invoices yet. Tap ＋ New invoice and pick the customer, or Season → 🧾 Invoice these N for a whole season.'}
         </p>
       )}
 
-      {open && <InvoiceEditor token={open.id} invoice={open} onClose={() => setOpen(null)} />}
+      {picking && <PickCustomer customers={customers} onClose={() => setPicking(false)}
+        onPick={(c) => { setPicking(false); setOpen({ id: null, invoice: newInvoice(c, { season: seasonYear() }) }) }} />}
+      {open && <InvoiceEditor token={open.id} invoice={open.invoice ?? open} onClose={() => setOpen(null)} />}
     </div>
   )
 }

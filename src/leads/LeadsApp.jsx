@@ -262,7 +262,7 @@ export default function LeadsApp() {
               onOpenCustomer={setOpenId} onMakeLeadCustomer={makeCustomer}
               onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
           : loading)}
-        {tab === 'invoices' && <InvoicesView />}
+        {tab === 'invoices' && <InvoicesView customers={customers ?? []} />}
         {tab === 'leads' && user && <UnmatchedMessages user={user} customers={customers} />}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onDelete={deleteLead}onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
