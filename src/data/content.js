@@ -1,6 +1,5 @@
 // All site copy lives here so text can be edited without touching layout code.
-
-export const currentYear = new Date().getFullYear()
+// (Years and dates on prerendered pages come from useToday in lib/prerendered.js.)
 
 // Vite sets BASE_URL ('/' or the github.io sub-path); plain Node (tests) has none.
 const base = import.meta.env?.BASE_URL ?? '/'
