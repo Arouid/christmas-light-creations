@@ -40,6 +40,12 @@ export const nav = [
   { label: 'FAQ', href: '#faq' },
 ]
 
+// Footer: customers' own account (agreements, payments) and the privacy policy.
+export const footerLinks = [
+  { label: 'Customer login', href: `${base}account/` },
+  { label: 'Privacy', href: `${base}privacy/` },
+]
+
 // Must match the service areas on the Google Business Profile (max 20 there).
 export const serviceAreaGroups = [
   { region: 'Pearland side', towns: ['Pearland', 'Friendswood', 'Brookside Village', 'League City', 'Webster'] },
@@ -201,4 +207,65 @@ export const recaptchaNote = {
   privacy: 'https://policies.google.com/privacy',
   terms: 'https://policies.google.com/terms',
   after: ' apply.',
+}
+
+// Privacy policy (/privacy/). Plain words; keep it true to what the site does.
+// Owner to review (and the attorney along with the contract terms).
+export const privacy = {
+  updated: 'October 9, 2026',
+  intro: 'We’re a family business. We only collect what we need to quote, install, service and bill your lights, and we never sell it. Here’s exactly what that means.',
+  sections: [
+    {
+      title: 'What we collect',
+      items: [
+        '**When you ask for an estimate:** your name, email, phone, address, how you’d like us to contact you, your message, and how you heard about us.',
+        '**When you’re a customer:** your contact and property details (like a gate code), what we installed, your season schedule, prices and what you’ve paid, and notes we need to do the job.',
+        '**When you sign a proposal:** your typed name, your drawn signature, the date and time, the browser you signed on, and a fingerprint of the exact document you agreed to.',
+        '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
+        '**When you text, call or email us:** we keep that conversation history with your customer record so anyone on our team can help you.',
+        '**When you sign in to your account:** your email address and when you signed in. With “Sign in with Google”, Google tells us your name and email; we never see your Google password.',
+      ],
+    },
+    {
+      title: 'How we use it',
+      items: [
+        'To contact you about your estimate, schedule installs, service calls and takedowns, send proposals and receipts, and answer your questions.',
+        'To show you your agreements, yearly price and payments in your account.',
+        'To keep our own business records (agreements and payments).',
+        'We don’t use advertising or tracking cookies, we don’t run analytics on this site, and we don’t sell or rent your information to anyone.',
+      ],
+    },
+    {
+      title: 'Who else handles it',
+      items: [
+        '**Google** (Firebase, Google Workspace, Google Voice, Google Maps): stores our customer records, sends and receives our email and texts, and shows addresses on a map for our crew.',
+        '**PayPal** (including Venmo and card payments): processes online payments under PayPal’s own privacy policy.',
+        '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
+        'Our pages load fonts from Google Fonts. That’s all: no other outside services see your visit.',
+      ],
+    },
+    {
+      title: 'What your browser keeps',
+      items: [
+        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you came from one of our road signs, the page remembers which sign for that visit. Nothing else is stored.',
+      ],
+    },
+    {
+      title: 'How long we keep it',
+      items: [
+        'Estimate requests and customer records stay while you’re a customer and for a reasonable time after, so we can help you if you come back. Signed agreements and payment records are kept as business records.',
+      ],
+    },
+    {
+      title: 'Your choices',
+      items: [
+        'Ask us anytime what we have about you, to fix something, or to delete it. We’ll delete what we can; signed agreements and payment records we need to keep as business records.',
+        'To stop texts or emails from us, just tell us (reply “stop”, or call).',
+      ],
+    },
+    {
+      title: 'Questions',
+      items: ['Email info@christmas-light-creations.com or call 281-819-0163. If this policy changes, the date at the top changes too.'],
+    },
+  ],
 }

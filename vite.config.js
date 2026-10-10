@@ -20,6 +20,7 @@ export default defineConfig({
         leads: resolve(import.meta.dirname, 'leads/index.html'),
         proposal: resolve(import.meta.dirname, 'proposal/index.html'),
         account: resolve(import.meta.dirname, 'account/index.html'),
+        privacy: resolve(import.meta.dirname, 'privacy/index.html'),
       },
     },
   },

@@ -124,6 +124,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 </main>
 <footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-500">
   © ${new Date().getFullYear()} ${esc(business.name)} · ${esc(business.city)} · ${business.phone}
+  · <a href="${base}account/" class="hover:text-glow-300">Customer login</a> · <a href="${base}privacy/" class="hover:text-glow-300">Privacy</a>
 </footer>
 </body>
 </html>
@@ -162,7 +163,7 @@ for (const [from, to] of Object.entries(REDIRECTS)) {
 `)
 }
 
-const urls = [`${SITE}/`, ...areas.map((a) => `${SITE}/${pagePath(a)}`)]
+const urls = [`${SITE}/`, ...areas.map((a) => `${SITE}/${pagePath(a)}`), `${SITE}/privacy/`]
 await writeFile(new URL('sitemap.xml', dist), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod></url>`).join('\n')}

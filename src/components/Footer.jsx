@@ -1,4 +1,4 @@
-import { business, currentYear, nav } from '../data/content'
+import { business, currentYear, footerLinks, nav } from '../data/content'
 import Icon from './Icon'
 
 export default function Footer() {
@@ -17,9 +17,10 @@ export default function Footer() {
           <Icon name="phone" className="size-5" /> {business.phone}
         </a>
       </div>
-      <p className="mx-auto mt-10 max-w-6xl text-xs text-slate-500">
-        © {currentYear} {business.name} · {business.city}
-      </p>
+      <div className="mx-auto mt-10 flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500">
+        <p>© {currentYear} {business.name} · {business.city}</p>
+        {footerLinks.map((l) => <a key={l.href} href={l.href} className="inline-flex min-h-11 items-center underline-offset-2 hover:text-glow-300 hover:underline">{l.label}</a>)}
+      </div>
     </footer>
   )
 }

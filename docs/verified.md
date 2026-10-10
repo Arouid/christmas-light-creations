@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-09 | Failure alerts (demo, 375px, no console errors): red banner "⚠ 1 website problem to look at" opens the plain-words message; "Dealt with ✓" clears it. Health rules (missed request alerts, sync stale, one email per hour per kind, daily/Monday report, email wording): tests/health.test.mjs. Not live yet. Privacy page /privacy/ and footer links (home + 6 area pages, in sitemap): 375px, no overflow, no console errors | Browser pane + `npm test` (144) + built files |
 | 2026-10-09 | Staff guide live: pushed, live staff bundle has it | curl of live bundle |
 | 2026-10-09 | Staff guide (demo, 375px, no console errors): ? button opens it; "How do I…" (10 tasks) and 15 section cards; search "gate code" narrows to Accounts, Customers, Routes, Map, Service, Gates; Open → on Gates closes the guide and opens #gates; button labels in the guide match the app's | Browser pane `/leads/?demo` |
 | 2026-10-09 | Stock email templates' wording reviewed and fixed (payment methods, timer, takedown dates, early rule) | Owner report |
