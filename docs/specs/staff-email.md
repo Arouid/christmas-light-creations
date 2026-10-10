@@ -1,6 +1,6 @@
 # Staff email from the app
 
-> Status: implemented 2026-10-09, not deployed yet (TODO #38) · Decided 2026-10-09 by Scott (owner)
+> Status: live 2026-10-09 (owner's end-to-end test pending: TODO #38) · Decided 2026-10-09 by Scott (owner)
 
 ## The problem
 
@@ -111,4 +111,4 @@ The sync (`messageSync`) skips an outgoing email whose `mailId` or `mailPrint` i
 2. `sendStaffEmail` + sync dedupe in `functions/index.js`.
 3. Compose box Send + Gmail fallback; EmailQueue Send / Send the rest; callers pass the target; demo mode.
 4. History shows the sender; staff guide; privacy wording; docs.
-5. Owner OK → deploy `sendStaffEmail` + `messageSync`, push; owner test (6, 7).
+5. ~~Owner OK → deploy `sendStaffEmail` + `messageSync`, push~~ done 2026-10-09; owner test (6, 7) pending.
