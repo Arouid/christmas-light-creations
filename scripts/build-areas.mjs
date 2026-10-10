@@ -45,6 +45,8 @@ function page(a) {
 <meta property="og:type" content="website" />
 <meta property="og:url" content="${url}" />
 <link rel="icon" type="image/svg+xml" href="${base}favicon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="${base}icon-192.png" />
+<link rel="apple-touch-icon" href="${base}apple-touch-icon.png" />
 <link rel="preload" href="${base}fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="${base}fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
 ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
