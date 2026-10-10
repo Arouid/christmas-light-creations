@@ -7,7 +7,7 @@
 // https://christmas-light-creations.com/__/auth/handler in the OAuth client's
 // authorized redirect URIs (Google Cloud → Credentials → Web client).
 const SITE_HOST = 'christmas-light-creations.com'
-const AUTH_ON_SITE = false
+const AUTH_ON_SITE = true
 const onSite = typeof window !== 'undefined' && window.location.hostname === SITE_HOST
 
 export const firebaseConfig = {
