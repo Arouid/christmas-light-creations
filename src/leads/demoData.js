@@ -57,7 +57,8 @@ export const demoData = {
       firstAsked: '2020-10-08', lastAsked: '2021-11-02', year: '2021', contactBy: 'Phone',
       requests: [{ date: '2020-10-08', message: 'Quote for a two story house please.' }, { date: '2021-11-02', message: 'Asking again for this year.' }] },
     { id: 'old-sample-example-com', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer', email: 'sample@example.com', phone: '555-010-0101',
-      firstAsked: '2019-11-05', lastAsked: '2019-11-05', year: '2019', requests: [{ date: '2019-11-05', message: 'Estimate for Christmas lights on our home.' }] },
+      firstAsked: '2019-11-05', lastAsked: '2019-11-05', year: '2019', requests: [{ date: '2019-11-05', message: 'Estimate for Christmas lights on our home.' }],
+      payments: [{ date: '2023-11-30', via: 'PayPal', kind: 'payment', amount: 414, invoice: '0042', items: 'Christmas light install' }, { date: '2024-01-12', via: 'Square', kind: 'payment', amount: 150, invoice: '', items: '' }] },
   ]),
   messages: byId([
     { id: 'demo-msg-1', customerId: 'sample-customer', phone: '+15550101', kind: 'text', direction: 'out', at: '2025-11-18T17:05:00Z', text: 'Hi! This is Christmas Light Creations. We can install Thursday Nov 20 in the evening. Does that work?' },

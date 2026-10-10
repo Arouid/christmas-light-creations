@@ -13,7 +13,7 @@ export const INVOICE_STATUSES = [
   'Needs CLC Payment Confirmation', 'Alt. Process', 'No Takedown Cost',
 ]
 export const PAID = ['', 'Yes', 'No', 'No Takedown Cost']
-export const PAYMENT_TYPES = ['', 'PayPal', 'Zelle', 'Check', 'Venmo', 'Cash', 'CashApp']
+export const PAYMENT_TYPES = ['', 'PayPal', 'Square', 'Zelle', 'Check', 'Venmo', 'Cash', 'CashApp']
 
 export const BLANK_LABEL = {
   installStatus: 'Not contacted',

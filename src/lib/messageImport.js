@@ -22,8 +22,9 @@ export function customerIndex(customers = []) {
   const name = new Map()
   const add = (map, k, id) => { if (k && !map.has(k)) map.set(k, id) }
   for (const c of customers) {
-    phonesOf(c.phone).forEach((p) => add(phone, p, c.id))
-    emailsOf(c.email).forEach((e) => add(email, e, c.id))
+    // otherPhones / otherEmails: linked from old records (Accounts → From old records).
+    phonesOf([c.phone, ...(c.otherPhones ?? [])].join(' / ')).forEach((p) => add(phone, p, c.id))
+    emailsOf([c.email, ...(c.otherEmails ?? [])].join(' ')).forEach((e) => add(email, e, c.id))
     for (const n of [c.fullName, [c.firstName, c.lastName].filter(Boolean).join(' ')]) {
       const k = nameKey(n)
       if (k.includes(' ')) add(name, k, c.id)

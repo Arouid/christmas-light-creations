@@ -6,6 +6,7 @@ import { findCustomer } from '../../lib/oldEstimates'
 import { needsAddOnCheck } from '../../lib/addOns'
 import { getCustomerLogin, loginLine } from '../../lib/customerLogins'
 import AddOnsPanel from './AddOnsPanel'
+import { OldRecordsPanel, OldRecordsToFill } from './OldPayments'
 import Icon from '../../components/Icon'
 import { demoMode } from '../demo'
 import AddToRoute from '../AddToRoute'
@@ -176,7 +177,7 @@ function CustomerAccount({ c, leads, past, calls, gates, season, user, onOpenCus
   return (
     <div className="space-y-4">
       <Header name={c.fullName} kind="customer" address={c.address} loginEmail={c.email}
-        lines={[c.phone, c.email, c.locationBlock, c.neighborhood && `Neighborhood: ${c.neighborhood}`, gate && `Gate ${gate.code}`, c.installType]}>
+        lines={[c.phone, c.email, (c.otherPhones?.length || c.otherEmails?.length) && `Also: ${[...(c.otherPhones ?? []), ...(c.otherEmails ?? [])].join(', ')}`, c.locationBlock, c.neighborhood && `Neighborhood: ${c.neighborhood}`, gate && `Gate ${gate.code}`, c.installType]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={c.phone} className={action} />
         <ComposeEmail person={c} season={season} className={action} />
@@ -185,6 +186,7 @@ function CustomerAccount({ c, leads, past, calls, gates, season, user, onOpenCus
         <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>
       </Header>
       <Section title="Seasons"><SeasonRows customer={c} /></Section>
+      <OldRecordsPanel customer={c} user={user} past={myPast} />
       <Section title="💲 Yearly price & add-ons" open={needsAddOnCheck(c)}><AddOnsPanel customer={c} user={user} /></Section>
       {c.notes && <Section title="Notes"><p className="whitespace-pre-wrap text-sm text-slate-300">{c.notes}</p></Section>}
       <Section title={`Service calls (${myCalls.length})`} open={myCalls.some((x) => x.status === 'Open' || x.status === 'Scheduled')}>
@@ -285,6 +287,7 @@ export default function AccountsView({ customers, leads = [], past = [], calls =
         <SearchBox index={index} autoFocus onPick={open} />
         <p className="mt-4 text-center text-sm text-slate-400">{customers.length} customers · {leads.filter((x) => !x.customerId).length} website leads · {past.length} past requests</p>
         <AddOnChecks customers={customers} open={open} />
+        <OldRecordsToFill customers={customers} past={past} user={user} open={open} />
         {recent.length > 0 && (
           <div className="mt-8">
             <p className="mb-2 text-xs uppercase tracking-wider text-slate-400">Recently viewed</p>
