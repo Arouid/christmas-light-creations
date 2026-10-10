@@ -30,7 +30,7 @@ export const memorial = {
   // Owner's own words (shortened and reordered with him, 2026-10-09). One string per paragraph.
   words: [
     'Brother, partner, best friend.',
-    'We’ve worked side by side since we were kids, and we never stopped. For ten years you were right there next to me: every home, every scorching October, every freezing January, building this business together.',
+    'We’ve worked side by side since we were kids, and we never stopped. For years you were right there next to me: every home, every scorching October, every freezing January, building this business together.',
     'You were my part of home. I just wish this wasn’t our last job together.',
   ],
 }
