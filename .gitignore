@@ -43,3 +43,5 @@ assets-source/ads/video/*
 # and Remotion's own output. Photos may carry GPS data, never commit.
 video/public/
 video/out/
+# ...except the 5-second ad (owner 2026-10-11: "commit the 5 second ad, I don't want to lose it"; ~5 MB in all)
+!assets-source/ads/video/clc-teaser-5s-*.mp4
