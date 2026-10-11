@@ -18,6 +18,8 @@ Staff then **adjust**: move anyone to another day in the range, or drop them fro
 
 **Tell Claude a change** (owner, 2026-10-10 after the first real plan: "can I make suggestions to switch in the plan panel"): under the plan, a box for one note in plain words ("move Alice to the 20th with Debbie", "keep Monday open", "Kay and Leann must stay together", "Donna can go in November after all") and a **Re-plan** button. Claude gets the plan as it stands, including the moves staff already made with the day pickers, plus the note, and returns a revised plan: the note wins over its own preferences, everyone else stays where they were unless the note forces a change, and the explanation starts with what changed and why. People whose day changed show a **Changed · was …** mark. Notes can be sent one after another; each is a new call.
 
+**Taking someone out and finding replacements** (owner, same request): every placed person has a **✕**. Removed people go to Not placed as "Removed by staff", are never placed again by a re-plan, and are not written on Apply (pick a day for them to put them back). After a removal (or a note like "take Harry off"), **↻ Re-plan: fill N spots** asks Claude to fill the freed room from everyone not yet placed, including people unticked in the picker who still need a day this season, with the usual rules and a reason that names whose spot it fills, or to say nobody fits.
+
 Nothing is written until Apply. Nothing is sent until the email flow's own Send.
 
 ## What we DON'T do
@@ -47,6 +49,8 @@ Nothing is written until Apply. Nothing is sent until the email flow's own Send.
 - **Claude declines or returns nothing usable**: the panel says the plan couldn't be made and nothing is applied.
 - **Demo mode** (`/leads/?demo`): a canned plan for the sample customers so the panel can be checked without a key.
 - **A note can't be honored** (the day is full, the person isn't in the plan, the wish is outside the range): Claude keeps them where they were and says so in their reason and the explanation; capacity still wins over the note.
+- **Removed with ✕, then "put them back" with the day picker**: they leave the removed list and count as a staff move.
+- **Nobody left to fill a freed spot**: the re-plan says so; the day just has room again.
 - **A note names someone not in the plan** (already scheduled, or unticked): Claude says it can only move people in the plan; nothing else changes.
 - **Apply fails halfway** (network): the people already written keep their dates; the panel lists who was written and who wasn't, and Apply can be pressed again for the rest.
 
@@ -57,7 +61,7 @@ Nothing is written until Apply. Nothing is sent until the email flow's own Send.
 - 2026-10-10: one Claude call with **structured output** (JSON schema: assignments, unplaced, explanation), effort `high` (it is a planning problem, worst case ~20–40¢ a plan), no tools: the whole input fits in one prompt (≤ 60 people, ≤ 42 days).
 - 2026-10-10: the server **checks the plan** before returning it (ids exist, days in range, per-day capacity) and the browser checks again after every move, with the same pure helper, so the model can't put a day over capacity without a warning.
 - 2026-10-10: Apply writes `plannedDate` ("Oct 15"), `day` ("Thursday"), `weekOf` ("Oct 11-17", Sunday to Saturday, the sheet's style) and `installStatus` = "Install Scheduled" through `customersApi.update`, one field at a time like the Season tab. No new Firestore fields, no rules change. `serverState/aiSchedule` counts plans (server only, like `serverState/askClaude`).
-- 2026-10-10 (evening): re-plans reuse the same callable and prompt with two optional fields (`instruction`, `current`), not a conversation: the browser always sends the whole current plan, so the server stays stateless and the cap, checks and cost are the same as a plan (about 20–40¢). "Changed" marks are a client-side diff of the plan before and after (`diffPlans`), so nothing depends on the model reporting its own changes correctly.
+- 2026-10-10 (evening): re-plans reuse the same callable and prompt with two optional fields (`instruction`, `current`, the latter carrying `removed`), not a conversation; a note is optional (a re-plan after a removal has none): the browser always sends the whole current plan, so the server stays stateless and the cap, checks and cost are the same as a plan (about 20–40¢). "Changed" marks are a client-side diff of the plan before and after (`diffPlans`), so nothing depends on the model reporting its own changes correctly.
 - 2026-10-10: the confirmation email reuses the existing one-by-one queue (`EmailQueue`, template `schedule-confirm`) with the just-applied people; the template reads the fields Apply just wrote.
 
 ## Acceptance criteria
@@ -72,15 +76,18 @@ Nothing is written until Apply. Nothing is sent until the email flow's own Send.
 8. [human, demo] `/leads/?demo` → Season → **✨ Plan with Claude** → the panel shows 1 person to plan (Example Family), the range, **Make a plan** → a plan with a day, reason and explanation; moving them to another day updates the per-day count; **Apply** writes the fields (the Season row shows the date) and offers **✉ Email these 1** with "You are on the schedule". 375 px and 1200 px, no sideways scroll, no console errors. Observer: Claude Code in the browser pane; owner on a phone once deployed.
 9. [human, live] After `proposeSchedule` is deployed: a real plan for this season's confirmed-unscheduled customers places early installs before Oct 31, groups by block, and the function log shows token counts and cost, no customer text. Observer: owner.
 10. [test] `scheduleRequest()` cleans a note (whitespace, ≤ 500 chars, text only) and the current plan (strangers, out-of-range days and repeats dropped); the prompt carries the current plan and the note only on a re-plan; `diffPlans()` lists who moved, from where to where. → same file
-11. [human, demo] In the plan, type a note → **↻ Re-plan** → the explanation starts with "Changed: …", the moved person shows **Changed · was Thu Oct 15**, everyone else keeps their day; a move made with the day picker before the note is still there after it. 375 px and 1200 px. Observer: Claude Code in the browser pane.
-12. [human, live] After the deploy: "move <name> to the <day> with <name>" moves exactly that person; "keep <day> open" empties that day and the explanation says where they went; a note the day can't take leaves them put with the reason saying so. Observer: owner.
-13. [check] `npm run check` green; guide, decisions, verified, TODO and both assistant READMEs updated in the same commit.
+11. [test] A re-plan needs no note; `removed` ids win over the placed and unplaced lists in the request, show as REMOVED BY STAFF in the prompt, and are forced back to unplaced ("Removed by staff") by `parseProposal` even when the model placed them; newly added people show as "new, may be placed". → same file
+12. [human, demo] In the plan, type a note → **↻ Re-plan** → the explanation starts with "Changed: …", the moved person shows **Changed · was Thu Oct 15**, everyone else keeps their day; a move made with the day picker before the note is still there after it. 375 px and 1200 px. Observer: Claude Code in the browser pane.
+13. [human, demo] **✕** on the placed person → they show under Not placed as Removed by staff, Apply offers 0 dates, the Re-plan button reads "fill 1 spot" with an empty note box; Re-plan keeps them out. Observer: Claude Code in the browser pane.
+14. [human, live] After the deploy: remove someone with ✕ in a real plan → Re-plan places someone from Not placed (or an unticked person) on that day with a reason naming the freed spot, or says nobody fits. Observer: owner.
+15. [human, live] After the deploy: "move <name> to the <day> with <name>" moves exactly that person; "keep <day> open" empties that day and the explanation says where they went; a note the day can't take leaves them put with the reason saying so. Observer: owner.
+16. [check] `npm run check` green; guide, decisions, verified, TODO and both assistant READMEs updated in the same commit.
 
 ## Contract
 
 **Callable** `proposeSchedule` (region us-south1, staff only, same gate as `askClaude`; off when `settings/app.askClaude === false`).
 
-Request: `{ from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' (≤ 42 days, within the install season), customerIds: string[] (1–60), instruction?: string (≤ 500), current?: { assignments: [{ customerId, day }], unplaced: string[] } }` — `instruction` and `current` together make it a re-plan.
+Request: `{ from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' (≤ 42 days, within the install season), customerIds: string[] (1–60), instruction?: string (≤ 500), current?: { assignments: [{ customerId, day }], unplaced: string[], removed?: string[] } }` — `current` makes it a re-plan (the note is optional); `customerIds` may include people not in the current plan, who may be placed.
 
 Response:
 ```

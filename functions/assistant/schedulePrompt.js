@@ -93,9 +93,16 @@ export function scheduleRequest(data, { season, bounds = SEASON_BOUNDS } = {}) {
   }
   if (data.current !== undefined && data.current !== null) {
     const cur = data.current
-    if (!cur || typeof cur !== 'object' || !Array.isArray(cur.assignments) || !Array.isArray(cur.unplaced)) return bad('The current plan can’t be read')
+    if (!cur || typeof cur !== 'object' || !Array.isArray(cur.assignments) || !Array.isArray(cur.unplaced) || (cur.removed !== undefined && !Array.isArray(cur.removed))) return bad('The current plan can’t be read')
     const known = new Set(out.customerIds)
     const seen = new Set()
+    // People staff took out with ✕ go first: they are never placed again.
+    const removed = []
+    for (const id of cur.removed ?? []) {
+      if (typeof id !== 'string' || !known.has(id) || seen.has(id)) continue
+      seen.add(id)
+      removed.push(id)
+    }
     const assignments = []
     for (const a of cur.assignments) {
       if (!a || typeof a !== 'object' || typeof a.customerId !== 'string' || !DAY_RE.test(String(a.day))) return bad('The current plan can’t be read')
@@ -110,7 +117,7 @@ export function scheduleRequest(data, { season, bounds = SEASON_BOUNDS } = {}) {
       seen.add(id)
       unplaced.push(id)
     }
-    out.current = { assignments, unplaced }
+    out.current = { assignments, unplaced, removed }
   }
   return out
 }
@@ -223,7 +230,7 @@ export function scheduleSystemPrompt() {
     '',
     'Every customer in the input appears exactly once, in assignments or in unplaced. Use the ids and days exactly as given. Reasons are one short line in plain words for the office, never for the customer. The explanation is one paragraph: how you filled the days, which days are full, and who to call.',
     '',
-    'When the office sends a CURRENT PLAN and a STAFF INSTRUCTION, you are revising, not starting over. The instruction wins over your own preferences and over rules 2, 4 and 5 (never over rule 3: if it cannot fit, say so in that person’s reason and keep them where they were). Keep every other person exactly where they are unless the instruction forces a change (for example, making room on a day). Start the explanation with what you changed and why, person by person, then anything the office should know.',
+    'When the office sends a CURRENT PLAN, you are revising, not starting over. A STAFF INSTRUCTION wins over your own preferences and over rules 2, 4 and 5 (never over rule 3: if it cannot fit, say so in that person’s reason and keep them where they were). Keep every other person exactly where they are unless the instruction forces a change (for example, making room on a day). Room the plan leaves open, including room freed because staff removed someone, is filled from the people not yet placed and any newly added people when the rules allow, with a reason that says whose spot it fills; if nobody fits, say so. People listed as REMOVED BY STAFF are never placed: put them in unplaced with the reason "Removed by staff". Start the explanation with what you changed and why, person by person, then anything the office should know.',
   ].join('\n')
 }
 
@@ -238,12 +245,16 @@ export function schedulePrompt({ today, season, deadline, days, rows, current, i
     `CUSTOMERS TO PLACE (${rows.length}):`,
     JSON.stringify(rows, null, 1),
   ]
-  if (current && instruction) {
+  if (current) {
     const name = (id) => rows.find((r) => r.id === id)?.name ?? id
-    lines.push('', 'CURRENT PLAN (keep it unless the instruction forces a change):',
+    const placed = new Set([...current.assignments.map((a) => a.customerId), ...current.unplaced, ...(current.removed ?? [])])
+    const added = rows.filter((r) => !placed.has(r.id)).map((r) => `new, may be placed: ${r.name} (${r.id})`)
+    lines.push('', 'CURRENT PLAN (keep it unless the instruction or a freed spot forces a change):',
       ...current.assignments.map((a) => `${a.day}: ${name(a.customerId)} (${a.customerId})`),
       ...current.unplaced.map((id) => `not placed: ${name(id)} (${id})`),
-      '', 'STAFF INSTRUCTION (from the office, follow it):', instruction)
+      ...added)
+    if (current.removed?.length) lines.push('', 'REMOVED BY STAFF (never place them):', ...current.removed.map((id) => `${name(id)} (${id})`))
+    lines.push('', 'STAFF INSTRUCTION (from the office, follow it):', instruction || 'None. Fill any room left (including spots freed by removals) from the people not placed, and keep everyone else where they are.')
   }
   return lines.join('\n')
 }
@@ -253,7 +264,7 @@ export function schedulePrompt({ today, season, deadline, days, rows, current, i
 // Turns the model's JSON into a checked plan: unknown ids and days dropped,
 // over-capacity and out-of-range entries moved to unplaced with a reason,
 // everyone accounted for once. `days` from dayList(), `ids` the customers sent.
-export function parseProposal(raw, { days, ids }) {
+export function parseProposal(raw, { days, ids, removed = [] }) {
   let data
   try { data = JSON.parse(String(raw ?? '')) } catch { return { problem: 'The plan came back unreadable.' } }
   if (!data || typeof data !== 'object') return { problem: 'The plan came back unreadable.' }
@@ -262,6 +273,12 @@ export function parseProposal(raw, { days, ids }) {
   const seen = new Set()
   const assignments = []
   const unplaced = []
+  // Staff removals stand whatever the model answered.
+  for (const id of removed) {
+    if (!known.has(id) || seen.has(id)) continue
+    seen.add(id)
+    unplaced.push({ customerId: id, reason: 'Removed by staff' })
+  }
   for (const a of Array.isArray(data.assignments) ? data.assignments : []) {
     const id = String(a?.customerId ?? '')
     if (!known.has(id) || seen.has(id)) continue
@@ -309,8 +326,13 @@ export function diffPlans(prev, next) {
   return out
 }
 
-// The plan as the server wants it back for a re-plan (ids and days only).
-export const currentOf = (plan) => ({ assignments: plan.assignments.map((a) => ({ customerId: a.customerId, day: a.day })), unplaced: plan.unplaced.map((u) => u.customerId) })
+// The plan as the server wants it back for a re-plan (ids and days only);
+// `removed` are the people staff took out with ✕ (never placed again).
+export const currentOf = (plan, removed = []) => ({
+  assignments: plan.assignments.filter((a) => !removed.includes(a.customerId)).map((a) => ({ customerId: a.customerId, day: a.day })),
+  unplaced: plan.unplaced.map((u) => u.customerId).filter((id) => !removed.includes(id)),
+  removed: [...removed],
+})
 
 // Per day: booked + proposed, and whether it is over capacity.
 export function dayLoads(assignments = [], days = []) {
@@ -334,12 +356,12 @@ export function moveTo(plan, customerId, day, reason = 'Moved by staff') {
 }
 
 // Take one person out of the plan (they stay unscheduled).
-export function dropFrom(plan, customerId) {
+export function dropFrom(plan, customerId, reason = 'Dropped by staff') {
   if (!plan.assignments.some((a) => a.customerId === customerId)) return plan
   return {
     ...plan,
     assignments: plan.assignments.filter((a) => a.customerId !== customerId),
-    unplaced: [...plan.unplaced, { customerId, reason: 'Dropped by staff' }],
+    unplaced: [...plan.unplaced, { customerId, reason }],
   }
 }
 

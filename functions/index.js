@@ -1274,8 +1274,9 @@ export const booking = onRequest({ region: REGION, invoker: 'public', maxInstanc
 // Staff only. The browser says which customers and which days; the server
 // gathers their records, recent incoming messages, booked days and capacity
 // (functions/availability.js) and asks Claude for one checked day plan.
-// A re-plan sends the plan as it stands plus a staff instruction ("move Alice
-// to the 20th"); Claude revises it. Nothing is written here: staff adjust and
+// A re-plan sends the plan as it stands (with people staff removed) and an
+// optional instruction ("move Alice to the 20th"); Claude revises it and
+// fills freed spots from the people not placed. Nothing is written here: staff adjust and
 // Apply in the Season tab (client writes). Same off switch as Ask Claude; 20 plans a day (serverState/aiSchedule).
 // Logs carry counts, tokens and cost, never customer text.
 export const proposeSchedule = onCall({ region: REGION, invoker: 'public', secrets: [ANTHROPIC_API_KEY], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK, timeoutSeconds: 180 }, async (req) => {

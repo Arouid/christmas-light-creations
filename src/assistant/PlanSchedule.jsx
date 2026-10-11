@@ -32,6 +32,7 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
   const [lastNote, setLastNote] = useState('')
   const [changed, setChanged] = useState(new Map()) // customerId → { from, to } after a re-plan
   const [replanning, setReplanning] = useState(false)
+  const [removed, setRemoved] = useState(new Set()) // taken out with ✕: never placed again, not written
 
   const picked = candidates.filter((c) => !unticked.has(c.id))
   const rangeDays = daysBetween(range.from, range.to) + 1
@@ -45,6 +46,7 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
       const p = await proposeSchedule({ from: range.from, to: range.to, customerIds: picked.map((c) => c.id) }, customers)
       setPlan(p)
       setChanged(new Map())
+      setRemoved(new Set())
       setLastNote('')
       setStep('plan')
     } catch (err) {
@@ -53,17 +55,22 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
     }
   }
 
-  // Re-plan: the plan as it stands (moves included) plus the note; Claude revises it.
+  // Re-plan: the plan as it stands (moves and removals included) plus the note;
+  // Claude revises it and fills freed spots from everyone not placed, including
+  // people unticked at the start who still need a day.
+  const removedList = [...removed]
+  const canReplan = Boolean(note.trim()) || removedList.length > 0
   async function replan() {
     const instruction = note.trim()
-    if (!instruction || replanning) return
+    if (!canReplan || replanning) return
     setError('')
     setReplanning(true)
     try {
-      const p = await proposeSchedule({ from: range.from, to: range.to, customerIds: plan.customers.map((c) => c.id), instruction, current: currentOf(plan) }, customers)
-      setChanged(new Map(diffPlans(plan, p).map((c) => [c.customerId, c])))
+      const ids = [...new Set([...plan.customers.map((c) => c.id), ...candidates.map((c) => c.id)])].slice(0, MAX_CUSTOMERS)
+      const p = await proposeSchedule({ from: range.from, to: range.to, customerIds: ids, instruction, current: currentOf(plan, removedList) }, customers)
+      setChanged(new Map(diffPlans(plan, p).filter((c) => !removed.has(c.customerId)).map((c) => [c.customerId, c])))
       setPlan(p)
-      setLastNote(instruction)
+      setLastNote(instruction || (removedList.length ? `fill the spot${removedList.length === 1 ? '' : 's'} left by ${removedList.map((id) => nameOf(id).name).join(', ')}` : ''))
       setNote('')
     } catch (err) {
       setError(err.message)
@@ -73,6 +80,14 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
   }
 
   const nameOf = (id) => plan?.customers.find((c) => c.id === id) ?? { id, name: customers.find((c) => c.id === id)?.fullName ?? id, area: '', installType: '', wish: '' }
+  function remove(id) {
+    setPlan((p) => dropFrom(p, id, 'Removed by staff'))
+    setRemoved((r) => new Set([...r, id]))
+  }
+  function place(id, day) {
+    setPlan((p) => moveTo(p, id, day))
+    setRemoved((r) => { const n = new Set(r); n.delete(id); return n })
+  }
   const loads = plan ? dayLoads(plan.assignments, plan.days) : []
   const overDays = loads.filter((d) => d.over)
 
@@ -179,7 +194,7 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
                   <span className={`text-xs ${d.over ? 'text-berry-500' : 'text-slate-400'}`}>{d.total} of {d.capacity}{d.booked ? ` (${d.booked} already booked)` : ''}</span>
                 </h3>
                 <ul className="space-y-2">
-                  {plan.assignments.filter((a) => a.day === d.day).map((a) => <Person key={a.customerId} a={a} c={nameOf(a.customerId)} days={plan.days} plan={plan} setPlan={setPlan} change={changed.get(a.customerId)} />)}
+                  {plan.assignments.filter((a) => a.day === d.day).map((a) => <Person key={a.customerId} a={a} c={nameOf(a.customerId)} days={plan.days} onPlace={place} onRemove={remove} change={changed.get(a.customerId)} />)}
                 </ul>
               </section>
             ))}
@@ -188,21 +203,21 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
               <section aria-label="Not placed" className="rounded-2xl border border-white/10 bg-night-900 p-3">
                 <h3 className="px-1 pb-2 font-semibold text-slate-300">Not placed <span className="text-xs text-slate-400">({plan.unplaced.length})</span></h3>
                 <ul className="space-y-2">
-                  {plan.unplaced.map((u) => <Person key={u.customerId} a={u} c={nameOf(u.customerId)} days={plan.days} plan={plan} setPlan={setPlan} change={changed.get(u.customerId)} />)}
+                  {plan.unplaced.map((u) => <Person key={u.customerId} a={u} c={nameOf(u.customerId)} days={plan.days} onPlace={place} onRemove={remove} removed={removed.has(u.customerId)} change={changed.get(u.customerId)} />)}
                 </ul>
               </section>
             )}
 
             <div className="rounded-2xl border border-white/10 bg-night-900 p-3">
               <label htmlFor="plan-note" className="block px-1 text-sm font-semibold">Tell Claude a change</label>
-              <p className="px-1 text-xs text-slate-400">“Move Alice to the 20th with Debbie”, “keep Monday open”, “Kay and Leann must stay together”, “Donna can go in November after all”. Your own moves above are kept.</p>
+              <p className="px-1 text-xs text-slate-400">“Move Alice to the 20th with Debbie”, “keep Monday open”, “Kay and Leann must stay together”, “Donna can go in November after all”. Your own moves above are kept. Took someone out with ✕? Re-plan fills their spot from the people not placed{candidates.length > plan.customers.length ? ' (including anyone you unticked at the start)' : ''}.</p>
               <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                 <textarea id="plan-note" value={note} onChange={(e) => setNote(e.target.value.slice(0, MAX_INSTRUCTION_CHARS))} rows={2} disabled={replanning || step === 'applying'}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); replan() } }}
                   className={`${select} min-h-11 flex-1 resize-y`} placeholder="What should change?" />
-                <button type="button" onClick={replan} disabled={replanning || !note.trim() || step === 'applying'}
+                <button type="button" onClick={replan} disabled={replanning || !canReplan || step === 'applying'}
                   className="min-h-11 rounded-full bg-white px-5 font-semibold text-night-950 disabled:opacity-40">
-                  {replanning ? 'Re-planning…' : '↻ Re-plan'}
+                  {replanning ? 'Re-planning…' : removedList.length && !note.trim() ? `↻ Re-plan: fill ${removedList.length} spot${removedList.length === 1 ? '' : 's'}` : '↻ Re-plan'}
                 </button>
               </div>
               {error && <p role="alert" className="mt-2 rounded-xl bg-berry-600/20 px-3 py-2 text-sm text-berry-500">{error}</p>}
@@ -255,12 +270,12 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
   )
 }
 
-// One person in the plan: name, area, reason, where to move them, and what
-// the last re-plan changed for them.
-function Person({ a, c, days, plan, setPlan, change }) {
+// One person in the plan: name, area, reason, where to move them, ✕ to take
+// them out, and what the last re-plan changed for them.
+function Person({ a, c, days, onPlace, onRemove, removed = false, change }) {
   const placed = Boolean(a.day)
   return (
-    <li className={`flex flex-col gap-2 rounded-xl bg-night-950 p-3 sm:flex-row sm:items-start ${change ? 'ring-1 ring-glow-400/60' : ''}`}>
+    <li className={`flex flex-col gap-2 rounded-xl bg-night-950 p-3 sm:flex-row sm:items-start ${change ? 'ring-1 ring-glow-400/60' : ''} ${removed ? 'opacity-70' : ''}`}>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">
           {c.name} {c.installType === 'early' && <span className="text-glow-300">⭐</span>}
@@ -269,11 +284,17 @@ function Person({ a, c, days, plan, setPlan, change }) {
         {(c.area || c.wish) && <p className="truncate text-xs text-slate-400">{[c.area, c.wish].filter(Boolean).join(' · ')}</p>}
         <p className="mt-1 text-sm text-slate-300">{a.reason}</p>
       </div>
-      <select value={placed ? a.day : ''} aria-label={`Day for ${c.name}`} className={`${select} min-h-11 sm:w-44`}
-        onChange={(e) => setPlan(e.target.value ? moveTo(plan, a.customerId, e.target.value) : dropFrom(plan, a.customerId))}>
-        <option value="">{placed ? 'Drop from plan' : 'Not placed'}</option>
-        {days.map((d) => <option key={d.day} value={d.day}>{short(d.day)}{d.capacity === 0 ? ' (closed)' : ''}</option>)}
-      </select>
+      <div className="flex gap-2">
+        <select value={placed ? a.day : ''} aria-label={`Day for ${c.name}`} className={`${select} min-h-11 flex-1 sm:w-40`}
+          onChange={(e) => (e.target.value ? onPlace(a.customerId, e.target.value) : onRemove(a.customerId))}>
+          <option value="">{placed ? 'Take out' : removed ? 'Removed · pick a day to put back' : 'Not placed'}</option>
+          {days.map((d) => <option key={d.day} value={d.day}>{short(d.day)}{d.capacity === 0 ? ' (closed)' : ''}</option>)}
+        </select>
+        {placed && (
+          <button type="button" onClick={() => onRemove(a.customerId)} aria-label={`Remove ${c.name} from the plan`} title="Take out of the plan"
+            className="min-h-11 min-w-11 rounded-xl border border-white/15 px-3 text-lg text-slate-300 hover:bg-white/10">✕</button>
+        )}
+      </div>
     </li>
   )
 }

@@ -69,11 +69,11 @@ export async function proposeFor({ apiKey, model = MODEL, input, today, season, 
     log?.warn?.('proposeSchedule refused', { category: res.stop_details?.category ?? null })
     plan = fallbackProposal(ids)
   } else {
-    const parsed = parseProposal(res.content.filter((b) => b.type === 'text').map((b) => b.text).join(''), { days: input.days, ids })
+    const parsed = parseProposal(res.content.filter((b) => b.type === 'text').map((b) => b.text).join(''), { days: input.days, ids, removed: current?.removed ?? [] })
     plan = parsed.problem ? fallbackProposal(ids, parsed.problem) : parsed
   }
   const cost = Number(costOf(usage).toFixed(4))
-  log?.info?.('proposeSchedule', { replan: Boolean(current && instruction), people: ids.length, days: input.days.length, placed: plan.assignments.length, unplaced: plan.unplaced.length,
+  log?.info?.('proposeSchedule', { replan: Boolean(current), removed: current?.removed?.length ?? 0, people: ids.length, days: input.days.length, placed: plan.assignments.length, unplaced: plan.unplaced.length,
     input: usage.input_tokens ?? 0, output: usage.output_tokens ?? 0, cacheRead: usage.cache_read_input_tokens ?? 0, cacheWrite: usage.cache_creation_input_tokens ?? 0, cost })
   return { plan, usage, cost, model: model || MODEL }
 }

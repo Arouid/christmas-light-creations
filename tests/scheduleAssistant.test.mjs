@@ -155,18 +155,33 @@ test('re-plan request: the plan as it stands plus one instruction, cleaned and c
   assert.equal(scheduleRequest({ ...base, instruction: '' }, { season }).instruction, undefined, 'blank note = plain plan')
   const r = scheduleRequest({ ...base, instruction: '  move  a to the 22nd\n with b ', current: { assignments: [{ customerId: 'a', day: '2026-10-21' }, { customerId: 'ghost', day: '2026-10-21' }, { customerId: 'b', day: '2026-12-01' }, { customerId: 'a', day: '2026-10-25' }], unplaced: ['c', 'a', 7] } }, { season })
   assert.equal(r.instruction, 'move a to the 22nd with b')
-  assert.deepEqual(r.current, { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: ['c'] }, 'strangers, out-of-range days and repeats dropped')
+  assert.deepEqual(r.current, { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: ['c'], removed: [] }, 'strangers, out-of-range days and repeats dropped')
+  const rm = scheduleRequest({ ...base, current: { assignments: [{ customerId: 'a', day: '2026-10-21' }, { customerId: 'b', day: '2026-10-21' }], unplaced: ['b'], removed: ['b', 'ghost'] } }, { season })
+  assert.equal(rm.instruction, undefined, 'a re-plan needs no note')
+  assert.deepEqual(rm.current, { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: [], removed: ['b'] }, 'removed wins over placed and unplaced')
+  assert.equal(scheduleRequest({ ...base, current: { assignments: [], unplaced: [], removed: 'b' } }, { season }).problem?.[0], 'invalid-argument')
   for (const bad of [{ ...base, instruction: 7 }, { ...base, instruction: 'x'.repeat(MAX_INSTRUCTION_CHARS + 1) }, { ...base, current: 'no' }, { ...base, current: { assignments: [{ customerId: 'a', day: 'Oct 21' }], unplaced: [] } }]) {
     assert.equal(scheduleRequest(bad, { season }).problem?.[0], 'invalid-argument', JSON.stringify(bad).slice(0, 60))
   }
-  const plan = { assignments: [{ customerId: 'a', day: '2026-10-21', reason: 'r' }], unplaced: [{ customerId: 'c', reason: 'x' }] }
-  assert.deepEqual(currentOf(plan), { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: ['c'] })
+  const plan = { assignments: [{ customerId: 'a', day: '2026-10-21', reason: 'r' }, { customerId: 'b', day: '2026-10-22', reason: 'r' }], unplaced: [{ customerId: 'c', reason: 'x' }] }
+  assert.deepEqual(currentOf(plan), { assignments: [{ customerId: 'a', day: '2026-10-21' }, { customerId: 'b', day: '2026-10-22' }], unplaced: ['c'], removed: [] })
+  assert.deepEqual(currentOf(plan, ['b']), { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: ['c'], removed: ['b'] }, 'a removed person leaves the assignments')
   const rows = [{ id: 'a', name: 'Alice' }, { id: 'c', name: 'Cal' }]
   const prompt = schedulePrompt({ today: '2026-10-10', season, deadline: '10-31', days, rows, current: r.current, instruction: r.instruction })
   assert.match(prompt, /CURRENT PLAN[\s\S]*2026-10-21: Alice \(a\)\nnot placed: Cal \(c\)/)
   assert.match(prompt, /STAFF INSTRUCTION[^\n]*\nmove a to the 22nd with b$/)
   assert.ok(!schedulePrompt({ today: '2026-10-10', season, deadline: '10-31', days, rows }).includes('CURRENT PLAN'), 'a plain plan has no current section')
-  assert.match(scheduleSystemPrompt(), /The instruction wins/)
+  const fill = schedulePrompt({ today: '2026-10-10', season, deadline: '10-31', days, rows: [...rows, { id: 'n', name: 'Newly Ticked' }], current: { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: [], removed: ['c'] } })
+  assert.match(fill, /REMOVED BY STAFF \(never place them\):\nCal \(c\)/)
+  assert.match(fill, /new, may be placed: Newly Ticked \(n\)/)
+  assert.match(fill, /STAFF INSTRUCTION[^\n]*\nNone\. Fill any room left/)
+  assert.match(scheduleSystemPrompt(), /A STAFF INSTRUCTION wins/)
+  assert.match(scheduleSystemPrompt(), /REMOVED BY STAFF are never placed/)
+  // The model places a removed person anyway: the removal stands.
+  const forced = parseProposal(JSON.stringify({ explanation: 'x', assignments: [{ customerId: 'c', day: '2026-10-20', reason: 'oops' }, { customerId: 'a', day: '2026-10-20', reason: 'ok' }], unplaced: [] }), { days, ids: ['a', 'c'], removed: ['c'] })
+  assert.deepEqual(forced.assignments.map((x) => x.customerId), ['a'])
+  assert.deepEqual(forced.unplaced, [{ customerId: 'c', reason: 'Removed by staff' }])
+  assert.equal(dropFrom({ assignments: [{ customerId: 'a', day: '2026-10-20' }], unplaced: [] }, 'a', 'Removed by staff').unplaced[0].reason, 'Removed by staff')
 })
 
 test('diffPlans: who moved, from where to where', () => {
