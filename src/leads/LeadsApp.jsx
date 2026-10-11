@@ -405,7 +405,7 @@ export default function LeadsApp() {
       )}
       {showMessages && <MessagesPanel user={user} alerts={alerts} names={names} feed={feed} onClose={closeMessages} />}
       {showGuide && <GuidePanel onClose={() => setShowGuide(false)} onTour={() => { setShowGuide(false); setTour(true) }} />}
-      {(tour === true || (tour === null && !demo && !tourDone())) && <Tour onClose={() => setTour(false)} />}
+      {(tour === true || (tour === null && !demo && !tourDone())) && <Tour name={user ? staffName(user.email, feed.names) : ''} onClose={() => setTour(false)} />}
       {showSettings && (
         <SettingsPanel settings={settingsApi.settings ?? {}} onSave={settingsApi.save} textFrom={textFrom}
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />
