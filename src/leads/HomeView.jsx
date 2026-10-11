@@ -8,7 +8,7 @@ import { ActivityPanel, AdsPanel, Counters, Light, RoutesPanel, SeasonPanel, Sig
 import { ScheduledPanel } from './ScheduledEmails'
 import { usePresence, useSignIns } from './usePresence'
 import { useOutgoingMail } from './useOutgoingMail'
-import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, bands, isWide, nudge, placeBefore, readLayout, toggleWide } from '../lib/dashLayout'
+import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, SIZES, bands, cycleSize, nudge, placeBefore, readLayout, sizeOf } from '../lib/dashLayout'
 import { permission, storedFid } from './push'
 import { useLiveDoc, useLiveQuery } from './staffStore'
 
@@ -98,8 +98,8 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const slot = (k) => {
     const i = layout.order.indexOf(k)
     return (
-      <Slot key={k} k={k} wide={isWide(layout, k)} arranging={arranging} first={i === 0} last={i === layout.order.length - 1}
-        onNudge={(dir) => apply(nudge(layout, k, dir))} onToggleWide={() => apply(toggleWide(layout, k))} onDrop={drop} onHeight={onHeight}>
+      <Slot key={k} k={k} size={sizeOf(layout, k)} arranging={arranging} first={i === 0} last={i === layout.order.length - 1}
+        onNudge={(dir) => apply(nudge(layout, k, dir))} onCycleSize={() => apply(cycleSize(layout, k))} onDrop={drop} onHeight={onHeight}>
         {panels[k]}
       </Slot>
     )
@@ -138,18 +138,19 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
         </div>
       </header>
       <Counters tiles={tiles} wall={wall} />
-      {arranging && <p className="text-sm text-glow-300">Drag a panel where you want it, or use its arrows. <strong>Wide</strong> makes a panel span the whole row; <strong>Half</strong> lets two sit side by side. Phones show them in this order, one under another. Saved on this device.</p>}
+      {arranging && <p className="text-sm text-glow-300">Drag a panel where you want it, or use its arrows. The size button cycles <strong>Half → 2/3 → 1/3 → Wide</strong>; panels fill each row left to right and small ones stack beside a tall one. Phones show them in this order, one under another. Saved on this device.</p>}
       {/* Computers: runs of Half panels stack flush in two columns; a Wide panel is a row of its own. Phones: the plain order. */}
       <div className="space-y-4"
         onDragOver={arranging ? (e) => e.preventDefault() : undefined}
         onDrop={arranging ? (e) => { e.preventDefault(); drop(e.dataTransfer.getData('text/plain'), null) } : undefined}>
         {twoColumns
-          ? bands(layout, heights).map((b, i) => (b.type === 'wide'
-            ? slot(b.key)
-            : <div key={`band-${i}`} className="grid grid-cols-2 gap-4">
-                <div className="min-w-0 space-y-4">{b.left.map(slot)}</div>
-                <div className="min-w-0 space-y-4">{b.right.map(slot)}</div>
-              </div>))
+          ? bands(layout, heights).map((row, i) => (
+            <div key={`row-${i}`} className="grid grid-cols-6 gap-4">
+              {row.cells.map((cell) => (
+                <div key={cell.keys[0]} className={`min-w-0 space-y-4 ${SPAN[cell.units]}`}>{cell.keys.map(slot)}</div>
+              ))}
+            </div>
+          ))
           : layout.order.map(slot)}
       </div>
     </div>
@@ -161,8 +162,10 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
 // One panel while arranging: a handle bar with arrows, draggable (computers),
 // and a drop target (drop = put the dragged panel before this one).
 const PANEL_LABEL = Object.fromEntries(PANELS)
+// Cell widths in sixths of the row (literal class names so Tailwind keeps them).
+const SPAN = { 2: 'col-span-2', 3: 'col-span-3', 4: 'col-span-4', 6: 'col-span-6' }
 const arrow = 'size-9 rounded-full border border-white/20 text-sm font-semibold hover:bg-white/10 disabled:opacity-30'
-function Slot({ k, wide, arranging, first, last, onNudge, onToggleWide, onDrop, onHeight, children }) {
+function Slot({ k, size, arranging, first, last, onNudge, onCycleSize, onDrop, onHeight, children }) {
   // Report the panel's own height (not the handle bar) whenever it changes.
   const body = useRef(null)
   useEffect(() => {
@@ -185,8 +188,8 @@ function Slot({ k, wide, arranging, first, last, onNudge, onToggleWide, onDrop, 
         <span className="flex items-center gap-1">
           <button type="button" onClick={() => onNudge('up')} disabled={first} aria-label="Move earlier" className={arrow}>▲</button>
           <button type="button" onClick={() => onNudge('down')} disabled={last} aria-label="Move later" className={arrow}>▼</button>
-          <button type="button" onClick={onToggleWide} aria-pressed={wide} className="hidden min-h-9 rounded-full border border-white/20 px-3 text-xs font-semibold hover:bg-white/10 lg:inline-block">
-            {wide ? '⇔ Wide' : '⇹ Half'}
+          <button type="button" onClick={onCycleSize} title="Width: Half → 2/3 → 1/3 → Wide" className="hidden min-h-9 rounded-full border border-white/20 px-3 text-xs font-semibold hover:bg-white/10 lg:inline-block">
+            ⇔ {SIZES[size].label}
           </button>
         </span>
       </div>

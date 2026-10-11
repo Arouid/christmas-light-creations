@@ -340,3 +340,5 @@ What was actually checked working, and how. Newest first.
 - Not checked: playback in a real player, YouTube/Google Ads acceptance (owner uploads, TODO #48), the owner's verdict on the design.
 
 - 2026-10-11 Row packing at 1200px (demo): Recent activity (606px) | System status + Season (505px); next row starts aligned at the same y for both sides (Scheduled emails | Who's on + Spent this month); then Sign-ins | Today's routes; Google Ads alone. No holes under short panels.
+
+- 2026-10-11 Thirds at 1200px (demo): 1/3+1/3+1/3 row (374px each); 2/3 Recent activity (763px) with Season and Spent this month stacked in the 1/3 beside it, starting level; 1/3 Sign-ins + 2/3 Today's routes; Wide Google Ads (1153px). Size buttons read ⇔ 1/3 / 2/3 / Wide / Half as set.
