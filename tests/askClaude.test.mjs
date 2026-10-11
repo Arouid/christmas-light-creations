@@ -9,6 +9,7 @@ import { invoiceCents, invoiceState, paidInfo } from '../functions/invoices.js'
 import { salesKnowledge } from '../src/assistant/lib/knowledge.js'
 import { answerBlocks, historyFor, recordLabel, recordLink } from '../src/assistant/lib/records.js'
 import { SECTIONS, TASKS } from '../src/leads/guide.js'
+import { callError, serverSaid } from '../src/assistant/lib/errors.js'
 
 const customer = {
   fullName: 'Pat Sample', address: '123 Main St', city: 'Pearland', phone: '(281) 555-0101', email: 'pat@example.com', since: '2023', gateCode: '4321', notes: 'Dog in the yard',
@@ -140,6 +141,14 @@ test('browser: links, labels, history and answer blocks', () => {
   assert.equal(historyFor(Array.from({ length: 20 }, () => ({ role: 'user', text: 'x' }))).length, 6)
   assert.deepEqual(answerBlocks('Two overdue:\n- CLC-1, $414\n- CLC-2, $150\n\nText them.'), [{ type: 'p', text: 'Two overdue:' }, { type: 'list', items: ['CLC-1, $414', 'CLC-2, $150'] }, { type: 'p', text: 'Text them.' }])
   assert.deepEqual(answerBlocks(''), [])
+})
+
+test('a failed call shows the server’s sentence, never a code word', () => {
+  for (const code of ['internal', 'internal [0]', 'not-found', 'deadline-exceeded', 'INTERNAL', '', undefined, 'unavailable [503]']) assert.equal(serverSaid(code), '', String(code))
+  for (const said of ['Staff only.', 'Ask a question', 'Please sign in again.', 'Ask Claude is turned off (⚙ Settings → Ask Claude).', 'That’s 100 questions today, the daily limit. Try again tomorrow, or look it up in the app.']) assert.equal(serverSaid(said), said)
+  assert.equal(callError(new Error('internal [0]'), 'Couldn’t reach the assistant.').message, 'Couldn’t reach the assistant.')
+  assert.equal(callError(new Error('Staff only.'), 'x').message, 'Staff only.')
+  assert.equal(callError(undefined, 'x').message, 'x')
 })
 
 test('the guide tells staff about Ask Claude and the switch', () => {

@@ -5,6 +5,7 @@
 import { NEXT_ACTIONS } from '../../functions/assistant/prompt.js'
 import { getFirebaseApp } from '../lib/firebase'
 import { demoMode } from '../leads/demo'
+import { callError } from './lib/errors'
 
 export { NEXT_ACTIONS }
 
@@ -15,9 +16,8 @@ export async function requestDraft(target) {
     const call = httpsCallable(getFunctions(app, 'us-south1'), 'draftReply')
     return (await call(target)).data
   } catch (err) {
-    // Our server's refusals carry a sentence; anything else is just a code word.
-    const said = /\s/.test(err.message ?? '') ? err.message : ''
-    throw new Error(said || 'Couldn’t reach the assistant. Check your connection and try again, or write the reply yourself.', { cause: err })
+    // Our server's refusals carry a sentence; a missing or crashed function only a code word.
+    throw callError(err, 'Couldn’t reach the assistant. Check your connection and try again, or write the reply yourself.')
   }
 }
 

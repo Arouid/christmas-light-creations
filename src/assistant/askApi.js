@@ -5,6 +5,7 @@
 // checked without a key.
 import { getFirebaseApp } from '../lib/firebase'
 import { demoMode } from '../leads/demo'
+import { callError } from './lib/errors'
 
 export const EXAMPLES = ['Which invoices are overdue?', 'What did Sample Customer ask us last year?', 'Who’s on today’s route?', 'Is the text and email sync working?']
 
@@ -15,8 +16,8 @@ export async function ask(question, history = []) {
     const call = httpsCallable(getFunctions(app, 'us-south1'), 'askClaude', { timeout: 120_000 })
     return (await call({ question, history })).data
   } catch (err) {
-    const said = /\s/.test(err.message ?? '') ? err.message : ''
-    throw new Error(said || 'Couldn’t reach the assistant. Check your connection and try again.', { cause: err })
+    // Our server's refusals carry a sentence; a missing or crashed function only a code word.
+    throw callError(err, 'Couldn’t reach the assistant. Check your connection and try again.')
   }
 }
 
