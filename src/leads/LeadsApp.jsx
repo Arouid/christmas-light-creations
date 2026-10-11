@@ -299,13 +299,16 @@ export default function LeadsApp() {
             {!demo && <button type="button" onClick={signOut} className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">Sign out</button>}
           </div>
         </div>
-        <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 lg:max-w-7xl" aria-label="Sections">
-          {BEFORE.map(([k, label]) => (
-            <a key={k} href={`#${k}`} aria-current={section === k ? 'page' : undefined}
-              className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${section === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
-              {label}
-            </a>
-          ))}
+        <div className="mx-auto flex max-w-3xl items-stretch px-2 lg:max-w-7xl">
+          <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="Sections">
+            {BEFORE.map(([k, label]) => (
+              <a key={k} href={`#${k}`} aria-current={section === k ? 'page' : undefined}
+                className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${section === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
+                {label}
+              </a>
+            ))}
+          </nav>
+          {/* Outside the scrolling row: an absolute menu inside it would make the row scroll instead of floating. */}
           <details className="relative shrink-0">
             <summary className={`cursor-pointer list-none border-b-2 px-3 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden ${section === 'more' ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
               {MORE.find(([k]) => k === tab)?.[1] ?? 'More'} ▾
@@ -317,7 +320,7 @@ export default function LeadsApp() {
               ))}
             </div>
           </details>
-        </nav>
+        </div>
       </header>
 
       {tab === 'map' && (

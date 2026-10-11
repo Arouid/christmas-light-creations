@@ -226,3 +226,9 @@ What was actually checked working, and how. Newest first.
 - 375px: nav shows 10 entries; Customers chip row All 3 · Needs scheduling · + New filter (44px chips); Leads shows Website requests 3 · Old-site requests 3; More ▾ opens, Gates navigates to #gates and the menu closes (summary reads "Gates ▾"). Page stays 375 wide.
 - Columns ▾: toggling Gate code on and City off changed the table headers and saved to localStorage in table order. Clicking the Needs scheduling chip shows the filter (h2, Edit filter, Delete, ✉ Email these) at #view-demo-view-1 with Customers highlighted.
 - Not yet checked live with real saved filters.
+
+## 2026-10-10 Wide tables and the More menu (demo)
+
+- 1200px, 16 columns: the "table is wider than the screen" row with ◀ Left / Right ▶ shows; scrolling moves the table and the Name column stays pinned at the left edge; the box is screen-high so the horizontal scrollbar is always visible. With the default 7 columns the row is hidden.
+- More ▾ now floats over the page (it was inside the scrolling tab row and made the row scroll up and down: owner screenshot). Checked at 1200 and 375: tabs stay visible, no vertical scroll on the row, More pinned at the right on phones.
+- Note for next time: this browser pane is hidden, so requestAnimationFrame/ResizeObserver callbacks never fire in it; measure synchronously in effects.
