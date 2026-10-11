@@ -65,22 +65,22 @@ export const highlights = [
   {
     title: 'We handle it all',
     body: 'Materials, design, installation, service calls and removal. You never lift a finger.',
-    icon: 'sparkle',
+    icon: 'house-lights',
   },
   {
     title: 'Professional-grade lights',
     body: 'No store-bought strands. Commercial bulbs that shine brighter and last longer.',
-    icon: 'bulb',
+    icon: 'c9-bulb',
   },
   {
     title: 'Free service calls',
     body: 'Burned-out bulb or tripped GFCI? We come back at no cost, usually the same day.',
-    icon: 'wrench',
+    icon: 'wrench-bulb',
   },
   {
     title: 'Family-owned & insured',
     body: `Serving south Houston since ${business.since}, fully insured, safety first.`,
-    icon: 'shield',
+    icon: 'shield-heart',
   },
 ]
 
@@ -97,18 +97,22 @@ export const serviceCalls = ['Burned-out bulbs', 'Malfunctioning timers', 'Tripp
 export const steps = [
   {
     title: 'Free estimate',
+    icon: 'measuring-wheel',
     body: 'We measure your roofline with a measuring wheel, about 30 minutes, no roof climbing. You don’t have to be home unless we need to get through a gate. Short on time? Send phone photos for a rough quote.',
   },
   {
     title: 'Installation',
+    icon: 'ladder',
     body: 'Installs start October 15th and usually take about 2 hours. Book early: we discount installs done before the end of October.',
   },
   {
     title: 'All-season service',
+    icon: 'bulb-clock',
     body: 'Anything goes out, we fix or replace it free, typically same day locally (48 hours max during peak weeks).',
   },
   {
     title: 'Removal',
+    icon: 'box-lights',
     body: 'From January 3rd (done by the 13th) we take everything down, label it and box it up for you to store until next season. We call in late summer to schedule next year.',
   },
 ]

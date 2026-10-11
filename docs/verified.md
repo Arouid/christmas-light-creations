@@ -287,3 +287,4 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-10 Outgoing email light (demo, 375px)
 
 - System status shows "Outgoing email · 1 email didn’t go (see Scheduled emails)" in red (the demo has a failed scheduled email); 4 unit tests cover green/amber/red. messageSync redeployed with the gmailSeenAt stamp. Not yet seen live: a real send turning the light amber then green after the next sync.
+- 2026-10-10: Home-page icons. Dev server at 375px: the four cards show the new icons in the gold box, the four steps show icons in the gold badge, no console errors; lint, tests (all but another session's in-progress usage test, which was failing on its own uncommitted files) and the production build pass.
