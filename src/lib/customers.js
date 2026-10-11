@@ -55,7 +55,9 @@ export const byName = (a, b) =>
   || (a.fullName || '').localeCompare(b.fullName || '')
 
 export const SERVICE_STATUSES = ['Open', 'Scheduled', 'Done', 'Cancelled']
-export const SERVICE_ISSUES = ['Burned-out bulbs', 'Timer', 'Tripped GFCI', 'Unglued bulbs', 'Lights down / damaged', 'Other']
+// "Section out" is also what a customer's "A whole section is out" report
+// becomes (docs/specs/account-service.md).
+export const SERVICE_ISSUES = ['Burned-out bulbs', 'Section out', 'Timer', 'Tripped GFCI', 'Unglued bulbs', 'Lights down / damaged', 'Other']
 
 // Local date as YYYY-MM-DD (sorts correctly as text).
 export function todayISO(date = new Date()) {

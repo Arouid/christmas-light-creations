@@ -5,6 +5,9 @@ const part = (p, amount, state, paid = 0) => ({ part: p, amount, state, paid, pa
 export const DEMO_ACCOUNT = {
   email: 'pat@example.com',
   customer: { name: customer.name, address: customer.address },
+  // Your schedule + Report a problem (docs/specs/account-service.md).
+  schedule: { season: '2026', installStatus: 'Install Scheduled', day: 'Thursday', plannedDate: 'Nov 13', weekOf: 'Nov 9-15', timeframe: '', takedownStatus: '' },
+  service: { days: 2, open: null },
   price: { originalRate: '$900.00', since: '2021', addOns: [{ season: '2023', what: 'Arch over the driveway', price: 300 }, { season: '2024', what: 'Front tree wrap', price: 240 }],
     history: [
       { season: '2025', install: { amount: 64800, state: 'paid', by: 'PayPal', date: '11/26/2025' }, takedown: { amount: 15000, state: 'paid', by: 'PayPal', date: '1/12/2026' } },

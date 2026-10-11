@@ -10,7 +10,11 @@
 // - proposalChanged: emails the customer their signed agreement link and
 //   tells staff when a proposal is signed or a deposit is paid.
 // - sendAccountLink / myAccount: customer accounts at /account/ (email-link
-//   sign-in; the account lists proposals and invoices sent to that verified email).
+//   sign-in; the account lists proposals and invoices sent to that verified
+//   email, plus this season's schedule and any open service call).
+// - reportProblem: "Report a problem" on /account/ becomes a service call on
+//   the customer's record, like staff's Log call, and alerts staff
+//   (docs/specs/account-service.md).
 // - createInvoiceOrder / captureInvoiceOrder / invoiceChanged /
 //   invoiceReminders: our own invoices (docs/specs/invoices.md), paid like
 //   proposals; numbers, emails, season billing and reminders done here.
@@ -75,6 +79,7 @@ import { askAllowed, askRequest } from './assistant/askPrompt.js'
 import { AskError, askFor } from './assistant/ask.js'
 import sharp from 'sharp'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
+import { SERVICE_DAYS, openMessage, openReport, openSummary, reportCall, reportEmail, reportPush, reportRequest, scheduleFor } from './service.js'
 import {
   centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceState, invoiceSummary, KIND_SHORT, paidInfo,
   payableInvoiceProblem, receiptEmail, reminderDue, seasonFillsOnPaid, seasonFillsOnSend, shownInvoice, staffPaidEmail, toMs, validToken,
@@ -754,7 +759,64 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   // Their invoices (sent or paid; never drafts or voided ones), newest first.
   const today = centralDay()
   const invoices = (await invoicesFor(email)).map((d) => invoiceSummary(d.id, d.data(), today)).sort((a, b) => String(b.sentDay).localeCompare(String(a.sentDay)) || b.number.localeCompare(a.number))
-  return { email, proposals, invoices, price, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+  // This season's schedule and any open service call (docs/specs/account-service.md).
+  const schedule = rec ? scheduleFor(rec.seasons, season) : null
+  const service = ids.length ? { days: SERVICE_DAYS, open: await openCallFor(db, ids) } : null
+  return { email, proposals, invoices, price, schedule, service, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+})
+
+// The newest Open / Scheduled service call on any of these customer records,
+// as the customer may see it (no staff notes), or null.
+async function openCallFor(db, ids, tx = null) {
+  const q = db.collection('serviceCalls').where('customerId', 'in', ids.slice(0, 30))
+  const snap = tx ? await tx.get(q) : await q.get()
+  const open = openReport(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+  return open ? openSummary(open.id, open) : null
+}
+
+// "Report a problem" on /account/ (docs/specs/account-service.md): the report
+// becomes a service call on the customer's record with the same fields staff's
+// Log call writes (plus where it came from), is logged in Recent activity, and
+// staff get the phone notification and the alert email like for a new estimate
+// request. One open call per customer: the check and the write share a
+// transaction, so two taps can't make two. Logs carry no note text.
+export const reportProblem = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  const email = normEmail(req.auth?.token?.email)
+  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const r = reportRequest(req.data)
+  if (r.error) throw new HttpsError(...r.error)
+  const db = getFirestore()
+  const ids = await customersFor(email)
+  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll take care of it.')
+  const ref = db.collection('serviceCalls').doc()
+  const day = centralDay()
+  const result = await db.runTransaction(async (tx) => {
+    const open = await openCallFor(db, ids, tx)
+    if (open) return { open }
+    const snap = await tx.get(db.doc(`customers/${ids[0]}`))
+    const customer = { id: snap.id, ...snap.data() }
+    const call = reportCall({ customer, issue: r.issue, details: r.details, email, day })
+    const now = FieldValue.serverTimestamp()
+    tx.create(ref, { ...call, reportedAt: now, createdAt: now, updatedAt: now })
+    return { call, customer }
+  })
+  if (result.open) throw new HttpsError('already-exists', openMessage(result.open))
+  const { call, customer } = result
+  await logWebsite('service-reported', { type: 'customer', id: customer.id, name: customer.fullName }, call.issue)
+  await alertStaff(reportPush(call, customer.id))
+  const who = customer.fullName || 'A customer'
+  const to = await staffEmails()
+  if (!to.length) {
+    await reportIncident('service-alert', `${who} reported a problem from their account (it’s on the Service tab), but nobody is on the alert list (staff app → ⚙ Settings → New-request alerts).`)
+  } else {
+    try {
+      await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, ...reportEmail(call, customer) })
+    } catch (e) {
+      await reportIncident('service-alert', `${who} reported a problem from their account (it’s on the Service tab), but the alert email failed: ${e.message}`, { callId: ref.id })
+    }
+  }
+  logger.info('reportProblem', { issue: call.issue, note: Boolean(call.details), emailed: to.length })
+  return { ok: true, days: SERVICE_DAYS, open: openSummary(ref.id, call) }
 })
 
 // ---- Message sync (Voice notifications + customer emails → history) ---------

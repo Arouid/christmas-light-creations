@@ -246,7 +246,7 @@ export const privacy = {
         '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',
         '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
         '**When we text, call or email each other:** we keep that conversation history (including the emails we send you, those we’ve scheduled to send you later, and which of us called, texted or emailed you, so we don’t double up, and whether an email we sent you came back undelivered, so we can fix the address) with your customer record so anyone on our team can help you. If we don’t know you yet, your text or email waits in a list our team goes through (obvious junk mail isn’t kept). When you write to us or ask for an estimate, our team’s phones may show a short notification (your name and the first words) so you hear back sooner; if an email to you comes back undelivered, they show your name and why.',
-        '**When you sign in to your account:** your email address and when you signed in. With “Sign in with Google”, Google tells us your name and email; we never see your Google password.',
+        '**When you sign in to your account:** your email address and when you signed in. With “Sign in with Google”, Google tells us your name and email; we never see your Google password. If you report a problem with your lights from your account, what you picked and the note you typed go on your customer record as a service call, and our team’s phones get the same short notification as for a text.',
       ],
     },
     {

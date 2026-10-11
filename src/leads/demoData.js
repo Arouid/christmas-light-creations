@@ -50,6 +50,10 @@ export const demoData = {
       details: 'Left side of garage dark', received: '2026-12-02', status: 'Open' },
     { id: 'demo-call-2', customerId: 'example-family', customerName: 'Example Family', issue: 'Tripped GFCI',
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
+    // Reported by the customer from /account/ (docs/specs/account-service.md): in 💬 too.
+    { id: 'demo-call-3', customerId: 'test-homeowner', customerName: 'Test Homeowner', issue: 'Section out',
+      details: 'The whole left side of the roofline has been dark since last night', received: localDay(), status: 'Open',
+      source: 'customer', reportedBy: 'test.homeowner@example.com', reportedAt: new Date(minAgo(45)).toISOString() },
   ]),
   settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 } } },
   // Home → Spent this month (docs/specs/spend.md): this month's Claude calls, PayPal fees, Google Cloud export and Google Ads transfer.
@@ -122,6 +126,7 @@ export const demoData = {
     { id: 'demo-act-10', at: minAgo(30), by: 'lacie@example.com', action: 'handling', target: { type: 'message', id: 'gv-demo-unmatched-2', name: '(555) 010-0177' }, text: 'Voicemail' },
     { id: 'demo-act-11', at: minAgo(20), by: 'katiep@example.com', action: 'takeover', target: { type: 'message', id: 'gv-demo-unmatched-2', name: '(555) 010-0177' }, text: 'was Lacie M.’s · Voicemail' },
     { id: 'demo-act-7', at: minAgo(26 * 60), by: 'demo@example.com', action: 'service-done', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Lights out on the left side' },
+    { id: 'demo-act-13', at: minAgo(45), by: 'website', action: 'service-reported', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: 'Section out' },
     { id: 'demo-act-12', at: minAgo(50), by: 'katiep@example.com', action: 'email-scheduled', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: `Your 2026 Christmas lights · ${whenText(picks[0].at)}` },
   ]),
   // Home → Scheduled emails and the top of history (docs/specs/scheduled-email.md).

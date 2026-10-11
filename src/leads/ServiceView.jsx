@@ -75,6 +75,8 @@ export function ServiceCallCard({ call, customer, gates, onUpdate, onOpen }) {
           <p className="text-sm text-slate-400">
             {onOpen && <>{call.issue} · </>}received {niceDate(call.received)}{call.completed && ` · done ${niceDate(call.completed)}`}
           </p>
+          {/* Reported by the customer from /account/ (docs/specs/account-service.md). */}
+          {call.source === 'customer' && <p className="text-sm text-glow-300">🛠 Reported from their account</p>}
         </div>
         <select value={call.status} onChange={(e) => setStatus(e.target.value)} aria-label="Service call status"
           className={`shrink-0 rounded-full border-0 px-3 py-1.5 text-sm font-semibold ${call.status === 'Open' ? 'bg-glow-400 text-night-950' : 'bg-white/10'}`}>

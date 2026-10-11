@@ -4,7 +4,7 @@
 // everyone; opening the list doesn't clear it (owner 2026-10-10). Without the
 // activity log it falls back to "since you last looked" (staffPrefs).
 import { useMemo, useState } from 'react'
-import { countNew, countOpen, listSince, recentIncoming, requestItems, toMs } from '../lib/staffAlerts'
+import { countNew, countOpen, listSince, recentIncoming, reportItems, requestItems, toMs } from '../lib/staffAlerts'
 import { prefsId } from './push'
 import { SERVER_TIME, mergePaths, useLiveDoc, useLiveSince } from './staffStore'
 
@@ -12,14 +12,15 @@ const LOCAL = 'clcMessagesSeenAt'
 const readLocal = () => { try { return Number(localStorage.getItem(LOCAL)) || null } catch { return null } }
 const bySynced = (a, b) => (b.syncedAt?.toMillis?.() ?? 0) - (a.syncedAt?.toMillis?.() ?? 0)
 
-// feed: useActivityFeed() (who's on which message). The count is what nobody
+// feed: useActivityFeed() (who's on which message). calls: service calls, for
+// problems customers reported from their account. The count is what nobody
 // has taken yet; without the activity log it falls back to "since you looked".
-export function useStaffAlerts(user, leads, feed) {
+export function useStaffAlerts(user, leads, feed, calls) {
   const [since] = useState(() => new Date(listSince()))
   const { items, error } = useLiveSince(user, 'messages', 'syncedAt', since, bySynced)
   const prefs = useLiveDoc(user, 'staffPrefs', prefsId(user))
   const [localSeen, setLocalSeen] = useState(readLocal)
-  const list = useMemo(() => recentIncoming([...(items ?? []), ...requestItems(leads)]), [items, leads])
+  const list = useMemo(() => recentIncoming([...(items ?? []), ...requestItems(leads), ...reportItems(calls)]), [items, leads, calls])
   const loading = !items || (prefs.data === undefined && !prefs.error)
   const seenAt = prefs.error ? localSeen : prefs.data?.messagesSeenAt ?? null
 

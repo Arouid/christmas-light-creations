@@ -53,3 +53,7 @@ export async function signOut() {
 }
 
 export const loadAccount = () => callDeposit('myAccount', {})
+
+// Report a problem with their lights (docs/specs/account-service.md): the
+// server logs the service call and alerts staff; the browser never writes it.
+export const reportProblem = (problem, note) => callDeposit('reportProblem', { problem, note })

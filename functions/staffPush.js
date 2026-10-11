@@ -5,7 +5,8 @@
 // with the staff app (src/lib/staffAlerts.js) so the 💬 list and the
 // notification say the same thing. Spec: docs/specs/staff-alerts.md.
 
-export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email', request: 'Estimate request' }
+// report = a problem a customer reported from their account (docs/specs/account-service.md).
+export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email', request: 'Estimate request', report: 'Problem report' }
 export const PREVIEW_CHARS = 120
 export const MAX_DEVICES = 10
 // A catch-up of old mail (sync down for a while) doesn't buzz phones.

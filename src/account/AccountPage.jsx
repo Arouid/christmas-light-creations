@@ -9,6 +9,7 @@ import { seasonYear } from '../lib/customers'
 import { KIND_SHORT, longDate } from '../lib/invoices'
 import { InstallButtons } from '../components/InstallApp'
 import { isIos, standalone, useInstall } from '../components/useInstall'
+import { NOTE_MAX, REPORT_ISSUES, scheduleText, shortDate } from '../../functions/service.js'
 
 // The customer's own account: /account/ (sign in with Google or an emailed
 // link, no password). Lists every proposal sent to their email, what's paid and what's
@@ -199,6 +200,7 @@ function Account({ data, reload, logOut }) {
         {me?.address && <p className="text-slate-300">{me.address}</p>}
         <p className="text-sm text-slate-400">Signed in as {data.email}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
+      <Lights schedule={data.schedule} service={data.service} />
       {data.price && <YearlyPrice price={data.price} />}
       {!list.length && !data.customer && !invoices.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
       {(list.length > 0 || invoices.length > 0) && (
@@ -215,6 +217,100 @@ function Account({ data, reload, logOut }) {
         <span className="text-slate-400">Questions about your lights or a bill?</span>
         {call}
       </div>
+    </div>
+  )
+}
+
+// Your lights this season (docs/specs/account-service.md): the schedule line
+// from the season fields staff fill in, and Report a problem, which becomes a
+// service call on the Service tab (through the server, never from here).
+function Lights({ schedule, service }) {
+  const sched = scheduleText(schedule)
+  if (!sched && !service) return null
+  return (
+    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">Your lights{sched?.season ? `, ${sched.season} season` : ''}</h2>
+      {sched && !sched.none && (
+        <p className="text-lg">
+          <span className="text-slate-400">Lights up:</span> <strong>{sched.install}</strong>
+          <span className="px-2 text-slate-500">·</span>
+          <span className="text-slate-400">Takedown:</span> <strong>{sched.takedown}</strong>
+        </p>
+      )}
+      {sched?.none && <p className="text-slate-300">You’re not on this season’s schedule yet. Want your lights back up? Call or text us and we’ll book you.</p>}
+      {service && <ReportProblem service={service} />}
+    </section>
+  )
+}
+
+const OPEN_TEXT = { Open: 'We’ve got it', Scheduled: 'On the schedule' }
+function ReportProblem({ service }) {
+  const [mode, setMode] = useState('idle') // idle | form | sent
+  const [problem, setProblem] = useState('')
+  const [note, setNote] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [reported, setReported] = useState(null)
+  const open = reported ?? service.open
+
+  async function send(e) {
+    e.preventDefault()
+    if (!problem) { setError('Pick what’s wrong first.'); return }
+    setBusy(true)
+    setError('')
+    try {
+      const r = demo
+        ? { open: { id: 'demo', issue: REPORT_ISSUES.find((i) => i.key === problem).issue, received: new Date().toISOString().slice(0, 10), status: 'Open', source: 'customer', details: note.trim() } }
+        : await (await lib).reportProblem(problem, note)
+      setReported(r.open)
+      setMode('sent')
+    } catch (err) {
+      setError(err?.message || 'Something went wrong. Please try again, or call us.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (open) {
+    return (
+      <div className="space-y-2 rounded-2xl bg-glow-400/10 px-4 py-3">
+        {mode === 'sent' && <p className="font-semibold text-glow-300">Got it! We’ll be out within {service.days} days. If it’s urgent, call {business.phone}.</p>}
+        <p><span className="font-semibold">🛠 {OPEN_TEXT[open.status] ?? open.status}:</span> {open.issue}{open.received ? `, reported ${shortDate(open.received)}` : ''}</p>
+        {open.details && <p className="text-sm text-slate-300">“{open.details}”</p>}
+        {mode !== 'sent' && <p className="text-sm text-slate-400">Something else, or it’s urgent? Call or text us at <a href={business.phoneHref} className="underline">{business.phone}</a>.</p>}
+      </div>
+    )
+  }
+  if (mode === 'form') {
+    return (
+      <form onSubmit={send} className="space-y-3">
+        <p className="font-semibold">What’s wrong?</p>
+        <div className="space-y-2">
+          {REPORT_ISSUES.map((i) => (
+            <label key={i.key} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-4 py-2.5 ${problem === i.key ? 'border-glow-400 bg-glow-400/10' : 'border-white/15'}`}>
+              <input type="radio" name="problem" value={i.key} checked={problem === i.key} onChange={() => setProblem(i.key)} className="size-4 shrink-0 accent-glow-400" />
+              <span>{i.label}</span>
+            </label>
+          ))}
+        </div>
+        <label className="block">
+          <span className="mb-1 block text-sm text-slate-300">Anything that helps us find it (optional)</span>
+          <textarea value={note} onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))} rows={3} placeholder="Which side of the house, since when…"
+            className="w-full rounded-xl border border-white/20 bg-night-950 px-4 py-3 text-base" />
+        </label>
+        <p className="text-sm text-slate-400">Photos from here are coming soon. For now, you can text one to {business.phone}.</p>
+        {error && <p className="text-sm text-berry-500" role="alert">{error}</p>}
+        <div className="flex flex-wrap gap-3">
+          <button type="submit" disabled={busy} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>{busy ? 'Sending…' : 'Send report'}</button>
+          <button type="button" onClick={() => setMode('idle')} className={`${btn} border border-white/20`}>Cancel</button>
+        </div>
+      </form>
+    )
+  }
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <p className="text-slate-300">Something out? Tell us and we’ll fix it, free.</p>
+      <button type="button" onClick={() => setMode('form')} className={`${btn} bg-white text-night-950`}>🛠 Report a problem</button>
     </div>
   )
 }

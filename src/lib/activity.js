@@ -79,7 +79,7 @@ export function staffName(email, names = {}) {
 // ---- Entries ----------------------------------------------------------------------
 
 // Website entries: the customer did it ("Pat Sample signed their proposal").
-const WEBSITE = { 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online' }
+const WEBSITE = { 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights' }
 const VERB = {
   email: 'emailed', 'invoice-sent': 'sent an invoice to', 'invoice-again': 'emailed the invoice again to',
   'invoice-paid': 'marked paid the invoice for', 'invoice-void': 'voided the invoice for',
@@ -98,6 +98,7 @@ export function targetLink(target, messages = []) {
   if (t.type === 'past') return `#accounts/past/${id}`
   if (t.type === 'message') {
     if (String(t.id).startsWith('request-')) return `#accounts/lead/${encodeURIComponent(t.id.slice(8))}`
+    if (String(t.id).startsWith('report-')) return '#service' // a problem reported from a customer's account
     const m = messages.find((x) => x.id === t.id)
     return m ? messageLink(m) : '#messages'
   }

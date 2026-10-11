@@ -6,9 +6,10 @@ import SuggestReply from '../assistant/SuggestReply'
 import { draftTarget } from '../assistant/lib/targets'
 
 // 💬 New messages (docs/specs/staff-alerts.md): texts, voicemails, missed
-// calls, emails and website estimate requests from the last 7 days, newest first; the ones
-// that arrived since you last looked are marked. Tap one → their account.
-const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝' }
+// calls, emails, website estimate requests and problems customers reported
+// from their account, from the last 7 days, newest first; the ones that
+// arrived since you last looked are marked. Tap one → their account.
+const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝', report: '🛠' }
 
 function when(iso) {
   const d = new Date(iso)

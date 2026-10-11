@@ -97,7 +97,7 @@ export default function LeadsApp() {
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const feed = useActivityFeed(user, settingsApi.settings?.staffNames)
   usePresenceBeat(user)
-  const alerts = useStaffAlerts(user, leads, feed)
+  const alerts = useStaffAlerts(user, leads, feed, serviceApi.calls)
   const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
   const season = seasonYear()
 
