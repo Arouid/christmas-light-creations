@@ -10,7 +10,7 @@ const MAP = {
   'Clear_LED_Iowa_Colony.jpg': 'iowa-colony-clear-led-gables.jpg',
   'GW.png': 'green-led-two-story-home.jpg',
   'Classic-2-Ivy-Friendswood.jpg': 'friendswood-warm-white-ivy-home.jpg',
-  'unnamed.jpg': 'warm-white-roofline-lit-trees.jpg',
+  // 'unnamed.jpg' is the same shot as DSCF6305.JPG (two-story-wrapped-trees-arched-door): left out (owner 2026-10-11).
   'Classic-Highland-Glen-5.jpg': 'pearland-highland-glen-two-story.jpg',
   'unnamed (4).jpg': 'warm-white-roofline-garden-beds.jpg',
   'Tight_Ends_League_City.jpg': 'league-city-commercial-restaurant.jpg',

@@ -369,3 +369,9 @@ What was actually checked working, and how. Newest first.
 - Remotion Studio reloaded on cut 3: timeline shows thread1 / plan / home / thread2 / pitch / end, the props panel exposes `story` (every bubble's sender and text, the beats, the lines), no new console errors (one stale "Cannot find module ./Teaser.jsx" from the earlier hot-reload race is still in the console buffer; the compositions load).
 - Cut 2's six scene files, the illustrated street and the icons were deleted (git history has them). `npm run check` not re-run (only `video/` changed, linted clean).
 - Not checked: playback in a real player, whether the emoji (🎂 🤫 🎄) render identically in headless Chrome on another PC (they rendered here), YouTube/Google Ads acceptance, the owner's verdict.
+
+## 2026-10-11 Gallery: duplicate photo removed
+
+- Owner spotted two identical photos in the public gallery. A perceptual-hash pass over `public/images/gallery` found the pair (`two-story-wrapped-trees-arched-door.jpg` from DSCF6305.JPG and `warm-white-roofline-lit-trees.jpg` from unnamed.jpg); the second was removed from `content.js`, the repo and the `process-photos.mjs` mapping (left as a comment so a re-run doesn't bring it back).
+- Dev server, public page at phone width: gallery shows 9 photos, no repeated `src`, no broken images, the removed file not referenced; no new console errors on a fresh load. `npm run check` passed (lint, 316 tests, build).
+- Not checked: the live site after deploy.
