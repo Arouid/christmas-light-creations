@@ -49,7 +49,8 @@ import { staffName } from '../lib/activity'
 // Top-row tabs. Saved filters live inside Customers (#view-<id>), Past
 // requests inside Leads (#past), and the rarely used tabs under "More"
 // (the row got too long: owner 2026-10-10). The app opens on Home.
-const BEFORE = [['home', 'Home'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes'], ['service', 'Service']]
+// Ask Claude sits right after Home so it shows without scrolling on a phone (owner, 2026-10-10).
+const BEFORE = [['home', 'Home'], ['ask', '🤖 Ask Claude'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes'], ['service', 'Service']]
 const MORE = [['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
 const HIDDEN = [['past', 'Past requests']]
 const ALL_TABS = [...BEFORE, ...MORE, ...HIDDEN]
@@ -90,7 +91,6 @@ export default function LeadsApp() {
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
-  const [showAsk, setShowAsk] = useState(false)
   // null = not decided (show once per device after the first sign-in), true = asked for, false = closed.
   const [tour, setTour] = useState(null)
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
@@ -265,6 +265,7 @@ export default function LeadsApp() {
       return { added: add.length, id }
     },
   }
+  const askOn = settingsApi.settings?.askClaude !== false
   const voiceAccount = textFrom === 'own' ? '' : (settingsApi.settings?.voiceAccount ?? '')
 
   return (
@@ -275,7 +276,7 @@ export default function LeadsApp() {
     <StaffContext.Provider value={{ user, settings: settingsApi.settings ?? {} }}>
     <InvoicesContext.Provider value={{ ...invoicesApi, customers: customers ?? [],
       account: { leads: leads ?? [], past: pastApi.error ? [] : pastApi.requests ?? [], calls, gates, season, user } }}>
-    <div className={tab === 'map' ? 'flex h-svh flex-col' : 'min-h-svh'}>
+    <div className={tab === 'map' || tab === 'ask' ? 'flex h-svh flex-col' : 'min-h-svh'}>
       {demo && <p className="bg-berry-600 px-4 py-2 text-center text-sm font-medium">Preview with sample data. Not connected to Firebase.</p>}
       <IncidentsBanner user={user} />
       {!installHidden && (
@@ -298,10 +299,6 @@ export default function LeadsApp() {
                 </span>
               )}
             </button>
-            {settingsApi.settings?.askClaude !== false && (
-              <button type="button" onClick={() => setShowAsk(true)} aria-label="Ask Claude" title="Ask Claude a question about customers, invoices, routes or messages"
-                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-base"><span aria-hidden="true">🤖</span></button>
-            )}
             <button type="button" onClick={() => setShowGuide(true)} aria-label="Staff guide" title="Staff guide: what the app does"
               className="shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold">?</button>
             <button type="button" onClick={() => setShowSettings(true)} aria-label="Settings" title="Settings"
@@ -311,7 +308,7 @@ export default function LeadsApp() {
         </div>
         <div className="mx-auto flex max-w-3xl items-stretch px-2 lg:max-w-7xl">
           <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="Sections">
-            {BEFORE.map(([k, label]) => (
+            {BEFORE.filter(([k]) => k !== 'ask' || askOn).map(([k, label]) => (
               <a key={k} href={`#${k}`} aria-current={section === k ? 'page' : undefined}
                 className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${section === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
                 {label}
@@ -333,6 +330,11 @@ export default function LeadsApp() {
         </div>
       </header>
 
+      {tab === 'ask' && (
+        <div className="min-h-0 flex-1">
+          {askOn ? <AskClaude season={season} inline /> : <p className="p-6 text-slate-400">Ask Claude is turned off (⚙ Settings → Ask Claude).</p>}
+        </div>
+      )}
       {tab === 'map' && (
         <div className="relative min-h-0 flex-1">
           {listError && <p className="absolute inset-x-0 top-0 z-10 bg-berry-600 px-4 py-1 text-sm" role="alert">Couldn’t load: {listError}</p>}
@@ -342,7 +344,7 @@ export default function LeadsApp() {
             : <p className="p-6 text-slate-400">Loading map…</p>}
         </div>
       )}
-      <main className={tab === 'map' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl'}>
+      <main className={tab === 'map' || tab === 'ask' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl'}>
         {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
         {tab === 'home' && (customers
           ? <HomeView user={user} season={season} alerts={alerts} feed={feed} customers={customers} leads={leads ?? []} invoices={invoicesApi.invoices ?? []}
@@ -410,7 +412,6 @@ export default function LeadsApp() {
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} user={user} />
       )}
       {showMessages && <MessagesPanel user={user} alerts={alerts} names={names} feed={feed} onClose={closeMessages} />}
-      {showAsk && <AskClaude season={season} onClose={() => setShowAsk(false)} />}
       {showGuide && <GuidePanel onClose={() => setShowGuide(false)} onTour={() => { setShowGuide(false); setTour(true) }} />}
       {(tour === true || (tour === null && !demo && !tourDone())) && <Tour name={user ? staffName(user.email, feed.names) : ''} onClose={() => setTour(false)} />}
       {showSettings && (

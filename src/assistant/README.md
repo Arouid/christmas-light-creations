@@ -14,5 +14,5 @@ Staff side of "✨ Suggest a reply" (spec: `docs/specs/sales-assistant.md`), "�
 | `lib/targets.js` | Pure: whose thread a list entry means, the activity entry, where the email is filed. |
 | `lib/knowledge.js` | Pure: what the assistant may know, from `src/data/content.js` and the stock email templates. Written to `functions/assistant/knowledge.json` by `scripts/build-assistant-knowledge.mjs`. |
 
-Used by: `src/leads/MessagesPanel.jsx` (💬 rows), `src/leads/UnmatchedMessages.jsx`, `src/leads/TextHistory.jsx` (Accounts and customer detail), `src/leads/LeadsApp.jsx` (the 🤖 button and panel; hidden when `settings/app.askClaude` is false), `src/leads/SeasonView.jsx` (✨ Plan with Claude).
+Used by: `src/leads/MessagesPanel.jsx` (💬 rows), `src/leads/UnmatchedMessages.jsx`, `src/leads/TextHistory.jsx` (Accounts and customer detail), `src/leads/LeadsApp.jsx` (the 🤖 Ask Claude tab, `#ask`, rendered `inline`; hidden when `settings/app.askClaude` is false), `src/leads/SeasonView.jsx` (✨ Plan with Claude).
 Depends on: `src/leads/ComposeEmail`, `src/leads/Reach` (TextButton, pill), `src/leads/activity` (logActivity), `src/leads/demo`, `src/lib/firebase`, `NEXT_ACTIONS` from `functions/assistant/prompt.js`, the pure plan helpers from `functions/assistant/schedulePrompt.js`, and `EmailQueue` from `src/leads/BulkEmail`.

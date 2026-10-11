@@ -10,10 +10,13 @@ import { answerBlocks, historyFor, recordLabel, recordLink } from './lib/records
 // here; a "Draft a reply" hand-off goes through the normal Suggest a reply flow.
 // Layout like a messaging app (owner, 2026-10-10): header pinned at the top,
 // the transcript scrolling in the middle, the question box pinned at the
-// bottom. Full screen on phones; a chat window on a computer.
+// bottom. As the 🤖 Ask Claude tab (`inline`) it fills the space under the
+// header and the thread survives switching tabs; as a dialog it's full screen
+// on phones and a chat window on a computer.
 const box = 'block w-full rounded-2xl border border-white/15 bg-night-900 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-glow-400 focus:outline-none'
 const pill = 'inline-flex min-h-11 items-center rounded-full bg-white/10 px-4 text-sm font-semibold text-slate-100'
 const isPhone = () => window.matchMedia?.('(pointer: coarse)').matches
+let savedTurns = [] // the thread, kept while the app is open (the tab unmounts when you switch)
 
 function Answer({ turn, season, onGo }) {
   const blocks = answerBlocks(turn.answer)
@@ -39,13 +42,14 @@ function Answer({ turn, season, onGo }) {
   )
 }
 
-export default function AskClaude({ season, onClose }) {
-  const [turns, setTurns] = useState([]) // { role: 'user', text } | { role: 'assistant', answer, records, draftFor, incomplete } | { role: 'error', text }
+export default function AskClaude({ season, onClose, inline = false }) {
+  const [turns, setTurns] = useState(savedTurns) // { role: 'user', text } | { role: 'assistant', answer, records, draftFor, incomplete } | { role: 'error', text }
   const [q, setQ] = useState('')
   const [busy, setBusy] = useState(false)
   const endRef = useRef(null)
   const inputRef = useRef(null)
 
+  useEffect(() => { savedTurns = turns }, [turns])
   useEffect(() => { if (!isPhone()) inputRef.current?.focus() }, [])
   // Newest message in view when an answer arrives or while thinking.
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [turns, busy])
@@ -66,18 +70,18 @@ export default function AskClaude({ season, onClose }) {
       setBusy(false)
     }
   }
-  const go = (hash) => { onClose(); window.location.assign(hash) }
+  const go = (hash) => { onClose?.(); window.location.assign(hash) }
   // Enter sends on a computer; on a phone Enter is a newline and the button sends.
   const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey && !isPhone()) { e.preventDefault(); send() } }
 
   return (
-    <div className="fixed inset-0 z-40 bg-night-950/95 backdrop-blur sm:flex sm:items-center sm:justify-center sm:p-6" role="dialog" aria-modal="true" aria-label="Ask Claude">
-      <div className="flex h-full w-full flex-col bg-night-950 sm:h-[min(88svh,52rem)] sm:max-w-2xl sm:rounded-3xl sm:border sm:border-white/15 sm:shadow-2xl">
+    <div className={inline ? 'flex h-full flex-col' : 'fixed inset-0 z-40 bg-night-950/95 backdrop-blur sm:flex sm:items-center sm:justify-center sm:p-6'} role={inline ? undefined : 'dialog'} aria-modal={inline ? undefined : 'true'} aria-label="Ask Claude">
+      <div className={`flex h-full w-full flex-col bg-night-950 ${inline ? 'mx-auto max-w-3xl lg:max-w-7xl' : 'sm:h-[min(88svh,52rem)] sm:max-w-2xl sm:rounded-3xl sm:border sm:border-white/15 sm:shadow-2xl'}`}>
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
           <h2 className="font-display text-2xl font-extrabold">🤖 Ask Claude</h2>
           <div className="flex gap-2">
             {turns.length > 0 && <button type="button" onClick={() => setTurns([])} className={pill}>Clear</button>}
-            <button type="button" onClick={onClose} className="min-h-11 rounded-full bg-white/10 px-4 text-sm font-semibold">Done</button>
+            {onClose && <button type="button" onClick={onClose} className="min-h-11 rounded-full bg-white/10 px-4 text-sm font-semibold">Done</button>}
           </div>
         </div>
 

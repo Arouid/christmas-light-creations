@@ -8,7 +8,7 @@ Staff know the answer is somewhere in the app but not where: "which invoices are
 
 ## What we want
 
-A **🤖 Ask Claude** button in the staff app's top bar (next to **?**). It opens a panel with a question box. Staff type a plain question; in a few seconds the answer comes back in plain words, with the records it looked at listed under it as links that open the right account, invoice list or route. A **✉️ Draft this** button appears when the answer concerns one customer or lead, and hands over to the existing **✨ Suggest a reply** flow for that person (staff still edit and send themselves).
+A **🤖 Ask Claude** tab in the staff app's tab row, right after Home so it shows without scrolling on a phone (owner, 2026-10-10; it replaced a 🤖 button in the top bar, which the owner wanted kept short). It is a chat: header pinned at the top, the thread scrolling in the middle, the question box pinned at the bottom; the thread survives switching tabs while the app is open. Staff type a plain question; in a few seconds the answer comes back in plain words, with the records it looked at listed under it as links that open the right account, invoice list or route. A **✉️ Draft this** button appears when the answer concerns one customer or lead, and hands over to the existing **✨ Suggest a reply** flow for that person (staff still edit and send themselves).
 
 Claude answers only from what the read-only tools return, says so when it finds nothing, and never guesses a price, date or policy. Follow-up questions in the same panel keep the conversation (the last few turns go back to the server), so "and the one before that?" works.
 
@@ -27,7 +27,7 @@ Claude answers only from what the read-only tools return, says so when it finds 
 ## Edge cases
 
 - **No key / key refused**: the button works, the panel says the assistant isn't set up (same wording as Suggest a reply); the red website-problem banner fires once.
-- **Switched off** (`settings/app.askClaude === false`): the panel says Ask Claude is turned off in ⚙ Settings.
+- **Switched off** (`settings/app.askClaude === false`): the tab is hidden and `#ask` shows a line saying Ask Claude is turned off in ⚙ Settings; the server refuses questions from an old tab.
 - **Daily cap reached** (100 questions, everyone together): a clear message, try tomorrow.
 - **Too many tool calls** (more than 8 in one question): the server stops and asks Claude to answer with what it has; the answer says it may be incomplete.
 - **Nothing found**: Claude says so and suggests the Accounts search; no made-up record.
@@ -53,7 +53,7 @@ Claude answers only from what the read-only tools return, says so when it finds 
 4. [test] `parseAnswer()` turns the model's JSON into `{ answer, records[], draftFor }` with unknown record types dropped, lengths capped, and a fallback when it isn't JSON. → same file
 5. [test] Record rows sent to the model carry no gate code or payment reference (`customerRow`, `invoiceRow`). → same file
 6. [test] `recordLink()` maps each record type to the right in-app hash. → same file
-7. [human, demo] `/leads/?demo` → 🤖 → "which invoices are overdue?" → an answer with two linked records; "what did Pat Sample ask last year?" → an answer with a **✉️ Draft this** button that opens Suggest a reply. 375 px, no sideways scroll, no console errors. Observer: Claude Code in the browser pane; owner on a phone once deployed.
+7. [human, demo] `/leads/?demo` → 🤖 Ask Claude tab → "which invoices are overdue?" → an answer with two linked records; "what did Pat Sample ask last year?" → an answer with a **✉️ Draft this** button that opens Suggest a reply. 375 px, no sideways scroll, no console errors. Observer: Claude Code in the browser pane; owner on a phone once deployed.
 8. [human, live] After the key is set and `askClaude` deployed: a real question about a real overdue invoice returns the right number and a link that opens that customer; the function log shows tokens and cost, no customer text. Observer: owner (TODO #43).
 9. [check] `npm run check` green; guide, privacy, decisions, verified, TODO updated in the same commit.
 
