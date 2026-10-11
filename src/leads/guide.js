@@ -45,6 +45,7 @@ export const SECTIONS = [
       '**System status** lights: text/email sync, website problems, payments, the request-alert email list, the activity log, and notifications on this device. Green is good; amber means look; red means something broke (tap the red banner).',
       '**Spent this month**: what the services behind the app cost so far this month. **Claude** (Suggest a reply, Ask Claude, Plan with Claude) is exact: every call’s tokens at Anthropic’s list price. **PayPal fees** are exact: what PayPal kept on each online payment. **Google Cloud** (Firebase, Maps, email) can’t be read by the app: tap **see billing**. **Fixed** is what you typed in **⚙ Settings → Monthly costs** (Workspace, Voice, domain). The total leaves Google Cloud out.',
       '**⛶ Wall screen**: full screen with big numbers for a TV in the shop; it updates by itself. **✕** or Esc to leave.',
+      '**⠿ Arrange**: drag the panels where you want them (on a phone, use the ▲ ▼ arrows on each panel), then **Done arranging**. It’s saved on that phone or computer; **Reset layout** puts them back.',
       'Names show as first name + last initial (Scott M., Lacie M., Katie P.), also at the top right instead of your email. Anyone new (or a different name): **⚙ Settings → Staff names**.',
     ],
   },

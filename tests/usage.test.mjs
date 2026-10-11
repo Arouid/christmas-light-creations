@@ -79,3 +79,9 @@ test('spendText: cents under a dollar, dollars otherwise', () => {
   assert.equal(spendText(123456), '$1,234.56')
   assert.equal(spendText(null), '—')
 })
+
+test('spentSummary: the total keeps fractional cents so it matches its lines ("2.1¢", not "2¢")', () => {
+  const s = spentSummary({ claude: { ask: { calls: 1, microCents: 2100 } } }, {})
+  assert.equal(s.totalCents, 2.1)
+  assert.equal(spendText(s.totalCents), '2.1¢')
+})

@@ -8,6 +8,7 @@ import { ActivityPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel,
 import { ScheduledPanel } from './ScheduledEmails'
 import { usePresence, useSignIns } from './usePresence'
 import { useOutgoingMail } from './useOutgoingMail'
+import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, nudge, placeBefore, readLayout } from '../lib/dashLayout'
 import { permission, storedFid } from './push'
 import { useLiveDoc, useLiveQuery } from './staffStore'
 
@@ -71,6 +72,35 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
     { key: 'svc', title: 'Service calls', value: nums.openCalls, note: 'open or scheduled', link: '#service' },
   ]
   const ctx = { names: feed.names, messages: alerts.list }
+  // Where each panel sits: the owner's drag-and-drop (2026-10-10), kept per device.
+  const [layout, setLayout] = useState(() => { try { return readLayout(localStorage.getItem(LAYOUT_KEY)) } catch { return DEFAULT_LAYOUT } })
+  const [arranging, setArranging] = useState(false)
+  const apply = (next) => { setLayout(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)) } catch { /* private mode: fine */ } }
+  const drop = (key, col, beforeKey) => { if (key) apply(placeBefore(layout, key, col, beforeKey)) }
+
+  const panels = {
+    season: <SeasonPanel season={season} progress={progress} money={cash} wall={wall} />,
+    activity: <ActivityPanel entries={feed.entries} error={feed.error} loading={feed.loading} ctx={ctx} now={now} wall={wall} />,
+    who: <WhoPanel rows={who.rows} error={who.error} now={minute} wall={wall} />,
+    scheduled: <ScheduledPanel user={user} names={feed.names} wall={wall} />,
+    signins: <SignInsPanel entries={signIns.entries} error={signIns.error} now={minute} names={feed.names} wall={wall} />,
+    routes: <RoutesPanel today={day} wall={wall} />,
+    status: <StatusPanel lights={lights} wall={wall} />,
+    spent: <SpendPanel summary={spent} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
+  }
+  const column = (col) => (
+    <div className={`min-w-0 space-y-4 ${col === 'left' ? 'lg:col-span-7' : 'lg:col-span-5'}`}
+      onDragOver={arranging ? (e) => e.preventDefault() : undefined}
+      onDrop={arranging ? (e) => { e.preventDefault(); drop(e.dataTransfer.getData('text/plain'), col, null) } : undefined}>
+      {layout[col].map((k, i) => (
+        <Slot key={k} k={k} col={col} arranging={arranging} first={i === 0} last={i === layout[col].length - 1}
+          onNudge={(dir) => apply(nudge(layout, k, dir))} onDrop={drop}>
+          {panels[k]}
+        </Slot>
+      ))}
+      {arranging && !layout[col].length && <p className="rounded-3xl border border-dashed border-white/20 p-6 text-center text-sm text-slate-400">Drop a panel here</p>}
+    </div>
+  )
 
   const board = (
     <div className={`space-y-4 ${wall ? 'p-6 lg:p-8' : ''}`}>
@@ -80,33 +110,53 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
           <p className={`font-semibold tabular-nums ${wall ? 'text-5xl' : 'text-2xl'}`}>{clock(now)} <span className="text-base font-normal text-slate-400">CT · {dateLine(now)}</span></p>
           <p className={`text-glow-300 ${wall ? 'text-xl' : 'text-sm'}`}>{countdown(now)}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="hidden items-center gap-1.5 text-xs text-slate-400 sm:flex"><Light color="green" /> live</span>
+          {arranging && <button type="button" onClick={() => apply(DEFAULT_LAYOUT)} className="min-h-11 rounded-full px-3 text-sm text-slate-400 underline">Reset layout</button>}
+          <button type="button" onClick={() => setArranging((v) => !v)} aria-pressed={arranging}
+            className={`min-h-11 rounded-full px-4 text-sm font-semibold ${arranging ? 'bg-glow-400 text-night-950' : 'border border-white/20'}`}>
+            {arranging ? '✓ Done arranging' : '⠿ Arrange'}
+          </button>
           <button type="button" onClick={() => setWall(!wall)} className="min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold">
             {wall ? '✕ Exit wall screen' : '⛶ Wall screen'}
           </button>
         </div>
       </header>
       <Counters tiles={tiles} wall={wall} />
+      {arranging && <p className="text-sm text-glow-300">Drag a panel where you want it, or use its arrows. On a phone the panels run top to bottom: left column first, then right. Saved on this device.</p>}
       <div className="grid gap-4 lg:grid-cols-12">
-        <div className="min-w-0 space-y-4 lg:col-span-7">
-          {/* Season first (owner 2026-10-10): the numbers that matter, then what the team did. */}
-          <SeasonPanel season={season} progress={progress} money={cash} wall={wall} />
-          <ActivityPanel entries={feed.entries} error={feed.error} loading={feed.loading} ctx={ctx} now={now} wall={wall} />
-        </div>
-        <div className="min-w-0 space-y-4 lg:col-span-5">
-          <WhoPanel rows={who.rows} error={who.error} now={minute} wall={wall} />
-          <ScheduledPanel user={user} names={feed.names} wall={wall} />
-          <SignInsPanel entries={signIns.entries} error={signIns.error} now={minute} names={feed.names} wall={wall} />
-          <RoutesPanel today={day} wall={wall} />
-          <StatusPanel lights={lights} wall={wall} />
-          <SpendPanel summary={spent} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />
-        </div>
+        {column('left')}
+        {column('right')}
       </div>
     </div>
   )
 
   return wall ? <WallScreen onExit={exitWall}>{board}</WallScreen> : board
+}
+
+// One panel while arranging: a handle bar with arrows, draggable (computers),
+// and a drop target (drop = put the dragged panel before this one).
+const PANEL_LABEL = Object.fromEntries(PANELS)
+const arrow = 'size-9 rounded-full border border-white/20 text-sm font-semibold hover:bg-white/10 disabled:opacity-30'
+function Slot({ k, col, arranging, first, last, onNudge, onDrop, children }) {
+  if (!arranging) return children
+  return (
+    <div draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', k); e.dataTransfer.effectAllowed = 'move' }}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e.dataTransfer.getData('text/plain'), col, k) }}
+      className="cursor-grab rounded-3xl ring-2 ring-glow-400/50 active:cursor-grabbing">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 text-xs text-glow-300">
+        <span className="font-semibold">⠿ {PANEL_LABEL[k]}</span>
+        <span className="flex gap-1">
+          <button type="button" onClick={() => onNudge('up')} disabled={first} aria-label="Move up" className={arrow}>▲</button>
+          <button type="button" onClick={() => onNudge('down')} disabled={last} aria-label="Move down" className={arrow}>▼</button>
+          <button type="button" onClick={() => onNudge('left')} disabled={col === 'left'} aria-label="Move to the left column" className={`${arrow} hidden lg:inline-block`}>◀</button>
+          <button type="button" onClick={() => onNudge('right')} disabled={col === 'right'} aria-label="Move to the right column" className={`${arrow} hidden lg:inline-block`}>▶</button>
+        </span>
+      </div>
+      <div className="pointer-events-none">{children}</div>
+    </div>
+  )
 }
 
 // Full screen where the browser allows it (not on iPhone); always covers the app.
