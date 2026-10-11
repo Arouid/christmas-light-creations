@@ -36,7 +36,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | # | Task | Notes |
 |---|---|---|
 | K | **Home / mission control** (live 2026-10-10, `docs/specs/dashboard.md`): (1) names: Scott M., Lacie M. and Katie P. are known by their email (others or changes: ⚙ Settings → Staff names); (2) test with a second staff member: one emails a test customer from the app → it shows on the other's Home; tap **I've got it** on a message → the other sees "… is on it"  (I've got it / Take it over confirmed 2026-10-10) | Test checklist #56, #58 |
-| L | **Speed on phones** (fonts, /design/ picture, contrast, prerendered home + /design/ done 2026-10-10, not pushed): push and re-measure live (mobile ≥ 90, LCP ≤ 2.5 s, TBT < 200 ms on /, /design/, an area page). Home LCP is ~3 s only in Lighthouse's simulation (1.8 s with real throttling); options if it matters: a smaller hero photo (WebP/AVIF ~60–75 KB vs 103 KB) or loading React after the first paint without a fixed delay |  2026-10-10 |
+| L | **Speed on phones** (done and live 2026-10-11: fonts self-hosted, /design/ picture, contrast, prerendered home + /design/, React after first paint; live Lighthouse mobile home 93 / design 95 / area 100, accessibility 100). Left: home LCP reads 2.9 s on the office PC's headless Chrome only (artifact; 2.1 s with real throttling); if Google's own Search Console / PageSpeed field data ever flags it, the next lever is a smaller hero photo (WebP ~70 KB vs 103 KB) |  2026-10-10/11 |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
 | E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
 | F | Export customers to a spreadsheet | |
