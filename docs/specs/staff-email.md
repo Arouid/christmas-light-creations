@@ -1,6 +1,6 @@
 # Staff email from the app
 
-> Status: live 2026-10-09; real send and reply checked by the owner 2026-10-10 (bulk check pending: TODO #38) · Decided 2026-10-09 by Scott (owner)
+> Status: implemented, live 2026-10-09; owner's end-to-end test done 2026-10-11 (send, reply, bulk) · Decided 2026-10-09 by Scott (owner)
 
 ## The problem
 
@@ -104,11 +104,3 @@ The sync (`messageSync`) skips an outgoing email whose `mailId` or `mailPrint` i
 - History and sync: `docs/specs/message-sync.md`
 - Mailer, `reportIncident`, other server emails: `functions/index.js`
 - Gmail limits (checked 2026-10-09): knowledge.workspace.google.com/admin/gmail/gmail-sending-limits-in-google-workspace (2,000 messages/user/day, 100 recipients per SMTP message). Gmail saving SMTP-sent mail in Sent: client docs (Thunderbird, Outlook, eM Client) say not to save a second copy because Gmail does it; to confirm on the owner's test (criterion 6).
-
-## Plan (2026-10-09, delete when done)
-
-1. Pure checks + keys in `functions/staffEmail.js` and `functions/messageSync.js`, tests.
-2. `sendStaffEmail` + sync dedupe in `functions/index.js`.
-3. Compose box Send + Gmail fallback; EmailQueue Send / Send the rest; callers pass the target; demo mode.
-4. History shows the sender; staff guide; privacy wording; docs.
-5. ~~Owner OK → deploy `sendStaffEmail` + `messageSync`, push~~ done 2026-10-09; owner test (6, 7) pending.
