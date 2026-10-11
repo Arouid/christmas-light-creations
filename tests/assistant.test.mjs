@@ -140,7 +140,8 @@ test('Claude shows on Who’s on after it drafted, never as "on now"', () => {
   assert.equal(bot.name, 'Claude (assistant)')
   assert.equal(bot.state, 'away')
   assert.equal(bot.device, 'drafted a reply for katie')
-  assert.equal(presenceRows([{ id: 'scott@example.com' }], [], {}, now).length, 1, 'no row until it has worked')
+  const fresh = presenceRows([{ id: 'scott@example.com' }], [], {}, now).find((r) => r.email === 'claude')
+  assert.equal(fresh.state, 'never', 'listed before it has worked, as never')
   assert.ok(ACTIONS.includes('ai-draft'))
 })
 
