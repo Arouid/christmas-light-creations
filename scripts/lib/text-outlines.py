@@ -1,8 +1,9 @@
-"""Glyph outlines for scripts/shirt-art.mjs: turns a line of text into SVG path data
-with the site's own font files (public/fonts/*.woff2 are variable fonts), so the
-shirt artwork needs no installed fonts, like the lettering in the logo SVGs.
+"""Glyph outlines for scripts/lib/logoArt.mjs: turns a line of text into SVG path data
+with the site's own font files (public/fonts/*.woff2 are variable fonts), so print
+artwork needs no installed fonts, like the lettering in the logo SVGs.
 
-usage: python scripts/shirt-art-text.py <font.woff2> <wght> <text>
+usage: python scripts/lib/text-outlines.py <font.woff2> <location> <text>
+  location: a weight like 700, or JSON like {"opsz": 144, "wght": 900}
 prints JSON: {"upem", "capHeight", "glyphs": [{"char", "advance", "d"}]}
 (font units, y up; the caller scales and flips)."""
 import json
@@ -11,9 +12,10 @@ import sys
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.ttLib import TTFont
 
-font_path, wght, text = sys.argv[1], float(sys.argv[2]), sys.argv[3]
+font_path, location, text = sys.argv[1], sys.argv[2], sys.argv[3]
+location = json.loads(location) if location.strip().startswith('{') else {'wght': float(location)}
 font = TTFont(font_path)
-glyph_set = font.getGlyphSet(location={'wght': wght})
+glyph_set = font.getGlyphSet(location=location)
 cmap = font.getBestCmap()
 out = {'upem': font['head'].unitsPerEm, 'capHeight': font['OS/2'].sCapHeight, 'glyphs': []}
 for ch in text:
