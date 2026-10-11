@@ -18,6 +18,8 @@ import { TextButton } from '../Reach'
 import StreetViewPhoto from '../StreetViewPhoto'
 import { noAutofill } from '../ui'
 import TextHistory from '../TextHistory'
+import { Grid } from '../CustomerDetail'
+import { SEASON } from '../seasonFields'
 
 const KIND = { customer: ['Customer', 'bg-emerald-500/20 text-emerald-300'], lead: ['Website lead', 'bg-glow-400/20 text-glow-300'], past: ['Past request', 'bg-white/10 text-slate-300'] }
 const shape = 'inline-flex items-center justify-center gap-1.5 rounded-full px-3.5 py-2.5 text-sm font-medium'
@@ -171,7 +173,21 @@ function LoginLine({ email }) {
 const mapLink = (address) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 
 // Also shown on top of an open invoice (invoices/AccountGlance), without Edit details.
-export function CustomerAccount({ c, customers, leads = [], past = [], calls = [], gates = [], season, user, onOpenCustomer }) {
+// Edit this season right here (install status, schedule, takedown) instead of
+// jumping to the customer list and back (staff request 2026-10-10).
+function ThisSeason({ c, season, onUpdate }) {
+  if (!onUpdate || !season) return null
+  const started = Boolean(c.seasons?.[season])
+  return (
+    <Section title={`${season} season · edit`}>
+      {started
+        ? <Grid customer={c} base={`seasons.${season}`} fields={SEASON} onUpdate={onUpdate} />
+        : <button type="button" onClick={() => onUpdate(c.id, `seasons.${season}`, { addedByHand: true })} className={primary}>Start the {season} season</button>}
+    </Section>
+  )
+}
+
+export function CustomerAccount({ c, customers, leads = [], past = [], calls = [], gates = [], season, user, onOpenCustomer, onUpdateCustomer }) {
   const gate = gateFor(c, gates)
   const phone = String(c.phone ?? '').replace(/\D/g, '')
   const myCalls = calls.filter((x) => x.customerId === c.id)
@@ -188,6 +204,7 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
         <AddToRoute customers={[c]} className={action} />
         {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}
       </Header>
+      <ThisSeason c={c} season={season} onUpdate={onUpdateCustomer} />
       <Section title="Seasons"><SeasonRows customer={c} /></Section>
       <Section title="🧾 Invoices"><CustomerInvoices customer={c} /></Section>
       <OldRecordsPanel customer={c} customers={customers} user={user} past={myPast} />
@@ -257,7 +274,7 @@ function PastAccount({ p, onMakeCustomer, onOpenAccount }) {
 }
 
 // Accounts tab: a search box for everyone, and one page per person.
-export default function AccountsView({ customers, leads = [], past = [], calls = [], gates = [], season, user, onOpenCustomer, onMakeLeadCustomer, onMakePastCustomer }) {
+export default function AccountsView({ customers, leads = [], past = [], calls = [], gates = [], season, user, onOpenCustomer, onUpdateCustomer, onMakeLeadCustomer, onMakePastCustomer }) {
   const [key, setKey] = useState(keyFromHash)
   const [recent, setRecent] = useState(readRecent)
   const index = useMemo(() => buildIndex({ customers, leads, past }), [customers, leads, past])
@@ -310,7 +327,7 @@ export default function AccountsView({ customers, leads = [], past = [], calls =
         <a href="#accounts" className="shrink-0 rounded-full bg-white/10 px-3 py-2.5 text-sm font-semibold" aria-label="Back to search">←</a>
         <div className="flex-1"><SearchBox index={index} compact onPick={open} /></div>
       </div>
-      {c ? <CustomerAccount c={c} customers={customers} leads={leads} past={past} calls={calls} gates={gates} season={season} user={user} onOpenCustomer={onOpenCustomer} />
+      {c ? <CustomerAccount c={c} customers={customers} leads={leads} past={past} calls={calls} gates={gates} season={season} user={user} onOpenCustomer={onOpenCustomer} onUpdateCustomer={onUpdateCustomer} />
         : l ? <LeadAccount l={l} season={season} user={user} onMakeCustomer={onMakeLeadCustomer} onOpenAccount={open} />
           : p ? <PastAccount p={p} onMakeCustomer={onMakePastCustomer} onOpenAccount={open} />
             : <p className="text-slate-400">{entry === undefined && customers ? 'This account isn’t loaded yet, or it was removed.' : 'Loading…'}</p>}

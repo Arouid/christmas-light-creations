@@ -216,3 +216,7 @@ What was actually checked working, and how. Newest first.
 
 - Home shows "Who's on" (Demo on now · Windows, Lacie M. 2 h ago · iPhone app, Katie P. never) and "Sign-ins" (✓/✗ with reason and device). Page width stayed 375 after adding min-w-0 to the Home grid columns (the long sign-in line had widened it to 515).
 - Not yet checked live: rules for presence/signInLog not published yet; real check-ins and a logged iPhone sign-in.
+
+## 2026-10-10 Accounts: edit this season in place (demo, 375px)
+
+- Customer account page shows "2026 season · edit" above the Seasons table with the same ten season fields as the Customers tab; changing Install status updates the Seasons row. No horizontal scroll. Not yet checked live.

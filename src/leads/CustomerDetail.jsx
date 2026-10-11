@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import {
-  BLANK_LABEL, FIRST_CONTACT, INSTALL_STATUSES, INSTALL_TYPES, INVOICE_STATUSES, PAID, PAYMENT_TYPES,
-  TAKEDOWN_STATUSES, gateFor, getPath, todayISO,
-} from '../lib/customers'
+import { INSTALL_TYPES, gateFor, getPath, todayISO } from '../lib/customers'
+import { BILLING, SEASON } from './seasonFields'
 import { textMessages } from '../lib/messages'
 import ComposeEmail from './ComposeEmail'
 import AddToRoute from './AddToRoute'
@@ -43,24 +41,8 @@ const GROUPS = [
   ]],
 ]
 
-const SEASON = [
-  ['installStatus', 'Install status', { options: INSTALL_STATUSES, blankLabel: BLANK_LABEL.installStatus }],
-  ['firstContact', 'Wants lights?', { options: FIRST_CONTACT }],
-  ['timeframe', 'Timeframe'], ['weekOf', 'Week of'], ['day', 'Day'], ['plannedDate', 'Planned date'],
-  ['schedulingNotes', 'Scheduling notes', { rows: 3, wide: true }], ['addOn', 'Add-on / modification', { wide: true }],
-  ['takedownStatus', 'Takedown status', { options: TAKEDOWN_STATUSES, blankLabel: BLANK_LABEL.takedownStatus }],
-  ['takedownResponse', 'Takedown response'],
-]
-
-const BILLING = {
-  install: [['rate', 'Rate'], ['discount', 'Discount'], ['discountReason', 'Discount reason'], ['total', 'Total due'],
-    ['invoice', 'Invoice', { options: INVOICE_STATUSES }], ['paid', 'Paid', { options: PAID }],
-    ['paymentType', 'Paid by', { options: PAYMENT_TYPES }], ['paymentDate', 'Payment date']],
-  takedown: [['rate', 'Rate'], ['invoice', 'Invoice', { options: INVOICE_STATUSES }], ['paid', 'Paid', { options: PAID }],
-    ['paymentType', 'Paid by', { options: PAYMENT_TYPES }], ['paymentDate', 'Payment date']],
-}
-
-function Grid({ customer, base, fields, onUpdate, suggestions = {} }) {
+// Also used on the Accounts page for the current season.
+export function Grid({ customer, base, fields, onUpdate, suggestions = {} }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {fields.map(([key, label, opts = {}]) => {

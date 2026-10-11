@@ -325,7 +325,7 @@ export default function LeadsApp() {
           : loading)}
         {tab === 'accounts' && (customers
           ? <AccountsView customers={customers} leads={leads ?? []} past={pastApi.error ? [] : pastApi.requests ?? []} calls={calls} gates={gates} season={season} user={user}
-              onOpenCustomer={setOpenId} onMakeLeadCustomer={makeCustomer}
+              onOpenCustomer={setOpenId} onUpdateCustomer={customersApi.update} onMakeLeadCustomer={makeCustomer}
               onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
           : loading)}
         {tab === 'invoices' && <InvoicesView customers={customers ?? []} />}
