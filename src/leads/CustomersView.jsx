@@ -61,11 +61,11 @@ function ColumnPicker({ cols, onChange }) {
   )
 }
 
-function AllCustomers({ customers, season, gates, onOpen, onCreate }) {
+// adding / picking (the + Add form and the Columns picker) are toggled from
+// the chip row above, so the list starts right under the search box.
+function AllCustomers({ customers, season, gates, onOpen, onCreate, adding, onDoneAdding, picking }) {
   const [search, setSearch] = useState('')
-  const [adding, setAdding] = useState(false)
   const [cols, setCols] = useState(storedColumns)
-  const [picking, setPicking] = useState(false)
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -87,19 +87,11 @@ function AllCustomers({ customers, season, gates, onOpen, onCreate }) {
 
   return (
     <>
-      <div className="flex gap-2">
-        <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, street, phone…" className={input} />
-        {!adding && (
-          <button type="button" onClick={() => setAdding(true)} className="shrink-0 rounded-xl bg-glow-400 px-4 font-semibold text-night-950">+ Add</button>
-        )}
+      <div className="relative">
+        <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={`Search ${customers.length} customers: name, street, phone…`} className={`${input} ${search ? 'pr-28' : ''}`} />
+        {search && <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-slate-400" aria-live="polite">{shown.length} match{shown.length === 1 ? '' : 'es'}</span>}
       </div>
-      {adding && <AddCustomer onCreate={onCreate} onDone={(id) => { setAdding(false); if (id) onOpen(id) }} />}
-
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <p className="text-sm text-slate-400">{shown.length} of {customers.length} customers</p>
-        <button type="button" onClick={() => setPicking((v) => !v)} aria-expanded={picking}
-          className="hidden min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold lg:inline-flex lg:items-center">Columns {picking ? '▴' : '▾'}</button>
-      </div>
+      {adding && <AddCustomer onCreate={onCreate} onDone={(id) => { onDoneAdding(); if (id) onOpen(id) }} />}
       {picking && <div className="hidden lg:block"><ColumnPicker cols={cols} onChange={changeCols} /></div>}
       <div className="mt-2 hidden lg:block">
         <DataTable label="Customers" rows={shown} onRowClick={onOpen} columns={columns} />
@@ -129,21 +121,32 @@ function AllCustomers({ customers, season, gates, onOpen, onCreate }) {
 // moved here 2026-10-10 because the bar got too long.
 export default function CustomersView({ customers, season, gates = [], views = [], viewId = null, onOpen, onCreate, onUpdate, onNewView, onEditView, onDeleteView }) {
   const view = viewId ? views.find((v) => v.id === viewId) : null
+  const [adding, setAdding] = useState(false)
+  const [picking, setPicking] = useState(false)
   return (
     <>
-      <div className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Saved filters">
-        <a href="#customers" role="tab" aria-selected={!viewId} className={chip(!viewId)}>All <span className="opacity-70">{customers.length}</span></a>
-        {views.map((v) => (
-          <a key={v.id} href={`#view-${v.id}`} role="tab" aria-selected={viewId === v.id} className={chip(viewId === v.id)}>{v.name}</a>
-        ))}
-        <button type="button" onClick={onNewView} className="min-h-11 shrink-0 px-2 text-sm font-semibold text-glow-400 hover:text-glow-300">+ New filter</button>
+      <div className="mb-3 flex items-center gap-2">
+        <div className="-mx-4 flex min-w-0 flex-1 gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Saved filters">
+          <a href="#customers" role="tab" aria-selected={!viewId} className={chip(!viewId)}>All <span className="opacity-70">{customers.length}</span></a>
+          {views.map((v) => (
+            <a key={v.id} href={`#view-${v.id}`} role="tab" aria-selected={viewId === v.id} className={chip(viewId === v.id)}>{v.name}</a>
+          ))}
+          <button type="button" onClick={onNewView} className="min-h-11 shrink-0 px-2 text-sm font-semibold text-glow-400 hover:text-glow-300">+ New filter</button>
+        </div>
+        {!viewId && (
+          <>
+            <button type="button" onClick={() => setPicking((v) => !v)} aria-expanded={picking}
+              className="hidden min-h-11 shrink-0 rounded-full border border-white/20 px-4 text-sm font-semibold lg:inline-flex lg:items-center">Columns {picking ? '▴' : '▾'}</button>
+            {!adding && <button type="button" onClick={() => setAdding(true)} className="min-h-11 shrink-0 rounded-full bg-glow-400 px-4 text-sm font-semibold text-night-950">+ Add</button>}
+          </>
+        )}
       </div>
       {viewId && !view && <p className="mt-6 text-slate-400">This filter was deleted. <a href="#customers" className="text-glow-300 underline">All customers</a></p>}
       {view && (
         <ViewTab view={view} customers={customers} season={season} gates={gates} onOpen={onOpen} onUpdate={onUpdate}
           onEdit={() => onEditView(view)} onDelete={() => onDeleteView(view.id)} />
       )}
-      {!viewId && <AllCustomers customers={customers} season={season} gates={gates} onOpen={onOpen} onCreate={onCreate} />}
+      {!viewId && <AllCustomers customers={customers} season={season} gates={gates} onOpen={onOpen} onCreate={onCreate} adding={adding} onDoneAdding={() => setAdding(false)} picking={picking} />}
     </>
   )
 }
