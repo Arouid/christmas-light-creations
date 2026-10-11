@@ -75,6 +75,7 @@ export function leadToCustomer(lead, season) {
     lastName: lead.lastName,
     email: lead.email,
     phone: lead.phone,
+    bouncedEmails: lead.bouncedEmails, // an email to them bounced (docs/specs/email-bounces.md)
     address: [lead.address, cityLine].filter(Boolean).join(', '),
     city: lead.city,
     since: season,

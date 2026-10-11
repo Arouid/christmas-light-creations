@@ -7,7 +7,9 @@
  * it in each customer's history in the staff app. All matching and parsing
  * happens there; mail from anyone who isn't a customer/lead is not kept
  * (except texts/voicemails from unknown numbers, shown as "Unmatched").
- * Spec: docs/specs/message-sync.md in the website repo.
+ * Bounce notices (mailer-daemon, postmaster) are sent too, with the headers
+ * that name the original email: the function marks that email "Bounced".
+ * Spec: docs/specs/message-sync.md and docs/specs/email-bounces.md in the website repo.
  *
  * SETUP (once, signed in as info@christmas-light-creations.com):
  *  1. script.google.com -> New project -> name it "CLC message sync".
@@ -21,6 +23,9 @@
  *  4. Choose `setup` -> Run. This adds the 5-minute trigger (Triggers page
  *     shows "syncMessages - Time-based"). First run looks back 1 day.
  *  To stop: Triggers (clock icon) -> delete the trigger.
+ *  UPDATING: paste the new file over the old one and Save; the trigger and
+ *  Script Properties stay. `testBounces` -> Run shows how the last bounce
+ *  notices read (final or delay, the reason, whether the email was found).
  */
 
 const LOOKBACK_MS = 24 * 3600 * 1000 // first run
@@ -28,6 +33,8 @@ const OVERLAP_MS = 15 * 60 * 1000 // re-send the last 15 minutes each run (dupli
 const BATCH = 25
 const MAX_BODY = 20000
 const VOICE_QUERY = 'from:(txt.voice.google.com OR voice-noreply@google.com)'
+// Senders of bounce notices; these items also carry the original's ids.
+const BOUNCE_FROM = /mailer-daemon|mail-daemon|postmaster|microsoftexchange/i
 
 function setup() {
   ScriptApp.getProjectTriggers()
@@ -48,7 +55,7 @@ function syncMessages() {
     const since = Number(props.getProperty('SYNC_CURSOR')) || started - LOOKBACK_MS
     const from = since - OVERLAP_MS
     const items = collect_(`after:${Math.floor(from / 1000)} -in:spam -in:trash -in:drafts`, from)
-    const totals = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0 }
+    const totals = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0, bounced: 0 }
     for (let i = 0; i < items.length; i += BATCH) {
       const r = post_({ items: items.slice(i, i + BATCH) })
       Object.keys(totals).forEach((k) => { totals[k] += r[k] || 0 })
@@ -68,20 +75,35 @@ function testSync() {
   r.results.forEach((x) => Logger.log(JSON.stringify(x)))
 }
 
+// Dry run on the 10 newest bounce notices (last 30 days): final or delay, the
+// reason, and how many history emails it matches. Logs no addresses; saves nothing.
+function testBounces() {
+  const items = collect_('from:(mailer-daemon OR postmaster) newer_than:30d', 0).filter((x) => BOUNCE_FROM.test(x.from)).slice(-10)
+  if (!items.length) { Logger.log('No bounce notices in info@ in the last 30 days.'); return }
+  const r = post_({ dryRun: true, items })
+  r.results.forEach((x) => Logger.log(JSON.stringify(x)))
+}
+
 function collect_(query, fromMs) {
   const items = []
   for (let start = 0; start < 500; start += 100) {
     const threads = GmailApp.search(query, start, 100)
     threads.forEach((t) => t.getMessages().forEach((m) => {
       if (m.isDraft() || m.getDate().getTime() < fromMs) return
-      items.push({
+      const item = {
         gmailId: m.getId(),
         messageId: m.getHeader('Message-ID'),
         date: m.getDate().toISOString(),
         from: m.getFrom(), to: m.getTo(), cc: m.getCc(), bcc: m.getBcc(),
         subject: m.getSubject(),
         body: m.getPlainBody().slice(0, MAX_BODY),
-      })
+      }
+      if (BOUNCE_FROM.test(item.from)) {
+        item.inReplyTo = m.getHeader('In-Reply-To')
+        item.references = m.getHeader('References')
+        item.failedTo = m.getHeader('X-Failed-Recipients')
+      }
+      items.push(item)
     }))
     if (threads.length < 100) break
   }

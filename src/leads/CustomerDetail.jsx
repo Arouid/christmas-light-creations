@@ -4,6 +4,7 @@ import { BILLING, SEASON } from './seasonFields'
 import { textMessages } from '../lib/messages'
 import ComposeEmail from './ComposeEmail'
 import AddToRoute from './AddToRoute'
+import BounceNote from './BounceNote'
 import Icon from '../components/Icon'
 import Field from './Field'
 import { TextButton } from './Reach'
@@ -121,6 +122,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}`}>Map</a>
           )}
         </div>
+        <BounceNote record={customer} hint="Fix it under Contact below, then send it again." />
         {gate && (
           <p className="rounded-xl bg-glow-400/10 px-4 py-3 text-glow-300">
             Gate code: <strong className="text-lg">{gate.code}</strong>

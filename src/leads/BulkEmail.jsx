@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { whenText } from '../../functions/scheduleTime.js'
+import { bounceLine, bounceOf } from '../lib/bounces'
 import { todayISO } from '../lib/customers'
 import { fillTemplate, gmailUrl, missingPlaceholders } from '../lib/messages'
 import { TemplateFields, TemplateSelect } from './EmailParts'
@@ -36,7 +37,7 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
   const [queue, setQueue] = useState([])
   const [index, setIndex] = useState(0)
   const [sentCount, setSentCount] = useState(0)
-  const [blanks, setBlanks] = useState([]) // skipped by "Send the rest": [{ c, missing }]
+  const [blanks, setBlanks] = useState([]) // left out by "Send the rest": [{ c, why }]
   const [status, setStatus] = useState(null) // null | 'sending' | 'auto' | 'confirm' | 'later' | 'scheduling' | 'gmail' | { error }
   const stop = useRef(false)
   const fill = (text, c) => fillTemplate(text, c, season)
@@ -46,6 +47,15 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
   const pending = withEmail.filter((c) => !(skipSent && sentKey(c)))
   const label = templates.find((t) => t.id === template)?.label ?? 'Email'
   const missingFor = (c) => missingPlaceholders(subject + body, c, season)
+  // An earlier email to their address bounced (docs/specs/email-bounces.md).
+  const bounceFor = (c) => bounceOf(c, emailsOnRecord(c)[0] ?? c.email)
+  // Why the rest-in-one-go leaves someone out ('' = send): blank parts, or a bounced address.
+  const holdFor = (c) => {
+    const m = missingFor(c)
+    if (m.length) return `no ${m.join(', ')}`
+    const b = bounceFor(c)
+    return b ? `an earlier email to ${b.email} bounced` : ''
+  }
 
   function pick(key) {
     const t = templates.find((x) => x.id === key)
@@ -99,8 +109,8 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
       if (stop.current) { setIndex(i); setStatus(null); return }
       setIndex(i)
       const c = queue[i]
-      const missing = missingFor(c)
-      if (missing.length) { setBlanks((list) => [...list, { c, missing }]); continue }
+      const why = holdFor(c)
+      if (why) { setBlanks((list) => [...list, { c, why }]); continue }
       try {
         await sendTo(c)
       } catch (err) {
@@ -113,11 +123,11 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
     setStep('done')
   }
 
-  // Everyone left (but those with blank parts) for one time, in one go; each
-  // is noted as sent on their record when it actually goes out.
+  // Everyone left (but those with blank parts or a bounced address) for one
+  // time, in one go; each is noted as sent on their record when it actually goes out.
   async function scheduleRest(at) {
     const left = queue.slice(index)
-    const ready = left.filter((x) => !missingFor(x).length)
+    const ready = left.filter((x) => !holdFor(x))
     const target = (x) => targetOf(x)
     const mark = (x) => ('customerId' in target(x) || 'pastRequestId' in target(x) ? { mark: { season: String(season), field: 'emailsSent' } } : {})
     setStatus('scheduling')
@@ -130,7 +140,7 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
       setStatus({ error: err.message })
       return
     }
-    setBlanks((list) => [...list, ...left.filter((x) => missingFor(x).length).map((x) => ({ c: x, missing: missingFor(x) }))])
+    setBlanks((list) => [...list, ...left.filter(holdFor).map((x) => ({ c: x, why: holdFor(x) }))])
     setScheduled({ count: ready.length, at })
     setStatus(null)
     setStep('done')
@@ -138,8 +148,9 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
 
   const c = queue[index]
   const missing = c ? missingFor(c) : []
+  const bounced = c ? bounceFor(c) : null
   const rest = queue.slice(index)
-  const restBlank = rest.filter((x) => missingFor(x).length).length
+  const restBlank = rest.filter(holdFor).length
   const busy = status === 'sending' || status === 'auto' || status === 'scheduling'
   const error = status?.error
 
@@ -186,6 +197,11 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
                 ⚠ No {missing.join(', ')} on file for {c.firstName || 'this person'}: that part will be blank. Skip, or fill it on their record first.
               </p>
             )}
+            {bounced && (
+              <p role="status" className="break-words rounded-xl border border-berry-500/50 bg-berry-600/15 px-3 py-2 text-sm text-slate-100">
+                ⚠ {bounceLine(bounced)} Skip, or fix the address on their record first.
+              </p>
+            )}
             <div className="rounded-2xl bg-night-950 p-4">
               <p className="font-semibold">{c.fullName}</p>
               <p className="break-all text-sm text-slate-400">{emailsOnRecord(c)[0] ?? c.email}</p>
@@ -203,8 +219,8 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
               <div className="space-y-3 rounded-2xl border border-glow-400/40 p-4">
                 <p className="text-sm">
                   {rest.length === restBlank
-                    ? `Everyone left (${restBlank}) has blank parts, so nothing would go out. Fill their records first, or Skip them.`
-                    : `Send ${rest.length - restBlank} email${rest.length - restBlank === 1 ? '' : 's'} from info@ now, one at a time?${restBlank ? ` ${restBlank} with blank parts will be skipped (not marked sent).` : ''}`}
+                    ? `Everyone left (${restBlank}) has blank parts or a bounced address, so nothing would go out. Fix their records first, or Skip them.`
+                    : `Send ${rest.length - restBlank} email${rest.length - restBlank === 1 ? '' : 's'} from info@ now, one at a time?${restBlank ? ` ${restBlank} with blank parts or a bounced address will be skipped (not marked sent).` : ''}`}
                 </p>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setStatus(null)} className="flex-1 rounded-full border border-white/20 py-3 font-semibold">Cancel</button>
@@ -215,14 +231,14 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
             ) : status === 'later' || status === 'scheduling' ? (
               rest.length === restBlank ? (
                 <div className="space-y-3 rounded-2xl border border-glow-400/40 p-4">
-                  <p className="text-sm">Everyone left ({restBlank}) has blank parts, so nothing would be scheduled. Fill their records first, or Skip them.</p>
+                  <p className="text-sm">Everyone left ({restBlank}) has blank parts or a bounced address, so nothing would be scheduled. Fix their records first, or Skip them.</p>
                   <button type="button" onClick={() => setStatus(null)} className="w-full rounded-full border border-white/20 py-3 font-semibold">Back</button>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-slate-300">
                     Each of the {rest.length - restBlank} gets their own email from info@, one a second from that time.
-                    {restBlank ? ` ${restBlank} with blank parts will be skipped (not scheduled).` : ''}
+                    {restBlank ? ` ${restBlank} with blank parts or a bounced address will be skipped (not scheduled).` : ''}
                   </p>
                   <SendLater count={rest.length - restBlank} busy={status === 'scheduling'} onSchedule={scheduleRest} onBack={() => setStatus(null)} />
                 </div>
@@ -268,9 +284,9 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
             )}
             {blanks.length > 0 && (
               <div className="rounded-xl bg-glow-400/10 px-3 py-2 text-left text-sm text-glow-300">
-                <p className="font-semibold">Not sent (blank parts), so they’re still on the list:</p>
+                <p className="font-semibold">Not sent (blank parts or a bounced address), so they’re still on the list:</p>
                 <ul className="mt-1 list-disc pl-5">
-                  {blanks.map(({ c: x, missing: m }) => <li key={x.id}>{x.fullName}: no {m.join(', ')}</li>)}
+                  {blanks.map(({ c: x, why }) => <li key={x.id}>{x.fullName}: {why}</li>)}
                 </ul>
               </div>
             )}

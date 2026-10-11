@@ -1,6 +1,6 @@
 # Email bounces (emails from info@ that Gmail accepted, then couldn't deliver)
 
-> Status: draft 2026-10-10 · Decided on 2026-10-10 by Scott (Finess): "are we watching for bounced and failed to send emails?" → alert by red banner + alert email, phone notification and Home light; flag the address on the record
+> Status: built 2026-10-11 (tests + demo checked), not deployed: needs `messageSync` deploy, site push, and the new Apps Script pasted in info@ · Decided on 2026-10-10 by Scott (Finess): "are we watching for bounced and failed to send emails?" → alert by red banner + alert email, phone notification and Home light; flag the address on the record
 
 ## The problem
 
@@ -20,7 +20,7 @@ Within about 5 minutes of the bounce notice reaching info@ (the sync's pace):
 | Bulk emails (Season / Emails tab / Past requests) | the warning on that person's screen; **Send the rest** skips them and lists them, like people with blank template parts |
 | **Red banner** at the top + **alert email** | "An email bounced: An email to Pat Sample (sent Oct 10) bounced: the address doesn't exist. Open their record and fix the email address." Stays until someone taps **Dealt with ✓**. Alert email at most once an hour (existing rule) |
 | **Phone notification** (devices that turned them on) | "Email to Pat Sample bounced" + the reason; tap opens their account. Several in one sync → one notification |
-| **Home → System status → Outgoing email** | red "1 email bounced (fix the address)" while a bounce from the last 7 days still has its address on the record |
+| **Home → System status → Outgoing email** | red "1 email bounced (fix the address)" while a bounce from the last 7 days still has its address on the record (after "didn't go" when both) |
 
 Plain reasons (from the bounce's status code and wording, first match wins):
 
@@ -57,7 +57,8 @@ Which emails: any email from info@ that is in someone's history: sent from the a
 - **The record is gone or the email was on a past request with no customer**: the history entry (if any) is marked; the record flag is skipped; the banner still shows.
 - **Staff fix the address, then a late bounce for the old email arrives**: the history entry is marked; the record warning doesn't show (the old address isn't on the record any more) and the Home light stays green.
 - **A customer writes "Undeliverable" in a subject**: only mail from a mail server sender (`mailer-daemon@`, `postmaster@`, Microsoft's `MicrosoftExchange…@`) is read as a bounce.
-- **Lead made a customer later**: the flag stays on the lead; the customer created from it carries it too (same address).
+- **Lead made a customer later**: the flag stays on the lead; the customer created from it carries it too (same address). A lead's email can't be edited in the app, so its warning says to call or text them, or make them a customer and fix it there.
+- **✨ Suggest a reply → Email this**: no warning there (the draft's contact comes from the server without the flag); the record and history still show it.
 
 ## Decisions
 
@@ -79,7 +80,7 @@ Which emails: any email from info@ that is in someone's history: sent from the a
 3. [test] Matching: a Message-ID in `In-Reply-To` finds the entry with that id prefix; of a Bcc'd email's entries only the failed address's is picked; without a Message-ID the latest outgoing email to that address in the 7 days before the bounce is picked (same subject preferred); nothing older, nothing after, nothing incoming. → same file
 4. [test] Other automatic mail (no-reply, newsletters) is still dropped as junk; a customer's email with "Undeliverable" in the subject is a normal email. → same file
 5. [test] Home light: red while a bounce from the last 7 days still has its address on the record; green once the address changed or after 7 days. → `tests/outgoingMail.test.mjs`
-6. [agent] `/leads/?demo` at 375 px: Sample Customer's history shows "❌ Bounced: …" on the sample email; their detail and the Email box show the ⚠ warning; Home → Outgoing email is red "1 email bounced"; the red banner lists "An email bounced"; no console errors, no horizontal scroll. Observer: Claude, browser pane.
+6. [agent] `/leads/?demo` at 375 px: Test Homeowner's history shows "❌ Bounced: …" on the sample email; their account, detail and the Email box show the ⚠ warning, which goes away once their email is changed; Season → ✉ Email these → Send the rest skips them and lists why; Home → Outgoing email is red "1 email bounced"; the red banner lists "An email bounced"; no console errors, no horizontal scroll. Observer: Claude, browser pane.
 7. [agent] `messageSync` logs counts and reasons only (no address, subject or text). → read `functions/index.js`
 8. [human] Owner: from the app, email a test customer whose address is made up at a real domain (e.g. `clc-bounce-test-1@gmail.com`). Within ~10 minutes: ❌ Bounced on that email in their history, the red banner, a phone notification (if turned on), Home light red. Then fix the address on the record: the ⚠ warning and the red light go away. Known-good control: an email sent the same way to your own address shows no ❌. Observer: owner, staff app + phone.
 9. [human] Apps Script → `testBounces` logs the last bounces in info@ as permanent/delay with a reason, without saving. Observer: owner, Apps Script log.
@@ -97,7 +98,7 @@ Which emails: any email from info@ that is in someone's history: sent from the a
 | `bounceReason` | plain reason (table above) |
 | `bounceCode` | status code like `5.1.1`, or '' |
 
-**`customers/{id}` · `leads/{id}` · `pastRequests/{id}`** (server only): `bouncedEmails.<lowercase address>` = `{ at, reason, entryId }`. Shown only while that address is on the record (`bouncesOnRecord`, `functions/bounces.js`).
+**`customers/{id}` · `leads/{id}` · `pastRequests/{id}`** (server only): `bouncedEmails.<lowercase address>` = `{ at, reason, entryId }`. Shown only while that address is on the record (`bouncesOnRecord`, `src/lib/bounces.js`).
 
 **`incidents`**: kind `bounce`, message names the customer, `details: { messageId }`.
 
@@ -111,8 +112,8 @@ Which emails: any email from info@ that is in someone's history: sent from the a
 
 ## Plan (2026-10-10, delete when done)
 
-1. `functions/bounces.js` (parse, reason, match, push, record helper) + `tests/bounces.test.mjs`.
-2. `messageSync`: route bounces, mark entries + records, banner + push; health label; Apps Script fields + `testBounces`.
-3. UI: history ❌, record ⚠ (detail, Accounts, lead card), Email box + bulk, Home light, banner label; demo data.
-4. Guide, privacy line, docs (message-sync, staff-email, decisions, verified, test-checklist, TODO).
+1. ~~`functions/bounces.js` + tests~~ done 2026-10-11.
+2. ~~`messageSync` routing, marks, banner + push; Apps Script fields + `testBounces`~~ done.
+3. ~~UI and demo data~~ done.
+4. ~~Guide, privacy line, docs~~ done.
 5. Owner OK → deploy `messageSync`, push; owner pastes the script; real test (criterion 8).

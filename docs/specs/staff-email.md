@@ -47,7 +47,7 @@ Staff email customers from the staff app by tapping **Email**, which opens a Gma
 - **Email went out but saving it to history failed**: reported as a website problem; the sync files the Sent copy within about 5 minutes anyway.
 - **The same email filed twice** (once by the app, once by the sync from info@'s Sent folder): prevented. The app's entry uses the same id the sync would give it, and the sync skips Sent copies of app emails (matched by Message-ID, or by recipient + subject + start of the text if Gmail ever changes the Message-ID).
 - **Template edited after sending**: history keeps what was actually sent.
-- **The customer's address bounces**: the bounce comes back to info@ (the app doesn't detect it).
+- **The customer's address bounces**: the bounce comes back to info@; since 2026-10-11 the sync reads it and marks the email **❌ Bounced** in history, flags the address and alerts staff (`docs/specs/email-bounces.md`).
 - **Signed out, or not on the staff list**: refused; only staff signed in with Google can send.
 
 ## Decisions

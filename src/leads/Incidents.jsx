@@ -9,6 +9,7 @@ const LABEL = {
   payment: 'Customer payment problem',
   paypal: 'PayPal didn’t answer',
   email: 'Email to a customer didn’t go out',
+  bounce: 'Email to a customer bounced',
   sync: 'Texts/emails stopped syncing',
   push: 'Phone notifications didn’t go out',
   other: 'Something went wrong',

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { LEAD_STATUSES, STATUS_LABELS } from '../lib/firebase'
 import { leadToCustomer, seasonYear } from '../lib/customers'
+import { LEAD_HINT } from '../lib/bounces'
 import Icon from '../components/Icon'
+import BounceNote from './BounceNote'
 import ComposeEmail from './ComposeEmail'
 import StreetViewPhoto from './StreetViewPhoto'
 import DesignsPanel from './designs/DesignsPanel'
@@ -119,6 +121,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
             <div><dt className="inline text-slate-400">Email: </dt><dd className="inline break-all">{lead.email}</dd></div>
             {lead.phone && <div><dt className="inline text-slate-400">Phone: </dt><dd className="inline">{lead.phone}</dd></div>}
           </dl>
+          <BounceNote record={lead} hint={LEAD_HINT} />
           <blockquote className="whitespace-pre-wrap rounded-xl bg-night-950 p-3 text-slate-200">{lead.message}</blockquote>
 
           <label className="block text-sm font-medium text-slate-300">Status

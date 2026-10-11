@@ -16,7 +16,7 @@ A **Home** tab, first in the staff app, where the app opens (installer route lin
 | **Live counters** | New messages (💬, yours), open estimate requests (status New), unpaid invoices ($ and how many overdue), open service calls. Tap → that tab. |
 | **Today's routes** | Each route for today: crew/name, stops done/left as a bar, skipped. Tap → the route. None today → the next route day. |
 | **Season** | Install progress (not confirmed → confirmed → scheduled → installed) and takedowns (scheduled → done), as bars with counts; money collected this season so far vs last season's total (season billing marked paid). |
-| **System status** | Lights: text/email sync (last arrival), website problems (open incidents), alert email list set, payments (no open payment problems), notifications on this device. |
+| **System status** | Lights: text/email sync (last arrival), outgoing email (app emails seen in Gmail's Sent; red when one didn't go or bounced, docs/specs/email-bounces.md), website problems (open incidents), alert email list set, payments (no open payment problems), notifications on this device. |
 
 **Wall screen**: a ⛶ button shows Home full screen with bigger type for a TV in the shop; it updates live; Esc or ✕ leaves.
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { whenText } from '../../functions/scheduleTime.js'
+import { bounceLine, bounceOf } from '../lib/bounces'
 import { fillTemplate, gmailUrl, missingPlaceholders } from '../lib/messages'
 import { TemplateFields, TemplateSelect, field } from './EmailParts'
 import { pill } from './Reach'
@@ -77,6 +78,8 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
 
   const when = templates.find((t) => t.id === id)?.when
   const canSend = Boolean(target) && addresses.length > 0
+  // An earlier email to this address bounced (docs/specs/email-bounces.md): warn, still allow.
+  const bounced = bounceOf(person, to)
   const sending = status.step === 'sending'
   const gmail = (
     <a href={gmailUrl({ to: canSend ? to : person.email, subject, body })} target="_blank" rel="noreferrer"
@@ -120,6 +123,11 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
                     </select>
                   ) : <span className="mt-1 block break-all text-base text-slate-100">{to}</span>}
                 </label>
+                {bounced && (
+                  <p role="status" className="-mt-2 break-words rounded-xl border border-berry-500/50 bg-berry-600/15 px-3 py-2 text-sm text-slate-100">
+                    ⚠ {bounceLine(bounced)} Fix the address on their record first, or it will likely bounce again.
+                  </p>
+                )}
                 <label className="block text-sm text-slate-400">Template
                   <TemplateSelect value={id} onChange={pick} />
                 </label>

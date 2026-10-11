@@ -42,6 +42,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 - **Sign-in link emails** to customers (`sendAccountLink`) are skipped: the link must not sit in history.
 - **Emails sent from the staff app** (`sendStaffEmail`) are already in history when their copy shows up in info@'s Sent folder: the sync skips them (counted as duplicate, reason `sent-from-app`), matched by `mailId` (Message-ID) or `mailPrint` (recipient, subject, start of the text) on the app's entry.
 - **Our own numbers/addresses** (281-819-0163, info@, clc.voicemail.01@) never count as the customer.
+- **Bounce notices** (mailer-daemon, postmaster): not stored as messages; since 2026-10-11 the sync marks the email that bounced and alerts staff (`docs/specs/email-bounces.md`). Other automatic mail is still dropped as junk.
 
 ## Decisions
 
@@ -79,7 +80,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
               "body": "plain text body (script caps at 20,000 chars)" }] }
 ```
 
-At most 50 items per call. Answer: `{ ok: true, saved, duplicate, skipped, unmatched, results: [{ gmailId, status, reason? }] }` (dry run adds `kind`, `direction`, `match`, `chars`, `last4`). 401 for a wrong key (no detail), 400 for a bad body.
+Items from a mail server sender also carry `inReplyTo`, `references`, `failedTo` (see `docs/specs/email-bounces.md`). At most 50 items per call. Answer: `{ ok: true, saved, duplicate, skipped, unmatched, dropped, bounced, results: [{ gmailId, status, reason? }] }` (dry run adds `kind`, `direction`, `match`, `chars`, `last4`). 401 for a wrong key (no detail), 400 for a bad body.
 
 **`messages/{id}` written by the sync** (Admin SDK; same shape as the Takeout import plus new fields):
 

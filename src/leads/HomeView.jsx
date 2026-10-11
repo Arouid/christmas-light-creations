@@ -41,7 +41,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const minute = Math.floor(now / 60000) * 60000
   const who = usePresence(user, feed.names, minute)
   const signIns = useSignIns(user)
-  const outgoing = useOutgoingMail(user, alerts.lastSync, minute)
+  const outgoing = useOutgoingMail(user, alerts.lastSync, minute, customers, leads)
   const incidents = useLiveQuery(user, 'incidents', 'open', true, byOpenedAt) ?? []
   const today = todayISO()
   const month = monthKey(minute)

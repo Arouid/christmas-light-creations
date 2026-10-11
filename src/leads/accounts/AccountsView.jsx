@@ -4,12 +4,14 @@ import { gateFor } from '../../lib/customers'
 import { money, parseMoney } from '../../lib/discounts'
 import { findCustomer } from '../../lib/oldEstimates'
 import { needsAddOnCheck } from '../../lib/addOns'
+import { LEAD_HINT } from '../../lib/bounces'
 import { getCustomerLogin, loginLine } from '../../lib/customerLogins'
 import AddOnsPanel from './AddOnsPanel'
 import { OldRecordsPanel, OldRecordsToFill } from './OldPayments'
 import Icon from '../../components/Icon'
 import { demoMode } from '../demo'
 import AddToRoute from '../AddToRoute'
+import BounceNote from '../BounceNote'
 import ComposeEmail from '../ComposeEmail'
 import DesignsPanel from '../designs/DesignsPanel'
 import ProposalsPanel from '../proposals/ProposalsPanel'
@@ -133,7 +135,7 @@ function AddOnChecks({ customers, open }) {
   )
 }
 
-function Header({ name, kind, address, lines, loginEmail, children }) {
+function Header({ name, kind, address, lines, loginEmail, record, children }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-night-900">
       {address && <div className="[&_img]:max-h-80 [&_img]:w-full [&_img]:object-cover"><StreetViewPhoto address={address} /></div>}
@@ -147,6 +149,7 @@ function Header({ name, kind, address, lines, loginEmail, children }) {
         </div>
         {lines.filter(Boolean).length > 0 && <p className="text-sm text-slate-400">{lines.filter(Boolean).join(' · ')}</p>}
         <LoginLine email={loginEmail} />
+        {record && <BounceNote record={record} hint={kind === 'lead' ? LEAD_HINT : undefined} />}
         <div className="flex flex-wrap gap-2">{children}</div>
       </div>
     </div>
@@ -195,7 +198,7 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
   const myPast = past.filter((p) => p.customerId === c.id || findCustomer(p, [c]))
   return (
     <div className="space-y-4">
-      <Header name={c.fullName} kind="customer" address={c.address} loginEmail={c.email}
+      <Header name={c.fullName} kind="customer" address={c.address} loginEmail={c.email} record={c}
         lines={[c.phone, c.email, (c.otherPhones?.length || c.otherEmails?.length) && `Also: ${[...(c.otherPhones ?? []), ...(c.otherEmails ?? [])].join(', ')}`, c.locationBlock, c.neighborhood && `Neighborhood: ${c.neighborhood}`, gate && `Gate ${gate.code}`, c.installType]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={c.phone} className={action} />
@@ -239,10 +242,10 @@ function LeadAccount({ l, season, user, onMakeCustomer, onOpenAccount }) {
   const [busy, setBusy] = useState(false)
   return (
     <div className="space-y-4">
-      <Header name={name} kind="lead" address={address} loginEmail={l.email} lines={[l.phone, l.email, l.contactMethod && `Prefers ${l.contactMethod}`, l.source && `Heard from: ${l.source}`, l.status]}>
+      <Header name={name} kind="lead" address={address} loginEmail={l.email} record={l} lines={[l.phone, l.email, l.contactMethod && `Prefers ${l.contactMethod}`, l.source && `Heard from: ${l.source}`, l.status]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={l.phone} className={action} />
-        <ComposeEmail person={{ fullName: name, firstName: l.firstName, email: l.email, address }} season={season} target={{ leadId: l.id }} start="estimate-thanks" className={action} />
+        <ComposeEmail person={{ fullName: name, firstName: l.firstName, email: l.email, address, bouncedEmails: l.bouncedEmails }} season={season} target={{ leadId: l.id }} start="estimate-thanks" className={action} />
         <a className={action} href={mapLink(address)} target="_blank" rel="noreferrer">Map</a>
         {onMakeCustomer && <button type="button" disabled={busy} onClick={async () => { setBusy(true); const id = await onMakeCustomer(l); onOpenAccount(`customer:${id}`) }} className={primary}>{busy ? 'Adding…' : '＋ Make customer'}</button>}
       </Header>
@@ -260,7 +263,7 @@ function PastAccount({ p, onMakeCustomer, onOpenAccount }) {
   const [busy, setBusy] = useState(false)
   return (
     <div className="space-y-4">
-      <Header name={p.fullName} kind="past" address={address} lines={[p.phone, p.email, p.status, p.lastAsked && `Last asked ${p.lastAsked}`]}>
+      <Header name={p.fullName} kind="past" address={address} record={p} lines={[p.phone, p.email, p.status, p.lastAsked && `Last asked ${p.lastAsked}`]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={p.phone} className={action} />
         {onMakeCustomer && <button type="button" disabled={busy} onClick={async () => { setBusy(true); const id = await onMakeCustomer(p); onOpenAccount(`customer:${id}`) }} className={primary}>{busy ? 'Adding…' : '＋ Make customer'}</button>}

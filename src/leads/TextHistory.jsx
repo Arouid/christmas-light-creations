@@ -33,6 +33,10 @@ export function Bubble({ m, who }) {
           {open ? 'Show less' : 'Show all'}
         </button>
       )}
+      {/* Came back undelivered (docs/specs/email-bounces.md). */}
+      {m.bounced && (
+        <p className="mt-1 rounded-lg bg-berry-600/80 px-2 py-1 text-xs font-semibold text-white">❌ Bounced: {m.bounceReason || 'it couldn’t be delivered'}</p>
+      )}
       <p className="mt-1 text-[11px] text-slate-400">{who ?? by ?? (out ? 'Us' : 'Customer')} · {when(m.at)}</p>
     </div>
   )

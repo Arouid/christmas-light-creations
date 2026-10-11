@@ -56,7 +56,7 @@ Returning customers are billed every season (re-install, takedown, add-ons, serv
 - **Due date in the past when sent**: shows Overdue right away; reminders follow the schedule from the due date.
 - **Season boxes already filled** (staff typed them, or a proposal payment): kept; only empty boxes are filled.
 - **Draft link opened**: page says it isn't ready yet.
-- **Email bounces / SMTP down**: reported as a website problem; the invoice is still sent (link works).
+- **Email bounces / SMTP down**: SMTP down is reported as a website problem; a bounce later shows as **❌ Bounced** on the email in history with a banner and phone alert (`docs/specs/email-bounces.md`). The invoice is still sent (link works).
 - **Sandbox (test) payments**: shown as (test) everywhere, like proposals.
 
 ## Decisions

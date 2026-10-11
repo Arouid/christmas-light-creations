@@ -60,7 +60,8 @@ import { claudeIncrement, monthKey, paypalFeeCents, paypalIncrement } from './us
 import { billingQuery, googleSpend as googleSpendOf, previousMonth } from './googleBilling.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
-import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
+import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
+import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
 import {
   GMAIL_ERROR, STUCK_ERROR, cancelIds, cancelOutcome, claimOutcome, collOf, dayRoomProblem, dueOnes, editRequest, markPath,
@@ -764,7 +765,7 @@ async function syncBatch(req, res) {
   if (problem) { res.status(400).json({ ok: false, error: problem }); return }
 
   const db = getFirestore()
-  const events = req.body.items.map(parseItem)
+  const events = req.body.items.map(parseSyncItem)
   const needDir = events.some((e) => !e.skip)
   const [cust, leads] = needDir
     ? await Promise.all([db.collection('customers').select('phone', 'email', 'fullName').get(), db.collection('leads').select('phone', 'email', 'customerId', 'firstName', 'lastName').get()])
@@ -772,11 +773,20 @@ async function syncBatch(req, res) {
   const dir = buildDirectory(cust.docs.map((d) => ({ id: d.id, ...d.data() })), leads.docs.map((d) => ({ id: d.id, ...d.data() })))
   const fromApp = await sentFromApp(db, events)
 
-  const count = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0 }
+  const count = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0, bounced: 0 }
   const results = []
   const saved = [] // new history entries, for the staff phone notification
+  const bounced = [] // our emails just marked bounced (docs/specs/email-bounces.md)
   for (const [i, event] of events.entries()) {
     const gmailId = String(req.body.items[i]?.gmailId ?? '')
+    if (event.bounce) {
+      if (req.body.dryRun === true) { results.push({ gmailId, ...bounceSummary(event, pickBounced(event, await bounceCandidates(db, event)).length) }); continue }
+      const r = await markBounce(db, event)
+      count[r.status]++
+      bounced.push(...r.marked)
+      results.push({ gmailId, status: r.status, ...(r.reason ? { reason: r.reason } : {}) })
+      continue
+    }
     const docs = event.skip ? [] : docsFor(event, dir)
     if (req.body.dryRun === true) { results.push({ gmailId, ...dryRunSummary(event, docs) }); continue }
     if (event.skip) { count.skipped++; results.push({ gmailId, status: 'skipped', reason: event.skip }); continue }
@@ -804,8 +814,55 @@ async function syncBatch(req, res) {
   }
   logger.info('messageSync', { items: events.length, dryRun: req.body.dryRun === true, ...count, reasons: events.filter((e) => e.skip).map((e) => e.skip) })
   // Before answering: Cloud Run may pause the instance once the answer is sent.
-  if (saved.length) await alertStaff(pushFor(saved, namesOf(cust.docs, leads.docs)))
+  const names = namesOf(cust.docs, leads.docs)
+  if (saved.length) await alertStaff(pushFor(saved, names))
+  if (bounced.length) {
+    for (const m of bounced) await reportIncident('bounce', bounceIncident(m, names), { messageId: m.id })
+    await alertStaff(bouncePush(bounced, names))
+  }
   res.json({ ok: true, ...count, results })
+}
+
+// ---- Bounces: our emails that came back undelivered (docs/specs/email-bounces.md)
+
+// History entries a bounce may be about: by the original's Message-ID (the
+// entry ids start with it), else by the failed address.
+async function bounceCandidates(db, bounce) {
+  const all = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  const byRef = []
+  for (const base of bounce.refs) {
+    byRef.push(...all(await db.collection('messages').where(FieldPath.documentId(), '>=', `${base}-`).where(FieldPath.documentId(), '<', `${base}-`).get()))
+  }
+  if (pickBounced(bounce, { byRef }).length) return { byRef }
+  const byEmail = []
+  for (const email of bounce.emails) byEmail.push(...all(await db.collection('messages').where('email', '==', email).get()))
+  return { byRef, byEmail }
+}
+
+// Marks the bounced email(s) once (the sync re-sends the same notice) and
+// flags the address on their record. -> { status, reason?, marked: [entries] }
+async function markBounce(db, bounce) {
+  const picked = pickBounced(bounce, await bounceCandidates(db, bounce))
+  if (!picked.length) return { status: 'dropped', reason: 'bounce-no-match', marked: [] }
+  const marked = []
+  for (const { id } of picked) {
+    const ref = db.doc(`messages/${id}`)
+    const entry = await db.runTransaction(async (tx) => {
+      const cur = (await tx.get(ref)).data()
+      if (!cur || cur.bouncedAt) return null
+      const fields = bounceFields(bounce)
+      tx.update(ref, fields)
+      return { id, ...cur, ...fields }
+    })
+    if (!entry) continue
+    marked.push(entry)
+    for (const path of entry.email ? recordsOf(entry) : []) {
+      // Gone record (code 5): nothing to flag. The log names the collection only.
+      await db.doc(path).update(new FieldPath('bouncedEmails', entry.email), { at: bounce.at, reason: bounce.reason, entryId: id })
+        .catch((e) => logger.warn('bounce flag not saved', { record: path.split('/')[0], code: e.code ?? 'unknown' }))
+    }
+  }
+  return marked.length ? { status: 'bounced', marked } : { status: 'duplicate', reason: 'already-bounced', marked }
 }
 
 // ---- Staff alerts: phone notifications (docs/specs/staff-alerts.md) ---------
