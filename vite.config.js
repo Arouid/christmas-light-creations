@@ -24,6 +24,7 @@ export default defineConfig({
         invoice: resolve(import.meta.dirname, 'invoice/index.html'),
         privacy: resolve(import.meta.dirname, 'privacy/index.html'),
         design: resolve(import.meta.dirname, 'design/index.html'),
+        thanks: resolve(import.meta.dirname, 'thanks/index.html'),
       },
     },
   },

@@ -304,3 +304,7 @@ What was actually checked working, and how. Newest first.
 - 375px: ⠿ Arrange shows 8 handles with ▲ ▼ (◀ ▶ hidden); ▼ on Season swapped it under Recent activity; saved to localStorage; Done hides the handles; page 375 wide.
 - 1200px: dragging Recent activity onto Who's on moved it to the top of the right column; Reset layout restored the default; ◀ ▶ visible.
 - Not yet checked: real mouse drag on the owner's PC and the wall screen with a custom layout.
+
+## 2026-10-11 Ads tag scaffolding and /thanks/ (dev, 375px)
+
+- /thanks/ renders (logo, Thanks we got it, Call button, back link), noindex, 375 wide; with ADS.tagId empty no googletagmanager script is added. Build emits dist/thanks/index.html; sitemap unchanged (9 urls, /thanks/ excluded). Not yet checked: a real form send landing on /thanks/, and the tag once the id is set.

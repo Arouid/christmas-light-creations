@@ -45,6 +45,8 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
     setStatus('sending')
     try {
       await submitLead(data, design && attach ? await design.get() : null)
+      // Its own page, so Google Ads can count the request (src/lib/ads.js); bots above never get here.
+      window.location.assign(`${import.meta.env.BASE_URL}thanks/`)
       setStatus('sent')
     } catch {
       setStatus('error')

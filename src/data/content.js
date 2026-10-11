@@ -266,13 +266,14 @@ export const privacy = {
         '**PayPal** (including Venmo and card payments): processes online payments under PayPal’s own privacy policy.',
         '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
         '**Anthropic (Claude):** when one of our team asks for help writing a reply to you, your conversation with us and the details on your record (name, address, what we installed, prices and schedule, never gate codes or payment details) are sent to Anthropic’s Claude service to suggest a draft. A person on our team reads, edits and sends every reply; nothing is sent to you automatically. Anthropic does not use this to train its models. Our team can also ask Claude questions about our own records (for example which invoices are due or what a customer asked us before); the same kinds of details are sent for that, with the same limits, and Claude can only read, never change or send anything.',
+        '**Google Ads:** we advertise on Google, so our public pages (not your account or agreement pages) load Google’s ad tag. It tells Google when a visit from one of our ads led to an estimate request, so we know the ads work. Google sets its own cookies for this and its privacy policy applies; it doesn’t see what you type into the form.',
         'Our fonts come from our own website (no font service sees your visit), and the home page asks our own server (on Google Cloud) for the line about how booked we are and the next open install dates (only dates, nothing about anyone). That’s all: no other outside services see your visit.',
       ],
     },
     {
       title: 'What your browser keeps',
       items: [
-        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. Nothing else is stored.',
+        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. Google’s ad tag (above) sets its own cookies on our public pages. Nothing else is stored.',
       ],
     },
     {

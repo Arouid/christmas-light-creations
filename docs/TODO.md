@@ -54,3 +54,4 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | Nov 7, 2026 | GoDaddy hosting ends (nothing to do, just confirm the site is unaffected) |
 | Early July 2027 | Domain renews Jul 23, 2027 via PayPal: make sure the payment method still works |
 | 42 | **Tour on a real first sign-in**: on a phone that hasn't used the app before, sign in and check the 7-card tour appears once; reopen it from ? → Take the tour | |
+| 47 | **Google Ads tag**: after the campaign is created, send Claude a screenshot of Goals → Conversions → the Google tag ID (AW-…) and the lead-form conversion label; Claude fills src/lib/ads.js. In Ads, set the conversion to "page reached" https://christmas-light-creations.com/thanks/ | Until then the campaign optimizes on clicks/calls |
