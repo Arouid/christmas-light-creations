@@ -2,6 +2,7 @@
 import { SAMPLE_PHOTO, sampleDesign } from '../design/sampleDesign'
 import { quickPicks, whenText } from '../../functions/scheduleTime.js'
 import { monthKey } from '../lib/spend'
+const gallery = (f) => `${import.meta.env.BASE_URL}images/gallery/${f}`
 const customers = [
   {
     id: 'sample-customer', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer',
@@ -10,6 +11,18 @@ const customers = [
     lightColor: 'Warm white', takedownNotes: 'Left side windows: 2 zip ties.\nRight side: 3 zip ties.',
     since: '2016', normalPaymentMethod: 'PayPal', priceNotes: 'Added 8 windows in 2023.', originalRate: '$680.00',
     installHistory: 'Original install 2016 $680\n2023: 8 windows $240; 2025 small arch by the walkway',
+    // Job record (docs/specs/job-record.md): what's up at the house and after-install photos.
+    installed: [
+      { id: 'w1', what: 'Roofline C9', amount: '180 ft', color: 'warm white', notes: 'commercial clips, timer by the garage plug' },
+      { id: 'w2', what: 'wrapped oaks', amount: '2', color: 'warm white', notes: '' },
+      { id: 'w3', what: 'Wreath', amount: '36 in', color: '', notes: 'over the garage' },
+    ],
+    lightsStored: 'Garage, 3 boxes labelled CLC',
+    // One by the demo user (Remove shows), one by Katie (only she or the owner can remove it).
+    photos: {
+      pdemo1: { path: 'customers/sample-customer/2025/pdemo1.jpg', url: gallery('league-city-roofline-and-yard.jpg'), thumbUrl: gallery('league-city-roofline-and-yard.jpg'), season: '2025', at: Date.UTC(2025, 10, 21, 1, 10), by: 'demo@example.com', width: 1600, height: 1067 },
+      pdemo2: { path: 'customers/sample-customer/2025/pdemo2.jpg', url: gallery('friendswood-warm-white-ivy-home.jpg'), thumbUrl: gallery('friendswood-warm-white-ivy-home.jpg'), season: '2025', at: Date.UTC(2025, 10, 21, 1, 25), by: 'katiep@example.com', width: 1600, height: 1067 },
+    },
     seasons: {
       2026: { installStatus: 'Install Scheduled', firstContact: 'Confirmed', weekOf: 'Oct 11-17', day: 'Thursday', plannedDate: 'Oct 15',
         install: { rate: '$460.00', discount: '10%', discountReason: 'Early Install', total: '$414.00' }, takedown: { rate: '150' } },
@@ -45,6 +58,19 @@ const picks = quickPicks(Date.now())
 
 export const demoData = {
   customers: byId(customers),
+  // A signed 2026 proposal for Example Family, so What's up can be prefilled from it (docs/specs/job-record.md).
+  proposals: byId([
+    { id: 'DEMOsignedExampleFamily2026xx', ownerType: 'customer', ownerId: 'example-family', status: 'signed', version: 2, title: 'Christmas lighting proposal', season: '2026',
+      customer: { name: 'Example Family', email: 'example.family@example.com', phone: '555-0103', address: '789 Placeholder Dr Manvel, TX 77578' },
+      items: [
+        { id: 'i1', label: 'Roofline C9 lights, installed (12" spacing)', qty: 180, unit: 'ft', rate: 2.5, due: 'install', details: 'Warm white, commercial clips, timer' },
+        { id: 'i2', label: 'Wrapped oaks', qty: 2, unit: '', rate: 300, due: 'install', details: 'warm white mini lights' },
+        { id: 'i3', label: 'Takedown & labeling (15% of install, minimum $150)', qty: 1, unit: '', rate: 157.5, due: 'removal', details: '' },
+      ],
+      discountPct: 10, discountLabel: 'Early install discount', depositPct: 50, notes: '', timer: '', reinstallPct: 50, reinstallBasis: 'list',
+      terms: 'Sample terms.', termsText: 'Sample terms.', docHash: 'demo', savedAt: hoursAgo(50), sentAt: hoursAgo(49), viewedAt: hoursAgo(30), signedAt: hoursAgo(28),
+      signature: { name: 'Example Family', consent: true, docHash: 'demo', image: '', userAgent: 'demo' } },
+  ]),
   serviceCalls: byId([
     { id: 'demo-call-1', customerId: 'sample-customer', customerName: 'Sample Customer', issue: 'Burned-out bulbs',
       details: 'Left side of garage dark', received: '2026-12-02', status: 'Open' },
