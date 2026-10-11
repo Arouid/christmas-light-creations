@@ -5,7 +5,7 @@
 // /invoice/. Empty tagId = nothing loads. Disclosed on /privacy/.
 export const ADS = {
   tagId: 'AW-18506316066', // Google Ads account tag (campaign created 2026-10-11)
-  labels: { estimate: '' }, // conversion label for "estimate request sent" (/thanks/)
+  labels: { estimate: '7UM3CJ-e45gdEKLyv_hE' }, // "Submit lead form" conversion (fires on /thanks/)
 }
 
 export const adsOn = () => Boolean(ADS.tagId)

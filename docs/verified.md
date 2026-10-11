@@ -319,3 +319,4 @@ What was actually checked working, and how. Newest first.
 - 375px: header logo 148×48 next to the call/menu buttons (right edge 164, buttons from 267), name readable on two lines; footer logo 64px tall; page 375 wide. 1200px: h-14 logo clear of the main nav.
 
 - 2026-10-11 Ads tag on: /thanks/ in dev loads gtag.js?id=AW-18506316066 and pushes config AW-18506316066 to dataLayer (checked in the browser pane). Google's "tag found on your website" (G-13D7FRKGKH / GT-NB9VKDMC) is NOT on the new site (curl of the live home page: 0 matches); it's the old WordPress site's Analytics tag, so Install manually was used.
+- 2026-10-11 Conversion label 7UM3CJ-e45gdEKLyv_hE (Submit lead form) set in src/lib/ads.js; /thanks/ now sends gtag event conversion to AW-18506316066/7UM3CJ-e45gdEKLyv_hE. Not yet seen: a real form send showing up in Google Ads → Conversions (allow a few hours).
