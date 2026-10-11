@@ -1,6 +1,6 @@
 # Email bounces (emails from info@ that Gmail accepted, then couldn't deliver)
 
-> Status: built 2026-10-11 (tests + demo checked), not deployed: needs `messageSync` deploy, site push, and the new Apps Script pasted in info@ · Decided on 2026-10-10 by Scott (Finess): "are we watching for bounced and failed to send emails?" → alert by red banner + alert email, phone notification and Home light; flag the address on the record
+> Status: live 2026-10-11 (`messageSync` deployed, site pushed; owner OK); the new Apps Script in info@ and the real bounce test still to do · Decided on 2026-10-10 by Scott (Finess): "are we watching for bounced and failed to send emails?" → alert by red banner + alert email, phone notification and Home light; flag the address on the record
 
 ## The problem
 
@@ -116,4 +116,4 @@ Which emails: any email from info@ that is in someone's history: sent from the a
 2. ~~`messageSync` routing, marks, banner + push; Apps Script fields + `testBounces`~~ done.
 3. ~~UI and demo data~~ done.
 4. ~~Guide, privacy line, docs~~ done.
-5. Owner OK → deploy `messageSync`, push; owner pastes the script; real test (criterion 8).
+5. ~~Owner OK → deploy `messageSync`~~ done 2026-10-11 (from a clean copy of df28016); ~~push the site~~ live 2026-10-11 (owner: "push the site too"); owner pastes the script; real test (criterion 8).
