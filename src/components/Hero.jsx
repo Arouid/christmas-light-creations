@@ -44,7 +44,8 @@ export default function Hero() {
         <a href={`${import.meta.env.BASE_URL}design/`} className="mt-4 inline-flex min-h-11 w-fit items-center gap-2 font-semibold text-glow-300 underline-offset-4 hover:underline">
           ✨ {designPage.heroLink} →
         </a>
-        <p className="mt-4 text-sm text-slate-300">
+        {/* Two lines tall from the start, so the staff line arriving later doesn't push the page down */}
+        <p className="mt-4 min-h-10 text-sm text-slate-300">
           {status && <span className="mr-2 font-semibold text-glow-300">🔥 {status}.</span>}
           {bookLine(today)}
         </p>

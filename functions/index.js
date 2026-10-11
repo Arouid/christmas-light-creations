@@ -742,7 +742,13 @@ async function syncBatch(req, res) {
     const docs = event.skip ? [] : docsFor(event, dir)
     if (req.body.dryRun === true) { results.push({ gmailId, ...dryRunSummary(event, docs) }); continue }
     if (event.skip) { count.skipped++; results.push({ gmailId, status: 'skipped', reason: event.skip }); continue }
-    if (fromApp(event)) { count.duplicate++; results.push({ gmailId, status: 'duplicate', reason: 'sent-from-app' }); continue }
+    const ours = fromApp(event)
+    if (ours.length) {
+      count.duplicate++
+      results.push({ gmailId, status: 'duplicate', reason: 'sent-from-app' })
+      await confirmSeen(db, ours).catch((e) => logger.warn('gmailSeenAt not saved', e.message))
+      continue
+    }
     if (!docs.length) { count.dropped++; results.push({ gmailId, status: 'dropped', reason: event.junk ? `junk-${event.junk}` : 'no-match' }); continue }
     let status = 'duplicate'
     for (const { id, data } of docs) {
@@ -827,21 +833,37 @@ export const sendTestPush = onCall({ region: REGION, invoker: 'public', cors: [S
 })
 
 // Emails sent from the staff app are already in history (sendStaffEmail):
-// returns a test that's true for their copies in info@'s Sent folder, found
-// by Message-ID or by the recipient/subject/text print (`in` takes 30 values).
+// returns a lookup giving the app's own entries for a copy in info@'s Sent
+// folder, found by Message-ID or by the recipient/subject/text print (`in`
+// takes 30 values). Empty = not from the app.
 async function sentFromApp(db, events) {
   const keys = events.map(appSentKeys).filter(Boolean)
-  const found = new Set()
+  const found = new Map() // key value -> [{ id, scheduledId, seen }]
   for (const field of ['mailId', 'mailPrint']) {
     const values = [...new Set(keys.map((k) => k[field]))]
     for (let i = 0; i < values.length; i += 30) {
-      const snap = await db.collection('messages').where(field, 'in', values.slice(i, i + 30)).select(field).get()
-      snap.docs.forEach((d) => found.add(d.get(field)))
+      const snap = await db.collection('messages').where(field, 'in', values.slice(i, i + 30)).select(field, 'scheduledId', 'gmailSeenAt').get()
+      snap.docs.forEach((d) => {
+        const v = d.get(field)
+        found.set(v, [...(found.get(v) ?? []), { id: d.id, scheduledId: d.get('scheduledId') ?? null, seen: Boolean(d.get('gmailSeenAt')) }])
+      })
     }
   }
   return (event) => {
     const k = found.size ? appSentKeys(event) : null
-    return Boolean(k) && (found.has(k.mailId) || found.has(k.mailPrint))
+    return k ? [...(found.get(k.mailId) ?? []), ...(found.get(k.mailPrint) ?? [])] : []
+  }
+}
+
+// Gmail's Sent folder has the app's email: stamp the history entry (and the
+// scheduled email it came from) so Home's "Outgoing email" light can go green.
+async function confirmSeen(db, entries) {
+  const done = new Set()
+  for (const e of entries) {
+    if (e.seen || done.has(e.id)) continue
+    done.add(e.id)
+    await db.doc(`messages/${e.id}`).update({ gmailSeenAt: FieldValue.serverTimestamp() })
+    if (e.scheduledId) await db.doc(`scheduledEmails/${e.scheduledId}`).update({ gmailSeenAt: FieldValue.serverTimestamp() }).catch(() => {})
   }
 }
 

@@ -6,6 +6,7 @@ import { alertRecipients } from '../../functions/leadEmail.js'
 import { ActivityPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel, StatusPanel, WhoPanel, label } from './HomePanels'
 import { ScheduledPanel } from './ScheduledEmails'
 import { usePresence, useSignIns } from './usePresence'
+import { useOutgoingMail } from './useOutgoingMail'
 import { permission, storedFid } from './push'
 import { useLiveQuery } from './staffStore'
 
@@ -38,6 +39,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const minute = Math.floor(now / 60000) * 60000
   const who = usePresence(user, feed.names, minute)
   const signIns = useSignIns(user)
+  const outgoing = useOutgoingMail(user, alerts.lastSync, minute)
   const incidents = useLiveQuery(user, 'incidents', 'open', true, byOpenedAt) ?? []
   const today = todayISO()
 
@@ -51,6 +53,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const pushOn = Boolean(storedFid()) && permission() === 'granted'
   const lights = [
     { name: 'Text & email sync', color: syncLight(alerts.lastSync, now), note: syncAgo == null ? 'nothing in 7 days' : syncAgo < 1 ? 'last one < 1 h ago' : syncAgo < 48 ? `last one ${syncAgo} h ago` : `last one ${Math.round(syncAgo / 24)} days ago` },
+    { name: 'Outgoing email', color: outgoing.color, note: outgoing.note },
     { name: 'Website', color: incidents.length ? 'red' : 'green', note: incidents.length ? `${incidents.length} problem${incidents.length === 1 ? '' : 's'} to look at` : 'no problems' },
     { name: 'Payments', color: payProblems ? 'red' : 'green', note: payProblems ? 'see website problems' : 'OK' },
     { name: 'Request alerts', color: alertRecipients(settings).length ? 'green' : 'amber', note: alertRecipients(settings).length ? `${alertRecipients(settings).length} on the email list` : 'nobody on the list (⚙)' },
