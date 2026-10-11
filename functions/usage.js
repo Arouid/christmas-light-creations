@@ -108,7 +108,7 @@ export function spentSummary(usageDoc, settings = {}) {
     { key: 'fixed', name: 'Fixed', cents: fixedCents, how: fixed.length ? 'estimate' : 'none',
       note: fixed.length ? fixed.map((x) => x.name).join(', ') : 'add Workspace, Voice, domain in ⚙ Settings', parts: fixed },
   ]
-  return { totalCents: Math.round(claudeCents + feeCents + fixedCents), rows, partial: true }
+  return { totalCents: claudeCents + feeCents + fixedCents, rows, partial: true }
 }
 
 // "$12.34"; under a dollar shows cents ("3.2¢") so a day's Claude use isn't "$0.03".
