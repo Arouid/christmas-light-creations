@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react'
 import { BLANK_LABEL } from '../lib/customers'
+import { COLUMNS_KEY, CUSTOMER_COLUMNS, DEFAULT_CUSTOMER_COLUMNS, columnValue, readColumns } from '../lib/customerColumns'
 import DataTable from './DataTable'
+import ViewTab from './ViewTab'
+
+const chip = (on) => `inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-medium ${on ? 'bg-glow-400 text-night-950' : 'bg-white/10 hover:bg-white/15'}`
+const WIDTH = { address: 'max-w-xs truncate', area: 'max-w-[14rem] truncate', notes: 'max-w-xs truncate', email: 'max-w-[14rem] truncate', phone: 'whitespace-nowrap' }
+const storedColumns = () => { try { return readColumns(localStorage.getItem(COLUMNS_KEY)) } catch { return DEFAULT_CUSTOMER_COLUMNS } }
 
 const input = 'block w-full rounded-xl border border-white/15 bg-night-900 px-4 py-3 text-base placeholder:text-slate-500'
 
@@ -40,9 +46,26 @@ function AddCustomer({ onCreate, onDone }) {
   )
 }
 
-export default function CustomersView({ customers, season, onOpen, onCreate }) {
+// Pick the table's columns (desktop); remembered on this device.
+function ColumnPicker({ cols, onChange }) {
+  const toggle = (k) => onChange(cols.includes(k) ? cols.filter((x) => x !== k) : [...cols, k])
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-night-900 p-3" aria-label="Table columns">
+      {CUSTOMER_COLUMNS.map(([k, label]) => (
+        <label key={k} className={`cursor-pointer ${chip(cols.includes(k))}`}>
+          <input type="checkbox" className="sr-only" checked={cols.includes(k)} onChange={() => toggle(k)} />{label}
+        </label>
+      ))}
+      <button type="button" onClick={() => onChange(DEFAULT_CUSTOMER_COLUMNS)} className="min-h-11 px-2 text-sm text-slate-400 underline">Reset</button>
+    </div>
+  )
+}
+
+function AllCustomers({ customers, season, gates, onOpen, onCreate }) {
   const [search, setSearch] = useState('')
   const [adding, setAdding] = useState(false)
+  const [cols, setCols] = useState(storedColumns)
+  const [picking, setPicking] = useState(false)
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -50,6 +73,17 @@ export default function CustomersView({ customers, season, onOpen, onCreate }) {
     return customers.filter((c) =>
       [c.fullName, c.address, c.city, c.neighborhood, c.phone, c.email, c.locationBlock].join(' ').toLowerCase().includes(q))
   }, [customers, search])
+
+  const changeCols = (next) => {
+    const keys = next.length ? next : DEFAULT_CUSTOMER_COLUMNS
+    setCols(keys)
+    try { localStorage.setItem(COLUMNS_KEY, JSON.stringify(keys)) } catch { /* private mode: fine */ }
+  }
+  const columns = CUSTOMER_COLUMNS.filter(([k]) => cols.includes(k)).map(([k, label]) => ({
+    key: k, label: k === 'status' ? `${season} status` : label, className: WIDTH[k] ?? '',
+    get: (c) => columnValue(c, k, season, gates),
+    ...(k === 'name' ? { render: (c) => <span className="font-medium">{c.fullName}</span> } : {}),
+  }))
 
   return (
     <>
@@ -61,17 +95,14 @@ export default function CustomersView({ customers, season, onOpen, onCreate }) {
       </div>
       {adding && <AddCustomer onCreate={onCreate} onDone={(id) => { setAdding(false); if (id) onOpen(id) }} />}
 
-      <p className="mt-4 text-sm text-slate-400">{shown.length} of {customers.length} customers</p>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <p className="text-sm text-slate-400">{shown.length} of {customers.length} customers</p>
+        <button type="button" onClick={() => setPicking((v) => !v)} aria-expanded={picking}
+          className="hidden min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold lg:inline-flex lg:items-center">Columns {picking ? '▴' : '▾'}</button>
+      </div>
+      {picking && <div className="hidden lg:block"><ColumnPicker cols={cols} onChange={changeCols} /></div>}
       <div className="mt-2 hidden lg:block">
-        <DataTable label="Customers" rows={shown} onRowClick={onOpen} columns={[
-          { key: 'name', label: 'Name', get: (c) => c.lastName ? `${c.lastName} ${c.firstName ?? ''}` : c.fullName, render: (c) => <span className="font-medium">{c.fullName}</span> },
-          { key: 'address', label: 'Address', get: (c) => c.address, className: 'max-w-xs truncate' },
-          { key: 'city', label: 'City', get: (c) => c.city },
-          { key: 'phone', label: 'Phone', get: (c) => c.phone, className: 'whitespace-nowrap' },
-          { key: 'area', label: 'Area', get: (c) => c.locationBlock, className: 'max-w-[14rem] truncate' },
-          { key: 'type', label: 'Type', get: (c) => c.installType?.replace(' Install', '') },
-          { key: 'status', label: `${season} status`, get: (c) => c.seasons?.[season]?.installStatus || BLANK_LABEL.installStatus },
-        ]} />
+        <DataTable label="Customers" rows={shown} onRowClick={onOpen} columns={columns} />
       </div>
       <ul className="mt-2 divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-night-900 lg:hidden">
         {shown.map((c) => {
@@ -89,6 +120,30 @@ export default function CustomersView({ customers, season, onOpen, onCreate }) {
           )
         })}
       </ul>
+    </>
+  )
+}
+
+// Customers tab: the whole list, or one of the saved filters (#view-<id>),
+// picked from the chip row. Filters used to be their own tabs in the top bar;
+// moved here 2026-10-10 because the bar got too long.
+export default function CustomersView({ customers, season, gates = [], views = [], viewId = null, onOpen, onCreate, onUpdate, onNewView, onEditView, onDeleteView }) {
+  const view = viewId ? views.find((v) => v.id === viewId) : null
+  return (
+    <>
+      <div className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Saved filters">
+        <a href="#customers" role="tab" aria-selected={!viewId} className={chip(!viewId)}>All <span className="opacity-70">{customers.length}</span></a>
+        {views.map((v) => (
+          <a key={v.id} href={`#view-${v.id}`} role="tab" aria-selected={viewId === v.id} className={chip(viewId === v.id)}>{v.name}</a>
+        ))}
+        <button type="button" onClick={onNewView} className="min-h-11 shrink-0 px-2 text-sm font-semibold text-glow-400 hover:text-glow-300">+ New filter</button>
+      </div>
+      {viewId && !view && <p className="mt-6 text-slate-400">This filter was deleted. <a href="#customers" className="text-glow-300 underline">All customers</a></p>}
+      {view && (
+        <ViewTab view={view} customers={customers} season={season} gates={gates} onOpen={onOpen} onUpdate={onUpdate}
+          onEdit={() => onEditView(view)} onDelete={() => onDeleteView(view.id)} />
+      )}
+      {!viewId && <AllCustomers customers={customers} season={season} gates={gates} onOpen={onOpen} onCreate={onCreate} />}
     </>
   )
 }

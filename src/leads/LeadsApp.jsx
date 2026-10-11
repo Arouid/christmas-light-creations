@@ -29,7 +29,6 @@ import { EmailTemplates } from './templatesContext'
 import ServiceView from './ServiceView'
 import UnmatchedMessages from './UnmatchedMessages'
 import ViewEditor from './ViewEditor'
-import ViewTab from './ViewTab'
 import { mergeMany, queryOnce, saveRecord } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
@@ -44,10 +43,16 @@ import { byPhone, logActivity, setActivityContext, useActivityFeed } from './act
 import { usePresenceBeat } from './usePresence'
 import { staffName } from '../lib/activity'
 
-// Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
-// The app opens on Home (docs/specs/dashboard.md).
-const BEFORE = [['home', 'Home'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes']]
-const AFTER = [['signs', 'Signs'], ['past', 'Past requests'], ['emails', 'Emails'], ['service', 'Service'], ['gates', 'Gates'], ['import', 'Import']]
+// Top-row tabs. Saved filters live inside Customers (#view-<id>), Past
+// requests inside Leads (#past), and the rarely used tabs under "More"
+// (the row got too long: owner 2026-10-10). The app opens on Home.
+const BEFORE = [['home', 'Home'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes'], ['service', 'Service']]
+const MORE = [['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
+const HIDDEN = [['past', 'Past requests']]
+const ALL_TABS = [...BEFORE, ...MORE, ...HIDDEN]
+// Which top-row tab a hash belongs to.
+const sectionOf = (tab) => (tab.startsWith('view-') ? 'customers' : tab === 'past' ? 'leads' : MORE.some(([k]) => k === tab) ? 'more' : tab)
+const chip = (on) => `inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-medium ${on ? 'bg-glow-400 text-night-950' : 'bg-white/10 hover:bg-white/15'}`
 
 function Screen({ children }) {
   return <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">{children}</main>
@@ -57,7 +62,7 @@ const tabFromHash = () => {
   const h = window.location.hash.slice(1)
   if (h.startsWith('route-')) return 'route' // #route-<id> (installer) or #route-<id>~edit
   if (h.startsWith('accounts/')) return 'accounts' // #accounts/<kind>/<id>
-  return h.startsWith('view-') || [...BEFORE, ...AFTER].some(([k]) => k === h) ? h : 'home'
+  return h.startsWith('view-') || ALL_TABS.some(([k]) => k === h) ? h : 'home'
 }
 const routeFromHash = () => {
   const m = window.location.hash.match(/^#route-([^~]+)(~edit)?$/)
@@ -167,8 +172,8 @@ export default function LeadsApp() {
       ? 'part of the app was refused by the database. The security rules probably need publishing again (firestore.rules).'
       : null)
   const views = viewsApi.views ?? []
-  const currentView = tab.startsWith('view-') ? views.find((v) => `view-${v.id}` === tab) : null
-  const tabs = [...BEFORE, ...views.map((v) => [`view-${v.id}`, v.name]), ...AFTER]
+  const section = sectionOf(tab)
+  const viewId = tab.startsWith('view-') ? tab.slice(5) : null
 
   async function saveView(data) {
     if (editing?.id) return viewsApi.save(editing.id, data)
@@ -178,7 +183,7 @@ export default function LeadsApp() {
   async function deleteView(id) {
     await viewsApi.remove(id)
     setEditing(null)
-    window.location.hash = '#season'
+    window.location.hash = '#customers'
   }
 
   const openCustomer = (id) => { setOpenId(id); window.location.hash = '#customers' }
@@ -295,16 +300,23 @@ export default function LeadsApp() {
           </div>
         </div>
         <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 lg:max-w-7xl" aria-label="Sections">
-          {tabs.map(([k, label]) => (
-            <a key={k} href={`#${k}`} aria-current={tab === k ? 'page' : undefined}
-              className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${tab === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
+          {BEFORE.map(([k, label]) => (
+            <a key={k} href={`#${k}`} aria-current={section === k ? 'page' : undefined}
+              className={`shrink-0 border-b-2 px-3 py-3 text-sm font-semibold ${section === k ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
               {label}
             </a>
           ))}
-          {customers && (
-            <button type="button" onClick={() => setEditing({})}
-              className="shrink-0 px-3 py-3 text-sm font-semibold text-glow-400 hover:text-glow-300">+ New tab</button>
-          )}
+          <details className="relative shrink-0">
+            <summary className={`cursor-pointer list-none border-b-2 px-3 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden ${section === 'more' ? 'border-glow-400 text-glow-300' : 'border-transparent text-slate-400'}`}>
+              {MORE.find(([k]) => k === tab)?.[1] ?? 'More'} ▾
+            </summary>
+            <div className="absolute right-0 z-30 mt-1 min-w-40 rounded-xl border border-white/15 bg-night-900 p-1 shadow-lg">
+              {MORE.map(([k, label]) => (
+                <a key={k} href={`#${k}`} onClick={(e) => { e.currentTarget.closest('details').open = false }}
+                  className={`block rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-white/10 ${tab === k ? 'text-glow-300' : 'text-slate-200'}`}>{label}</a>
+              ))}
+            </div>
+          </details>
         </nav>
       </header>
 
@@ -329,20 +341,23 @@ export default function LeadsApp() {
               onMakePastCustomer={async (p) => { const id = await makePastCustomer(p); await pastApi.update(p.id, 'customerId', id); return id }} />
           : loading)}
         {tab === 'invoices' && <InvoicesView customers={customers ?? []} />}
+        {section === 'leads' && (
+          <div className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Request source">
+            <a href="#leads" role="tab" aria-selected={tab === 'leads'} className={chip(tab === 'leads')}>Website requests <span className="opacity-70">{leads?.length ?? 0}</span></a>
+            <a href="#past" role="tab" aria-selected={tab === 'past'} className={chip(tab === 'past')}>Old-site requests <span className="opacity-70">{pastApi.requests?.length ?? 0}</span></a>
+          </div>
+        )}
         {tab === 'leads' && user && <UnmatchedMessages user={user} customers={customers} feed={feed} />}
         {tab === 'leads' && (
           <LeadsView leads={leads} error={error} onUpdate={updateLead} onDelete={deleteLead}onMakeCustomer={customers ? makeCustomer : undefined} onOpenCustomer={openCustomer} />
         )}
-        {tab === 'customers' && (customers
-          ? <CustomersView customers={customers} season={season} onOpen={setOpenId} onCreate={customersApi.create} />
-          : loading)}
+        {section === 'customers' && (!customers || (viewId && !viewsApi.views)
+          ? loading
+          : <CustomersView customers={customers} season={season} gates={gates} views={views} viewId={viewId} onOpen={setOpenId} onCreate={customersApi.create}
+              onUpdate={customersApi.update} onNewView={() => setEditing({})} onEditView={setEditing} onDeleteView={deleteView} />)}
         {tab === 'season' && (customers
           ? <SeasonView customers={customers} season={season} gates={gates} onOpen={setOpenId} onUpdate={customersApi.update} />
           : loading)}
-        {tab.startsWith('view-') && (!customers || !viewsApi.views ? loading : currentView
-          ? <ViewTab view={currentView} customers={customers} season={season} gates={gates} onOpen={setOpenId}
-              onUpdate={customersApi.update} onEdit={() => setEditing(currentView)} onDelete={() => deleteView(currentView.id)} />
-          : <p className="mt-6 text-slate-400">This tab was deleted. <a href="#season" className="text-glow-300 underline">Go to Season</a></p>)}
         {tab === 'route' && (customers && (settingsApi.settings || settingsApi.error)
           ? <RoutesView api={routesApi} openId={routeOpen.id} mode={routeOpen.mode} customers={customers} gates={gates} season={season}
               settings={settingsApi.settings ?? {}} onOpenCustomer={setOpenId} onUpdateCustomer={customersApi.update}

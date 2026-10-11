@@ -52,7 +52,7 @@ The sheet's Repairs/Warranty tab was empty, so nothing was imported for service 
 
 ## Custom tabs (built 2026-10-08)
 
-"+ New tab" in the staff app's tab bar saves a named filter for all staff: Installs or Takedowns, statuses (none = all), areas, early/regular, week of, and which columns to show. Firestore `views/{auto}`; season "current" follows the calendar. Custom tabs sit between Season and Service; Edit tab / Delete this tab on each. Filtering is `matchesView()` in `src/lib/views.js` (tested).
+"+ New filter" (Customers tab, chip row) saves a named filter for all staff: Installs or Takedowns, statuses (none = all), areas, early/regular, week of, and which columns to show. Firestore `views/{auto}`; season "current" follows the calendar. Saved filters are picked from the chip row at the top of Customers (#view-<id> still deep-links); Edit filter / Delete on each. The plain Customers table has a **Columns ▾** picker (per device, localStorage; `src/lib/customerColumns.js`). Old-site requests sit under Leads (#past); Signs, Emails, Gates and Import are under the **More ▾** menu (2026-10-10). Filtering is `matchesView()` in `src/lib/views.js` (tested).
 
 ## Map wall (built 2026-10-08)
 

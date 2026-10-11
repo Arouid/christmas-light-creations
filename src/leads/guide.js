@@ -101,7 +101,7 @@ export const SECTIONS = [
       'Change a status right in the list: everyone sees it within seconds.',
       '**✉ Email these N** sends a template to each person, one email each from info@: check each and tap **Send ✓ Next** (or **Skip**), or **Send the rest** after one confirm. People with a blank in the template (e.g. no install rate on file) are skipped and listed; already-sent people are skipped. At most 300 emails a day from the app.',
       '**＋ Route these N** puts the filtered list on a route.',
-      '**＋ New tab** (top bar) saves a filter as its own tab for everyone, e.g. “Needs scheduling”.',
+      '**＋ New filter** (Customers tab, chip row at the top) saves a filter for everyone, e.g. “Needs scheduling”; **Old-site requests** are under Leads; Signs, Emails, Gates and Import are under **More ▾**.',
     ],
   },
   {
@@ -119,7 +119,7 @@ export const SECTIONS = [
     summary: 'Every customer as a pin, colored by this season’s status. Pulsing red = open service call.',
     items: [
       'Opens on our area (Houston to Galveston, centered between Pearland and Clear Lake). **Fit all** shows every pin; on a computer, **📌 Open the map here** makes the current view where the map opens for everyone.',
-      'Filter by saved tab, installs/takedowns or area; satellite view; **Full screen** for a wall screen.',
+      'Filter by saved filter, installs/takedowns or area; satellite view; **Full screen** for a wall screen.',
       'Tap a pin: name, status, gate code, miles from home base, **Open customer / Directions / Street View**.',
       '**Put N addresses on the map** finds customers that don’t have a pin yet.',
     ],

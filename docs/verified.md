@@ -220,3 +220,9 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-10 Accounts: edit this season in place (demo, 375px)
 
 - Customer account page shows "2026 season · edit" above the Seasons table with the same ten season fields as the Customers tab; changing Install status updates the Seasons row. No horizontal scroll. Not yet checked live.
+
+## 2026-10-10 Shorter top row (demo)
+
+- 375px: nav shows 10 entries; Customers chip row All 3 · Needs scheduling · + New filter (44px chips); Leads shows Website requests 3 · Old-site requests 3; More ▾ opens, Gates navigates to #gates and the menu closes (summary reads "Gates ▾"). Page stays 375 wide.
+- Columns ▾: toggling Gate code on and City off changed the table headers and saved to localStorage in table order. Clicking the Needs scheduling chip shows the filter (h2, Edit filter, Delete, ✉ Email these) at #view-demo-view-1 with Customers highlighted.
+- Not yet checked live with real saved filters.

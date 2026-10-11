@@ -35,7 +35,7 @@ export default function ViewEditor({ view, customers, season, onSave, onDelete, 
 
   async function save(e) {
     e.preventDefault()
-    if (!v.name.trim()) return setError('Give the tab a name.')
+    if (!v.name.trim()) return setError('Give the filter a name.')
     setBusy(true)
     try {
       const { id: _id, updatedAt: _u, updatedBy: _b, createdAt: _c, ...data } = v
@@ -48,11 +48,11 @@ export default function ViewEditor({ view, customers, season, onSave, onDelete, 
   }
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-night-950/90 p-4 backdrop-blur" role="dialog" aria-modal="true" aria-label="Edit tab">
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-night-950/90 p-4 backdrop-blur" role="dialog" aria-modal="true" aria-label="Edit filter">
       <form onSubmit={save} className="mx-auto max-w-2xl space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
-        <h2 className="font-display text-2xl font-extrabold">{view?.id ? 'Edit tab' : 'New tab'}</h2>
+        <h2 className="font-display text-2xl font-extrabold">{view?.id ? 'Edit filter' : 'New filter'}</h2>
 
-        <label className="block text-sm text-slate-400">Tab name
+        <label className="block text-sm text-slate-400">Filter name
           <input value={v.name} onChange={(e) => set({ name: e.target.value })} maxLength={40} autoFocus placeholder="e.g. Nov week 3, Remaining jobs"
             className="mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100" />
         </label>
@@ -101,11 +101,11 @@ export default function ViewEditor({ view, customers, season, onSave, onDelete, 
         {error && <p className="text-sm text-berry-500" role="alert">{error}</p>}
 
         <div className="flex flex-wrap gap-2">
-          <button disabled={busy} className="flex-1 rounded-full bg-glow-400 py-3 font-semibold text-night-950 disabled:opacity-50">Save tab</button>
+          <button disabled={busy} className="flex-1 rounded-full bg-glow-400 py-3 font-semibold text-night-950 disabled:opacity-50">Save filter</button>
           <button type="button" onClick={onClose} className="flex-1 rounded-full border border-white/20 py-3 font-semibold">Cancel</button>
           {view?.id && (
-            <button type="button" onClick={() => { if (window.confirm(`Delete the "${view.name}" tab for everyone? Customers are not affected.`)) onDelete() }}
-              className="w-full rounded-full py-2 text-sm font-semibold text-berry-500 hover:bg-berry-600/10">Delete this tab</button>
+            <button type="button" onClick={() => { if (window.confirm(`Delete the "${view.name}" filter for everyone? Customers are not affected.`)) onDelete() }}
+              className="w-full rounded-full py-2 text-sm font-semibold text-berry-500 hover:bg-berry-600/10">Delete this filter</button>
           )}
         </div>
       </form>
