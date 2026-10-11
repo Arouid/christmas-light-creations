@@ -205,3 +205,9 @@ What was actually checked working, and how. Newest first.
 - 2026-10-10: Cottage logo as vector (`assets-source/logo-vector/`). Traced from the 3x upscale of the 2012 backdrop by color layer (snow, walls, posts, chimney, window, door, smoke, flakes), glow rebuilt as blurred strokes; lettering outlined from the site's Fraunces/Inter files. Checked: vector over the raster at 55% lines up (overlay.svg); color, one-color white, one-color navy solid and outline, tile, stacked and horizontal lockups rendered with sharp and inspected at 2x zoom (chimney, door, posts). Every file parses as XML.
 - 2026-10-10: Sign and snow pines as vector (`assets-source/logo-vector/sign-and-trees/`), same pipeline as the cottage on the right strip of the 3x backdrop. Checked in sharp renders: the board's three tones, holly and berries; the top word re-spelled "Merry" from the traced letters sits on the original baseline; the trees keep their cyan/magenta/blue/red/gold halos; the strip hidden behind the sign is filled row by row from the visible side and reads as a snow shelf (looked at 2x); snow shadows no longer punch holes in the scene's ground; every SVG parses.
 - 2026-10-10 (owner): Google Business Profile logo uploaded and Search Console → URL Inspection → Request indexing done for the home page. Google's description should refresh within days; the favicon crawler is separate (1–4 weeks).
+
+## 2026-10-10 Google sign-in through our domain
+
+- /__/auth/handler, /__/auth/iframe, /__/firebase/init.json serve 200 (handler as text/html) on the live site.
+- Live /leads/ Sign in with Google reaches Google's account chooser with redirect_uri=https://christmas-light-creations.com/__/auth/handler and "continue to christmas-light-creations.com" (no redirect_uri_mismatch). Stopped before entering an account.
+- Not yet checked: a full sign-in on Katie's iPhone; desktop popup sign-in end to end.
