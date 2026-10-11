@@ -34,3 +34,7 @@ docs/security-review.md
 
 # Upscaled (3x) copies of the 2012 backdrop art: 13 MB, rebuildable from the originals next to them
 assets-source/2012-backdrop/hi-res-3x/
+
+# Google Ads video: rebuildable with scripts/ads-video.py; MP4s are big, keep only the README
+assets-source/ads/video/*
+!assets-source/ads/video/README.md
