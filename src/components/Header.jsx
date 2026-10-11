@@ -20,9 +20,8 @@ export default function Header() {
     <header className={`fixed inset-x-0 top-0 z-40 transition-colors ${scrolled || open ? 'bg-night-950/90 backdrop-blur border-b border-white/10' : 'bg-transparent'}`}>
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <a href="#top" className="flex min-w-0 items-center gap-2.5" onClick={() => setOpen(false)}>
-          <img src={business.logo} alt="" className="size-11 shrink-0" />
-          {/* Phones: wraps to two lines next to the call/menu buttons; wider screens: one line */}
-          <span className="max-w-[8.5rem] font-display text-[15px] font-bold leading-[1.1] sm:max-w-none sm:text-xl">{business.name}</span>
+          {/* The name is part of the picture; the alt text carries it for screen readers. */}
+          <img src={business.logoWide} alt={business.name} width="517" height="168" className="h-12 w-auto sm:h-14" />
         </a>
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main">

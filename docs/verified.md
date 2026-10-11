@@ -310,3 +310,7 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-11 Ads tag scaffolding and /thanks/ (dev, 375px)
 
 - /thanks/ renders (logo, Thanks we got it, Call button, back link), noindex, 375 wide; with ADS.tagId empty no googletagmanager script is added. Build emits dist/thanks/index.html; sitemap unchanged (9 urls, /thanks/ excluded). Not yet checked: a real form send landing on /thanks/, and the tag once the id is set.
+
+## 2026-10-11 Wide logo in the header (dev)
+
+- 375px: header logo 148×48 next to the call/menu buttons (right edge 164, buttons from 267), name readable on two lines; footer logo 64px tall; page 375 wide. 1200px: h-14 logo clear of the main nav.
