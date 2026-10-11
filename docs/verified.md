@@ -238,3 +238,5 @@ What was actually checked working, and how. Newest first.
 - Buttons read ✕ · ↶ · ↷ · ⬇ Save · Estimate → and the row fits with no sideways scroll (right edge at 363px). Wider screens say ⬇ Save picture and Get my estimate →.
 
 - 2026-10-10 (later) Owner: no extra scrollbars, arrows only. Table box is back to sideways scroll only (no max height); the row above has ◀ at the far left and ▶ at the far right (44px), shown only when the table is wider than the screen. Checked at 1200px with 16 columns.
+
+- 2026-10-10 (later) Slider between the arrows (owner sketch): dragging it scrolls the table (set to 250 → scrollLeft 250; max 788 with 16 columns at 1200px); styled thin track + round glow handle (.range-slim in index.css). The hidden browser pane doesn't fire scroll events, so table→slider sync was not observable here.

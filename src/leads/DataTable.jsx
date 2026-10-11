@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 // Desktop table with click-to-sort headers. Each column:
 // { key, label, get(row) -> sort/display text, render?(row) -> cell, className? }
 // Wide tables scroll sideways, with ◀ ▶ buttons at each end of the row above
-// and the first column pinned (owner 2026-10-10: arrows only, no extra scrollbars).
+// with a slider between them, and the first column pinned (owner 2026-10-10).
 export default function DataTable({ rows, columns, onRowClick, label }) {
   const [sort, setSort] = useState({ key: null, dir: 1 })
   const box = useRef(null)
   const hint = useRef(null)
+  const slider = useRef(null)
   const col = columns.find((c) => c.key === sort.key)
   const sorted = col
     ? [...rows].sort((a, b) => sort.dir * String(col.get(a) ?? '').localeCompare(String(col.get(b) ?? ''), undefined, { numeric: true }))
@@ -23,12 +24,19 @@ export default function DataTable({ rows, columns, onRowClick, label }) {
     const el = box.current
     const row = hint.current
     if (!el || !row) return
-    const check = () => { row.hidden = !(el.scrollWidth > el.clientWidth + 1) }
+    const sync = () => { if (slider.current) slider.current.value = String(el.scrollLeft) }
+    const check = () => {
+      const max = el.scrollWidth - el.clientWidth
+      row.hidden = !(max > 1)
+      if (slider.current) slider.current.max = String(Math.max(0, max))
+      sync()
+    }
     check()
     const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(check)
     ro?.observe(el)
     window.addEventListener('resize', check)
-    return () => { ro?.disconnect(); window.removeEventListener('resize', check) }
+    el.addEventListener('scroll', sync)
+    return () => { ro?.disconnect(); window.removeEventListener('resize', check); el.removeEventListener('scroll', sync) }
   }, [columns.length, rows.length])
 
   const pin = (i, bg) => (i === 0 ? `sticky left-0 z-10 ${bg}` : '')
@@ -36,8 +44,12 @@ export default function DataTable({ rows, columns, onRowClick, label }) {
   return (
     <div>
       <div ref={hint} hidden className="mb-2 flex items-center justify-between">
-        <button type="button" onClick={() => slide(-1)} aria-label="Scroll table left" className="size-11 rounded-full border border-white/20 font-semibold hover:bg-white/10">◀</button>
-        <button type="button" onClick={() => slide(1)} aria-label="Scroll table right" className="size-11 rounded-full border border-white/20 font-semibold hover:bg-white/10">▶</button>
+        <button type="button" onClick={() => slide(-1)} aria-label="Scroll table left" className="size-11 shrink-0 rounded-full border border-white/20 font-semibold hover:bg-white/10">◀</button>
+        {/* Drag to slide the table sideways; kept in step with the table's own scrolling. */}
+        <input ref={slider} type="range" min="0" max="0" defaultValue="0" aria-label="Slide the table sideways"
+          onInput={(e) => { if (box.current) box.current.scrollLeft = Number(e.target.value) }}
+          className="range-slim mx-3 h-11 min-w-0 flex-1 cursor-pointer" />
+        <button type="button" onClick={() => slide(1)} aria-label="Scroll table right" className="size-11 shrink-0 rounded-full border border-white/20 font-semibold hover:bg-white/10">▶</button>
       </div>
       <div ref={box} className="overflow-x-auto rounded-2xl border border-white/10 bg-night-900">
         <table className="w-full text-left text-sm" aria-label={label}>

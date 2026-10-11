@@ -122,3 +122,43 @@ body {
 .grecaptcha-badge {
   visibility: hidden;
 }
+
+/* Slim slider under wide staff tables (DataTable): thin track, round glow
+   handle, 44px tall so it's easy to grab. */
+.range-slim {
+  appearance: none;
+  background: transparent;
+}
+.range-slim::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.15);
+}
+.range-slim::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-night-950);
+  background: var(--color-glow-400);
+  box-shadow: 0 0 10px rgb(255 224 138 / 0.6);
+}
+.range-slim::-moz-range-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.15);
+}
+.range-slim::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-night-950);
+  background: var(--color-glow-400);
+  box-shadow: 0 0 10px rgb(255 224 138 / 0.6);
+}
+.range-slim:focus-visible {
+  outline: 2px solid var(--color-glow-400);
+  outline-offset: 4px;
+  border-radius: 9999px;
+}
