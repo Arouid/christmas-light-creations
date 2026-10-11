@@ -326,6 +326,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // "Spent this month" on Home (docs/specs/spend.md): one doc per month
+    // (usage/2026-10) with Claude token counts and cost and PayPal fees,
+    // added to only by the server after each call or capture. Staff read.
+    match /usage/{month} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+
     // Recent staff activity on Home (docs/specs/dashboard.md): who emailed,
     // invoiced, called or is handling whom. Append-only: staff add entries as
     // themselves with the server's time; nobody changes or deletes one. The

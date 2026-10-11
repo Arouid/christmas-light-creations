@@ -56,6 +56,7 @@ import { alertRecipients, leadEmail } from './leadEmail.js'
 import { dailyReport, incidentEmail, missedLeadAlerts, shouldMail, syncStale } from './health.js'
 import { SEASON, bookedByDay, bookingSeason, capacity, openDays } from './availability.js'
 import { captureOrder, createOrder, getOrder } from './paypal.js'
+import { claudeIncrement, monthKey, paypalFeeCents, paypalIncrement } from './usage.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
@@ -87,6 +88,21 @@ const MESSAGE_SYNC_KEY = defineSecret('MESSAGE_SYNC_KEY')
 const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY')
 // The sales assistant's model (docs/specs/sales-assistant.md): change in functions/.env and redeploy.
 const AI_MODEL = defineString('AI_MODEL', { default: MODEL })
+
+// "Spent this month" on Home (docs/specs/spend.md): add to usage/{YYYY-MM}.
+// increments: { 'claude.draft.calls': 1, … } (field paths → amounts). Never
+// blocks or fails the call that made the spend.
+function recordUsage(increments) {
+  const doc = {}
+  for (const [path, n] of Object.entries(increments)) {
+    const keys = path.split('.')
+    let at = doc
+    for (const k of keys.slice(0, -1)) at = at[k] ??= {}
+    at[keys.at(-1)] = FieldValue.increment(n)
+  }
+  return getFirestore().doc(`usage/${monthKey()}`).set({ ...doc, updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+    .catch((e) => logger.warn('usage not recorded', e.message))
+}
 const PAYPAL_CLIENT_ID = defineString('PAYPAL_CLIENT_ID')
 const PAYPAL_ENV = defineString('PAYPAL_ENV', { default: 'sandbox' })
 const FROM = 'info@christmas-light-creations.com'
@@ -252,10 +268,11 @@ export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', s
 
   // 4. Record it and release the lock together.
   const record = {
-    status: 'paid', amount, orderId: result.id, captureId: capture.id,
+    status: 'paid', amount, orderId: result.id, captureId: capture.id, feeCents: paypalFeeCents(capture),
     payerEmail: result.payer?.email_address ?? null, env: PAYPAL_ENV.value(), paidAt: FieldValue.serverTimestamp(),
   }
   await ref.update({ ...(part === 'deposit' ? { deposit: record } : { [`payments.${part}`]: record }), [lockPath]: FieldValue.delete() })
+  await recordUsage(paypalIncrement(capture, amount))
   return { paid: true }
 })
 
@@ -405,6 +422,7 @@ export const captureInvoiceOrder = onCall(payCall, async (req) => {
   // marked it paid or voided it in the meantime, say so (paid twice?).
   const record = {
     status: 'paid', cents: amount, orderId: result.id, captureId: capture.id, source: Object.keys(result.payment_source ?? {})[0] ?? 'paypal',
+    feeCents: paypalFeeCents(capture),
     payerEmail: result.payer?.email_address ?? null, env: PAYPAL_ENV.value(), paidAt: FieldValue.serverTimestamp(),
   }
   const before = await db.runTransaction(async (tx) => {
@@ -412,6 +430,7 @@ export const captureInvoiceOrder = onCall(payCall, async (req) => {
     tx.update(ref, { payment: record, status: 'paid', paymentLock: FieldValue.delete() })
     return cur
   })
+  await recordUsage(paypalIncrement(capture, amount))
   if (before.status !== 'open' || invoiceCents(before) !== amount) {
     const what = before.status === 'paid' ? `marked paid by staff (${before.offline?.method ?? 'offline'})` : before.status === 'void' ? 'voided' : 'changed'
     await reportIncident('payment', `IMPORTANT: ${before.customer?.name ?? 'A customer'} paid ${label} online ($${dollars(amount)}) just after it was ${what}. Check whether they paid twice; refund in PayPal if so (order ${result.id}).`, { invoice: token, orderId: result.id })
@@ -1131,6 +1150,7 @@ export const draftReply = onCall({ region: REGION, invoker: 'public', secrets: [
   }
   // Who's on (Home): Claude shows as a team member with when it last drafted.
   db.doc(`presence/${PRESENCE_ID}`).set({ lastSeen: FieldValue.serverTimestamp(), device: `drafted a reply for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
+  await recordUsage(claudeIncrement('draft', result.usage, result.model))
   return { ...result.draft, contact: thread.contact, model: result.model, cost: result.cost }
 })
 
@@ -1170,6 +1190,7 @@ export const askClaude = onCall({ region: REGION, invoker: 'public', secrets: [A
     throw e
   }
   db.doc(`presence/${PRESENCE_ID}`).set({ lastSeen: FieldValue.serverTimestamp(), device: `answered a question for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
+  await recordUsage(claudeIncrement('ask', out.usage, out.model))
   return { ...out.result, model: out.model, cost: out.cost }
 })
 
@@ -1334,6 +1355,7 @@ export const proposeSchedule = onCall({ region: REGION, invoker: 'public', secre
     throw e
   }
   db.doc(`presence/${PRESENCE_ID}`).set({ lastSeen: FieldValue.serverTimestamp(), device: `planned install days for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
+  await recordUsage(claudeIncrement('plan', out.usage, out.model))
   return { ...out.plan, days: input.days, customers: input.customers, deadline: input.deadline, model: out.model, cost: out.cost }
 })
 

@@ -1,6 +1,7 @@
 import { agoText, describe, staffName, toMs } from '../lib/activity'
 import { reasonText } from '../lib/signInLog'
 import { money } from '../lib/invoices'
+import { spendText } from '../lib/spend'
 
 // Mission-control panels for the Home tab (docs/specs/dashboard.md). Layout
 // only; the numbers come from src/lib/activity.js.
@@ -227,6 +228,40 @@ export function SignInsPanel({ entries, error, now, names, wall, limit = 12 }) {
               <span className="text-slate-400"> {e.ok ? 'signed in' : `couldn’t sign in · ${reasonText(e.code)}`}{e.device ? ` · ${e.device}` : ''}</span>
             </span>
             <span className="shrink-0 text-xs tabular-nums text-slate-500">{agoText(toMs(e.at), now)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+// Spent this month (docs/specs/spend.md): what the services behind the app
+// cost so far this month. summary: spentSummary(); error: usage doc refused.
+const HOW = { exact: 'exact', estimate: 'typed in ⚙', link: 'see billing', none: '' }
+const BILLING = 'https://console.cloud.google.com/billing?project=clc-leads-site'
+export function SpendPanel({ summary, month, error, loading, wall }) {
+  const title = new Date(`${month}-15T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  return (
+    <section className={panel} aria-label="Spent this month">
+      <h2 className={label}>Spent this month · {title}</h2>
+      {error && <p className="mt-3 text-sm text-glow-300">Needs the database rules published again (firestore.rules) before Claude and PayPal costs can show.</p>}
+      <p className="mt-1 flex items-baseline justify-between gap-2">
+        <span className={`font-semibold tabular-nums text-glow-300 ${wall ? 'text-5xl' : 'text-3xl'}`}>{loading && !error ? '…' : spendText(summary.totalCents)}</span>
+        <span className="text-right text-xs text-slate-400">Claude + PayPal fees + fixed<br />Google Cloud not included</span>
+      </p>
+      <ul className={`mt-3 space-y-2 ${wall ? 'text-lg' : 'text-sm'}`}>
+        {summary.rows.map((r) => (
+          <li key={r.key} className="min-w-0">
+            <span className="flex items-baseline justify-between gap-2">
+              <span className="font-medium">{r.name}</span>
+              {r.how === 'link'
+                ? <a href={BILLING} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-glow-300 underline">see billing ↗</a>
+                : <span className="tabular-nums text-slate-50">{spendText(r.cents)}{r.how === 'exact' ? '' : ' ~'}</span>}
+            </span>
+            <span className="block truncate text-xs text-slate-400">{r.note}{HOW[r.how] && r.how !== 'link' ? ` · ${HOW[r.how]}` : ''}</span>
+            {r.parts?.length > 0 && r.key === 'claude' && (
+              <span className="block truncate text-xs text-slate-500">{r.parts.map((p) => `${p.name} ${spendText(p.cents)} (${p.calls})`).join(' · ')}</span>
+            )}
           </li>
         ))}
       </ul>

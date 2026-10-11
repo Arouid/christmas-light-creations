@@ -1,6 +1,7 @@
 // Made-up records for previewing the staff app (?demo in development).
 import { SAMPLE_PHOTO, sampleDesign } from '../design/sampleDesign'
 import { quickPicks, whenText } from '../../functions/scheduleTime.js'
+import { monthKey } from '../lib/spend'
 const customers = [
   {
     id: 'sample-customer', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer',
@@ -48,7 +49,12 @@ export const demoData = {
     { id: 'demo-call-2', customerId: 'example-family', customerName: 'Example Family', issue: 'Tripped GFCI',
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
   ]),
-  settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 } } },
+  settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 }, monthlyCosts: [{ name: 'Google Workspace', amount: 14.4 }, { name: 'Google Voice', amount: 10 }, { name: 'Domain', amount: 1.75 }] } },
+  // Home → Spent this month (docs/specs/spend.md): this month's Claude calls and PayPal fees.
+  usage: { [monthKey()]: {
+    claude: { draft: { calls: 14, inputTokens: 71000, outputTokens: 11200, microCents: 42300 }, ask: { calls: 5, inputTokens: 40500, outputTokens: 2100, microCents: 18800 }, plan: { calls: 2, inputTokens: 30000, outputTokens: 7000, microCents: 29600 } },
+    paypal: { payments: 3, grossCents: 185000, feeCents: 5667 },
+  } },
   signs: byId([
     { id: 'demo-sign-1', corner: 'Broadway & 288', code: 'broadway-288', lat: 29.5695, lng: -95.3864, placedAt: hoursAgo(30), cost: 10, updatedBy: 'demo@example.com' },
     { id: 'demo-sign-2', corner: 'Dixie Farm & 35', code: 'dixie-farm-35', lat: 29.5830, lng: -95.2520, placedAt: hoursAgo(60), cost: 10, removedAt: hoursAgo(40), updatedBy: 'demo@example.com' },

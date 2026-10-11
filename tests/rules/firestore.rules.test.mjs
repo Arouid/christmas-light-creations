@@ -458,6 +458,16 @@ describe('leadDesigns: a design sent with an estimate request (docs/specs/public
   })
 })
 
+describe('usage: "Spent this month" (docs/specs/spend.md)', () => {
+  test('staff read the month doc; nobody writes it from the app; outsiders get nothing', async () => {
+    const db = as.staff()
+    await assertSucceeds(getDoc(doc(db, 'usage', '2026-10')))
+    await assertFails(setDoc(doc(db, 'usage', '2026-10'), { claude: { draft: { calls: 1 } }, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'usage', '2026-10'), { 'paypal.feeCents': 0, ...stamp() }))
+    await assertFails(getDoc(doc(as.anon(), 'usage', '2026-10')))
+  })
+})
+
 describe('scheduledEmails: "Send later" (docs/specs/scheduled-email.md)', () => {
   test('staff read them; nobody, staff included, writes one (only the server schedules, cancels or marks sent)', async () => {
     const db = as.staff()

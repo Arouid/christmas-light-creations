@@ -101,7 +101,7 @@ Returning customers are billed every season (re-install, takedown, add-ons, serv
 | `note`, `dueDate` (`YYYY-MM-DD`), `remindersOff` | staff | |
 | `offline {method, date, note, by}` | staff | Mark paid; removed on Undo |
 | `number` (e.g. `CLC-2026-0001`), `sentAt` | server | given when first sent |
-| `payment {status, cents, orderId, captureId, payerEmail, env, paidAt}` | server | online payment |
+| `payment {status, cents, orderId, captureId, feeCents, payerEmail, env, paidAt}` | server | online payment (`feeCents`: PayPal's fee, or null if PayPal didn't say; `docs/specs/spend.md`) |
 | `paymentLock {orderId, at}` | server | 2-minute capture lock |
 | `emails [{type, to, at}]`, `seasonFilled`, `emailKeys` | server | sent emails (invoice/again/reminder/receipt), season fill done, lowercase email for /account/ |
 | `viewedAt` | public | first time the link was opened |
