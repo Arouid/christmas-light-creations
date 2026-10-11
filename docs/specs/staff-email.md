@@ -1,6 +1,6 @@
 # Staff email from the app
 
-> Status: live 2026-10-09; real send checked by the owner 2026-10-10 (reply and bulk checks pending: TODO #38) · Decided 2026-10-09 by Scott (owner)
+> Status: live 2026-10-09; real send and reply checked by the owner 2026-10-10 (bulk check pending: TODO #38) · Decided 2026-10-09 by Scott (owner)
 
 ## The problem
 
