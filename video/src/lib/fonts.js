@@ -5,6 +5,11 @@ import { staticFile } from 'remotion'
 export const DISPLAY = 'Fraunces'
 export const BODY = 'Inter'
 
+// Headline style, same as the site's h1: Fraunces extrabold, tight tracking.
+export const display = (type, size, extra = {}) => ({
+  fontFamily: DISPLAY, fontWeight: type?.displayWeight ?? 800, letterSpacing: type?.displayTracking ?? '-0.02em', fontSize: size, lineHeight: 1.05, ...extra,
+})
+
 let started = false
 export function loadFonts() {
   if (started) return

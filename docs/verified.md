@@ -342,3 +342,12 @@ What was actually checked working, and how. Newest first.
 - 2026-10-11 Row packing at 1200px (demo): Recent activity (606px) | System status + Season (505px); next row starts aligned at the same y for both sides (Scheduled emails | Who's on + Spent this month); then Sign-ins | Today's routes; Google Ads alone. No holes under short panels.
 
 - 2026-10-11 Thirds at 1200px (demo): 1/3+1/3+1/3 row (374px each); 2/3 Recent activity (763px) with Season and Spent this month stacked in the 1/3 beside it, starting level; 1/3 Sign-ins + 2/3 Today's routes; Wide Google Ads (1153px). Size buttons read ⇔ 1/3 / 2/3 / Wide / Half as set.
+
+## 2026-10-11 Google Ads video, cut 2 (owner's notes applied)
+
+- `npm run video:render` wrote the three MP4s (16:9 12.8 MB, 9:16 12.3 MB, 1:1 9.2 MB): ffprobe shows h264 30 fps plus an AAC 48 kHz audio stream, 27.65 s each.
+- 0.4-scale full frame sequences of all three shapes viewed as contact sheets, and one frame a second of the finals: cottage dark then switching on at ~3.5 s with the name; headline in Fraunces extrabold tight; ring + ladder; the design tool with the cursor switching bulbs warm → cool white → red on photo 58 (tinted variants from the bulb mask); illustrated street lighting up behind the season cards and (green) behind the offer; the map with Galveston Bay and the 20 towns labelled at real positions; the end card unchanged. No sparkles, no bloom. The square cut's "Get my free estimate" button fits on one line and the design headline stays inside the frame after the fix; the vertical offer line fits.
+- Bulb tints checked on photo 58 (`video/out/tints.jpg`): cool white reads as cool, red reads as red, walls untouched. The "lights off" fake was tried four ways (blur fill, median fill, dark fill, wider halo mask) and dropped: halos stayed visible.
+- Music: Pixabay page for the JuliusH track shows no "Content ID Registered" badge (the three other Carol of the Bells candidates do); file 64.3 s, 256 kbps stereo; loudness per second shows the first hit at ~4 s, so the cottage comes on at frame 104.
+- Remotion Studio reloaded in the browser pane on the new cut, no console errors, scrubbed to the switch-on frame. `npm run check` not re-run after cut 2 (only `video/` changed, linted clean with the site's oxlint).
+- Not checked: listening to the mix (no speakers in this session: music level 0.6 is a guess), playback in a real player, YouTube/Google Ads acceptance, the owner's verdict on cut 2.

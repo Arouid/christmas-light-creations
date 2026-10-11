@@ -1,109 +1,99 @@
 import { AbsoluteFill, Img, staticFile, useCurrentFrame, interpolate } from 'remotion'
-import { alongPolyline, coverRect, TALL_WINDOW, useFmt } from '../lib/format.js'
-import { SceneFade, Sparkles } from '../lib/Stage.jsx'
-import { DISPLAY, BODY } from '../lib/fonts.js'
+import { useFmt } from '../lib/format.js'
+import { SceneFade } from '../lib/Stage.jsx'
+import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop, progress } from '../lib/motion.js'
 
-// Scene 4: a mock of the site's /design/ page. A house photo loads in a phone (tall) or a browser
-// window (wide, square); a cursor taps "Add roofline"; a light string draws itself bulb by bulb
-// along the roofline; a "Looks like this" pill pops; the headline lands.
-const CLICK = 28
-const DRAW_FROM = 32
-const DRAW_TO = 96
+// Scene 4: the site's design tool, full frame. The customer's house photo fills the canvas; a
+// panel lists what to light and the bulb colour. The cursor picks "Cool white", then "Red", and
+// the bulbs on the photo change colour each time. Then the headline.
+const CLICK1 = 34
+const CLICK2 = 72
 
 export function DesignOnline({ data, dur }) {
   const frame = useCurrentFrame()
   const { w, h, fps, tall, square } = useFmt()
-  const { colors, words } = data
+  const { colors, words, type } = data
   const photo = data.photos.design
-  const phone = tall
-  // Device box
-  const dev = phone
-    ? { x: (w - 720) / 2, y: 70, w: 720, h: 1180, radius: 56, bar: 110 }
-    : square
-      ? { x: 90, y: 70, w: 900, h: 600, radius: 28, bar: 64 }
-      : { x: 96, y: 80, w: 1150, h: 760, radius: 28, bar: 64 }
-  const devPop = pop(frame, fps, 0, { damping: 16 })
-  const photoBox = { w: dev.w, h: dev.h - dev.bar - (phone ? 150 : 110) }
-  const rect = coverRect(photo.aspect, photoBox.w, photoBox.h, photo.focus)
-  const toPx = ([fx, fy]) => [rect.x + fx * rect.w, rect.y + fy * rect.h]
-  const lines = photo.roofline.map((pl) => pl.map(toPx))
-  const totalLen = lines.reduce((s, pl) => s + alongPolyline(pl, 1000).total, 0)
-  const draw = progress(frame, DRAW_FROM, DRAW_TO)
-  const drawn = draw * totalLen
-  // Button + cursor
-  const btn = { x: 40, y: photoBox.h + 30, w: phone ? 360 : 300, h: phone ? 92 : 68 }
-  const cur = pop(frame, fps, 6, { damping: 18, stiffness: 90 })
-  const curX = interpolate(cur, [0, 1], [dev.w - 60, btn.x + btn.w * 0.55])
-  const curY = interpolate(cur, [0, 1], [dev.h - 40, btn.y + btn.h * 0.6])
-  const ripple = progress(frame, CLICK, CLICK + 14)
-  const pressed = frame >= CLICK
-  const pill = pop(frame, fps, DRAW_TO + 2)
-  // Headline
-  const title = pop(frame, fps, 54)
-  const textTop = phone ? TALL_WINDOW - 60 : dev.y + dev.h + (square ? 30 : 36)
-  const titleSize = phone ? 92 : square ? 70 : 84
-  let offset = 0
-  const bulbEls = []
-  const pathEls = []
-  lines.forEach((pl, li) => {
-    const { points, total } = alongPolyline(pl, 24)
-    const local = Math.max(0, Math.min(total, drawn - offset))
-    pathEls.push(
-      <polyline key={`p${li}`} points={pl.map((p) => p.join(',')).join(' ')} fill="none" stroke="rgba(255,224,138,0.7)" strokeWidth="4" strokeDasharray={total} strokeDashoffset={total - local} />,
-    )
-    points.forEach((pt, i) => {
-      if (pt.d > local) return
-      const age = frame - (DRAW_FROM + (offset + pt.d) / totalLen * (DRAW_TO - DRAW_FROM))
-      const s = Math.min(1, age / 4)
-      bulbEls.push(
-        <g key={`b${li}-${i}`} transform={`translate(${pt.x} ${pt.y}) scale(${0.3 + s * 0.7})`}>
-          <circle r="15" fill={colors.goldSoft} opacity="0.45" filter="url(#bulbGlow)" />
-          <circle r="5.5" fill="#fff6d6" />
-        </g>,
-      )
-    })
-    offset += total
-  })
+  const stack = tall
+  const bar = tall ? 96 : 64
+  const panelW = square ? 300 : 380
+  const panelH = 300
+  const canvas = stack ? { x: 0, y: bar, w, h: 1150 } : { x: panelW, y: bar, w: w - panelW, h: h - bar }
+  const panel = stack ? { x: 0, y: bar + canvas.h, w, h: panelH } : { x: 0, y: bar, w: panelW, h: h - bar }
+  const ui = pop(frame, fps, 0, { damping: 16 })
+  const toCool = progress(frame, CLICK1, CLICK1 + 10)
+  const toRed = progress(frame, CLICK2, CLICK2 + 10)
+  const current = frame < CLICK1 ? 0 : frame < CLICK2 ? 1 : 2
+  const chipH = tall ? 84 : 64
+  const chipY0 = stack ? panel.y + 150 : panel.y + 430
+  const chipX = (i) => (stack ? 60 + i * (chipH + 300) : 40)
+  const chipYi = (i) => (stack ? chipY0 : chipY0 + i * (chipH + 18))
+  const c1 = pop(frame, fps, 8, { damping: 18, stiffness: 80 })
+  const c2 = pop(frame, fps, CLICK1 + 14, { damping: 18, stiffness: 80 })
+  const start = stack ? [w * 0.7, canvas.y + canvas.h * 0.7] : [canvas.x + canvas.w * 0.55, canvas.y + canvas.h * 0.6]
+  const p1 = [chipX(1) + 60, chipYi(1) + chipH / 2]
+  const p2 = [chipX(2) + 60, chipYi(2) + chipH / 2]
+  const curX = frame < CLICK1 + 14 ? interpolate(c1, [0, 1], [start[0], p1[0]]) : interpolate(c2, [0, 1], [p1[0], p2[0]])
+  const curY = frame < CLICK1 + 14 ? interpolate(c1, [0, 1], [start[1], p1[1]]) : interpolate(c2, [0, 1], [p1[1], p2[1]])
+  const ripple = (at) => progress(frame, at, at + 12)
+  const title = pop(frame, fps, 92)
+  const titleSize = tall ? 88 : square ? 66 : 84
+  const imgStyle = { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: `${photo.focus[0] * 100}% ${photo.focus[1] * 100}%` }
+  const check = (on) => (
+    <span style={{ width: 34, height: 34, borderRadius: 8, border: `2px solid ${on ? colors.gold : '#3a4a73'}`, background: on ? colors.gold : 'transparent', color: colors.navy, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800, flexShrink: 0 }}>{on ? '✓' : ''}</span>
+  )
   return (
     <SceneFade dur={dur}>
-      <AbsoluteFill
-        style={{ background: `radial-gradient(ellipse at 50% 30%, ${colors.navyLight}, ${colors.navy} 70%)` }}
-      >
-        <Sparkles count={30} seed="design" opacity={0.5} area={{ w, h }} />
-        <div style={{ position: 'absolute', left: dev.x, top: dev.y, width: dev.w, height: dev.h, borderRadius: dev.radius, background: '#0b1733', boxShadow: `0 30px 80px rgba(0,0,0,0.6), 0 0 0 ${phone ? 10 : 2}px #1c2f63`, overflow: 'hidden', transform: `scale(${0.85 + devPop * 0.15})`, opacity: fadeIn(frame, 0, 6) }}>
-          <div style={{ height: dev.bar, display: 'flex', alignItems: 'center', gap: 14, padding: '0 28px', fontFamily: BODY, fontSize: phone ? 30 : 24, color: '#9fb0d0', background: '#0a1530', borderBottom: '1px solid #1c2f63' }}>
-            {!phone && (<><span style={{ width: 14, height: 14, borderRadius: 7, background: '#ff5f57' }} /><span style={{ width: 14, height: 14, borderRadius: 7, background: '#febc2e' }} /><span style={{ width: 14, height: 14, borderRadius: 7, background: '#28c840' }} /></>)}
-            <span style={{ marginLeft: phone ? 0 : 20, padding: '8px 18px', borderRadius: 999, background: '#12214a', flex: 1, textAlign: phone ? 'center' : 'left' }}>{words.designUrl}</span>
-          </div>
-          <div style={{ position: 'relative', width: photoBox.w, height: photoBox.h, overflow: 'hidden', background: '#000' }}>
-            <Img
-              src={staticFile(`photos/${photo.number}.jpg`)}
-              style={{ position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h, filter: `brightness(${0.32 + draw * 0.5}) saturate(${0.35 + draw * 0.65})` }}
-            />
-            <svg width={photoBox.w} height={photoBox.h} style={{ position: 'absolute', inset: 0 }}>
-              <defs><filter id="bulbGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" /></filter></defs>
-              {pathEls}
-              {bulbEls}
-            </svg>
-          </div>
-          <div style={{ position: 'absolute', left: btn.x, top: btn.y, width: btn.w, height: btn.h, borderRadius: 999, background: pressed ? colors.goldSoft : colors.gold, color: colors.navy, fontFamily: BODY, fontWeight: 700, fontSize: phone ? 34 : 26, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${pressed && frame < CLICK + 6 ? 0.94 : 1})` }}>
-            + {words.designButton}
-          </div>
-          <div style={{ position: 'absolute', right: 40, top: btn.y + btn.h / 2 - (phone ? 36 : 28), height: phone ? 72 : 56, padding: phone ? '0 30px' : '0 24px', borderRadius: 999, background: colors.green, color: colors.navy, fontFamily: BODY, fontWeight: 700, fontSize: phone ? 32 : 24, display: 'flex', alignItems: 'center', gap: 10, transform: `scale(${pill})`, opacity: pill }}>
-            ✓ {words.designDone}
-          </div>
-          <svg width={dev.w} height={dev.h} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-            {ripple > 0 && ripple < 1 && <circle cx={curX} cy={curY} r={10 + ripple * 50} fill="none" stroke={colors.white} strokeWidth="3" opacity={1 - ripple} />}
-            {phone ? (
-              <circle cx={curX} cy={curY} r="22" fill="rgba(255,255,255,0.55)" stroke="#fff" strokeWidth="3" />
-            ) : (
-              <path d={`M${curX} ${curY} l0 28 l7 -6 l6 13 l6 -3 l-6 -13 l10 -1 z`} fill="#fff" stroke={colors.navy} strokeWidth="1.5" />
-            )}
-          </svg>
+      <AbsoluteFill style={{ background: colors.navy, transform: `scale(${0.96 + ui * 0.04})`, opacity: fadeIn(frame, 0, 6) }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, width: w, height: bar, display: 'flex', alignItems: 'center', gap: 14, padding: '0 28px', fontFamily: BODY, fontSize: tall ? 30 : 24, color: '#9fb0d0', background: colors.navyLight, borderBottom: `1px solid ${colors.navyMid}` }}>
+          {!tall && (<><span style={{ width: 14, height: 14, borderRadius: 7, background: '#ff5f57' }} /><span style={{ width: 14, height: 14, borderRadius: 7, background: '#febc2e' }} /><span style={{ width: 14, height: 14, borderRadius: 7, background: '#28c840' }} /></>)}
+          <span style={{ marginLeft: tall ? 0 : 20, padding: '8px 18px', borderRadius: 999, background: colors.navyMid, flex: 1, textAlign: tall ? 'center' : 'left' }}>{words.designUrl}</span>
         </div>
-        <div style={{ position: 'absolute', left: 0, width: w, top: textTop, padding: `0 ${square ? 72 : 96}px`, display: 'flex', flexDirection: 'column', alignItems: phone ? 'center' : 'flex-start', textAlign: phone ? 'center' : 'left' }}>
-          <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: titleSize, lineHeight: 1.05, color: colors.gold, transform: `translateY(${(1 - title) * 60}px)`, opacity: fadeIn(frame, 54, 8), maxWidth: phone ? 900 : 1500 }}>
+        <div style={{ position: 'absolute', left: canvas.x, top: canvas.y, width: canvas.w, height: canvas.h, overflow: 'hidden', background: '#000' }}>
+          <Img src={staticFile(`photos/${photo.number}.jpg`)} style={imgStyle} />
+          <Img src={staticFile(`photos/${photo.number}-cool.jpg`)} style={{ ...imgStyle, opacity: toCool * (1 - toRed) }} />
+          <Img src={staticFile(`photos/${photo.number}-red.jpg`)} style={{ ...imgStyle, opacity: toRed }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 320, background: `linear-gradient(to top, rgba(5,11,26,0.9), transparent)`, opacity: title }} />
+        </div>
+        <div style={{ position: 'absolute', left: panel.x, top: panel.y, width: panel.w, height: panel.h, background: colors.navyLight, borderRight: stack ? 'none' : `1px solid ${colors.navyMid}`, borderTop: stack ? `1px solid ${colors.navyMid}` : 'none', padding: stack ? '26px 60px' : '34px 40px', color: colors.white, fontFamily: BODY, display: 'flex', flexDirection: stack ? 'row' : 'column', gap: stack ? 60 : 0, alignItems: stack ? 'flex-start' : 'stretch' }}>
+          <div style={{ flex: stack ? '0 0 420px' : 'none' }}>
+            <div style={{ ...display(type, tall ? 44 : square ? 34 : 40), color: colors.gold, marginBottom: stack ? 18 : 26 }}>{words.designPanelTitle}</div>
+            {words.designOptions.map((o, i) => (
+              <div key={o} style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: tall ? 32 : square ? 24 : 28, fontWeight: 500, marginBottom: stack ? 12 : 18, opacity: fadeIn(frame, 4 + i * 3, 6) }}>
+                {check(i === 0)}{o}
+              </div>
+            ))}
+          </div>
+          <div style={{ flex: 1 }}>
+            {!stack && <div style={{ fontSize: square ? 22 : 24, color: '#9fb0d0', letterSpacing: '0.08em', textTransform: 'uppercase', margin: '26px 0 14px' }}>Colour</div>}
+            <div style={{ display: 'flex', flexDirection: stack ? 'row' : 'column', gap: stack ? 24 : 18, flexWrap: 'wrap' }}>
+              {words.designColours.map((c, i) => {
+                const on = current === i
+                const at = i === 1 ? CLICK1 : CLICK2
+                const pressed = on && i > 0 && frame >= at && frame < at + 6
+                return (
+                  <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 16, height: chipH, padding: '0 22px 0 14px', borderRadius: 999, border: `2px solid ${on ? colors.gold : '#3a4a73'}`, background: on ? 'rgba(255,207,77,0.14)' : 'transparent', fontSize: tall ? 30 : square ? 24 : 28, fontWeight: 600, transform: `scale(${pressed ? 0.95 : 1})`, opacity: fadeIn(frame, 10 + i * 3, 6), whiteSpace: 'nowrap' }}>
+                    <span style={{ width: chipH - 24, height: chipH - 24, borderRadius: '50%', background: c.swatch, boxShadow: on ? `0 0 16px ${c.swatch}` : 'none' }} />{c.label}
+                  </div>
+                )
+              })}
+            </div>
+            {!stack && (
+              <div style={{ height: 64, borderRadius: 999, background: colors.gold, color: colors.navy, fontWeight: 700, fontSize: square ? 19 : 26, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', left: square ? 24 : 40, right: square ? 24 : 40, bottom: 40, opacity: fadeIn(frame, 20, 8) }}>{words.designButton}</div>
+            )}
+          </div>
+        </div>
+        <svg width={w} height={h} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          {[CLICK1, CLICK2].map((at, i) => { const r = ripple(at); return r > 0 && r < 1 ? <circle key={i} cx={i === 0 ? p1[0] : p2[0]} cy={i === 0 ? p1[1] : p2[1]} r={10 + r * 50} fill="none" stroke={colors.white} strokeWidth="3" opacity={1 - r} /> : null })}
+          {tall ? (
+            <circle cx={curX} cy={curY} r="22" fill="rgba(255,255,255,0.55)" stroke="#fff" strokeWidth="3" />
+          ) : (
+            <path d={`M${curX} ${curY} l0 30 l8 -7 l6 14 l7 -3 l-6 -14 l11 -1 z`} fill="#fff" stroke={colors.navy} strokeWidth="1.5" />
+          )}
+        </svg>
+        <div style={{ position: 'absolute', left: canvas.x, width: canvas.w, top: canvas.y + canvas.h - (tall ? 190 : square ? 250 : 170), padding: `0 ${square ? 48 : 72}px`, display: 'flex', flexDirection: 'column', alignItems: stack ? 'center' : 'flex-start', textAlign: stack ? 'center' : 'left' }}>
+          <div style={{ ...display(type, titleSize), color: colors.gold, transform: `translateY(${(1 - title) * 60}px)`, opacity: fadeIn(frame, 92, 8), textShadow: '0 4px 30px rgba(0,0,0,0.8)' }}>
             {words.designTitle}
           </div>
         </div>

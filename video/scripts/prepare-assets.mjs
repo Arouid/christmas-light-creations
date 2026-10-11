@@ -3,7 +3,7 @@
 // GPS data leaves the drop folder), the cottage logo SVG and the site's two fonts.
 // Which photos: every `file` named in src/data.js. Safe to run again; skips files already done.
 import { createRequire } from 'node:module'
-import { existsSync, mkdirSync, copyFileSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, copyFileSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -45,8 +45,61 @@ for (const f of ['fraunces-latin.woff2', 'inter-latin.woff2']) {
   const dst = join(out, 'fonts', f)
   if (fresh(src, dst)) { copyFileSync(src, dst); console.log('font', f) }
 }
-for (const f of ['clc-cottage-color.svg']) {
+for (const f of ['clc-cottage-color.svg', 'clc-cottage-one-color-white.svg']) {
   const src = join(repoRoot, 'assets-source', 'logo-vector', f)
   const dst = join(out, 'logo', f)
   if (fresh(src, dst)) { copyFileSync(src, dst); console.log('logo', f) }
+}
+
+// Bulb-colour variants for the design mock: the bulbs (small blobs much brighter than their
+// surroundings, plus their halo) are tinted cool white or red, the rest of the photo untouched.
+// Written as photos/<number>-cool.jpg and photos/<number>-red.jpg. Only for photos with `tints`.
+const TINTS = { cool: [0.84, 0.92, 1.0], red: [1.0, 0.22, 0.18], green: [0.3, 1.0, 0.35] }
+for (const photo of Object.values(data.photos)) {
+  if (!photo.tints) continue
+  const lit = join(out, 'photos', `${photo.number}.jpg`)
+  const todo = photo.tints.filter((t) => TINTS[t] && fresh(lit, join(out, 'photos', `${photo.number}-${t}.jpg`)))
+  if (!todo.length) continue
+  const { data: grey, info } = await sharp(lit).toColourspace('b-w').raw().toBuffer({ resolveWithObject: true })
+  const { data: local } = await sharp(lit).toColourspace('b-w').blur(9).raw().toBuffer({ resolveWithObject: true })
+  const { width, height, channels: ch } = info
+  const n = width * height
+  const core = Buffer.alloc(n)
+  for (let i = 0; i < n; i++) core[i] = grey[i * ch] > (photo.bulbThreshold ?? 215) && grey[i * ch] - local[i * ch] > 45 ? 255 : 0
+  const { data: mask, info: mi } = await sharp(core, { raw: { width, height, channels: 1 } }).blur(5).threshold(8).blur(3).raw().toBuffer({ resolveWithObject: true })
+  const mch = mi.channels
+  const { data: rgb } = await sharp(lit).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+  for (const t of todo) {
+    const [tr, tg, tb] = TINTS[t]
+    const outRgb = Buffer.alloc(n * 3)
+    for (let i = 0; i < n; i++) {
+      const a = mask[i * mch] / 255
+      const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]
+      const lum = 0.3 * r + 0.59 * g + 0.11 * b
+      outRgb[i * 3] = Math.round(r * (1 - a) + Math.min(255, lum * tr) * a)
+      outRgb[i * 3 + 1] = Math.round(g * (1 - a) + Math.min(255, lum * tg) * a)
+      outRgb[i * 3 + 2] = Math.round(b * (1 - a) + Math.min(255, lum * tb) * a)
+    }
+    const dst = join(out, 'photos', `${photo.number}-${t}.jpg`)
+    await sharp(outRgb, { raw: { width, height, channels: 3 } }).jpeg({ quality: 88 }).toFile(dst)
+    console.log('tint', t, photo.number, '->', dst)
+  }
+}
+
+// Optional real footage (a phone or drone clip of a finished house): any file in
+// assets-source/ads/clips/ is copied to public/clips/ and can be named as `clip` on a photo.
+const clipsDir = join(repoRoot, 'assets-source', 'ads', 'clips')
+if (existsSync(clipsDir)) {
+  mkdirSync(join(out, 'clips'), { recursive: true })
+  for (const f of readdirSync(clipsDir)) {
+    const src = join(clipsDir, f)
+    const dst = join(out, 'clips', f)
+    if (fresh(src, dst)) { copyFileSync(src, dst); console.log('clip', f) }
+  }
+}
+
+// The music bed is not in git (public repo; the Pixabay licence forbids redistributing the file).
+if (data.music?.file && !existsSync(join(out, 'music', data.music.file))) {
+  console.error(`music: ${data.music.file} is missing from video/public/music/. Download it again from the URL in assets-source/ads/video/README.md (Music), or set music.file to '' in src/data.js for a silent render.`)
+  process.exitCode = 1
 }

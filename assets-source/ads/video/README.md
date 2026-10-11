@@ -1,11 +1,9 @@
 # Google Ads video ad (Performance Max)
 
-Motion-design ad made in **Remotion** (React video): the house switches on, kinetic type, a ring
-that draws itself, a mock of the /design/ page placing lights, Nov→Dec→Jan cards, the towns
-served, the October stamp and a neon end card with the phone number. Built 2026-10-11 in
-`video/` (storyboard: `docs/specs/ads-video.md`). It replaced the photo slideshow from
-`scripts/ads-video.py` (owner: "more than just some gallery photos stitched together"); the
-Python script still works as a fallback.
+Motion-design ad made in **Remotion** (React video), second cut 2026-10-11 after the owner's
+notes on the first (no gallery feel, no sparkles, no bloom, the site's type, a real map, more
+production value, Carol of the Bells). Built in `video/` (storyboard: `docs/specs/ads-video.md`).
+The photo slideshow from `scripts/ads-video.py` is kept only as a fallback.
 
 The MP4s are not in git (`.gitignore`: this folder except this README). Rebuild them whenever
 they are missing or the words, photos or offer change.
@@ -18,18 +16,23 @@ they are missing or the words, photos or offer change.
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | Discover, Gmail, square feeds |
 
-All three: H.264, 30 fps, 27 s with the October offer (25 s without), silent.
+All three: H.264, 30 fps, about 28 s with the October offer (26 s without), with music.
 
 | Seconds | Scene | Words |
 |---|---|---|
-| 0–4 | house switches on (wipe + bloom + sparkle) | – |
-| 4–8 | kinetic headline | Christmas light installation / for homes and businesses around south Houston |
-| 8–11.5 | ring draws around 30 min, ladder struck through | Free estimate / No ladder needed |
-| 11.5–16 | /design/ page mock: string drawn along the roofline | Design your lights online first |
-| 16–19 | three cards light up along a line | Installed · Serviced all season · Taken down |
-| 19–22 | towns pop in by region | South Houston + the 20 towns |
-| 22–24 | 10 % OFF stamp, calendar flips to OCT 31 | Installs done by October 31 |
-| 24–27 | logo flickers on, snow, phone number | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate |
+| 0–5.5 | winter night, snow, the cottage logo in the dark; it switches on (neon flicker) on the music's first hit | Christmas Light Creations · Pearland, TX · since 2011 |
+| 5.5–9 | the three-gable brick house (photo 34), slow push-in, headline lands word by word | Christmas light installation / for homes and businesses around south Houston |
+| 9–12 | ring draws around 30 min, ladder struck through, stone house (57) drifting behind | Free estimate / No ladder needed |
+| 12–16.5 | the /design/ tool, full frame: house photo (58) on the canvas, the cursor picks Cool white then Red and the bulbs change colour | Design your lights online first |
+| 16.5–19 | illustrated street whose lights come on bulb by bulb; three cards light along a line | Installed · Serviced all season · Taken down |
+| 19–22 | a map: Galveston Bay, the 20 towns at their real positions lighting up, Pearland pinned | Where we install · South Houston |
+| 22–24 | 10 % OFF stamp, typed line, calendar flips to OCT 31, green-lit street behind | Installs done by October 31 |
+| 24–28 | logo flickers on, snow, phone number (the scene the owner liked, unchanged) | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate |
+
+Photos used: only 34, 57 and 58 (the strong ones). Weak spots are graphics instead.
+Real footage: drop a phone or drone clip (MP4) of a finished house into
+`assets-source/ads/clips/` and name it as `clip` on `photos.hero` in `video/src/data.js`; it
+replaces the hero photo in scene 2.
 
 ## Open the studio (scrub, change words, see it live)
 
@@ -80,13 +83,15 @@ second of each MP4 into `video/out/frames/<shape>/`.
 
 ## Music
 
-Silent on purpose. A music bed goes in only if it is clearly licence-free (Pixabay content
-licence, CC0 or similar): drop the file into `video/public/music/`, set `music.file` in
-`data.js` (and `music.volume`), render, and record the track, source URL and licence here:
+Only clearly licence-free music (Pixabay Content License, CC0 or similar). To swap: drop the
+file into `video/public/music/`, set `music.file` in `data.js`, render, and record it here:
 
 | Track | Source | Licence |
 |---|---|---|
-| none yet | | |
+| "Little Swallow (Carol Of The Bells) – Ukrainian New Years Song" by JuliusH, 1:04, instrumental | https://pixabay.com/music/special-occasions-little-swallow-carol-of-the-bells-ukrainian-new-years-song-5821/ (downloaded 2026-10-11 to `video/public/music/carol-of-the-bells-juliush.mp3`, not in git) | Pixabay Content License: free for commercial use, no attribution required, not for resale as-is. Picked over the other Carol of the Bells tracks because its page shows no "Content ID Registered" badge (those can trigger YouTube copyright claims on an ad). The melody itself (Leontovych, 1914) is public domain. |
+
+The track is 64 s; the ad uses its first 28 s and fades out over the last 2.5 s (`music` in
+`data.js`: file, volume, startFrom).
 
 ## Licence
 
