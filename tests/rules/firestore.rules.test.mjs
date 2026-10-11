@@ -50,6 +50,7 @@ const staffDocs = {
   designFiles: { dataUrl: 'data:image/png;base64,AAAA' },
   settings: { alertEmails: [STAFF] },
   customerLogins: { email: 'cust@example.com' },
+  scheduledEmails: { status: 'scheduled', open: true, sendAt: new Date(), to: 'cust@example.com', subject: 'Hi', text: 'Hello', target: { field: 'customerId', id: 'pat-test' }, customerId: 'pat-test', name: 'Pat Test', by: STAFF },
   accountLinks: { count: 1 },
   staff: { name: 'Boss' },
 }
@@ -454,5 +455,18 @@ describe('leadDesigns: a design sent with an estimate request (docs/specs/public
     await assertSucceeds(setDoc(doc(as.anon(), 'leads', 'with-design'), lead({ designId: 'abc123' })))
     await assertFails(setDoc(doc(as.anon(), 'leads', 'bad-design'), lead({ designId: 'x'.repeat(61) })))
     await assertFails(setDoc(doc(as.anon(), 'leads', 'empty-design'), lead({ designId: '' })))
+  })
+})
+
+describe('scheduledEmails: "Send later" (docs/specs/scheduled-email.md)', () => {
+  test('staff read them; nobody, staff included, writes one (only the server schedules, cancels or marks sent)', async () => {
+    const db = as.staff()
+    await assertSucceeds(getDocs(collection(db, 'scheduledEmails')))
+    await assertSucceeds(getDoc(doc(db, 'scheduledEmails', 'x1')))
+    await assertFails(setDoc(doc(db, 'scheduledEmails', 'new1'), { ...staffDocs.scheduledEmails, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'scheduledEmails', 'x1'), { status: 'sent', open: false, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'scheduledEmails', 'x1'), { status: 'cancelled', open: false, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'scheduledEmails', 'x1'), { to: 'stranger@example.com', ...stamp() }))
+    await assertFails(deleteDoc(doc(db, 'scheduledEmails', 'x1')))
   })
 })

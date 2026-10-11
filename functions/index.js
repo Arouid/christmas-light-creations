@@ -23,6 +23,9 @@
 //   re-encoded and rebuilt on arrival, and deleted after 30 days.
 // - sendStaffEmail: staff email a customer from info@ without leaving the
 //   staff app; filed in their history at once (docs/specs/staff-email.md).
+// - scheduleStaffEmail / sendScheduledEmails: "Send later": staff schedule,
+//   edit or cancel; every 5 minutes the due ones go out like a Send
+//   (docs/specs/scheduled-email.md).
 // - draftReply: the sales assistant. Staff press "Suggest a reply" on a
 //   customer thread; Claude drafts one from their history and record, staff
 //   edit and send it themselves (docs/specs/sales-assistant.md).
@@ -41,7 +44,7 @@
 // Plain settings in functions/.env: PAYPAL_CLIENT_ID, PAYPAL_ENV.
 import { getApp, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
-import { FieldPath, FieldValue, getFirestore } from 'firebase-admin/firestore'
+import { FieldPath, FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore'
 import { onDocumentCreated, onDocumentUpdated, onDocumentWritten } from 'firebase-functions/v2/firestore'
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
@@ -57,6 +60,10 @@ import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseItem } from './messageSync.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
+import {
+  GMAIL_ERROR, STUCK_ERROR, cancelIds, cancelOutcome, claimOutcome, collOf, dayRoomProblem, dueOnes, editRequest, markPath,
+  requestOf, scheduledDoc, scheduledEmailRequest, sendAtProblem, stuckOnes,
+} from './scheduledEmail.js'
 import { TEST_PUSH, devicesOf, deviceGone, fcmMessage, pushFor, requestPush } from './staffPush.js'
 import { MAX_SIDE, cleanDesign, cutoff, jpegBytes } from './leadDesigns.js'
 import { MODEL, draftAllowed, draftRequest } from './assistant/prompt.js'
@@ -112,11 +119,13 @@ async function reportIncident(kind, message, details = {}) {
 }
 
 // Recent activity on the staff app's Home (docs/specs/dashboard.md): what a
-// customer did on the website. Never throws (it's a nice-to-have).
-async function logWebsite(action, target, text = '') {
+// customer did on the website, or what the server did for a staff member (a
+// scheduled email went out). Never throws (it's a nice-to-have).
+const logWebsite = (action, target, text = '') => logActivity('website', action, target, text)
+async function logActivity(by, action, target, text = '') {
   try {
     await getFirestore().collection('activity').add({
-      at: FieldValue.serverTimestamp(), by: 'website', action, text: String(text ?? '').slice(0, 300),
+      at: FieldValue.serverTimestamp(), by, action, text: String(text ?? '').slice(0, 300),
       target: { type: target.type, id: String(target.id ?? ''), name: String(target.name ?? '').slice(0, 200) },
     })
   } catch (e) { logger.warn('activity not logged', e.message) }
@@ -884,6 +893,183 @@ export const sendStaffEmail = onCall({ region: REGION, invoker: 'public', secret
   }
   logger.info('sendStaffEmail', { record: r.target.coll, template: r.template || 'none' })
   return { ok: true, id }
+})
+
+// ---- Scheduled email: "Send later" (docs/specs/scheduled-email.md) ------------
+// scheduleStaffEmail: staff schedule, edit or cancel, with the same checks as
+// sendStaffEmail (staff, address on the record, lengths), so only this code
+// writes scheduledEmails (rules: staff read only). sendScheduledEmails: every
+// 5 minutes, the due ones go out like a Send (history, Recent activity, the
+// shared daily count). Each is claimed in a transaction before sending, so two
+// runs can't both send it, and nothing is retried on its own: a failure stays
+// as "Didn't go" for staff and is reported. Logs carry no addresses or text.
+const SCHEDULED = 'scheduledEmails'
+const openScheduled = async (db) => (await db.collection(SCHEDULED).where('open', '==', true).get()).docs.map((d) => ({ id: d.id, ...d.data() }))
+const SCHEDULED_ID = /^[A-Za-z0-9_-]{1,100}$/
+
+export const scheduleStaffEmail = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
+  if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Only staff can schedule email from the app.')
+  const staff = normEmail(req.auth.token.email)
+  const db = getFirestore()
+  const action = req.data?.action
+  if (action === 'schedule') return scheduleEmails(db, staff, req.data)
+  if (action === 'edit') return editScheduled(db, staff, req.data)
+  if (action === 'cancel') return cancelScheduled(db, staff, req.data)
+  throw new HttpsError('invalid-argument', 'Unknown request')
+})
+
+async function scheduleEmails(db, staff, data) {
+  const r = scheduledEmailRequest(data, Date.now())
+  if (r.problem) throw new HttpsError(...r.problem)
+  const pathOf = (e) => `${e.target.coll}/${e.target.id}`
+  const refs = [...new Set(r.emails.map(pathOf))].map((p) => db.doc(p))
+  const records = new Map((await db.getAll(...refs)).map((s) => [s.ref.path, s.data()]))
+  for (const [i, e] of r.emails.entries()) {
+    const record = records.get(pathOf(e))
+    const which = r.emails.length > 1 ? `Email ${i + 1}${record ? ` (${record.fullName || record.firstName || ''})` : ''}: ` : ''
+    if (!record) throw new HttpsError('not-found', `${which}That record is gone. Refresh and try again.`)
+    if (!recipientsOf(record).includes(e.to)) throw new HttpsError('failed-precondition', `${which}That email isn’t on their record. Fix it there first, or use Open in Gmail.`)
+  }
+  const room = dayRoomProblem(await openScheduled(db), r.sendAt, r.emails.length)
+  if (room) throw new HttpsError(...room)
+
+  const batch = db.batch()
+  const ids = r.emails.map((e) => {
+    const ref = db.collection(SCHEDULED).doc()
+    const doc = scheduledDoc({ req: e, record: records.get(pathOf(e)), sendAt: r.sendAt, staff, batch: r.batch })
+    batch.set(ref, { ...doc, sendAt: Timestamp.fromMillis(doc.sendAt), at: FieldValue.serverTimestamp() })
+    return ref.id
+  })
+  await batch.commit()
+  logger.info('scheduleStaffEmail', { count: ids.length, list: Boolean(r.batch) })
+  return { ok: true, ids }
+}
+
+async function editScheduled(db, staff, data) {
+  const id = typeof data?.id === 'string' && SCHEDULED_ID.test(data.id) ? data.id : ''
+  if (!id) throw new HttpsError('invalid-argument', 'Which email?')
+  const when = sendAtProblem(Number(data.sendAt))
+  if (when) throw new HttpsError('invalid-argument', when)
+  const room = dayRoomProblem((await openScheduled(db)).filter((x) => x.id !== id), Number(data.sendAt), 1)
+  if (room) throw new HttpsError(...room)
+  const ref = db.doc(`${SCHEDULED}/${id}`)
+  await db.runTransaction(async (tx) => {
+    const e = editRequest((await tx.get(ref)).data(), data, Date.now())
+    if (e.problem) throw new HttpsError(...e.problem)
+    tx.update(ref, { ...e.update, sendAt: Timestamp.fromMillis(e.update.sendAt), error: FieldValue.delete(), updatedBy: staff, updatedAt: FieldValue.serverTimestamp() })
+  })
+  logger.info('scheduleStaffEmail edit')
+  return { ok: true }
+}
+
+async function cancelScheduled(db, staff, data) {
+  const c = cancelIds(data)
+  if (c.problem) throw new HttpsError(...c.problem)
+  const outcomes = await Promise.all(c.ids.map((id) => db.runTransaction(async (tx) => {
+    const ref = db.doc(`${SCHEDULED}/${id}`)
+    const o = cancelOutcome((await tx.get(ref)).data())
+    if (o === 'cancel') tx.update(ref, { status: 'cancelled', open: false, cancelledBy: staff, cancelledAt: FieldValue.serverTimestamp() })
+    return o
+  })))
+  const count = (o) => outcomes.filter((x) => x === o).length
+  logger.info('scheduleStaffEmail cancel', { cancelled: count('cancel'), tooLate: count('too-late') })
+  return { ok: true, cancelled: count('cancel'), tooLate: count('too-late') }
+}
+
+// Recent activity target, as the app logs a Send (src/leads/sendEmail.js).
+const ACTIVITY_TYPE = { customerId: 'customer', leadId: 'lead', pastRequestId: 'past' }
+
+// One due email: claim it, send it, file it. -> { sent } | { failed, error, gmail? } | {} (skipped)
+async function sendScheduled(db, id) {
+  const ref = db.doc(`${SCHEDULED}/${id}`)
+  const gate = db.doc('serverState/staffEmail')
+  const messageId = `<${randomUUID()}@christmas-light-creations.com>`
+  let doc, record
+  const claim = await db.runTransaction(async (tx) => {
+    doc = (await tx.get(ref)).data()
+    const readable = doc && !requestOf(doc).problem
+    const [recSnap, gateSnap] = await Promise.all([readable ? tx.get(db.doc(`${collOf(doc)}/${doc.target.id}`)) : null, tx.get(gate)])
+    record = recSnap?.data()
+    const c = claimOutcome({ doc, record, gate: gateSnap.data(), now: Date.now(), day: centralDay() })
+    if (c.outcome === 'fail') tx.update(ref, { status: 'failed', open: true, error: c.error, failedAt: FieldValue.serverTimestamp() })
+    if (c.outcome === 'go') {
+      tx.set(gate, c.gate)
+      tx.update(ref, { status: 'sending', claimedAt: FieldValue.serverTimestamp(), messageId })
+    }
+    return c
+  })
+  if (claim.outcome === 'skip') return {}
+  if (claim.outcome === 'fail') return { failed: true, error: claim.error }
+
+  const r = claim.req
+  try {
+    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, messageId })
+  } catch (e) {
+    // Left as "sending" if this write fails too: the stuck check reports it in 15 minutes.
+    await ref.update({ status: 'failed', open: true, error: GMAIL_ERROR, failedAt: FieldValue.serverTimestamp() }).catch((e2) => logger.error('scheduled email: marking failed failed', e2.message))
+    return { failed: true, gmail: true, error: `${GMAIL_ERROR} (${e.message})` }
+  }
+
+  const { id: historyId, data } = historyEntry({ req: r, record, messageId, staff: doc.by, at: new Date().toISOString() })
+  await ref.update({ status: 'sent', open: false, sentAt: FieldValue.serverTimestamp(), historyId }).catch((e) => logger.error('scheduled email sent, but not marked sent', e.message))
+  try {
+    await db.doc(`messages/${historyId}`).set({ ...data, scheduledId: id }, { merge: true })
+  } catch (e) {
+    await reportIncident('other', `A scheduled email to ${doc.name} went out, but saving it to their history failed (the text sync should add it within minutes): ${e.message}`)
+  }
+  await logActivity(doc.by, 'email', { type: ACTIVITY_TYPE[doc.target.field], id: doc.target.id, name: doc.name }, r.subject)
+  if (doc.mark && ['customerId', 'pastRequestId'].includes(doc.target.field)) {
+    await db.doc(`${collOf(doc)}/${doc.target.id}`)
+      .update({ [markPath(doc.mark, doc.template)]: centralDay(), updatedAt: FieldValue.serverTimestamp(), updatedBy: doc.by })
+      .catch((e) => logger.warn('scheduled email: season mark not saved', e.message))
+  }
+  return { sent: true }
+}
+
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export const sendScheduledEmails = onSchedule({ schedule: '*/5 * * * *', timeZone: 'America/Chicago', region: REGION, secrets: [SMTP_PASSWORD], timeoutSeconds: 300, maxInstances: 1, retryCount: 0 }, async () => {
+  const db = getFirestore()
+  const open = await openScheduled(db)
+  const failed = []
+
+  // Claimed by a run that died: it may have gone out, so never send it again on our own.
+  for (const d of stuckOnes(open, Date.now())) {
+    const ref = db.doc(`${SCHEDULED}/${d.id}`)
+    const marked = await db.runTransaction(async (tx) => {
+      const fresh = (await tx.get(ref)).data()
+      if (!fresh || !stuckOnes([fresh], Date.now()).length) return false
+      tx.update(ref, { status: 'failed', open: true, error: STUCK_ERROR, failedAt: FieldValue.serverTimestamp() })
+      return true
+    })
+    if (marked) failed.push({ name: d.name, error: STUCK_ERROR })
+  }
+
+  // One a second; each is tried once. Three Gmail refusals in a row: stop,
+  // the rest wait for the next run.
+  const due = dueOnes(open, Date.now())
+  let sent = 0
+  let refusedInARow = 0
+  for (const [i, d] of due.entries()) {
+    let r
+    try {
+      r = await sendScheduled(db, d.id)
+    } catch (e) {
+      r = { failed: true, error: `Something went wrong before sending (it will be tried again in 5 minutes if it’s still waiting): ${e.message}` }
+    }
+    if (r.failed) failed.push({ name: d.name, error: r.error })
+    if (r.sent) sent++
+    refusedInARow = r.gmail ? refusedInARow + 1 : 0
+    if (refusedInARow >= 3) break
+    if (r.sent && i + 1 < due.length) await pause(1000)
+  }
+
+  if (failed.length) {
+    const names = failed.slice(0, 3).map((f) => f.name).join(', ') + (failed.length > 3 ? ` and ${failed.length - 3} more` : '')
+    await reportIncident('email', `${failed.length} scheduled email${failed.length === 1 ? '' : 's'} didn’t go out (${names}): ${failed[0].error} They show as “Didn’t go” in Home → Scheduled emails: give them a new time, or remove them.`)
+  }
+  if (due.length || failed.length) logger.info('sendScheduledEmails', { due: due.length, sent, failed: failed.length })
 })
 
 // ---- Sales assistant: draft a reply (docs/specs/sales-assistant.md) ----------

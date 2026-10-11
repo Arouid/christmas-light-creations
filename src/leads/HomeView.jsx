@@ -4,6 +4,7 @@ import { money } from '../lib/invoices'
 import { todayISO } from '../lib/customers'
 import { alertRecipients } from '../../functions/leadEmail.js'
 import { ActivityPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel, StatusPanel, WhoPanel, label } from './HomePanels'
+import { ScheduledPanel } from './ScheduledEmails'
 import { usePresence, useSignIns } from './usePresence'
 import { permission, storedFid } from './push'
 import { useLiveQuery } from './staffStore'
@@ -84,6 +85,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
         <div className="min-w-0 lg:col-span-7"><ActivityPanel entries={feed.entries} error={feed.error} loading={feed.loading} ctx={ctx} now={now} wall={wall} /></div>
         <div className="min-w-0 space-y-4 lg:col-span-5">
           <WhoPanel rows={who.rows} error={who.error} now={minute} wall={wall} />
+          <ScheduledPanel user={user} names={feed.names} wall={wall} />
           <SignInsPanel entries={signIns.entries} error={signIns.error} now={minute} names={feed.names} wall={wall} />
           <RoutesPanel today={day} wall={wall} />
           <SeasonPanel season={season} progress={progress} money={cash} wall={wall} />

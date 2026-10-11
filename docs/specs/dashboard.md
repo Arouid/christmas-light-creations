@@ -78,7 +78,7 @@ A **Home** tab, first in the staff app, where the app opens (installer route lin
 |---|---|
 | `at` | server time |
 | `by` | staff email (as signed in), or `website` (server) |
-| `action` | `email`, `invoice-sent`, `invoice-again`, `invoice-paid`, `invoice-void`, `proposal-sent`, `proposal-void`, `proposal-countersigned`, `proposal-signed`*, `proposal-paid`* (deposit/balance/takedown paid online), `invoice-paid-online`*, `lead-status`, `make-customer`, `service-logged`, `service-done`, `handling`, `takeover`, `text`, `call` (* website) |
+| `action` | `email`, `invoice-sent`, `invoice-again`, `invoice-paid`, `invoice-void`, `proposal-sent`, `proposal-void`, `proposal-countersigned`, `proposal-signed`*, `proposal-paid`* (deposit/balance/takedown paid online), `invoice-paid-online`*, `lead-status`, `make-customer`, `service-logged`, `service-done`, `handling`, `takeover`, `text`, `call`, `ai-draft`, `email-scheduled` (* website). A scheduled email that goes out is an `email` by whoever scheduled it, written by the server (docs/specs/scheduled-email.md) |
 | `target` | `{ type: customer \| lead \| past \| message \| phone, id?, name? }` (`message` id = the message id, or `request-<leadId>` for an estimate request) |
 | `text` | optional detail ≤ 300 chars: subject, amount and method, new status, issue |
 

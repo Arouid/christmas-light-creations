@@ -318,6 +318,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Scheduled emails ("Send later", docs/specs/scheduled-email.md), written
+    // only by the server: scheduleStaffEmail (schedule, edit, cancel, with the
+    // same checks as Send) and the sender, which alone marks one sent. Staff read.
+    match /scheduledEmails/{emailId} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+
     // Recent staff activity on Home (docs/specs/dashboard.md): who emailed,
     // invoiced, called or is handling whom. Append-only: staff add entries as
     // themselves with the server's time; nobody changes or deletes one. The

@@ -1,19 +1,24 @@
 import { useState } from 'react'
+import { whenText } from '../../functions/scheduleTime.js'
 import { fillTemplate, gmailUrl, missingPlaceholders } from '../lib/messages'
 import { TemplateFields, TemplateSelect, field } from './EmailParts'
 import { pill } from './Reach'
+import SendLater from './SendLater'
+import { scheduleEmails } from './scheduledEmail'
 import { emailsOnRecord, sendEmail } from './sendEmail'
 import { useStaff } from './staffContext'
 import { useEmailTemplates } from './templatesContext'
 
 // Email one person from a template: pick it, it's filled in for them, edit if
 // needed, then Send from info@ without leaving the app (filed in their
-// history), or open it as a Gmail draft instead. `person` is a customer (or a
-// lead / past request mapped to customer fields); `target` says whose history
-// it goes in: { customerId } | { leadId } | { pastRequestId }. `initial`
-// ({ subject, body }) opens with that text instead of a template (the sales
-// assistant's draft, docs/specs/sales-assistant.md).
-export default function ComposeEmail({ person, season, target, start = 'custom', initial, label = 'Email', className = pill, onSent }) {
+// history), Send later (docs/specs/scheduled-email.md), or open it as a Gmail
+// draft instead. `person` is a customer (or a lead / past request mapped to
+// customer fields); `target` says whose history it goes in: { customerId } |
+// { leadId } | { pastRequestId }. `initial` ({ subject, body }) opens with
+// that text instead of a template (the sales assistant's draft,
+// docs/specs/sales-assistant.md). `mark` ({ season, field: 'reviewAsked' })
+// is noted on their record when a scheduled one goes out (onSent covers Send).
+export default function ComposeEmail({ person, season, target, start = 'custom', initial, label = 'Email', className = pill, onSent, mark }) {
   const templates = useEmailTemplates()
   const { user } = useStaff()
   const [open, setOpen] = useState(false)
@@ -22,7 +27,8 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [missing, setMissing] = useState([])
-  const [status, setStatus] = useState({ step: 'edit' }) // edit | sending | sent | error
+  const [status, setStatus] = useState({ step: 'edit' }) // edit | sending | sent | scheduled | error
+  const [later, setLater] = useState(false)
   if (!person?.email) return null
   const addresses = emailsOnRecord(person)
 
@@ -44,6 +50,7 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
     } else pick(start)
     setTo(addresses[0] ?? person.email)
     setStatus({ step: 'edit' })
+    setLater(false)
     setOpen(true)
   }
 
@@ -53,6 +60,16 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
       await sendEmail(user, { to, subject, text: body, target, template: id })
       setStatus({ step: 'sent' })
       onSent?.(id)
+    } catch (err) {
+      setStatus({ step: 'error', message: err.message })
+    }
+  }
+
+  async function schedule(at) {
+    setStatus({ step: 'sending' })
+    try {
+      await scheduleEmails(user, { sendAt: at, emails: [{ to, subject, text: body, template: id, target, name: person.fullName, ...(mark ? { mark } : {}) }] })
+      setStatus({ step: 'scheduled', at })
     } catch (err) {
       setStatus({ step: 'error', message: err.message })
     }
@@ -88,6 +105,12 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
                 <p className="break-words text-sm text-slate-300">To {to}. It’s in their Text &amp; email history, and their reply will come to info@.</p>
                 <button type="button" onClick={() => setOpen(false)} className="w-full rounded-full bg-glow-400 py-3 font-semibold text-night-950">Done</button>
               </div>
+            ) : status.step === 'scheduled' ? (
+              <div className="space-y-4 py-4 text-center">
+                <p className="text-lg font-semibold text-glow-300">⏰ Scheduled for {whenText(status.at)}</p>
+                <p className="break-words text-sm text-slate-300">To {to}, from info@ (Central time, within 5 minutes after). Change or cancel it until then in Home → Scheduled emails, or at the top of their Text &amp; email history.</p>
+                <button type="button" onClick={() => setOpen(false)} className="w-full rounded-full bg-glow-400 py-3 font-semibold text-night-950">Done</button>
+              </div>
             ) : (
               <>
                 <label className="block text-sm text-slate-400">To
@@ -108,11 +131,18 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
                 )}
                 <TemplateFields subject={subject} body={body} onSubject={setSubject} onBody={setBody} showKey={false} />
                 {status.step === 'error' && <p role="alert" className="rounded-xl bg-berry-600/20 px-3 py-2 text-sm text-berry-500">{status.message}</p>}
-                {canSend && (
-                  <button type="button" onClick={send} disabled={sending || !subject.trim() || !body.trim()}
-                    className="w-full rounded-full bg-glow-400 py-3 font-semibold text-night-950 disabled:opacity-50">
-                    {sending ? 'Sending…' : status.step === 'error' ? 'Try again' : 'Send from info@'}
-                  </button>
+                {canSend && later && <SendLater busy={sending} onSchedule={schedule} onBack={() => setLater(false)} />}
+                {canSend && !later && (
+                  <div className="space-y-2">
+                    <button type="button" onClick={send} disabled={sending || !subject.trim() || !body.trim()}
+                      className="w-full rounded-full bg-glow-400 py-3 font-semibold text-night-950 disabled:opacity-50">
+                      {sending ? 'Sending…' : status.step === 'error' ? 'Try again' : 'Send from info@'}
+                    </button>
+                    <button type="button" onClick={() => setLater(true)} disabled={sending || !subject.trim() || !body.trim()}
+                      className="w-full rounded-full border border-glow-400/50 py-3 font-semibold text-glow-300 disabled:opacity-50">
+                      ⏰ Send later…
+                    </button>
+                  </div>
                 )}
                 {gmail}
               </>

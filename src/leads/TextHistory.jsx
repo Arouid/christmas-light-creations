@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import SuggestReply from '../assistant/SuggestReply'
+import { ScheduledFor } from './ScheduledEmails'
 import { useLiveQuery } from './staffStore'
 
 const newestFirst = (a, b) => (b.at ?? '').localeCompare(a.at ?? '')
@@ -19,7 +20,7 @@ export function Bubble({ m, who }) {
   const out = m.direction === 'out'
   const long = (m.text ?? '').length > 280
   // Emails sent from the staff app carry who sent them.
-  const by = out && m.sentBy ? `Us · ${m.sentBy.split('@')[0]}` : null
+  const by = out && m.sentBy ? `Us · ${m.sentBy.split('@')[0]}${m.scheduledId ? ' · ⏰ scheduled' : ''}` : null
   return (
     <div className={`max-w-[85%] min-w-0 rounded-2xl px-3 py-2 text-sm ${out ? 'bg-sky-500/20 text-sky-50' : 'bg-white/10'}`}>
       {m.kind && m.kind !== 'text' && <p className="text-xs font-semibold">{KIND[m.kind] ?? m.kind}{m.duration ? ` · ${m.duration}` : ''}</p>}
@@ -45,12 +46,14 @@ export default function TextHistory({ user, customerId, field = 'customerId', va
   const items = useLiveQuery(user, 'messages', field, value, newestFirst)
   const [all, setAll] = useState(false)
   const suggest = <SuggestReply target={field === 'leadId' ? { leadId: value } : { customerId: value }} />
+  const scheduled = <ScheduledFor user={user} field={field} value={value} />
   if (!items) return <p className="text-sm text-slate-400">Loading history…</p>
-  if (!items.length) return <div className="space-y-2"><p className="text-sm text-slate-400">No texts, calls or emails on file.</p>{suggest}</div>
+  if (!items.length) return <div className="space-y-2">{scheduled}<p className="text-sm text-slate-400">No texts, calls or emails on file.</p>{suggest}</div>
 
   const shown = all ? items : items.slice(0, SHOW)
   return (
     <div className="space-y-2">
+      {scheduled}
       {suggest}
       <ul className="space-y-2">
         {shown.map((m) => (

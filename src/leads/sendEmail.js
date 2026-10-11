@@ -14,7 +14,7 @@ export const emailsOnRecord = (person) => customerEmailKeys(person)
 
 // target: { customerId } | { leadId } | { pastRequestId }
 // Recent activity (docs/specs/dashboard.md): who it went to.
-const activityTarget = (t = {}) => (t.customerId ? { type: 'customer', id: t.customerId } : t.leadId ? { type: 'lead', id: t.leadId } : t.pastRequestId ? { type: 'past', id: t.pastRequestId } : null)
+export const activityTarget = (t = {}) => (t.customerId ? { type: 'customer', id: t.customerId } : t.leadId ? { type: 'lead', id: t.leadId } : t.pastRequestId ? { type: 'past', id: t.pastRequestId } : null)
 
 export async function sendEmail(user, args) {
   const result = await deliver(user, args)

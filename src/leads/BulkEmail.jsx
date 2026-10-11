@@ -1,22 +1,32 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { whenText } from '../../functions/scheduleTime.js'
 import { todayISO } from '../lib/customers'
 import { fillTemplate, gmailUrl, missingPlaceholders } from '../lib/messages'
 import { TemplateFields, TemplateSelect } from './EmailParts'
+import SendLater from './SendLater'
+import { scheduleEmails, targetKey, useScheduledEmails, waitingKeys } from './scheduledEmail'
 import { emailsOnRecord, sendEmail } from './sendEmail'
 import { useStaff } from './staffContext'
 import { useEmailTemplates } from './templatesContext'
 
 const pause = (ms) => new Promise((r) => setTimeout(r, ms))
 const customerTarget = (c) => ({ customerId: c.id })
+const listId = () => `L${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
 
 // One-to-one emails, back to back: each person gets their own email from
 // info@ (better for spam filters than one BCC blast), sent from the app one
-// by one, or "Send the rest" after one confirm. Gmail stays available per
+// by one, or "Send the rest" after one confirm, or "Schedule the rest" for
+// one time (docs/specs/scheduled-email.md). Gmail stays available per
 // person. Sent ones are recorded on the record so the list can be resumed
-// without repeats. `targetOf(row)` says whose history each email goes in.
+// without repeats (scheduled ones when they go out; until then they're
+// skipped as already scheduled). `targetOf(row)` says whose history each
+// email goes in.
 export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', targetOf = customerTarget, onClose, onBack }) {
   const templates = useEmailTemplates()
   const { user } = useStaff()
+  const scheduledItems = useScheduledEmails(user)
+  const waiting = useMemo(() => waitingKeys(scheduledItems), [scheduledItems])
+  const [scheduled, setScheduled] = useState(null) // { count, at } after Schedule the rest
   const first = templates.find((t) => t.id === templateId) ?? templates[0]
   const [step, setStep] = useState('compose') // compose | send | done
   const [template, setTemplate] = useState(first.id)
@@ -27,12 +37,12 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
   const [index, setIndex] = useState(0)
   const [sentCount, setSentCount] = useState(0)
   const [blanks, setBlanks] = useState([]) // skipped by "Send the rest": [{ c, missing }]
-  const [status, setStatus] = useState(null) // null | 'sending' | 'auto' | 'confirm' | 'gmail' | { error }
+  const [status, setStatus] = useState(null) // null | 'sending' | 'auto' | 'confirm' | 'later' | 'scheduling' | 'gmail' | { error }
   const stop = useRef(false)
   const fill = (text, c) => fillTemplate(text, c, season)
 
   const withEmail = rows.filter((c) => c.email?.includes('@'))
-  const sentKey = (c) => c.seasons?.[season]?.emailsSent?.[template]
+  const sentKey = (c) => c.seasons?.[season]?.emailsSent?.[template] || waiting.has(targetKey(targetOf(c), template))
   const pending = withEmail.filter((c) => !(skipSent && sentKey(c)))
   const label = templates.find((t) => t.id === template)?.label ?? 'Email'
   const missingFor = (c) => missingPlaceholders(subject + body, c, season)
@@ -49,6 +59,7 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
     setIndex(0)
     setSentCount(0)
     setBlanks([])
+    setScheduled(null)
     setStatus(null)
     setStep(pending.length ? 'send' : 'done')
   }
@@ -102,11 +113,34 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
     setStep('done')
   }
 
+  // Everyone left (but those with blank parts) for one time, in one go; each
+  // is noted as sent on their record when it actually goes out.
+  async function scheduleRest(at) {
+    const left = queue.slice(index)
+    const ready = left.filter((x) => !missingFor(x).length)
+    const target = (x) => targetOf(x)
+    const mark = (x) => ('customerId' in target(x) || 'pastRequestId' in target(x) ? { mark: { season: String(season), field: 'emailsSent' } } : {})
+    setStatus('scheduling')
+    try {
+      await scheduleEmails(user, {
+        sendAt: at, batch: listId(),
+        emails: ready.map((x) => ({ to: emailsOnRecord(x)[0] ?? x.email, subject: fill(subject, x), text: fill(body, x), template, target: target(x), name: x.fullName, ...mark(x) })),
+      })
+    } catch (err) {
+      setStatus({ error: err.message })
+      return
+    }
+    setBlanks((list) => [...list, ...left.filter((x) => missingFor(x).length).map((x) => ({ c: x, missing: missingFor(x) }))])
+    setScheduled({ count: ready.length, at })
+    setStatus(null)
+    setStep('done')
+  }
+
   const c = queue[index]
   const missing = c ? missingFor(c) : []
   const rest = queue.slice(index)
   const restBlank = rest.filter((x) => missingFor(x).length).length
-  const busy = status === 'sending' || status === 'auto'
+  const busy = status === 'sending' || status === 'auto' || status === 'scheduling'
   const error = status?.error
 
   return (
@@ -128,7 +162,7 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
             <TemplateFields subject={subject} body={body} onSubject={setSubject} onBody={setBody} rows={9} />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={skipSent} onChange={(e) => setSkipSent(e.target.checked)} />
-              Skip people already sent “{label}” this season ({withEmail.length - withEmail.filter((x) => !sentKey(x)).length})
+              Skip people already sent or scheduled “{label}” this season ({withEmail.filter((x) => sentKey(x)).length})
             </label>
             <p className="text-sm text-slate-400">
               {pending.length} to send{rows.length > withEmail.length && ` · ${rows.length - withEmail.length} picked have no email`}.
@@ -178,6 +212,21 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
                     className="flex-1 rounded-full bg-glow-400 py-3 font-semibold text-night-950 disabled:opacity-40">Yes, send</button>
                 </div>
               </div>
+            ) : status === 'later' || status === 'scheduling' ? (
+              rest.length === restBlank ? (
+                <div className="space-y-3 rounded-2xl border border-glow-400/40 p-4">
+                  <p className="text-sm">Everyone left ({restBlank}) has blank parts, so nothing would be scheduled. Fill their records first, or Skip them.</p>
+                  <button type="button" onClick={() => setStatus(null)} className="w-full rounded-full border border-white/20 py-3 font-semibold">Back</button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-slate-300">
+                    Each of the {rest.length - restBlank} gets their own email from info@, one a second from that time.
+                    {restBlank ? ` ${restBlank} with blank parts will be skipped (not scheduled).` : ''}
+                  </p>
+                  <SendLater count={rest.length - restBlank} busy={status === 'scheduling'} onSchedule={scheduleRest} onBack={() => setStatus(null)} />
+                </div>
+              )
             ) : (
               <>
                 <div className="flex gap-2">
@@ -195,6 +244,11 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
                     Send the rest ({rest.length})
                   </button>
                 )}
+                {status !== 'gmail' && (
+                  <button type="button" onClick={() => setStatus('later')} disabled={busy} className="w-full rounded-full border border-glow-400/50 py-3 font-semibold text-glow-300 disabled:opacity-40">
+                    ⏰ {rest.length > 1 ? `Schedule the rest (${rest.length})…` : 'Send later…'}
+                  </button>
+                )}
                 <a href={gmailUrl({ to: c.email, subject: fill(subject, c), body: fill(body, c) })} target="_blank" rel="noreferrer"
                   onClick={() => setStatus('gmail')} className="block py-2 text-center text-sm text-slate-400 underline">
                   Open in Gmail instead
@@ -206,7 +260,12 @@ export function EmailQueue({ rows, season, onUpdate, templateId = 'reinstall', t
 
         {step === 'done' && (
           <div className="space-y-3 py-6 text-center">
-            <p className="text-lg font-semibold">{queue.length ? `Done: ${sentCount} sent.` : 'Everyone here already got this one.'}</p>
+            <p className="text-lg font-semibold">{queue.length ? (scheduled && !sentCount ? 'Done.' : `Done: ${sentCount} sent.`) :'Everyone here already got this one (or has it scheduled).'}</p>
+            {scheduled && (
+              <p className="rounded-xl bg-glow-400/10 px-3 py-2 text-sm text-glow-300">
+                ⏰ {scheduled.count} scheduled for {whenText(scheduled.at)} (Central). Change or cancel them in Home → Scheduled emails until then.
+              </p>
+            )}
             {blanks.length > 0 && (
               <div className="rounded-xl bg-glow-400/10 px-3 py-2 text-left text-sm text-glow-300">
                 <p className="font-semibold">Not sent (blank parts), so they’re still on the list:</p>

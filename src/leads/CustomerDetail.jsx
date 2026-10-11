@@ -137,7 +137,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <TextButton phone={customer.phone} className={action} label="Text review link" message={textMessages.review(customer)} onSent={markAsked} />
-              <ComposeEmail person={customer} season={reviewSeason} target={{ customerId: customer.id }} start="review" label="Email review link" className={action} onSent={markAsked} />
+              <ComposeEmail person={customer} season={reviewSeason} target={{ customerId: customer.id }} start="review" label="Email review link" className={action} onSent={markAsked} mark={{ season: reviewSeason, field: 'reviewAsked' }} />
             </div>
           </div>
         )}

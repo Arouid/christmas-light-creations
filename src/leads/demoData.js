@@ -1,5 +1,6 @@
 // Made-up records for previewing the staff app (?demo in development).
 import { SAMPLE_PHOTO, sampleDesign } from '../design/sampleDesign'
+import { quickPicks, whenText } from '../../functions/scheduleTime.js'
 const customers = [
   {
     id: 'sample-customer', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer',
@@ -37,6 +38,7 @@ const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString()
 const byId = (list) => Object.fromEntries(list.map(({ id, ...d }) => [id, d]))
 const minAgo = (m) => Date.now() - m * 60000
 const localDay = () => new Date().toLocaleDateString('en-CA')
+const picks = quickPicks(Date.now())
 
 export const demoData = {
   customers: byId(customers),
@@ -104,6 +106,16 @@ export const demoData = {
     { id: 'demo-act-10', at: minAgo(30), by: 'lacie@example.com', action: 'handling', target: { type: 'message', id: 'gv-demo-unmatched-2', name: '(555) 010-0177' }, text: 'Voicemail' },
     { id: 'demo-act-11', at: minAgo(20), by: 'katiep@example.com', action: 'takeover', target: { type: 'message', id: 'gv-demo-unmatched-2', name: '(555) 010-0177' }, text: 'was Lacie M.’s · Voicemail' },
     { id: 'demo-act-7', at: minAgo(26 * 60), by: 'demo@example.com', action: 'service-done', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Lights out on the left side' },
+    { id: 'demo-act-12', at: minAgo(50), by: 'katiep@example.com', action: 'email-scheduled', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: `Your 2026 Christmas lights · ${whenText(picks[0].at)}` },
+  ]),
+  // Home → Scheduled emails and the top of history (docs/specs/scheduled-email.md).
+  scheduledEmails: byId([
+    { id: 'demo-sched-1', status: 'scheduled', open: true, sendAt: picks[0].at, to: 'sample@example.com', subject: 'Your 2026 Christmas lights', text: 'Hi Sample,\n\nJust checking in about your 2026 install.\n\nThank you,\nChristmas Light Creations\n281-819-0163', template: 'custom', target: { field: 'customerId', id: 'sample-customer' }, customerId: 'sample-customer', name: 'Sample Customer', by: 'katiep@example.com', at: minAgo(50) },
+    ...[['test-homeowner', 'Test Homeowner', 'test.homeowner@example.com'], ['example-family', 'Example Family', 'example.family@example.com']].map(([id, name, to], i) => ({
+      id: `demo-sched-list-${i}`, status: 'scheduled', open: true, sendAt: picks.at(-1).at, to, subject: 'Christmas lights 2026: want us back?', text: `Hi ${name.split(' ')[0]},\n\nIt’s time to book your 2026 install.\n\nThank you,\nChristmas Light Creations`, template: 'reinstall',
+      target: { field: 'customerId', id }, customerId: id, name, by: 'demo@example.com', at: minAgo(30), batch: 'demo-list', mark: { season: '2026', field: 'emailsSent' },
+    })),
+    { id: 'demo-sched-failed', status: 'failed', open: true, sendAt: minAgo(60), to: 'jordan@example.com', subject: 'Still thinking about Christmas lights?', text: 'Hi Jordan,\n\nWe have openings this season.\n\nThank you,\nChristmas Light Creations', template: 'winback', target: { field: 'pastRequestId', id: 'old-jordan-example-example-com' }, pastRequestId: 'old-jordan-example-example-com', name: 'Jordan Example', by: 'lacie@example.com', at: minAgo(26 * 60), error: 'Gmail didn’t take it. Pick a new time, or send it now from their account.' },
   ]),
   routes: byId([
     { id: 'demo-route-today', day: localDay(), name: 'Crew 1', status: 'sent', startTime: '08:00', stops: [

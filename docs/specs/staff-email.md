@@ -32,7 +32,7 @@ Staff email customers from the staff app by tapping **Email**, which opens a Gma
 | Sending to an address that isn't on their record | A typo or a stolen staff login can't email strangers; fix the record first, or use Gmail |
 | An added signature | Owner: templates already end with "Thank you, Christmas Light Creations, 281-819-0163" |
 | Reading or replying to the inbox inside the app | Incoming mail already reaches history through the sync; alerts are another session's work |
-| Scheduled or automatic sends | Staff always press Send |
+| Automatic sends | Staff always press Send, or pick a time themselves with Send later (added 2026-10-10: `docs/specs/scheduled-email.md`) |
 | One Bcc blast | One email per person is better for spam filters and history |
 | Open/click tracking | Site rule: no tracking |
 
