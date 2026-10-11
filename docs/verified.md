@@ -383,3 +383,7 @@ What was actually checked working, and how. Newest first.
 - Icons from `scripts/make-account-icons.mjs` viewed: the cottage tile at 192/512, the maskable one with the cottage in the middle 70% on navy, the 180 iPhone one on flat navy.
 - `npm run check` passed (lint, 319 tests including the new manifest test, build); `node --check public/account/sw.js` clean.
 - Not checked: service worker registration. The browser pane refuses to register any service worker (the existing staff `/leads/sw.js` fails the same way: "An unknown error occurred when fetching the script"), so one-tap install, the offline page and the home-screen icon need a real phone (test checklist #75–77).
+
+## 2026-10-11 Account page: "Your account" link
+
+- Owner, live: the logo + "Your account" at the top went to the home page. Now `/account/`. Dev `/account/?demo`: the header link's href is `/account/`; `npm run check` passed (319 tests).

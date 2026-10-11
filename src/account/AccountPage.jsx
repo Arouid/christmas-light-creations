@@ -113,7 +113,7 @@ export default function AccountPage() {
   return (
     <main className="mx-auto min-h-svh max-w-3xl px-4 pb-24 pt-6">
       <header className="mb-6 flex items-center justify-between gap-3">
-        <a href={import.meta.env.BASE_URL} className="flex items-center gap-2">
+        <a href={`${import.meta.env.BASE_URL}account/`} className="flex items-center gap-2">
           <img src={business.logo} alt="" className="size-10" />
           <span className="font-display text-lg font-extrabold leading-tight">Your account</span>
         </a>
