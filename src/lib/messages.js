@@ -16,6 +16,8 @@ export const textMessages = {
 
 // Placeholders for email templates: {key} is replaced per customer.
 // Missing values become empty, except {first}, which falls back to "there".
+// The last four come from a route stop (`extra`, docs/specs/install-texts.md)
+// and are blank anywhere else.
 const S = (c, y) => c.seasons?.[y] ?? {}
 export const PLACEHOLDERS = [
   ['first', 'First name', (c) => c.firstName || 'there'],
@@ -42,18 +44,23 @@ export const PLACEHOLDERS = [
   ['business', 'Business name', () => business.name],
   ['businessPhone', 'Business phone', () => business.phone],
   ['website', 'Website', () => 'https://christmas-light-creations.com'],
+  ['when', 'Arrival window (from the route)', (c, y, x) => x?.when],
+  ['visitDay', 'Visit day (from the route)', (c, y, x) => x?.visitDay],
+  ['job', 'Install / takedown (from the route)', (c, y, x) => x?.job],
+  ['eta', 'Minutes away (from the route)', (c, y, x) => x?.eta],
 ].map(([key, label, get]) => ({ key, label, get }))
 
-export function fillTemplate(text, customer, season) {
+// extra: values a route stop fills in ({ when, visitDay, job, eta }).
+export function fillTemplate(text, customer, season, extra = {}) {
   return PLACEHOLDERS.reduce(
-    (out, p) => out.replaceAll(`{${p.key}}`, String(p.get(customer, season) ?? '')),
+    (out, p) => out.replaceAll(`{${p.key}}`, String(p.get(customer, season, extra) ?? '')),
     text,
   )
 }
 
 // Placeholders a customer has no value for (to warn before sending).
-export function missingPlaceholders(text, customer, season) {
-  return PLACEHOLDERS.filter((p) => text.includes(`{${p.key}}`) && !p.get(customer, season)).map((p) => p.label)
+export function missingPlaceholders(text, customer, season, extra = {}) {
+  return PLACEHOLDERS.filter((p) => text.includes(`{${p.key}}`) && !p.get(customer, season, extra)).map((p) => p.label)
 }
 
 // "(281) 555-0101" -> "+12815550101" (US numbers).

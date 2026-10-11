@@ -140,6 +140,16 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
     subject: 'Gate code for your visit',
     body: `Hi {first},\n\nWe're coming out to {address} soon. Is there a gate code or a side gate we should know about? Just reply with the code or any access notes.${sign}`,
   },
+  // Day-before reminders go out from the route (Routes → open the route →
+  // Day-before reminders), which fills {visitDay}, {when} and {job} from the
+  // stop's times (docs/specs/install-texts.md). Sent from anywhere else those
+  // placeholders are blank and the Email box warns.
+  {
+    id: 'install-reminder', group: 'Install', label: 'We’re coming tomorrow (day-before reminder)',
+    when: 'The evening before an install, from the route’s edit screen (Day-before reminders).',
+    subject: 'We’re coming tomorrow: your lights on {visitDay}',
+    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, for your {job}.\n\nA few things that help:\n- Leave side gates unlocked (we have your gate code if you gave us one)\n- Keep dogs inside while we're there\n- Make sure the outdoor outlets work\n\nYou don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
+  },
   {
     id: 'install-done', group: 'Install', label: 'Your lights are up',
     when: 'Same day the install is finished.',
@@ -169,6 +179,12 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
     when: 'Late December, before removals start January 3rd.',
     subject: 'Taking down your lights in January',
     body: `Hi {first},\n\nHope you had a wonderful Christmas! Removals start January 3rd and wrap up by the 13th. You don't need to be home; just leave side gates unlocked or reply with your gate code.\n\nWe'll label, wrap and bin your lights so they're ready for next year.${sign}`,
+  },
+  {
+    id: 'takedown-reminder', group: 'Takedown', label: 'We’re coming tomorrow (takedown reminder)',
+    when: 'The evening before a takedown, from the route’s edit screen (Day-before reminders).',
+    subject: 'We’re coming tomorrow to take down your lights',
+    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, to take down your lights. We'll label, wrap and bin them so they're ready for next year.\n\nPlease leave side gates unlocked and keep dogs inside while we're there. You don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
   },
   {
     id: 'takedown-done', group: 'Takedown', label: 'Lights are down',

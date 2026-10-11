@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { STOP_KINDS, clock, timeline } from '../lib/router'
 import Icon from '../components/Icon'
+import { StopTextButtons, StopTextDialog } from './InstallTexts'
+import { useStopTexts } from './stopTexts'
 
 // Shape only; each button sets its own colors (two bg- classes would clash).
 const shape = 'inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-sm font-semibold'
@@ -10,12 +12,18 @@ const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 
 const navUrl = (s) => `https://www.google.com/maps/dir/?${new URLSearchParams({ api: '1', destination: s.address || `${s.lat},${s.lng}`, travelmode: 'driving' })}`
 
 // One stop on the installer's screen: everything needed at the house.
-function StopCard({ s, n, current, customer, onStop, onCustomer }) {
+function StopCard({ s, n, current, customer, route, onStop, onCustomer }) {
   const [skipping, setSkipping] = useState(false)
   const [reason, setReason] = useState('')
   const done = s.status === 'done'
   const skipped = s.status === 'skipped'
   const phoneDigits = String(s.phone ?? '').replace(/\D/g, '')
+  // 🚗 On our way / 💬 All done texts through Google Voice (docs/specs/install-texts.md).
+  const texts = useStopTexts({ stop: s, route, customer, onStop })
+  const markDone = () => {
+    onStop({ status: 'done', doneAt: new Date().toISOString() })
+    if (texts.done.allowed) texts.done.open()
+  }
 
   // Gate code and phone belong to the customer: save there too.
   const saveContact = (key, value) => {
@@ -23,8 +31,10 @@ function StopCard({ s, n, current, customer, onStop, onCustomer }) {
     if (s.customerId) onCustomer(s.customerId, key === 'gate' ? 'gateCode' : 'phone', value)
   }
 
+  // The faded look sits on an inner wrapper: the Voice box renders in this card and must stay solid.
   return (
-    <li className={`rounded-2xl border p-4 ${current ? 'border-glow-400 bg-night-900 shadow-[0_0_24px_-8px] shadow-glow-400' : 'border-white/10 bg-night-900/60'} ${done || skipped ? 'opacity-60' : ''}`}>
+    <li className={`rounded-2xl border p-4 ${current ? 'border-glow-400 bg-night-900 shadow-[0_0_24px_-8px] shadow-glow-400' : 'border-white/10 bg-night-900/60'}`}>
+      <div className={done || skipped ? 'opacity-60' : ''}>
       <div className="flex items-start gap-3">
         <span className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold ${done ? 'bg-emerald-500 text-night-950' : skipped ? 'bg-white/20' : 'bg-glow-400 text-night-950'}`}>
           {done ? '✓' : skipped ? '↷' : n}
@@ -46,6 +56,7 @@ function StopCard({ s, n, current, customer, onStop, onCustomer }) {
             {phoneDigits ? <a href={`tel:${phoneDigits}`} className={btn}><Icon name="phone" className="size-4" /> Call</a> : <span />}
             {phoneDigits ? <a href={`sms:${phoneDigits}`} className={btn}><Icon name="chat" className="size-4" /> Text</a> : <span />}
           </div>
+          <StopTextButtons texts={texts} stop={s} className="mt-2 flex flex-wrap gap-2" />
           <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
             <label className="text-slate-400">Gate code
               <input defaultValue={s.gate ?? ''} onBlur={(e) => e.target.value !== (s.gate ?? '') && saveContact('gate', e.target.value.trim())} className={field} placeholder="none" />
@@ -66,14 +77,19 @@ function StopCard({ s, n, current, customer, onStop, onCustomer }) {
           ) : (
             <div className="mt-3 grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setSkipping(true)} className={btn}>↷ Skip, carry over</button>
-              <button type="button" onClick={() => onStop({ status: 'done', doneAt: new Date().toISOString() })} className={`${shape} bg-emerald-500 text-night-950 hover:bg-emerald-400`}>✓ Done</button>
+              <button type="button" onClick={markDone} className={`${shape} bg-emerald-500 text-night-950 hover:bg-emerald-400`}>✓ Done</button>
             </div>
           )}
         </>
       )}
       {(done || skipped) && (
-        <button type="button" onClick={() => onStop({ status: 'todo', doneAt: null, skippedAt: null, skipReason: null })} className="mt-2 text-xs text-slate-400 underline">Undo</button>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          {done && <StopTextButtons texts={texts} stop={s} className="flex flex-wrap gap-2" />}
+          <button type="button" onClick={() => onStop({ status: 'todo', doneAt: null, skippedAt: null, skipReason: null })} className="min-h-11 text-xs text-slate-400 underline">Undo</button>
+        </div>
       )}
+      </div>
+      <StopTextDialog dialog={texts.dialog} />
     </li>
   )
 }
@@ -96,7 +112,7 @@ export default function RouteDrive({ route, customers, onSaveStops, onCustomer, 
       {currentIdx === -1 && rows.length > 0 && <p className="rounded-2xl bg-emerald-500/15 p-4 text-center font-semibold text-emerald-300">All stops handled. Head home! 🏠</p>}
       <ol className="space-y-3">
         {rows.map((s, i) => (
-          <StopCard key={s.id} s={s} n={i + 1} current={i === currentIdx} customer={s.customerId && byId.get(s.customerId)}
+          <StopCard key={s.id} s={s} n={i + 1} current={i === currentIdx} customer={s.customerId && byId.get(s.customerId)} route={route}
             onStop={(patch) => updateStop(s.id, patch)} onCustomer={onCustomer} />
         ))}
       </ol>

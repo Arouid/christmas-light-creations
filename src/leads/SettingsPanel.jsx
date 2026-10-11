@@ -5,6 +5,7 @@ import { useStaff } from './staffContext'
 import { useLiveCollection } from './staffStore'
 import HomeBase from './HomeBase'
 import InstallApp from './InstallApp'
+import { InstallTextSettings } from './InstallTexts'
 import { DEFAULT_TERMS, FILL_IN } from '../proposals/terms.js'
 
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100'
@@ -277,6 +278,8 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
           ))}
           <p className="text-xs text-slate-500">Saved on this phone or computer only. Each staff member picks their own.</p>
         </div>
+
+        <InstallTextSettings settings={settings} onSave={onSave} />
 
         <div className={box}>
           <p className="font-semibold">Light designer</p>

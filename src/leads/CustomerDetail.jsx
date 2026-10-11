@@ -25,6 +25,8 @@ const GROUPS = [
   ['Contact', [
     ['fullName', 'Full name'], ['firstName', 'First name'], ['lastName', 'Last name'],
     ['phone', 'Phone', { inputMode: 'tel' }], ['email', 'Email', { inputMode: 'email' }],
+    // Replied STOP to a text: install-day texts hold off (docs/specs/install-texts.md).
+    ['textOptOut', 'Opted out of texts (replied STOP)', { options: ['', 'Yes'], blankLabel: 'No' }],
   ]],
   ['Property', [
     ['address', 'Address'], ['city', 'City'], ['neighborhood', 'Neighborhood'], ['gateCode', 'Gate code'],

@@ -28,19 +28,44 @@ function CopyRow({ label, value, multiline }) {
   )
 }
 
-// Google Voice has no link that starts a new text with the number and message
-// filled in. Its conversation link only works for numbers already texted, so
-// we show the number and message to copy, plus a button to open Voice.
+// Opens the Voice conversation with this number in a new tab (the business
+// account, or the staff member's own: ⚙ Settings → on this device, text from).
+function openVoice(phone, account) {
+  window.open(voiceUrl(phone, account), '_blank', 'noopener')
+}
+
+// The "Text with Google Voice" box: number and message to copy, a button to
+// open Voice. Google Voice has no link that starts a new text with the number
+// and message filled in, and its conversation link only works for numbers
+// already texted, so the person pastes. `onOpenVoice` runs when they tap
+// Open Google Voice (log it, mark it); `title` and `note` adapt the wording.
+export function TextDialog({ phone, message, title = 'Text with Google Voice', note, onOpenVoice, onClose }) {
+  const account = useVoiceAccount()
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-night-950/80 p-4 backdrop-blur" role="dialog" aria-modal="true"
+      aria-label={title} onClick={(e) => { e.stopPropagation(); onClose() }}>
+      <div className="w-full max-w-md space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5 text-left" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">{title}</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="min-h-11 min-w-11 text-slate-400">✕</button>
+        </div>
+        {note && <p className="text-sm text-slate-300">{note}</p>}
+        <CopyRow label="To" value={phone} />
+        {message && <CopyRow label="Message" value={message} multiline />}
+        <button type="button" onClick={() => { openVoice(phone, account); onOpenVoice?.() }} className="w-full rounded-full bg-white py-3 font-semibold text-night-950">
+          Open Google Voice{account ? '' : ' (my own)'}
+        </button>
+        <p className="text-xs text-slate-400">
+          Opens the conversation if you’ve texted this number before. If Voice shows none: <strong>Send new message</strong> → paste the number → paste the message → send.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function TextButton({ phone, message, label = 'Text', className = pill, onSent }) {
   const [open, setOpen] = useState(false)
-  const account = useVoiceAccount()
   if (!phone) return null
-
-  function openVoice() {
-    window.open(voiceUrl(phone, account), '_blank', 'noopener')
-    logActivity('text', byPhone(phone)) // "started a text": Voice doesn't tell us it was sent
-    onSent?.()
-  }
 
   return (
     <>
@@ -48,23 +73,11 @@ export function TextButton({ phone, message, label = 'Text', className = pill, o
         <Icon name="chat" className="size-4" /> {label}
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-night-950/80 p-4 backdrop-blur" role="dialog" aria-modal="true"
-          aria-label="Text with Google Voice" onClick={(e) => { e.stopPropagation(); setOpen(false) }}>
-          <div className="w-full max-w-md space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5 text-left" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">Text with Google Voice</h2>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="text-slate-400">✕</button>
-            </div>
-            <CopyRow label="To" value={phone} />
-            {message && <CopyRow label="Message" value={message} multiline />}
-            <button type="button" onClick={openVoice} className="w-full rounded-full bg-white py-3 font-semibold text-night-950">
-              Open Google Voice{account ? '' : ' (my own)'}
-            </button>
-            <p className="text-xs text-slate-400">
-              Opens the conversation if you’ve texted this number before. If Voice shows none: <strong>Send new message</strong> → paste the number → paste the message → send.
-            </p>
-          </div>
-        </div>
+        <TextDialog phone={phone} message={message} onClose={() => setOpen(false)}
+          onOpenVoice={() => {
+            logActivity('text', byPhone(phone)) // "started a text": Voice doesn't tell us it was sent
+            onSent?.()
+          }} />
       )}
     </>
   )

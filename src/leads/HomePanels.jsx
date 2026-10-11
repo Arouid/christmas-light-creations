@@ -1,7 +1,12 @@
 import { agoText, describe, staffName, toMs } from '../lib/activity'
 import { reasonText } from '../lib/signInLog'
 import { money } from '../lib/invoices'
+import { STOP_KINDS, clock, timeline } from '../lib/router'
 import { asOfText, spendText } from '../lib/spend'
+import { StopTextButtons, StopTextDialog } from './InstallTexts'
+import { useStopTexts } from './stopTexts'
+import { useStaff } from './staffContext'
+import { saveRecord } from './staffStore'
 
 // Mission-control panels for the Home tab (docs/specs/dashboard.md). Layout
 // only; the numbers come from src/lib/activity.js.
@@ -69,8 +74,52 @@ function Legend({ parts }) {
   )
 }
 
-export function RoutesPanel({ today, wall }) {
+// One of today's stops on Home: 🚗 On our way / 💬 All done texts and ✓ Done,
+// so a phone on Home is the crew's console (docs/specs/install-texts.md).
+function TodayStop({ route, s, n, customer, onStop }) {
+  const texts = useStopTexts({ stop: s, route, customer, onStop })
+  const done = s.status === 'done'
+  const skipped = s.status === 'skipped'
+  const markDone = () => {
+    onStop({ status: 'done', doneAt: new Date().toISOString() })
+    if (texts.done.allowed) texts.done.open()
+  }
+  // Name on its own line, taps underneath: a phone keeps the whole name
+  // readable. The faded look goes on the rows, not the <li>: the Voice box
+  // renders inside it and must stay solid.
+  const faded = done || skipped ? 'opacity-70' : ''
+  return (
+    <li className="py-1.5">
+      <div className={`flex items-center gap-2 ${faded}`}>
+        <span className={`grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold ${done ? 'bg-emerald-500 text-night-950' : skipped ? 'bg-white/20' : 'bg-glow-400 text-night-950'}`} aria-hidden="true">
+          {done ? '✓' : skipped ? '↷' : n}
+        </span>
+        <span className="min-w-0 flex-1 text-sm">
+          <span className="block truncate font-medium">{s.name}</span>
+          <span className="block truncate text-xs text-slate-400">
+            {STOP_KINDS[s.kind] ?? s.kind}{s.eta != null && !skipped && !done ? ` · ≈ ${clock(s.eta)}` : ''}{skipped && s.skipReason ? ` · ${s.skipReason}` : ''}
+          </span>
+        </span>
+      </div>
+      {!skipped && (
+        <div className={`mt-1 flex flex-wrap items-center gap-1.5 pl-8 ${faded}`}>
+          <StopTextButtons texts={texts} stop={s} className="flex flex-wrap gap-1.5" />
+          {!done && (
+            <button type="button" onClick={markDone} className="inline-flex min-h-11 items-center rounded-full bg-emerald-500 px-3 text-sm font-semibold text-night-950 hover:bg-emerald-400">✓ Done</button>
+          )}
+        </div>
+      )}
+      <StopTextDialog dialog={texts.dialog} />
+    </li>
+  )
+}
+
+// today: routesToday() (counts); list: today's route records; customers: for the texts.
+export function RoutesPanel({ today, list = [], customers = [], wall }) {
+  const { user } = useStaff()
   const day = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  const byId = new Map(customers.map((c) => [c.id, c]))
+  const save = (route, stops) => saveRecord(user, 'routes', route.id, { stops }).catch((e) => console.warn('Stop not saved', e.code ?? e.message))
   return (
     <section className={panel} aria-label="Today's routes">
       <h2 className={label}>Today’s routes</h2>
@@ -80,6 +129,8 @@ export function RoutesPanel({ today, wall }) {
       <ul className="mt-3 space-y-3">
         {today.routes.map((r) => {
           const left = r.total - r.done - r.skipped
+          const route = list.find((x) => x.id === r.id)
+          const rows = route && !wall ? timeline(route.stops ?? [], route.startTime, route.backMin).rows : []
           return (
             <li key={r.id}>
               <button type="button" onClick={() => go(`#route-${r.id}`)} className="min-h-11 w-full text-left">
@@ -91,6 +142,14 @@ export function RoutesPanel({ today, wall }) {
                   <Bar total={r.total} parts={[{ label: 'Done', n: r.done, color: 'bg-pine-500' }, { label: 'Skipped', n: r.skipped, color: 'bg-berry-500' }]} />
                 </span>
               </button>
+              {rows.length > 0 && (
+                <ol className="mt-1 divide-y divide-white/5" aria-label={`${r.name} stops`}>
+                  {rows.map((s, i) => (
+                    <TodayStop key={s.id} route={route} s={s} n={i + 1} customer={s.customerId ? byId.get(s.customerId) : undefined}
+                      onStop={(patch) => save(route, route.stops.map((x) => (x.id === s.id ? { ...x, ...patch } : x)))} />
+                  ))}
+                </ol>
+              )}
             </li>
           )
         })}

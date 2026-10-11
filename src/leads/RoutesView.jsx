@@ -7,6 +7,7 @@ import { DEFAULT_MINUTES, STOP_KINDS, carryOver, clock, estimateMatrix, legsKey,
 import { drivingMatrix } from '../lib/routesApi'
 import { locateAddress } from '../lib/streetView'
 import CustomerPicker from './CustomerPicker'
+import { ReminderBox } from './InstallTexts'
 import RouteDrive from './RouteDrive'
 
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100'
@@ -220,6 +221,9 @@ function RouteEditor({ route, routes, customers, gates, season, settings, carry,
           <p className="text-xs text-slate-500">The installer opens the app link (signed in with their Google account on the staff list) to navigate stop by stop, see gate codes and notes, and mark Done or Skip.</p>
         </div>
       )}
+
+      {/* "We're coming tomorrow" to the route's customers (docs/specs/install-texts.md). */}
+      <ReminderBox route={route} rows={rows} customers={customers} onSave={onSave} />
 
       {picking && (
         <CustomerPicker customers={customers} season={season} home={home} routes={routes} routeId={route.id}

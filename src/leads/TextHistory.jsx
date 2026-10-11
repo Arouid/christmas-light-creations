@@ -19,8 +19,9 @@ export function Bubble({ m, who }) {
   const [open, setOpen] = useState(false)
   const out = m.direction === 'out'
   const long = (m.text ?? '').length > 280
-  // Emails sent from the staff app carry who sent them.
-  const by = out && m.sentBy ? `Us · ${m.sentBy.split('@')[0]}${m.scheduledId ? ' · ⏰ scheduled' : ''}` : null
+  // Emails sent from the staff app carry who sent them; install-day texts say
+  // "opened in Voice" (the app can't see whether it was sent, docs/specs/install-texts.md).
+  const by = out && m.sentBy ? `Us · ${m.sentBy.split('@')[0]}${m.scheduledId ? ' · ⏰ scheduled' : m.source === 'voice-app' ? ' · opened in Voice' : ''}` : null
   return (
     <div className={`max-w-[85%] min-w-0 rounded-2xl px-3 py-2 text-sm ${out ? 'bg-sky-500/20 text-sky-50' : 'bg-white/10'}`}>
       {m.kind && m.kind !== 'text' && <p className="text-xs font-semibold">{KIND[m.kind] ?? m.kind}{m.duration ? ` · ${m.duration}` : ''}</p>}

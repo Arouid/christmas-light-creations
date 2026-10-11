@@ -138,11 +138,18 @@ export const demoData = {
     })),
     { id: 'demo-sched-failed', status: 'failed', open: true, sendAt: minAgo(60), to: 'jordan@example.com', subject: 'Still thinking about Christmas lights?', text: 'Hi Jordan,\n\nWe have openings this season.\n\nThank you,\nChristmas Light Creations', template: 'winback', target: { field: 'pastRequestId', id: 'old-jordan-example-example-com' }, pastRequestId: 'old-jordan-example-example-com', name: 'Jordan Example', by: 'lacie@example.com', at: minAgo(26 * 60), error: 'Gmail didn’t take it. Pick a new time, or send it now from their account.' },
   ]),
+  // Today's route: one stop done and told "all done", one skipped, one still to do (🚗 On our way);
+  // tomorrow's: the Day-before reminders box (docs/specs/install-texts.md). Drive times as after ⚡ Optimize.
   routes: byId([
-    { id: 'demo-route-today', day: localDay(), name: 'Crew 1', status: 'sent', startTime: '08:00', stops: [
-      { id: 's1', customerId: 'sample-customer', name: 'Sample Customer', address: '123 Example St Pearland, TX 77581', kind: 'install', minutes: 135, status: 'done' },
-      { id: 's2', customerId: 'example-family', name: 'Example Family', address: '789 Placeholder Dr Manvel, TX 77578', kind: 'install', minutes: 135, status: 'skipped', skipReason: 'Gate locked' },
-      { id: 's3', customerId: 'test-homeowner', name: 'Test Homeowner', address: '456 Sample Ln League City, TX 77573', kind: 'service', minutes: 20, status: 'todo' },
+    { id: 'demo-route-today', day: localDay(), name: 'Crew 1', status: 'sent', startTime: '08:00', legsKey: 's1,s2,s3', backMin: 25, stops: [
+      { id: 's1', customerId: 'sample-customer', name: 'Sample Customer', address: '123 Example St Pearland, TX 77581', phone: '555-0101', kind: 'install', minutes: 135, status: 'done', driveMin: 12,
+        doneAt: new Date(minAgo(70)).toISOString(), texts: { onway: { at: new Date(minAgo(225)).toISOString(), by: 'katiep@example.com' }, done: { at: new Date(minAgo(68)).toISOString(), by: 'katiep@example.com' } } },
+      { id: 's2', customerId: 'example-family', name: 'Example Family', address: '789 Placeholder Dr Manvel, TX 77578', phone: '555-0103', kind: 'install', minutes: 135, status: 'skipped', skipReason: 'Gate locked', driveMin: 18 },
+      { id: 's3', customerId: 'test-homeowner', name: 'Test Homeowner', address: '456 Sample Ln League City, TX 77573', phone: '555-0102', kind: 'takedown', minutes: 25, status: 'todo', driveMin: 24 },
+    ] },
+    { id: 'demo-route-tomorrow', day: new Date(Date.now() + 86400000).toLocaleDateString('en-CA'), name: 'Crew 1', status: 'draft', startTime: '08:00', legsKey: 't1,t2', backMin: 20, stops: [
+      { id: 't1', customerId: 'example-family', name: 'Example Family', address: '789 Placeholder Dr Manvel, TX 77578', phone: '555-0103', kind: 'install', minutes: 135, status: 'todo', driveMin: 20 },
+      { id: 't2', customerId: 'sample-customer', name: 'Sample Customer', address: '123 Example St Pearland, TX 77581', phone: '555-0101', kind: 'install', minutes: 135, status: 'todo', driveMin: 15 },
     ] },
   ]),
   // A design sent from /design/ with Sample Customer's request (demo-1).
