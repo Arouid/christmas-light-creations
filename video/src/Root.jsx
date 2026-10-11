@@ -1,5 +1,6 @@
 import { Composition } from 'remotion'
 import { Ad } from './Ad.jsx'
+import { Teaser } from './Teaser.jsx'
 import data from './data.js'
 import { totalFrames } from './timeline.js'
 
@@ -9,11 +10,27 @@ const SHAPES = [
   { id: 'Ad1x1', width: 1080, height: 1080 },
 ]
 
-// Three compositions, same scenes and words, different shapes. The props panel in Remotion
-// Studio edits a copy of data.js live; the length follows the scene timings.
+const teaserFrames = (props) => Math.round((props.teaser?.seconds ?? 5) * (props.fps || 30))
+const teaserProps = { ...data, intro: { onAt: data.teaser.onAt } }
+
+// Teaser*: the 5-second ad (scene 1 alone) in three shapes. Ad*: the full ad in the same shapes.
+// The props panel in Remotion Studio edits a copy of data.js live; lengths follow the timings.
 export function Root() {
   return (
     <>
+      {SHAPES.map((s) => (
+        <Composition
+          key={`teaser-${s.id}`}
+          id={s.id.replace('Ad', 'Teaser')}
+          component={Teaser}
+          width={s.width}
+          height={s.height}
+          fps={data.fps}
+          durationInFrames={teaserFrames(data)}
+          defaultProps={teaserProps}
+          calculateMetadata={({ props }) => ({ durationInFrames: teaserFrames(props), fps: props.fps || 30 })}
+        />
+      ))}
       {SHAPES.map((s) => (
         <Composition
           key={s.id}

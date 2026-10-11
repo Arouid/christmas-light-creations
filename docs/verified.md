@@ -353,3 +353,10 @@ What was actually checked working, and how. Newest first.
 - Not checked: listening to the mix (no speakers in this session: music level 0.6 is a guess), playback in a real player, YouTube/Google Ads acceptance, the owner's verdict on cut 2.
 
 - 2026-10-11 Stretch at 1200px (demo): every cell in a row shares top and bottom (Recent activity 430–1036 beside System status + Sign-ins stacked 430–1036; Spent | Season 1052–1373; Scheduled emails | Today's routes + Who's on 1389–1895; Google Ads wide). 316 tests.
+
+## 2026-10-11 The 5-second ad (owner: "cut that first scene into a 5 second ad"; "ditch the music")
+
+- `npm --prefix video run render -- teaser` wrote `clc-teaser-5s-16x9.mp4` (1.6 MB), `-9x16` (1.9 MB), `-1x1` (1.4 MB): ffprobe shows h264 only, no audio stream, exactly 5.000 s each.
+- Two frames a second viewed for all three: dark cottage in the snow 0–2 s, flicker-on at 2 s, "Christmas Light Creations" and "Pearland, TX · since 2011" from ~2.5 s, held to the last frame (no fade-out); the name wraps to two lines in the vertical cut and fits.
+- Remotion Studio lists Teaser16x9 / Teaser9x16 / Teaser1x1 next to the Ad* compositions; the props panel shows `teaser` (seconds, onAt). `music.file` is empty in data.js; the Ad* compositions render without an audio stream from now on.
+- Not checked: playback in a real player, YouTube bumper acceptance (6 s max, this is 5 s), the owner's wish on a phone number or website at the end of the short ad.

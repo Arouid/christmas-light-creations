@@ -10,13 +10,22 @@ they are missing or the words, photos or offer change.
 
 ## Files
 
-| File | Size | Use in Google Ads |
-|---|---|---|
-| `clc-ad-16x9.mp4` | 1920×1080, landscape | YouTube in-stream, TV, desktop |
-| `clc-ad-9x16.mp4` | 1080×1920, vertical | YouTube Shorts, phone feeds |
-| `clc-ad-1x1.mp4` | 1080×1080, square | Discover, Gmail, square feeds |
+| File | Size | What | Use in Google Ads |
+|---|---|---|---|
+| `clc-teaser-5s-16x9.mp4` | 1920×1080, landscape | **the 5-second ad**: scene 1 alone (cottage switches on, name), silent | YouTube bumper (6 s max), in-stream, TV |
+| `clc-teaser-5s-9x16.mp4` | 1080×1920, vertical | same | Shorts, phone feeds |
+| `clc-teaser-5s-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
+| `clc-ad-16x9.mp4` | 1920×1080, landscape | the full 28-second ad (eight scenes), silent | YouTube in-stream, TV, desktop |
+| `clc-ad-9x16.mp4` | 1080×1920, vertical | same | YouTube Shorts, phone feeds |
+| `clc-ad-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
 
-All three: H.264, 30 fps, about 28 s with the October offer (26 s without), with music.
+The 5-second ad (owner, 2026-10-11: "cut that first scene into a 5 second ad, that's dope"):
+dark cottage in the snow for 2 s, it flickers on, the name and "Pearland, TX · since 2011"
+appear and hold to the end. Studio compositions **Teaser16x9 / Teaser9x16 / Teaser1x1**; length
+and switch-on moment in `data.js` → `teaser` (`seconds`, `onAt`). No phone number or website
+on it yet: say so if you want them added.
+
+All H.264, 30 fps, no audio (music off since 2026-10-11: owner, "ditch the music"; the track below stays on disk and can be turned back on in `data.js` → `music.file`).
 
 | Seconds | Scene | Words |
 |---|---|---|
@@ -54,9 +63,10 @@ in `video/src/data.js` (the panel starts from that file).
 npm run video:render
 ```
 
-Writes the three MP4s into this folder (about 2–3 minutes each on the office PC; Remotion
-bundles the scenes, renders every frame in headless Chrome and encodes with its own ffmpeg).
-One shape only: `npm --prefix video run render -- 9x16`.
+Writes the six MP4s into this folder (the 5-second ones take ~20 s each, the full ad 2–3
+minutes each on the office PC; Remotion bundles the scenes, renders every frame in headless
+Chrome and encodes with its own ffmpeg). Only some: `npm --prefix video run render -- teaser`,
+`-- ad`, `-- 9x16`, or combined (`-- teaser 9x16`).
 
 Before either command, `video/scripts/prepare-assets.mjs` runs on its own and copies what the
 video needs into `video/public/` (gitignored): the photos named in `data.js` from
@@ -67,7 +77,7 @@ headless Chrome (~150 MB) into `video/node_modules/.remotion`; nothing else is i
 Setup once on a new PC: `cd video && npm install`.
 
 To look at frames without a video player: `npm --prefix video run frames` puts one frame a
-second of each MP4 into `video/out/frames/<shape>/`.
+second of each MP4 into `video/out/frames/<name>/` (`-- teaser 2` for the short ones, two a second).
 
 ## Changing things
 
@@ -90,8 +100,9 @@ file into `video/public/music/`, set `music.file` in `data.js`, render, and reco
 |---|---|---|
 | "Little Swallow (Carol Of The Bells) – Ukrainian New Years Song" by JuliusH, 1:04, instrumental | https://pixabay.com/music/special-occasions-little-swallow-carol-of-the-bells-ukrainian-new-years-song-5821/ (downloaded 2026-10-11 to `video/public/music/carol-of-the-bells-juliush.mp3`, not in git) | Pixabay Content License: free for commercial use, no attribution required, not for resale as-is. Picked over the other Carol of the Bells tracks because its page shows no "Content ID Registered" badge (those can trigger YouTube copyright claims on an ad). The melody itself (Leontovych, 1914) is public domain. |
 
-The track is 64 s; the ad uses its first 28 s and fades out over the last 2.5 s (`music` in
-`data.js`: file, volume, startFrom).
+The track is 64 s. It is currently **off** (`music.file: ''`). When on, the full ad uses its
+first 28 s and fades out over the last 2.5 s (`music` in `data.js`: file, volume, startFrom);
+the 5-second ad is always silent.
 
 ## Licence
 
@@ -106,13 +117,14 @@ Google Ads takes videos only from YouTube. One-time, about 10 minutes:
 1. Go to youtube.com signed in as the **info@** Google account (the one that owns the
    Google Ads account). If it asks to create a channel, accept the default name
    (Christmas Light Creations) and skip the optional steps.
-2. Click **Create** (camera icon, top right) → **Upload videos** → pick `clc-ad-16x9.mp4`.
+2. Click **Create** (camera icon, top right) → **Upload videos** → pick `clc-teaser-5s-16x9.mp4`
+   (and later the full `clc-ad-16x9.mp4` once it is approved).
 3. Title: `Christmas Light Creations – Pearland, TX`. Description: the phone number and
    the website. Audience: **No, it's not made for kids**.
 4. Visibility: **Unlisted** (not Private: Google Ads can't read private videos; not
    Public: it doesn't need to appear on the channel). Save, and copy the video link.
-5. Repeat for `clc-ad-9x16.mp4` (add "vertical" to the title) and `clc-ad-1x1.mp4`
-   ("square"). Three links in total. Processing takes a minute or two.
+5. Repeat for the `9x16` file (add "vertical" to the title) and the `1x1` file ("square").
+   Three links per ad. Processing takes a minute or two.
 
 ## Add to the campaign (owner)
 

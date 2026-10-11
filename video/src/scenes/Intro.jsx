@@ -5,14 +5,15 @@ import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop, progress } from '../lib/motion.js'
 
 // Scene 1: a quiet winter night, snow, the cottage in the dark; then it switches on (neon
-// flicker, glow) on the music's first hit, and the business name appears.
-const ON = 104 // frame the lights come on (the music's first hit is at ~3.5 s)
+// flicker, glow) at data.intro.onAt seconds, and the business name appears. Also the whole of
+// the 5-second ad (holdEnd: no fade-out, the last frame is the lit cottage with the name).
 const FLICKER = [0.15, 0.9, 0.2, 1, 0.3, 1, 1, 0.5, 1, 1]
 
-export function Intro({ data, dur }) {
+export function Intro({ data, dur, holdEnd = false }) {
   const frame = useCurrentFrame()
   const { w, h, fps, tall, square } = useFmt()
   const { colors, words, type } = data
+  const ON = Math.round((data.intro?.onAt ?? 3.47) * fps)
   const logoH = tall ? 760 : square ? 520 : 600
   const logoW = logoH * 0.886
   const x = (w - logoW) / 2
@@ -27,7 +28,7 @@ export function Intro({ data, dur }) {
   const sub = fadeIn(frame, ON + 22, 10)
   const ground = progress(frame, 0, 40)
   return (
-    <SceneFade dur={dur} fadeInFrames={0}>
+    <SceneFade dur={dur} fadeInFrames={0} fadeOutFrames={holdEnd ? 0 : 8}>
       <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 30%, #0b1838 0%, ${colors.navy} 65%)` }}>
         <Snow count={110} opacity={0.8} />
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: tall ? 520 : 260, background: `linear-gradient(to top, rgba(159,176,208,${0.18 * ground}), transparent)` }} />

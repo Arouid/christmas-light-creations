@@ -27,6 +27,10 @@ const data = {
     season: { number: 14, aspect: 4032 / 2268, focus: [0.5, 0.45] },
     offer: { number: 46, aspect: 2159 / 1214, focus: [0.5, 0.4] },
   },
+  // Scene 1: when the cottage switches on (seconds into the scene).
+  intro: { onAt: 3.47 },
+  // The 5-second ad (Teaser compositions): scene 1 on its own, no music, lights on at 2 s.
+  teaser: { seconds: 5, onAt: 2.0 },
   // Scene lengths in seconds. The composition's length is their sum (offer counts only when
   // enabled) minus the 8-frame cross-dissolves between scenes.
   scenes: {
@@ -106,7 +110,8 @@ const data = {
   offer: { enabled: true },
   // Music bed (file in video/public/music/; source and licence in assets-source/ads/video/README.md).
   // startFrom: seconds into the track; the bed fades out over the last 2 s of the video.
-  music: { file: 'carol-of-the-bells-juliush.mp3', volume: 0.6, startFrom: 0 },
+  // Off (owner, 2026-10-11: "ditch the music"). To turn it on: file: 'carol-of-the-bells-juliush.mp3'.
+  music: { file: '', volume: 0.6, startFrom: 0 },
   // Film look: grain strength (0 = off) and vignette strength.
   look: { grain: 0.07, vignette: 0.55 },
 }

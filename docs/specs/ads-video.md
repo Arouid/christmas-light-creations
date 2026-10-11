@@ -1,12 +1,12 @@
 # Google Ads video (Performance Max) — motion-design cut
 
-Status: cut 1 built 2026-10-11, owner's notes the same day, cut 2 built from them; waiting for the owner's verdict on cut 2.
+Status: cut 1 built 2026-10-11, owner's notes the same day, cut 2 built from them. Owner on cut 2: scene 1 is "dope" → shipped on its own as the **5-second ad** (Teaser compositions, silent); music dropped everywhere; the rest of cut 2 waits for his notes.
 Owner's brief: "more than just some gallery photos stitched together"; the first slideshow cut
 (`scripts/ads-video.py`, 2026-10-11) "looks pretty cheap".
 
 ## What it is for
 
-One 28-second video with music, rendered in three shapes (16:9, 9:16, 1:1) for the Performance Max
+A 5-second ad (scene 1 alone) and a 28-second video, rendered in three shapes (16:9, 9:16, 1:1) for the Performance Max
 asset group (YouTube in-stream, Shorts, square feeds). Google trims nothing, but viewers skip
 after 5 s, so the first 5 s carry the name of the service and the second line of the story. The
 phone number and the website close it and stay on screen 4 s.
@@ -22,7 +22,15 @@ phone number and the website close it and stay on screen 4 s.
 | Radar ring looks like sonar | Replaced by a map: Galveston Bay as water, the 20 towns at their real coordinates lighting up with names, Houston faint for orientation, Pearland pinned. |
 | More production value; "generate scenes"; drone shots | Film look over everything (vignette + fine grain), slow push-ins and sideways drifts with a slight 3D tilt, a soft light sweep at every cut, graphics where photos were weak (illustrated street whose lights come on bulb by bulb behind the season and offer scenes). No footage exists and Claude cannot generate video; a phone or drone clip of a finished house slots into scene 2 via `photos.hero.clip`. |
 | Pictures aren't professional, only a few good ones; fill the weak spots, be creative | Only photos 34, 57 and 58 are used; the rest of the story is graphics. |
-| Music: Carol of the Bells | Pixabay track by JuliusH (licence in the README), chosen for no Content ID badge; the cottage switches on at the first hit (~3.5 s), the bed fades out over the last 2.5 s. |
+| Music: Carol of the Bells | Pixabay track by JuliusH (licence in the README), chosen for no Content ID badge; the cottage switched on at the first hit (~3.5 s). Then dropped (owner, same day: "ditch the music"); `music.file` is empty, the track stays documented. |
+
+## The 5-second ad (owner's pick from cut 2)
+
+Scene 1 on its own: 2 s of the dark cottage in the snow, the switch-on (flicker, glow, warm
+flash), the name and "Pearland, TX · since 2011", held to the last frame. 150 frames, silent,
+three shapes (`Teaser16x9`, `Teaser9x16`, `Teaser1x1`), files `clc-teaser-5s-*.mp4`. Settings:
+`teaser.seconds` and `teaser.onAt` in data.js. Open question for the owner: add the phone
+number or website at the end, or keep it as a pure brand bumper.
 
 ## Storyboard, cut 2 (30 fps; scenes cross-dissolve 8 frames with a light sweep)
 
@@ -63,8 +71,8 @@ phone number and the website close it and stay on screen 4 s.
 
 - `npm run video:studio` opens Remotion Studio in the browser pane; the three compositions
   (Ad16x9, Ad9x16, Ad1x1) can be scrubbed and the words changed in the props panel.
-- `npm run video:render` writes `clc-ad-16x9.mp4`, `clc-ad-9x16.mp4`, `clc-ad-1x1.mp4`
-  (H.264, 30 fps, about 27 s) into `assets-source/ads/video/`.
+- `npm run video:render` writes the three `clc-teaser-5s-*.mp4` (5 s) and the three `clc-ad-*.mp4`
+  (H.264, 30 fps, about 28 s) into `assets-source/ads/video/`.
 - Watching the 16:9 render: no two consecutive scenes are a plain photo crossfade; no sparkles,
   no bloom; the phone number is readable for the last 4 s; the vertical cut never cuts a roofline;
   the cottage comes on with the music's first hit.

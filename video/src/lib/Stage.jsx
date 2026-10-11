@@ -76,7 +76,7 @@ export function SceneFade({ dur, fadeInFrames = 6, fadeOutFrames = 8, children }
   const frame = useCurrentFrame()
   const o = Math.min(
     fadeInFrames > 0 ? interpolate(frame, [0, fadeInFrames], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 1,
-    interpolate(frame, [dur - fadeOutFrames, dur], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+    fadeOutFrames > 0 ? interpolate(frame, [dur - fadeOutFrames, dur], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 1,
   )
   return <AbsoluteFill style={{ opacity: o }}>{children}</AbsoluteFill>
 }
