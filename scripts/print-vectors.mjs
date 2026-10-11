@@ -13,7 +13,7 @@
 // and sticker) are thickened in their own colour, and at card size the specks, small
 // snowflakes and wood-grain scratches are left out, as on the shirts.
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -90,8 +90,8 @@ async function qr(code, { x, y, size }) {
   return { svg, url }
 }
 
-const doc = (w, h, bg, body) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}in" height="${h}in" viewBox="0 0 ${fmt(w * U)} ${fmt(h * U)}">${bg || ''}${body.join('\n')}</svg>`
+const doc = (w, h, bg, body) => // (LF only: the logo files carry CRLF)
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}in" height="${h}in" viewBox="0 0 ${fmt(w * U)} ${fmt(h * U)}">${bg || ''}${body.join('\n')}</svg>`.replace(/\r\n?/g, '\n')
 const rect = (w, h, fill, rx = 0) => `<rect width="${fmt(w * U)}" height="${fmt(h * U)}" rx="${fmt(rx * U)}" fill="${fill}"/>`
 
 // --- the items ---
@@ -203,11 +203,14 @@ async function pdf(item) {
   const dir = mkdtempSync(join(tmpdir(), 'clc-print-'))
   const html = join(dir, 'page.html')
   writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"><style>@page{size:${item.w}in ${item.h}in;margin:0}html,body{margin:0;padding:0}svg{display:block}</style></head><body>${item.svg}</body></html>`)
+  const out = `${OUT}${item.name}.pdf`
   try {
-    execFileSync(chrome, ['--headless=new', '--disable-gpu', '--no-pdf-header-footer', `--print-to-pdf=${OUT}${item.name}.pdf`, 'file:///' + html.replace(/\\/g, '/')], { stdio: 'ignore' })
+    execFileSync(chrome, ['--headless=new', '--disable-gpu', '--no-pdf-header-footer', `--print-to-pdf=${out}`, 'file:///' + html.replace(/\\/g, '/')], { stdio: 'ignore' })
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+  // Chrome stamps the time into the PDF; pin it (same length, so the file's offsets hold) so a rebuild is byte-identical.
+  writeFileSync(out, readFileSync(out, 'latin1').replace(/\/(CreationDate|ModDate) \(D:\d{14}/g, '/$1 (D:20260101000000'), 'latin1')
 }
 async function preview(item) {
   const density = Math.min(300, Math.round(1400 / item.w))
