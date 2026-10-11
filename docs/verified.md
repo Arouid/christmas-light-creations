@@ -247,3 +247,5 @@ What was actually checked working, and how. Newest first.
 
 - Guide: groups Customers & messages / New requests / Prices & money / Installs, takedowns & service / When something breaks; lines closed by default and open on tap; "Send a price / contract" shows 5 numbered steps; page 375 wide.
 - Tour: ? → Take the tour shows 7 cards (Welcome, Customer messages, Leads, Accounts, Customers & Season, Prices and getting paid, Home); Next through to "Start on Home" closes it, sets clcTourDone=1 and lands on #home. Auto-open after a real first sign-in not yet seen (demo is excluded).
+
+- 2026-10-10 (later) Tour "Open it" (owner): shows the tab with the tour folded into a bar at the bottom ("Tour 3/7: Leads… Back · Next · ✕"); Next brings the next card back. Welcome card greets by name ("Welcome, Demo!" in demo). Checked at 375px.
