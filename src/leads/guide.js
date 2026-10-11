@@ -16,6 +16,7 @@ export const TASKS = [
   ['Bill everyone for the season', '**Season** → filter (installs or takedowns) → **🧾 Invoice these N** → check the list (unticked ones say why) → **Make N drafts**. Then **Invoices** → Drafts → check the amounts → **Send all drafts**.'],
   ['They paid cash, check or Zelle', 'Open their invoice → **Mark paid…** → how, when, check # → Mark paid. They get a receipt and their Seasons billing fills in. Wrong invoice? **Undo “Mark paid”**. No invoice? Type it in their Seasons (Edit details).'],
   ['Plan installs or takedowns', '**Season** (filter by area, early/regular) → **＋ Route these N**, or **Routes** → New route → **⚡ Optimize** → **Send to the installer**.'],
+  ['Let Claude plan install days', '**Season** (Installs) → **✨ Plan with Claude (N)**: N is everyone who said yes this season (Wants lights? = Confirmed) but has no planned date or week yet. Pick the date range (two weeks by default), untick anyone, **Make a plan**. In under a minute you get a day for each person with a one-line reason: their notes, timeframe and recent texts first, ⭐ early installs before the discount deadline, never more than the day’s capacity (⚙ Settings → Install availability, minus what routes and planned dates already book), grouped by area. Move anyone to another day or drop them (days over capacity turn red), then **Apply**: it writes Planned date, Day, Week of (and Install Scheduled) exactly as if you typed them, and offers **✉ Email these** with “You are on the schedule”. Nothing is written until Apply, nothing sent until you press Send. Claude can be wrong: read the reasons. Same off switch as Ask Claude.'],
   ['A customer’s lights are out', '**Service** → Log call → pick the customer and the problem → Done when fixed (then ask for a review).'],
   ['A customer texted, called or emailed', 'The **💬** button (top right) shows a red count of texts, voicemails, missed calls, emails and website estimate requests **nobody has taken yet**. Tap it: newest first, “Needs someone” on the ones nobody has; tap **I’ve got it** on the one you’ll answer (the count goes down for everyone); tap one to open their account and full history (unknown numbers and emails from new people open the Unmatched list on Leads).'],
   ['Get a notification on my phone', 'Tap **💬** → **Turn on** → Allow → **Send a test**. Do it once on each phone or computer. From then on you get a notification within about 5 minutes of every customer text, voicemail, missed call or email; tap it to open their account. iPhone: install the app first (Safari → Share → Add to Home Screen) and turn it on from there. **Turn off** in the same place.'],
@@ -103,6 +104,7 @@ export const SECTIONS = [
       'Change a status right in the list: everyone sees it within seconds.',
       '**✉ Email these N** sends a template to each person, one email each from info@: check each and tap **Send ✓ Next** (or **Skip**), or **Send the rest** after one confirm. People with a blank in the template (e.g. no install rate on file) are skipped and listed; already-sent people are skipped. At most 300 emails a day from the app.',
       '**＋ Route these N** puts the filtered list on a route.',
+      '**✨ Plan with Claude (N)** (Installs): Claude proposes an install day for everyone confirmed but not yet scheduled, honoring their wishes, the early-install deadline, each day’s capacity and area grouping. You move or drop people, **Apply** writes the dates, then **✉ Email these** sends “You are on the schedule”. Nothing is written until Apply; 20 plans a day.',
       '**＋ New filter** (Customers tab, chip row at the top) saves a filter for everyone, e.g. “Needs scheduling”; **Old-site requests** are under Leads; Signs, Emails, Gates and Import are under **More ▾**.',
     ],
   },
@@ -236,7 +238,7 @@ export const TASK_GROUPS = [
   ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'Find anyone fast', 'Text a customer', 'Email a customer', 'Let Claude draft the reply', 'Ask Claude a question about the database', 'Get a notification on my phone', 'Ask for a Google review']],
   ['New requests', ['A new estimate request came in', 'A request says “🎨 sent a design”', 'A customer picked a date on the website']],
   ['Prices & money', ['Send a price / contract', 'Get paid', 'Bill a customer (invoice)', 'Bill everyone for the season', 'They paid cash, check or Zelle', 'A customer asks “why did my price go up?”']],
-  ['Installs, takedowns & service', ['Plan installs or takedowns', 'A customer’s lights are out']],
+  ['Installs, takedowns & service', ['Plan installs or takedowns', 'Let Claude plan install days', 'A customer’s lights are out']],
   ['When something breaks', ['A red “website problem” banner showed up']],
 ]
 

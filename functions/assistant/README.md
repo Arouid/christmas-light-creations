@@ -1,6 +1,6 @@
 # functions/assistant — the sales assistant's brain
 
-Server side of "✨ Suggest a reply" (spec: `docs/specs/sales-assistant.md`) and "🤖 Ask Claude" (spec: `docs/specs/ask-claude.md`). Built to be lifted into its own app later: nothing in here imports from the rest of `functions/`.
+Server side of "✨ Suggest a reply" (spec: `docs/specs/sales-assistant.md`), "🤖 Ask Claude" (spec: `docs/specs/ask-claude.md`) and "✨ Plan with Claude" (spec: `docs/specs/schedule-assistant.md`). Built to be lifted into its own app later: nothing in here imports from the rest of `functions/`.
 
 | File | What |
 |---|---|
@@ -8,6 +8,8 @@ Server side of "✨ Suggest a reply" (spec: `docs/specs/sales-assistant.md`) and
 | `draft.js` | `threadFor(db, target)` loads the thread and record; `draftFor({...})` calls Claude (`@anthropic-ai/sdk`, structured output) and returns the checked draft, usage and cost. Throws `DraftError` with an HttpsError code. |
 | `askPrompt.js` | Pure: Ask Claude's system prompt, the read-only tool schemas, `toolArgs` (argument checks), the rows the model sees (no gate codes or payment references), `askRequest`, `askAllowed` (100 a day), `parseAnswer`. Tested in `tests/askClaude.test.mjs`. |
 | `ask.js` | `makeTools(ctx)` implements the seven read-only tools over Firestore; `askFor({...})` runs the short tool loop (8 tool calls max, `tool_choice: none` after that) and returns `{ answer, records, draftFor, incomplete, toolCalls }`, usage and cost. Throws `AskError`. |
+| `schedulePrompt.js` | Pure: who still needs an install day (`unscheduled`), the days with capacity and booked counts (`dayList`), the rows the model sees (no gate code, phone or email), the planning prompt and JSON schema, `parseProposal` (days in range, room per day, everyone once), `scheduleRequest` (≤ 60 people, ≤ 42 days, inside the season), `scheduleAllowed` (20 a day), and the helpers the panel uses to adjust and apply a plan (`dayLoads`, `moveTo`, `dropFrom`, `writesFor`, week/day formatting). Tested in `tests/scheduleAssistant.test.mjs`. |
+| `schedule.js` | `gatherSchedule(db, {...}, helpers)` loads the customers, their recent incoming messages, settings and routes and builds the input; `proposeFor({...})` asks Claude once (structured output, effort high) and returns the checked plan, usage and cost. Throws `ScheduleError`. |
 | `knowledge.json` | Generated from the site copy by `node scripts/build-assistant-knowledge.mjs` (`src/assistant/lib/knowledge.js`); a test fails when it is stale. Don't edit by hand. |
 
-Depends on: `@anthropic-ai/sdk` (functions/package.json), a Firestore `db` handed in, the `ANTHROPIC_API_KEY` secret and `AI_MODEL` param owned by `functions/index.js`, which only registers the `draftReply` and `askClaude` callables (staff gate, kill switch, daily count, Who's on presence write) and passes `askFor` the invoice helpers from `functions/invoices.js`.
+Depends on: `@anthropic-ai/sdk` (functions/package.json), a Firestore `db` handed in, the `ANTHROPIC_API_KEY` secret and `AI_MODEL` param owned by `functions/index.js`, which only registers the `draftReply`, `askClaude` and `proposeSchedule` callables (staff gate, kill switch, daily count, Who's on presence write) and passes `askFor` the invoice helpers from `functions/invoices.js` and `gatherSchedule` the `bookedByDay`/`capacity` helpers from `functions/availability.js`.

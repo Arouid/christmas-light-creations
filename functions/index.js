@@ -32,9 +32,12 @@
 //
 // Secrets (set with `firebase functions:secrets:set`, never in code):
 //   SMTP_PASSWORD  app password for info@ (Google Workspace SMTP)
+// - proposeSchedule: "Plan with Claude" on the Season tab. Claude proposes an
+//   install day per customer; staff adjust and Apply in the app
+//   (docs/specs/schedule-assistant.md). Nothing is written by the server.
 //   PAYPAL_SECRET  PayPal app secret (sandbox or live, matching PAYPAL_ENV)
 //   MESSAGE_SYNC_KEY  shared key with the info@ Apps Script (Script Properties)
-//   ANTHROPIC_API_KEY  Claude API key for the sales assistant (draftReply, askClaude)
+//   ANTHROPIC_API_KEY  Claude API key for the sales assistant (draftReply, askClaude, proposeSchedule)
 // Plain settings in functions/.env: PAYPAL_CLIENT_ID, PAYPAL_ENV.
 import { getApp, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
@@ -48,7 +51,7 @@ import nodemailer from 'nodemailer'
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto'
 import { alertRecipients, leadEmail } from './leadEmail.js'
 import { dailyReport, incidentEmail, missedLeadAlerts, shouldMail, syncStale } from './health.js'
-import { bookedByDay, bookingSeason, openDays } from './availability.js'
+import { SEASON, bookedByDay, bookingSeason, capacity, openDays } from './availability.js'
 import { captureOrder, createOrder, getOrder } from './paypal.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
@@ -67,6 +70,8 @@ import {
   payableInvoiceProblem, receiptEmail, reminderDue, seasonFillsOnPaid, seasonFillsOnSend, shownInvoice, staffPaidEmail, toMs, validToken,
 } from './invoices.js'
 
+import { scheduleAllowed, scheduleRequest } from './assistant/schedulePrompt.js'
+import { ScheduleError, gatherSchedule, proposeFor } from './assistant/schedule.js'
 initializeApp()
 const REGION = 'us-south1'
 const SMTP_PASSWORD = defineSecret('SMTP_PASSWORD')
@@ -1079,3 +1084,46 @@ export const booking = onRequest({ region: REGION, invoker: 'public', maxInstanc
   res.set('Cache-Control', 'public, max-age=300')
   res.json({ status: { text: String(s.text ?? '').slice(0, 120), updatedAt: s.updatedAt ?? null }, openDays: days })
 })
+// ---- Plan with Claude (docs/specs/schedule-assistant.md) ---------------------
+// Staff only. The browser says which customers and which days; the server
+// gathers their records, recent incoming messages, booked days and capacity
+// (functions/availability.js) and asks Claude for one checked day plan.
+// Nothing is written here: staff adjust and Apply in the Season tab (client
+// writes). Same off switch as Ask Claude; 20 plans a day (serverState/aiSchedule).
+// Logs carry counts, tokens and cost, never customer text.
+export const proposeSchedule = onCall({ region: REGION, invoker: 'public', secrets: [ANTHROPIC_API_KEY], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK, timeoutSeconds: 180 }, async (req) => {
+  if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
+  if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Staff only.')
+  const staff = normEmail(req.auth.token.email)
+  const today = centralDay()
+  const season = bookingSeason(today)
+  const r = scheduleRequest(req.data, { season, bounds: SEASON })
+  if (r.problem) throw new HttpsError(...r.problem)
+
+  const db = getFirestore()
+  const settings = (await db.doc('settings/app').get()).data() ?? {}
+  if (settings.askClaude === false) throw new HttpsError('failed-precondition', 'The in-app Claude is turned off (⚙ Settings → Ask Claude).')
+
+  const gate = db.doc('serverState/aiSchedule')
+  await db.runTransaction(async (tx) => {
+    const allowed = scheduleAllowed((await tx.get(gate)).data(), staff, Date.now(), today)
+    if (allowed.problem) throw new HttpsError(...allowed.problem)
+    tx.set(gate, allowed.next)
+  })
+
+  const input = await gatherSchedule(db, { season, from: r.from, to: r.to, customerIds: r.customerIds }, { bookedByDay, capacity })
+  if (!input) throw new HttpsError('not-found', 'None of those customers exist any more. Refresh and try again.')
+  let out
+  try {
+    out = await proposeFor({
+      apiKey: ANTHROPIC_API_KEY.value(), model: AI_MODEL.value() || MODEL, input, today, season, log: logger,
+      onKeyRefused: () => reportIncident('other', 'Plan with Claude’s API key was refused (ANTHROPIC_API_KEY). Set it again and redeploy proposeSchedule.'),
+    })
+  } catch (e) {
+    if (e instanceof ScheduleError) throw new HttpsError(e.code, e.message)
+    throw e
+  }
+  db.doc(`presence/${PRESENCE_ID}`).set({ lastSeen: FieldValue.serverTimestamp(), device: `planned install days for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
+  return { ...out.plan, days: input.days, customers: input.customers, deadline: input.deadline, model: out.model, cost: out.cost }
+})
+

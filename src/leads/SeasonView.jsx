@@ -8,6 +8,8 @@ import BulkInvoices from './invoices/BulkInvoices'
 import { useDiscountSchedule } from './discountContext'
 import SeasonResults from './SeasonResults'
 import { blankFor, select } from './ui'
+import PlanSchedule from '../assistant/PlanSchedule'
+import { unscheduled } from '../../functions/assistant/schedulePrompt.js'
 
 // Bring every customer's early-install discount and total in line with their
 // install date (Settings schedule). Special rates are left alone.
@@ -44,6 +46,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
   const [stage, setStage] = useState('all')
   const [area, setArea] = useState('')
   const [type, setType] = useState('')
+  const [planning, setPlanning] = useState(false)
   const list = mode === 'takedown' ? TAKEDOWN_STATUSES : INSTALL_STATUSES
 
   const areas = useMemo(() => [...new Set(customers.map((c) => c.locationBlock).filter(Boolean))].sort(), [customers])
@@ -54,6 +57,9 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
   const counts = new Map(list.map((s) => [s, 0]))
   inFilters.forEach((c) => counts.set(statusOf(c), (counts.get(statusOf(c)) ?? 0) + 1))
   const shown = stage === 'all' ? inFilters : inFilters.filter((c) => statusOf(c) === stage)
+  // Plan with Claude works on the area/type filters, not the status chip: it
+  // picks the confirmed-but-unscheduled people itself.
+  const toPlan = mode === 'install' ? unscheduled(inFilters, season).length : 0
 
   return (
     <>
@@ -77,6 +83,11 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
           <option>Regular Install</option>
         </select>
         <div className="col-span-2 flex flex-wrap gap-2 lg:ml-auto">
+          {mode === 'install' && (
+            <button type="button" onClick={() => setPlanning(true)} className="rounded-full border border-glow-400/40 px-4 py-2 text-sm font-semibold text-glow-300">
+              ✨ Plan with Claude{toPlan ? ` (${toPlan})` : ''}
+            </button>
+          )}
           <ApplyDiscounts customers={customers} season={season} onUpdate={onUpdate} />
           <BulkEmail rows={shown} season={season} onUpdate={onUpdate} />
           <AddToRoute customers={shown} defaultKind={mode === 'takedown' ? 'takedown' : 'install'} label={`＋ Route these ${shown.length}`}
@@ -102,6 +113,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
         <SeasonResults rows={shown} mode={mode} season={season} gates={gates} onOpen={onOpen} onUpdate={onUpdate}
           columns={['name', 'area', 'type', 'week', 'day', 'date', 'timeframe', 'status', 'ask', 'review']} />
       </div>
+      {planning && <PlanSchedule customers={inFilters} season={season} onUpdate={onUpdate} onClose={() => setPlanning(false)} />}
     </>
   )
 }
