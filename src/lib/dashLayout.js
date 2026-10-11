@@ -5,9 +5,9 @@
 
 export const PANELS = [
   ['season', 'Season'], ['activity', 'Recent activity'], ['who', 'Who’s on'], ['scheduled', 'Scheduled emails'],
-  ['signins', 'Sign-ins'], ['routes', 'Today’s routes'], ['status', 'System status'], ['spent', 'Spent this month'],
+  ['signins', 'Sign-ins'], ['routes', 'Today’s routes'], ['status', 'System status'], ['spent', 'Spent this month'], ['ads', 'Google Ads'],
 ]
-export const DEFAULT_LAYOUT = { order: ['season', 'who', 'activity', 'scheduled', 'signins', 'routes', 'status', 'spent'], wide: ['activity'] }
+export const DEFAULT_LAYOUT = { order: ['season', 'who', 'activity', 'scheduled', 'signins', 'routes', 'status', 'spent', 'ads'], wide: ['activity'] }
 export const LAYOUT_KEY = 'clcHomeLayout'
 const KNOWN = PANELS.map(([k]) => k)
 
@@ -53,4 +53,22 @@ export function nudge(layout, key, dir) {
   order.splice(i, 1)
   order.splice(j, 0, key)
   return normalize({ ...layout, order })
+}
+
+// How a computer screen lays the flow out: runs of Half panels become a band
+// of two flush columns (left, right, left, right…); a Wide panel is a band of
+// its own. Phones ignore this and show layout.order top to bottom.
+export function bands(layout) {
+  const out = []
+  let run = null
+  for (const key of layout.order) {
+    if (isWide(layout, key)) {
+      run = null
+      out.push({ type: 'wide', key })
+      continue
+    }
+    if (!run) { run = { type: 'pair', left: [], right: [] }; out.push(run) }
+    ;(run.left.length <= run.right.length ? run.left : run.right).push(key)
+  }
+  return out
 }

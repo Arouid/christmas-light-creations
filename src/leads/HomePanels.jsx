@@ -1,7 +1,7 @@
 import { agoText, describe, staffName, toMs } from '../lib/activity'
 import { reasonText } from '../lib/signInLog'
 import { money } from '../lib/invoices'
-import { spendText } from '../lib/spend'
+import { asOfText, spendText } from '../lib/spend'
 
 // Mission-control panels for the Home tab (docs/specs/dashboard.md). Layout
 // only; the numbers come from src/lib/activity.js.
@@ -270,6 +270,81 @@ export function SpendPanel({ summary, month, error, loading, wall }) {
           </li>
         ))}
       </ul>
+    </section>
+  )
+}
+
+// Google Ads this month (docs/specs/ads-stats.md): spend, clicks, cost per
+// click, estimate requests (Google's conversions) and cost per request, then
+// the top campaigns and what people searched, from the BigQuery Ads transfer
+// (functions/googleBilling.js, a day behind). ads: adsSummary(), null until
+// the owner connects the transfer; error: usage doc refused.
+const ADS_LINK = 'https://ads.google.com/'
+const count = (n) => Number(n || 0).toLocaleString('en-US')
+export function AdsPanel({ ads, month, error, loading, wall }) {
+  const title = new Date(`${month}-15T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  const asOf = ads ? (ads.lastDay ? asOfText(`${ads.lastDay}T12:00:00-06:00`) : asOfText(ads.asOf)) : ''
+  const big = `font-semibold tabular-nums text-glow-300 ${wall ? 'text-4xl' : 'text-2xl'}`
+  const small = wall ? 'text-lg' : 'text-sm'
+  const stat = (value, name) => (
+    <div className="min-w-0">
+      <div className={big}>{loading && !error ? '…' : value}</div>
+      <div className="text-xs text-slate-400">{name}</div>
+    </div>
+  )
+  return (
+    <section className={panel} aria-label="Google Ads">
+      <h2 className={`${label} flex items-baseline justify-between gap-2`}>
+        <span>Google Ads · {title}</span>
+        <a href={ADS_LINK} target="_blank" rel="noreferrer" className="-my-3 inline-flex min-h-11 items-center text-xs font-normal normal-case tracking-normal text-glow-300 underline">see ads ↗</a>
+      </h2>
+      {error && <p className="mt-3 text-sm text-glow-300">Needs the database rules published again (firestore.rules) before ad numbers can show.</p>}
+      {!ads && !error && !loading && (
+        <p className="mt-3 text-sm text-slate-400">Not connected yet · BigQuery → Data transfers → Google Ads</p>
+      )}
+      {(ads || loading) && !error && (
+        <>
+          <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4">
+            {stat(spendText(ads?.cents ?? 0), 'spent')}
+            {stat(count(ads?.clicks), ads?.clicks === 1 ? 'click' : 'clicks')}
+            {stat(ads?.cpcCents != null ? spendText(ads.cpcCents) : '—', 'per click')}
+            {ads?.conversions > 0
+              ? stat(count(ads.conversions), ads.conversions === 1 ? 'request' : 'requests')
+              : stat(count(ads?.impressions), 'times shown')}
+          </div>
+          {ads && (
+            <p className={`mt-2 text-xs text-slate-400`}>
+              {ads.conversions > 0
+                ? `${spendText(ads.perRequestCents)} per estimate request · ${count(ads.impressions)} times shown`
+                : 'no estimate requests counted yet'}
+              {asOf ? ` · as of ${asOf}` : ''}
+            </p>
+          )}
+          {ads?.campaigns.length > 0 && (
+            <ul className={`mt-3 space-y-1 ${small}`} aria-label="Top campaigns">
+              {ads.campaigns.map((c) => (
+                <li key={c.name} className="flex items-baseline justify-between gap-2 text-slate-300">
+                  <span className="truncate">{c.name}</span>
+                  <span className="shrink-0 tabular-nums text-xs text-slate-400">{spendText(c.cents)} · {count(c.clicks)} click{c.clicks === 1 ? '' : 's'}{c.conversions > 0 ? ` · ${count(c.conversions)} req` : ''}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {ads?.terms.length > 0 && (
+            <>
+              <p className="mt-3 text-xs text-slate-500">People searched</p>
+              <ul className={`mt-1 space-y-1 ${small}`} aria-label="Top search terms">
+                {ads.terms.map((t) => (
+                  <li key={t.term} className="flex items-baseline justify-between gap-2 text-slate-400">
+                    <span className="truncate">“{t.term}”</span>
+                    <span className="shrink-0 tabular-nums text-xs text-slate-500">{count(t.clicks)} · {spendText(t.cents)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+      )}
     </section>
   )
 }

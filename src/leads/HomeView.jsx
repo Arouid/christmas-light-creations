@@ -3,12 +3,12 @@ import { collected, counters, routesToday, seasonProgress, syncLight } from '../
 import { money } from '../lib/invoices'
 import { todayISO } from '../lib/customers'
 import { alertRecipients } from '../../functions/leadEmail.js'
-import { monthKey, spentSummary } from '../lib/spend'
-import { ActivityPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel, SpendPanel, StatusPanel, WhoPanel, label } from './HomePanels'
+import { adsSummary, monthKey, spentSummary } from '../lib/spend'
+import { ActivityPanel, AdsPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel, SpendPanel, StatusPanel, WhoPanel, label } from './HomePanels'
 import { ScheduledPanel } from './ScheduledEmails'
 import { usePresence, useSignIns } from './usePresence'
 import { useOutgoingMail } from './useOutgoingMail'
-import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, isWide, nudge, placeBefore, readLayout, toggleWide } from '../lib/dashLayout'
+import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, bands, isWide, nudge, placeBefore, readLayout, toggleWide } from '../lib/dashLayout'
 import { permission, storedFid } from './push'
 import { useLiveDoc, useLiveQuery } from './staffStore'
 
@@ -21,6 +21,19 @@ function useNow(ms) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), ms); return () => clearInterval(t) }, [ms])
   return now
+}
+
+// True on computer-sized screens (Tailwind's lg), where panels pair up in columns.
+function useWide() {
+  const query = '(min-width: 1024px)'
+  const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const onChange = () => setWide(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return wide
 }
 
 const clock = (now) => new Date(now).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit', second: '2-digit' })
@@ -47,6 +60,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const month = monthKey(minute)
   const usage = useLiveDoc(user, 'usage', month)
   const spent = useMemo(() => spentSummary(usage.data), [usage.data])
+  const ads = useMemo(() => adsSummary(usage.data?.ads), [usage.data])
 
   const nums = useMemo(() => counters({ leads, invoices, calls, today }), [leads, invoices, calls, today])
   const progress = useMemo(() => seasonProgress(customers, season), [customers, season])
@@ -75,8 +89,18 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   // Where each panel sits: the owner's drag-and-drop (2026-10-10), kept per device.
   const [layout, setLayout] = useState(() => { try { return readLayout(localStorage.getItem(LAYOUT_KEY)) } catch { return DEFAULT_LAYOUT } })
   const [arranging, setArranging] = useState(false)
+  const twoColumns = useWide()
   const apply = (next) => { setLayout(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)) } catch { /* private mode: fine */ } }
   const drop = (key, beforeKey) => { if (key) apply(placeBefore(layout, key, beforeKey)) }
+  const slot = (k) => {
+    const i = layout.order.indexOf(k)
+    return (
+      <Slot key={k} k={k} wide={isWide(layout, k)} arranging={arranging} first={i === 0} last={i === layout.order.length - 1}
+        onNudge={(dir) => apply(nudge(layout, k, dir))} onToggleWide={() => apply(toggleWide(layout, k))} onDrop={drop}>
+        {panels[k]}
+      </Slot>
+    )
+  }
 
   const panels = {
     season: <SeasonPanel season={season} progress={progress} money={cash} wall={wall} />,
@@ -87,6 +111,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
     routes: <RoutesPanel today={day} wall={wall} />,
     status: <StatusPanel lights={lights} wall={wall} />,
     spent: <SpendPanel summary={spent} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
+    ads: <AdsPanel ads={ads} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
   }
 
   const board = (
@@ -111,16 +136,18 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
       </header>
       <Counters tiles={tiles} wall={wall} />
       {arranging && <p className="text-sm text-glow-300">Drag a panel where you want it, or use its arrows. <strong>Wide</strong> makes a panel span the whole row; <strong>Half</strong> lets two sit side by side. Phones show them in this order, one under another. Saved on this device.</p>}
-      {/* One flow: half panels pair up, wide ones take the row (dense packing fills gaps). */}
-      <div className="grid gap-4 lg:grid-flow-dense lg:grid-cols-2 lg:items-start"
+      {/* Computers: runs of Half panels stack flush in two columns; a Wide panel is a row of its own. Phones: the plain order. */}
+      <div className="space-y-4"
         onDragOver={arranging ? (e) => e.preventDefault() : undefined}
         onDrop={arranging ? (e) => { e.preventDefault(); drop(e.dataTransfer.getData('text/plain'), null) } : undefined}>
-        {layout.order.map((k, i) => (
-          <Slot key={k} k={k} wide={isWide(layout, k)} arranging={arranging} first={i === 0} last={i === layout.order.length - 1}
-            onNudge={(dir) => apply(nudge(layout, k, dir))} onToggleWide={() => apply(toggleWide(layout, k))} onDrop={drop}>
-            {panels[k]}
-          </Slot>
-        ))}
+        {twoColumns
+          ? bands(layout).map((b, i) => (b.type === 'wide'
+            ? slot(b.key)
+            : <div key={`band-${i}`} className="grid grid-cols-2 gap-4">
+                <div className="min-w-0 space-y-4">{b.left.map(slot)}</div>
+                <div className="min-w-0 space-y-4">{b.right.map(slot)}</div>
+              </div>))
+          : layout.order.map(slot)}
       </div>
     </div>
   )
@@ -133,13 +160,12 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
 const PANEL_LABEL = Object.fromEntries(PANELS)
 const arrow = 'size-9 rounded-full border border-white/20 text-sm font-semibold hover:bg-white/10 disabled:opacity-30'
 function Slot({ k, wide, arranging, first, last, onNudge, onToggleWide, onDrop, children }) {
-  const span = wide ? 'lg:col-span-2' : ''
-  if (!arranging) return <div className={`min-w-0 ${span}`}>{children}</div>
+  if (!arranging) return <div className="min-w-0">{children}</div>
   return (
     <div draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', k); e.dataTransfer.effectAllowed = 'move' }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e.dataTransfer.getData('text/plain'), k) }}
-      className={`min-w-0 cursor-grab rounded-3xl ring-2 ring-glow-400/50 active:cursor-grabbing ${span}`}>
+      className="min-w-0 cursor-grab rounded-3xl ring-2 ring-glow-400/50 active:cursor-grabbing">
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 text-xs text-glow-300">
         <span className="font-semibold">⠿ {PANEL_LABEL[k]}</span>
         <span className="flex items-center gap-1">

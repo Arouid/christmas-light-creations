@@ -57,7 +57,10 @@ export const demoData = {
     claude: { draft: { calls: 14, inputTokens: 71000, outputTokens: 11200, microCents: 42300 }, ask: { calls: 5, inputTokens: 40500, outputTokens: 2100, microCents: 18800 }, plan: { calls: 2, inputTokens: 30000, outputTokens: 7000, microCents: 29600 } },
     paypal: { payments: 3, grossCents: 185000, feeCents: 5667 },
     google: { totalCents: 212, byService: { 'Cloud Firestore': 118, 'Cloud Functions': 54, 'Maps API': 31, 'Cloud Storage': 9 }, asOf: new Date(Date.now() - 3 * 3600e3).toISOString(), lastExportAt: new Date(Date.now() - 20 * 3600e3).toISOString() },
-    ads: { totalCents: 4850, byCampaign: { 'Pearland lights': 3900, Friendswood: 950 }, asOf: new Date(Date.now() - 3 * 3600e3).toISOString(), lastDay: new Date(Date.now() - 30 * 3600e3).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }) },
+    ads: { totalCents: 4850, impressions: 3180, clicks: 97, conversions: 4, conversionsValueCents: 0,
+      byCampaign: { 'Pearland lights': { cents: 3900, clicks: 80, impressions: 2500, conversions: 4 }, Friendswood: { cents: 950, clicks: 17, impressions: 680, conversions: 0 } },
+      topTerms: [{ term: 'christmas light installers pearland', clicks: 23, cents: 1180 }, { term: 'christmas lights near me', clicks: 19, cents: 905 }, { term: 'holiday lighting friendswood', clicks: 9, cents: 410 }, { term: 'christmas light hangers', clicks: 7, cents: 300 }, { term: 'roof lights install', clicks: 4, cents: 190 }],
+      asOf: new Date(Date.now() - 3 * 3600e3).toISOString(), lastDay: new Date(Date.now() - 30 * 3600e3).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }) },
   } },
   signs: byId([
     { id: 'demo-sign-1', corner: 'Broadway & 288', code: 'broadway-288', lat: 29.5695, lng: -95.3864, placedAt: hoursAgo(30), cost: 10, updatedBy: 'demo@example.com' },
