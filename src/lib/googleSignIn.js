@@ -23,22 +23,25 @@ export async function signInWithGoogle(fb, auth) {
   provider.setCustomParameters({ prompt: 'select_account' })
   if (prefersRedirect()) return fb.signInWithRedirect(auth, provider)
   try {
-    await fb.signInWithPopup(auth, provider)
+    return await fb.signInWithPopup(auth, provider)
   } catch (err) {
     if (FALLBACK.includes(err?.code)) return fb.signInWithRedirect(auth, provider)
     if (!CANCELLED.includes(err?.code)) throw err
   }
 }
 
-// After a same-page sign-in returns: surface a failure instead of silently
-// showing the sign-in button again. Resolves to an error message or null.
-export async function redirectError(fb, auth) {
+// After a same-page sign-in returns: { user } if it just signed someone in,
+// { message, code } if it failed (instead of silently showing the button
+// again), or {} when the page wasn't coming back from a sign-in.
+export async function redirectOutcome(fb, auth) {
   try {
-    await fb.getRedirectResult(auth)
-    return null
+    const cred = await fb.getRedirectResult(auth)
+    return cred?.user ? { user: cred.user } : {}
   } catch (err) {
-    return err?.code === 'auth/unauthorized-domain' || err?.code === 'auth/invalid-continue-uri'
+    const code = err?.code ?? err?.message ?? 'unknown'
+    const message = code === 'auth/unauthorized-domain' || code === 'auth/invalid-continue-uri'
       ? 'Sign-in isn’t set up for this address yet. Tell Scott.'
-      : `Sign-in didn’t finish (${err?.code ?? err?.message ?? 'unknown'}). Try again.`
+      : `Sign-in didn’t finish (${code}). Try again.`
+    return { message, code }
   }
 }

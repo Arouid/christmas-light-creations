@@ -377,5 +377,30 @@ service cloud.firestore {
       allow read: if isStaff();
       allow write: if false;
     }
+
+    // Who's on (Home): each staff app checks in as itself while open.
+    match /presence/{email} {
+      allow read: if isStaff();
+      allow create, update: if isStaff() && email == request.auth.token.email.lower()
+        && request.resource.data.keys().hasOnly(['lastSeen', 'device'])
+        && request.resource.data.lastSeen == request.time
+        && shortStr(request.resource.data.device, 40);
+      allow delete: if false;
+    }
+
+    // Sign-ins (Home): staff sign-in attempts. A signed-in person may log
+    // their own; a failure before Google said who may be logged anonymously
+    // (no email, ok false). Append-only; nobody edits or deletes.
+    match /signInLog/{entryId} {
+      allow read: if isStaff();
+      allow create: if request.resource.data.keys().hasOnly(['at', 'ok', 'email', 'code', 'device'])
+        && request.resource.data.at == request.time
+        && request.resource.data.ok is bool
+        && shortStr(request.resource.data.code, 60)
+        && shortStr(request.resource.data.device, 40)
+        && ((request.auth != null && request.resource.data.email == request.auth.token.email.lower())
+          || (request.auth == null && request.resource.data.ok == false && request.resource.data.email == ''));
+      allow update, delete: if false;
+    }
   }
 }

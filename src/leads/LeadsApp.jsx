@@ -41,6 +41,7 @@ import { refreshDevice, setIconBadge } from './push'
 import { useStaffAlerts } from './useStaffAlerts'
 import HomeView from './HomeView'
 import { byPhone, logActivity, setActivityContext, useActivityFeed } from './activity'
+import { usePresenceBeat } from './usePresence'
 import { staffName } from '../lib/activity'
 
 // Built-in tabs; custom tabs (saved views) go after Season as #view-<id>.
@@ -84,6 +85,7 @@ export default function LeadsApp() {
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const feed = useActivityFeed(user, settingsApi.settings?.staffNames)
+  usePresenceBeat(user)
   const alerts = useStaffAlerts(user, leads, feed)
   const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
   const season = seasonYear()

@@ -1,4 +1,5 @@
 import { agoText, describe, staffName, toMs } from '../lib/activity'
+import { reasonText } from '../lib/signInLog'
 import { money } from '../lib/invoices'
 
 // Mission-control panels for the Home tab (docs/specs/dashboard.md). Layout
@@ -178,6 +179,56 @@ export function ActivityPanel({ entries, error, loading, ctx, now, wall, limit =
             </li>
           )
         })}
+      </ul>
+    </section>
+  )
+}
+
+const DOT = { on: 'bg-emerald-400', away: 'bg-slate-500', never: 'bg-white/15' }
+
+// Who's on: staff with the app open now, else when they were last on.
+export function WhoPanel({ rows, error, now, wall }) {
+  return (
+    <section className={panel} aria-label="Who's on">
+      <h2 className={label}>Who’s on</h2>
+      {error && <p className="mt-3 text-sm text-glow-300">Needs the database rules published again (firestore.rules).</p>}
+      {!error && (
+        <ul className={`mt-3 space-y-1.5 ${wall ? 'text-lg' : 'text-sm'}`}>
+          {rows.map((r) => (
+            <li key={r.email} className="flex items-center gap-2.5">
+              <span className={`size-2.5 shrink-0 rounded-full ${DOT[r.state]} ${r.state === 'on' ? 'shadow-[0_0_8px_rgba(52,211,153,0.8)]' : ''}`} aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
+              <span className="shrink-0 text-right text-slate-400">
+                {r.state === 'on' ? <span className="text-emerald-300">on now</span> : r.state === 'away' ? agoText(r.last, now) : 'never'}
+                {r.device && r.state !== 'never' && <span className="text-slate-500"> · {r.device}</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
+// Sign-ins: staff app sign-in attempts in the last days, newest first.
+export function SignInsPanel({ entries, error, now, names, wall, limit = 12 }) {
+  const shown = (entries ?? []).slice(0, wall ? 6 : limit)
+  return (
+    <section className={panel} aria-label="Sign-ins">
+      <h2 className={label}>Sign-ins</h2>
+      {error && <p className="mt-3 text-sm text-glow-300">Needs the database rules published again (firestore.rules).</p>}
+      {!error && !shown.length && <p className="mt-3 text-sm text-slate-400">No sign-ins logged yet.</p>}
+      <ul className={`mt-3 space-y-1.5 ${wall ? 'text-lg' : 'text-sm'}`}>
+        {shown.map((e) => (
+          <li key={e.id} className="flex items-center gap-2.5">
+            <span className={`shrink-0 font-bold ${e.ok ? 'text-emerald-300' : 'text-berry-500'}`} aria-label={e.ok ? 'succeeded' : 'failed'}>{e.ok ? '✓' : '✗'}</span>
+            <span className="min-w-0 flex-1 truncate">
+              <span className="font-semibold">{e.email ? staffName(e.email, names) : 'Someone'}</span>
+              <span className="text-slate-400"> {e.ok ? 'signed in' : `couldn’t sign in · ${reasonText(e.code)}`}{e.device ? ` · ${e.device}` : ''}</span>
+            </span>
+            <span className="shrink-0 text-xs tabular-nums text-slate-500">{agoText(toMs(e.at), now)}</span>
+          </li>
+        ))}
       </ul>
     </section>
   )

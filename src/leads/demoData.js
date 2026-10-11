@@ -80,6 +80,17 @@ export const demoData = {
   ]),
   // Staff list (ids = emails), named in ⚙ Settings → Staff names.
   staff: { 'demo@example.com': {}, 'katiep@example.com': {}, 'lacie@example.com': {} },
+  // Home: who's on and recent sign-in attempts (src/lib/presence.js, src/lib/signInLog.js).
+  presence: {
+    'demo@example.com': { lastSeen: minAgo(1), device: 'Windows' },
+    'lacie@example.com': { lastSeen: minAgo(95), device: 'iPhone app' },
+  },
+  signInLog: byId([
+    { id: 'demo-si-1', at: minAgo(1), ok: true, email: 'demo@example.com', code: '', device: 'Windows' },
+    { id: 'demo-si-2', at: minAgo(30), ok: false, email: '', code: 'auth/popup-closed-by-user', device: 'iPhone' },
+    { id: 'demo-si-3', at: minAgo(95), ok: true, email: 'lacie@example.com', code: '', device: 'iPhone app' },
+    { id: 'demo-si-4', at: minAgo(300), ok: false, email: 'visitor@example.com', code: 'not-staff', device: 'Android' },
+  ]),
   // Home: recent staff activity and a route for today (docs/specs/dashboard.md).
   activity: byId([
     { id: 'demo-act-1', at: minAgo(4), by: 'katiep@example.com', action: 'email', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Re: Your 2026 install' },

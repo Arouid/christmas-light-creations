@@ -211,3 +211,8 @@ What was actually checked working, and how. Newest first.
 - /__/auth/handler, /__/auth/iframe, /__/firebase/init.json serve 200 (handler as text/html) on the live site.
 - Live /leads/ Sign in with Google reaches Google's account chooser with redirect_uri=https://christmas-light-creations.com/__/auth/handler and "continue to christmas-light-creations.com" (no redirect_uri_mismatch). Stopped before entering an account.
 - Not yet checked: a full sign-in on Katie's iPhone; desktop popup sign-in end to end.
+
+## 2026-10-10 Who's on / Sign-ins (demo, 375px)
+
+- Home shows "Who's on" (Demo on now · Windows, Lacie M. 2 h ago · iPhone app, Katie P. never) and "Sign-ins" (✓/✗ with reason and device). Page width stayed 375 after adding min-w-0 to the Home grid columns (the long sign-in line had widened it to 515).
+- Not yet checked live: rules for presence/signInLog not published yet; real check-ins and a logged iPhone sign-in.

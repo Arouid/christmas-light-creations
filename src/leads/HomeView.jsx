@@ -3,7 +3,8 @@ import { collected, counters, routesToday, seasonProgress, syncLight } from '../
 import { money } from '../lib/invoices'
 import { todayISO } from '../lib/customers'
 import { alertRecipients } from '../../functions/leadEmail.js'
-import { ActivityPanel, Counters, Light, RoutesPanel, SeasonPanel, StatusPanel, label } from './HomePanels'
+import { ActivityPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel, StatusPanel, WhoPanel, label } from './HomePanels'
+import { usePresence, useSignIns } from './usePresence'
 import { permission, storedFid } from './push'
 import { useLiveQuery } from './staffStore'
 
@@ -33,6 +34,9 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const [wall, setWall] = useState(false)
   const exitWall = useCallback(() => setWall(false), [])
   const now = useNow(1000)
+  const minute = Math.floor(now / 60000) * 60000
+  const who = usePresence(user, feed.names, minute)
+  const signIns = useSignIns(user)
   const incidents = useLiveQuery(user, 'incidents', 'open', true, byOpenedAt) ?? []
   const today = todayISO()
 
@@ -77,8 +81,10 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
       </header>
       <Counters tiles={tiles} wall={wall} />
       <div className="grid gap-4 lg:grid-cols-12">
-        <div className="lg:col-span-7"><ActivityPanel entries={feed.entries} error={feed.error} loading={feed.loading} ctx={ctx} now={now} wall={wall} /></div>
-        <div className="space-y-4 lg:col-span-5">
+        <div className="min-w-0 lg:col-span-7"><ActivityPanel entries={feed.entries} error={feed.error} loading={feed.loading} ctx={ctx} now={now} wall={wall} /></div>
+        <div className="min-w-0 space-y-4 lg:col-span-5">
+          <WhoPanel rows={who.rows} error={who.error} now={minute} wall={wall} />
+          <SignInsPanel entries={signIns.entries} error={signIns.error} now={minute} names={feed.names} wall={wall} />
           <RoutesPanel today={day} wall={wall} />
           <SeasonPanel season={season} progress={progress} money={cash} wall={wall} />
           <StatusPanel lights={lights} wall={wall} />
