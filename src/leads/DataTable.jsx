@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 
 // Desktop table with click-to-sort headers. Each column:
 // { key, label, get(row) -> sort/display text, render?(row) -> cell, className? }
-// Wide tables scroll sideways inside a screen-high box (so the scrollbar is
-// always in reach), with ◀ ▶ buttons and the first column pinned.
+// Wide tables scroll sideways, with ◀ ▶ buttons at each end of the row above
+// and the first column pinned (owner 2026-10-10: arrows only, no extra scrollbars).
 export default function DataTable({ rows, columns, onRowClick, label }) {
   const [sort, setSort] = useState({ key: null, dir: 1 })
   const box = useRef(null)
@@ -35,12 +35,11 @@ export default function DataTable({ rows, columns, onRowClick, label }) {
 
   return (
     <div>
-      <div ref={hint} hidden className="mb-2 flex items-center justify-end gap-2 text-sm text-slate-300">
-        <span>The table is wider than the screen. Scroll it:</span>
-        <button type="button" onClick={() => slide(-1)} aria-label="Scroll table left" className="min-h-11 rounded-full border border-white/20 px-4 font-semibold hover:bg-white/10">◀ Left</button>
-        <button type="button" onClick={() => slide(1)} aria-label="Scroll table right" className="min-h-11 rounded-full bg-glow-400 px-4 font-semibold text-night-950 hover:bg-glow-300">Right ▶</button>
+      <div ref={hint} hidden className="mb-2 flex items-center justify-between">
+        <button type="button" onClick={() => slide(-1)} aria-label="Scroll table left" className="size-11 rounded-full border border-white/20 font-semibold hover:bg-white/10">◀</button>
+        <button type="button" onClick={() => slide(1)} aria-label="Scroll table right" className="size-11 rounded-full border border-white/20 font-semibold hover:bg-white/10">▶</button>
       </div>
-      <div ref={box} className="max-h-[calc(100svh-12rem)] overflow-auto rounded-2xl border border-white/10 bg-night-900">
+      <div ref={box} className="overflow-x-auto rounded-2xl border border-white/10 bg-night-900">
         <table className="w-full text-left text-sm" aria-label={label}>
           <thead className="sticky top-0 z-20 bg-night-800 text-xs uppercase tracking-wider text-slate-400">
             <tr>

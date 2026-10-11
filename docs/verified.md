@@ -236,3 +236,5 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-10 Public designer header (375px)
 
 - Buttons read ✕ · ↶ · ↷ · ⬇ Save · Estimate → and the row fits with no sideways scroll (right edge at 363px). Wider screens say ⬇ Save picture and Get my estimate →.
+
+- 2026-10-10 (later) Owner: no extra scrollbars, arrows only. Table box is back to sideways scroll only (no max height); the row above has ◀ at the far left and ▶ at the far right (44px), shown only when the table is wider than the screen. Checked at 1200px with 16 columns.
