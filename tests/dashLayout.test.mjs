@@ -34,12 +34,23 @@ test('arrows move one step; wide toggles and survives normalize', () => {
   assert.deepEqual(normalize(toggleWide(t, 'season')).wide, ['season'])
 })
 
-test('bands: half panels pair into two flush columns; a wide panel breaks the flow', () => {
+test('bands: without heights the sides alternate; a wide panel breaks the flow', () => {
   const b = bands({ order: ['season', 'who', 'activity', 'scheduled', 'signins', 'routes'], wide: ['activity'] })
   assert.deepEqual(b, [
     { type: 'pair', left: ['season'], right: ['who'] },
     { type: 'wide', key: 'activity' },
-    { type: 'pair', left: ['scheduled', 'routes'], right: ['signins'] },
+    { type: 'pair', left: ['scheduled'], right: ['signins'] },
+    { type: 'pair', left: ['routes'], right: [] },
   ])
-  assert.deepEqual(bands({ order: ['a'], wide: [] }), [{ type: 'pair', left: ['a'], right: [] }])
+})
+
+test('bands with heights: small panels stack on the right up to the tall left one, then a new row starts', () => {
+  const heights = { activity: 650, status: 270, season: 240, scheduled: 120, who: 160, spent: 320 }
+  const b = bands({ order: ['activity', 'status', 'season', 'scheduled', 'who', 'spent'], wide: [] }, heights)
+  assert.deepEqual(b, [
+    { type: 'pair', left: ['activity'], right: ['status', 'season', 'scheduled'] },
+    { type: 'pair', left: ['who'], right: ['spent'] },
+  ])
+  // A short left panel gets one right panel even when it's taller.
+  assert.deepEqual(bands({ order: ['season', 'activity', 'who'], wide: [] }, heights)[0], { type: 'pair', left: ['season'], right: ['activity'] })
 })

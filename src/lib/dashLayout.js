@@ -55,20 +55,29 @@ export function nudge(layout, key, dir) {
   return normalize({ ...layout, order })
 }
 
-// How a computer screen lays the flow out: runs of Half panels become a band
-// of two flush columns (left, right, left, right…); a Wide panel is a band of
-// its own. Phones ignore this and show layout.order top to bottom.
-export function bands(layout) {
+// How a computer screen lays the flow out: rows of two sides. A row starts
+// with the next Half panel on the left; following Half panels stack on the
+// right while they still fit beside it (heights in px, measured by the page;
+// `slack` lets the right side run a little past). A Wide panel is a row of its
+// own. With no heights yet, sides simply alternate. Phones ignore this.
+export function bands(layout, heights = {}, slack = 64) {
+  const h = (k) => Number(heights[k]) || 0
+  const measured = layout.order.some((k) => h(k) > 0)
   const out = []
-  let run = null
+  let row = null
   for (const key of layout.order) {
     if (isWide(layout, key)) {
-      run = null
+      row = null
       out.push({ type: 'wide', key })
       continue
     }
-    if (!run) { run = { type: 'pair', left: [], right: [] }; out.push(run) }
-    ;(run.left.length <= run.right.length ? run.left : run.right).push(key)
+    if (!row) { row = { type: 'pair', left: [key], right: [] }; out.push(row); continue }
+    const leftH = row.left.reduce((t, k) => t + h(k), 0)
+    const rightH = row.right.reduce((t, k) => t + h(k), 0)
+    const fits = measured ? rightH + h(key) <= leftH + slack : row.right.length === 0
+    if (fits || row.right.length === 0) { row.right.push(key); continue }
+    row = { type: 'pair', left: [key], right: [] }
+    out.push(row)
   }
   return out
 }

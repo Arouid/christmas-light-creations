@@ -90,13 +90,16 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const [layout, setLayout] = useState(() => { try { return readLayout(localStorage.getItem(LAYOUT_KEY)) } catch { return DEFAULT_LAYOUT } })
   const [arranging, setArranging] = useState(false)
   const twoColumns = useWide()
+  // Each panel's height, measured on the page, so rows can be packed to match (bands()).
+  const [heights, setHeights] = useState({})
+  const onHeight = useCallback((k, px) => setHeights((h) => (Math.abs((h[k] ?? 0) - px) > 2 ? { ...h, [k]: px } : h)), [])
   const apply = (next) => { setLayout(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)) } catch { /* private mode: fine */ } }
   const drop = (key, beforeKey) => { if (key) apply(placeBefore(layout, key, beforeKey)) }
   const slot = (k) => {
     const i = layout.order.indexOf(k)
     return (
       <Slot key={k} k={k} wide={isWide(layout, k)} arranging={arranging} first={i === 0} last={i === layout.order.length - 1}
-        onNudge={(dir) => apply(nudge(layout, k, dir))} onToggleWide={() => apply(toggleWide(layout, k))} onDrop={drop}>
+        onNudge={(dir) => apply(nudge(layout, k, dir))} onToggleWide={() => apply(toggleWide(layout, k))} onDrop={drop} onHeight={onHeight}>
         {panels[k]}
       </Slot>
     )
@@ -141,7 +144,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
         onDragOver={arranging ? (e) => e.preventDefault() : undefined}
         onDrop={arranging ? (e) => { e.preventDefault(); drop(e.dataTransfer.getData('text/plain'), null) } : undefined}>
         {twoColumns
-          ? bands(layout).map((b, i) => (b.type === 'wide'
+          ? bands(layout, heights).map((b, i) => (b.type === 'wide'
             ? slot(b.key)
             : <div key={`band-${i}`} className="grid grid-cols-2 gap-4">
                 <div className="min-w-0 space-y-4">{b.left.map(slot)}</div>
@@ -159,8 +162,19 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
 // and a drop target (drop = put the dragged panel before this one).
 const PANEL_LABEL = Object.fromEntries(PANELS)
 const arrow = 'size-9 rounded-full border border-white/20 text-sm font-semibold hover:bg-white/10 disabled:opacity-30'
-function Slot({ k, wide, arranging, first, last, onNudge, onToggleWide, onDrop, children }) {
-  if (!arranging) return <div className="min-w-0">{children}</div>
+function Slot({ k, wide, arranging, first, last, onNudge, onToggleWide, onDrop, onHeight, children }) {
+  // Report the panel's own height (not the handle bar) whenever it changes.
+  const body = useRef(null)
+  useEffect(() => {
+    const el = body.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const report = () => onHeight?.(k, el.offsetHeight)
+    const first = setTimeout(report, 0) // right after layout (a hidden tab never paints, so not a frame callback)
+    const ro = new ResizeObserver(report)
+    ro.observe(el)
+    return () => { clearTimeout(first); ro.disconnect() }
+  }, [k, onHeight])
+  if (!arranging) return <div ref={body} className="min-w-0">{children}</div>
   return (
     <div draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', k); e.dataTransfer.effectAllowed = 'move' }}
       onDragOver={(e) => e.preventDefault()}
@@ -176,7 +190,7 @@ function Slot({ k, wide, arranging, first, last, onNudge, onToggleWide, onDrop, 
           </button>
         </span>
       </div>
-      <div className="pointer-events-none">{children}</div>
+      <div ref={body} className="pointer-events-none">{children}</div>
     </div>
   )
 }

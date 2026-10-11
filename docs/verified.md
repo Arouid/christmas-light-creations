@@ -338,3 +338,5 @@ What was actually checked working, and how. Newest first.
 - Remotion Studio opened in the browser pane from `.claude/launch.json` (`video-studio`, port 3010): three compositions listed, duration 27.2 s, scrubbed to the design scene, no console errors.
 - `npm run check` (lint, tests, build) passes with the workspace in place; `video/` is not part of the Vite build.
 - Not checked: playback in a real player, YouTube/Google Ads acceptance (owner uploads, TODO #48), the owner's verdict on the design.
+
+- 2026-10-11 Row packing at 1200px (demo): Recent activity (606px) | System status + Season (505px); next row starts aligned at the same y for both sides (Scheduled emails | Who's on + Spent this month); then Sign-ins | Today's routes; Google Ads alone. No holes under short panels.
