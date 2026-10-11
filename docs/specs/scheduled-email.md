@@ -1,6 +1,6 @@
 # Scheduled email ("Send later")
 
-> Status: built 2026-10-10 (tests and demo checked); not live until the owner OKs publishing the rules, deploying the two functions and pushing (TODO #45) · Decided 2026-10-10 by Scott (owner)
+> Status: live 2026-10-10 (owner's end-to-end test pending: TODO #45) · Decided 2026-10-10 by Scott (owner)
 
 ## The problem
 
@@ -123,4 +123,4 @@ History entries of sent ones: as `docs/specs/staff-email.md`, `sentBy` = `by`, p
 2. ~~`scheduleStaffEmail` + `sendScheduledEmails`; rules + rules tests + `check-rules.mjs`~~ done (not deployed / published).
 3. ~~Client: Send later in Email and the one-by-one list, Home panel, history list, demo data~~ done.
 4. ~~Guide, privacy wording, docs~~ done.
-5. Owner OK → publish rules, deploy functions from a clean worktree, push; owner tests 7–8 (test checklist #66–68).
+5. ~~Owner OK → publish rules, deploy functions from a clean worktree, push~~ done 2026-10-10; owner tests 7–8 (test checklist #66–68) pending.
