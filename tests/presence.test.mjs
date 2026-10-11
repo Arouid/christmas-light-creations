@@ -10,7 +10,7 @@ test('presence rows: on now first, then last seen, then never; names from the st
     { id: 'lacie@example.com', lastSeen: new Date(now - 2 * 60 * 60 * 1000), device: 'iPhone app' },
   ]
   const rows = presenceRows(staff, seen, { 'scott@example.com': 'Scott' }, now)
-  assert.deepEqual(rows.map((r) => [r.name, r.state, r.device]), [['Scott', 'on', 'Windows'], ['Lacie M.', 'away', 'iPhone app'], ['Katie', 'never', '']])
+  assert.deepEqual(rows.map((r) => [r.name, r.state, r.device]), [['Scott', 'on', 'Windows'], ['Lacie M.', 'away', 'iPhone app'], ['Claude (assistant)', 'never', 'drafted a reply'], ['Katie', 'never', '']])
 })
 
 test('device labels', () => {
@@ -26,5 +26,5 @@ test('device labels', () => {
 
 test('two staff entries with the same name show their emails', () => {
   const rows = presenceRows([{ id: 'lacie@example.com' }, { id: 'lacie.m@example.com' }, { id: 'katie@example.com' }], [], { 'lacie@example.com': 'Lacie', 'lacie.m@example.com': 'Lacie' })
-  assert.deepEqual(rows.map((r) => [r.name, r.dupe]), [['Katie', false], ['Lacie', true], ['Lacie', true]])
+  assert.deepEqual(rows.map((r) => [r.name, r.dupe]), [['Claude (assistant)', false], ['Katie', false], ['Lacie', true], ['Lacie', true]])
 })
