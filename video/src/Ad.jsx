@@ -1,20 +1,17 @@
 import { AbsoluteFill, Audio, Sequence, staticFile, interpolate, useVideoConfig } from 'remotion'
-import { Intro } from './scenes/Intro.jsx'
-import { Headline } from './scenes/Headline.jsx'
-import { Estimate } from './scenes/Estimate.jsx'
-import { DesignOnline } from './scenes/DesignOnline.jsx'
-import { Season } from './scenes/Season.jsx'
-import { Areas } from './scenes/Areas.jsx'
-import { Offer } from './scenes/Offer.jsx'
+import { Thread1, Thread2 } from './scenes/Thread.jsx'
+import { Plan } from './scenes/Plan.jsx'
+import { HomeReveal } from './scenes/HomeReveal.jsx'
+import { Pitch } from './scenes/Pitch.jsx'
 import { EndCard } from './scenes/EndCard.jsx'
 import { FilmLook, LightSweep } from './lib/Stage.jsx'
 import { loadFonts } from './lib/fonts.js'
 import { sceneList, SWEEP } from './timeline.js'
 
-const SCENES = { intro: Intro, headline: Headline, estimate: Estimate, design: DesignOnline, season: Season, areas: Areas, offer: Offer, end: EndCard }
+const SCENES = { thread1: Thread1, plan: Plan, home: HomeReveal, thread2: Thread2, pitch: Pitch, end: EndCard }
 
-// The whole ad: one Sequence per scene (cross-dissolved, with a light sweep at each change),
-// the film look over everything, and the music bed fading out at the end.
+// The story ad: one Sequence per scene (cross-dissolved, with a light sweep at each change),
+// the film look over everything, and the music bed (when on) fading out at the end.
 export function Ad(props) {
   loadFonts()
   const { durationInFrames, fps } = useVideoConfig()
@@ -36,7 +33,7 @@ export function Ad(props) {
           </Sequence>
         )
       })}
-      {list.slice(1).map(({ key, from }) => (
+      {list.slice(1).filter(({ key }) => key !== 'home').map(({ key, from }) => (
         <Sequence key={`sweep-${key}`} from={from - 4} durationInFrames={SWEEP} name={`sweep → ${key}`}>
           <LightSweep dur={SWEEP} />
         </Sequence>

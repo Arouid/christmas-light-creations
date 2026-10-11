@@ -360,3 +360,11 @@ What was actually checked working, and how. Newest first.
 - Two frames a second viewed for all three: dark cottage in the snow 0–2 s, flicker-on at 2 s, "Christmas Light Creations" and "Pearland, TX · since 2011" from ~2.5 s, held to the last frame (no fade-out); the name wraps to two lines in the vertical cut and fits.
 - Remotion Studio lists Teaser16x9 / Teaser9x16 / Teaser1x1 next to the Ad* compositions; the props panel shows `teaser` (seconds, onAt). `music.file` is empty in data.js; the Ad* compositions render without an audio stream from now on.
 - Not checked: playback in a real player, YouTube bumper acceptance (6 s max, this is 5 s), the owner's wish on a phone number or website at the end of the short ad.
+
+## 2026-10-11 Story ad, cut 3 (the birthday surprise)
+
+- `npm --prefix video run render -- ad` wrote `clc-ad-16x9.mp4` (11.7 MB), `-9x16` (10.3 MB), `-1x1` (8.4 MB): ffprobe shows h264 only, no audio stream, 33.67 s each.
+- 0.4-scale sequences of all three shapes viewed as contact sheets, and one frame a second of the finals: thread with typing dots then bubbles (dark left, gold right with the cottage avatar), the three plan beats with the cottage flickering on at the last one, black → "5:41 pm" → the house opening out of the dark → "She's home.", the thank-you thread, "Surprise someone this year." with the estimate line and the offer pill, the end card. Rooflines whole in the vertical 4:5 window. The 16:9 thread column is centred after the fix; the vertical thread sits in the upper half.
+- Remotion Studio reloaded on cut 3: timeline shows thread1 / plan / home / thread2 / pitch / end, the props panel exposes `story` (every bubble's sender and text, the beats, the lines), no new console errors (one stale "Cannot find module ./Teaser.jsx" from the earlier hot-reload race is still in the console buffer; the compositions load).
+- Cut 2's six scene files, the illustrated street and the icons were deleted (git history has them). `npm run check` not re-run (only `video/` changed, linted clean).
+- Not checked: playback in a real player, whether the emoji (🎂 🤫 🎄) render identically in headless Chrome on another PC (they rendered here), YouTube/Google Ads acceptance, the owner's verdict.

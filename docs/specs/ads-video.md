@@ -1,6 +1,6 @@
 # Google Ads video (Performance Max) — motion-design cut
 
-Status: cut 1 built 2026-10-11, owner's notes the same day, cut 2 built from them. Owner on cut 2: scene 1 is "dope" → shipped on its own as the **5-second ad** (Teaser compositions, silent); music dropped everywhere; the rest of cut 2 waits for his notes.
+Status: cut 1 (slideshow feel) and cut 2 (motion-graphics kit) rejected 2026-10-11; scene 1 of cut 2 shipped as the **5-second ad** (Teaser compositions, silent, in git). **Cut 3 is the story ad** (owner's idea, same day): the birthday surprise, told as a text thread, the plan, the reveal. Waiting for the owner's verdict on cut 3.
 Owner's brief: "more than just some gallery photos stitched together"; the first slideshow cut
 (`scripts/ads-video.py`, 2026-10-11) "looks pretty cheap".
 
@@ -23,6 +23,28 @@ phone number and the website close it and stay on screen 4 s.
 | More production value; "generate scenes"; drone shots | Film look over everything (vignette + fine grain), slow push-ins and sideways drifts with a slight 3D tilt, a soft light sweep at every cut, graphics where photos were weak (illustrated street whose lights come on bulb by bulb behind the season and offer scenes). No footage exists and Claude cannot generate video; a phone or drone clip of a finished house slots into scene 2 via `photos.hero.clip`. |
 | Pictures aren't professional, only a few good ones; fill the weak spots, be creative | Only photos 34, 57 and 58 are used; the rest of the story is graphics. |
 | Music: Carol of the Bells | Pixabay track by JuliusH (licence in the README), chosen for no Content ID badge; the cottage switched on at the first hit (~3.5 s). Then dropped (owner, same day: "ditch the music"); `music.file` is empty, the track stays documented. |
+
+## Owner's notes on cut 2 (2026-10-11) and the turn to a story
+
+| Note | Read |
+|---|---|
+| Map "doesn't look like south Houston" | The bay was a hand-drawn blob. Real shapes need Census map data; the owner dismissed that download. Map dropped. |
+| Season cards "look like a warehouse commercial"; estimate ring "looks cheap"; "uh the red?" on the recoloured bulbs | Rings, icon cards, stamps and UI mocks read as a template kit; the bulb tint recoloured only the cores, the warm halos stayed. All dropped. |
+| "Husband meets the installer secretly because it's his wife's birthday; install while everyone's gone; she comes home and sees the lights." "Holiday commercials, but with Christmas lights." "If this doesn't work out, generate AI assets and actors." | Cut 3 tells that story with what exists: the business texts customers, so the secret plan is a text thread; the plan beats in the cottage world (the cottage comes on at "timer set for dusk"); the one real photo as the reveal; the ask; the end card. No actors. Claude cannot generate video here; the reveal and the ask take a dropped-in clip (`photos.home.clip`, `photos.pitch.clip`) if the owner generates one elsewhere. |
+
+## Storyboard, cut 3: the birthday surprise (30 fps; scenes cross-dissolve 8 frames)
+
+| # | Seconds | Scene | What moves | Words | Picture |
+|---|---|---|---|---|---|
+| 1 | 0–8.5 | **Tuesday 8:14 pm** | Night, snow. A text thread: typing dots, then each bubble springs in. Customer bubbles dark on the left, ours gold on the right with the cottage as avatar. | "Can you do my house Thursday while she's at work? It's her birthday 🎂" / "Done by 4. We'll be gone before she's home." / "🤫 She has no idea." | none |
+| 2 | 8.5–15 | **The plan** | Three time-stamped beats slide in one after another, earlier ones dimming. The cottage stands dark beside them and flickers on with the last beat. | Thursday 9:02 am · Everyone's gone. / 9:30 am · We're on the roof. / 3:48 pm · Done. Timer set for dusk. | cottage logo |
+| 3 | 15–21.5 | **5:41 pm** | Black. The time. The house opens out of the dark in a soft iris and settles (pull-back, brightening). The line lands at the bottom. No light sweep into this scene: it starts from black on purpose. | She's home. | 34 (or a clip) |
+| 4 | 21.5–26 | **Thursday 5:52 pm** | The thread again, two bubbles. | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
+| 5 | 26–31 | **The ask** | Stone house, slow push-in; big line, the estimate line, the offer pill (while enabled). | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 57 (or a clip) |
+| 6 | 31–35 | **End card** | Unchanged (the owner liked it). | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate | logo |
+
+Cut 2's scene files (headline, estimate ring, design tool, season cards, map, offer stamp, the
+illustrated street) were deleted in cut 3; git history (commit b485d58) has them.
 
 ## The 5-second ad (owner's pick from cut 2)
 
@@ -72,7 +94,7 @@ number or website at the end, or keep it as a pure brand bumper.
 - `npm run video:studio` opens Remotion Studio in the browser pane; the three compositions
   (Ad16x9, Ad9x16, Ad1x1) can be scrubbed and the words changed in the props panel.
 - `npm run video:render` writes the three `clc-teaser-5s-*.mp4` (5 s) and the three `clc-ad-*.mp4`
-  (H.264, 30 fps, about 28 s) into `assets-source/ads/video/`.
-- Watching the 16:9 render: no two consecutive scenes are a plain photo crossfade; no sparkles,
-  no bloom; the phone number is readable for the last 4 s; the vertical cut never cuts a roofline;
-  the cottage comes on with the music's first hit.
+  (H.264, 30 fps, about 33 s) into `assets-source/ads/video/`.
+- Watching the 16:9 render: the story reads without sound (thread → plan → reveal → thanks →
+  ask); nothing looks like a template kit; the phone number is readable for the last 4 s; the
+  vertical cut never cuts a roofline.

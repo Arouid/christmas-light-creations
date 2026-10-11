@@ -1,47 +1,51 @@
-# Google Ads video ad (Performance Max)
+# Google Ads video ads (Performance Max)
 
-Motion-design ad made in **Remotion** (React video), second cut 2026-10-11 after the owner's
-notes on the first (no gallery feel, no sparkles, no bloom, the site's type, a real map, more
-production value, Carol of the Bells). Built in `video/` (storyboard: `docs/specs/ads-video.md`).
-The photo slideshow from `scripts/ads-video.py` is kept only as a fallback.
+Two ads made in **Remotion** (React video), built in `video/` (storyboard and history:
+`docs/specs/ads-video.md`):
 
-The MP4s are not in git (`.gitignore`: this folder except this README). Rebuild them whenever
-they are missing or the words, photos or offer change.
+- **The 5-second ad**: the cottage logo switching on in the snow, the name. Owner-approved
+  2026-10-11, the three MP4s are in git (tag `ad-teaser-5s-v1`).
+- **The story ad** (about 33 s, cut 3, 2026-10-11, owner's idea): a husband texts the business to
+  install while his wife is at work on her birthday; the plan; she comes home to the lights.
+  Told as a text thread in the brand's night-and-snow world, the cottage coming on when the
+  timer is set, one real photo for the reveal, the ask, the end card. Silent.
+
+The story ad's MP4s are not in git (`.gitignore`: this folder except this README and the
+5-second files). Rebuild them whenever they are missing or the words, photos or offer change.
 
 ## Files
 
 | File | Size | What | Use in Google Ads |
 |---|---|---|---|
-| `clc-teaser-5s-16x9.mp4` | 1920×1080, landscape | **the 5-second ad**: scene 1 alone (cottage switches on, name), silent | YouTube bumper (6 s max), in-stream, TV |
+| `clc-teaser-5s-16x9.mp4` | 1920×1080, landscape | **the 5-second ad**, silent | YouTube bumper (6 s max), in-stream, TV |
 | `clc-teaser-5s-9x16.mp4` | 1080×1920, vertical | same | Shorts, phone feeds |
 | `clc-teaser-5s-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
-| `clc-ad-16x9.mp4` | 1920×1080, landscape | the full 28-second ad (eight scenes), silent | YouTube in-stream, TV, desktop |
+| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 33 s, silent | YouTube in-stream, TV, desktop |
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | same | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
 
-The 5-second ad (owner, 2026-10-11: "cut that first scene into a 5 second ad, that's dope"):
-dark cottage in the snow for 2 s, it flickers on, the name and "Pearland, TX · since 2011"
-appear and hold to the end. Studio compositions **Teaser16x9 / Teaser9x16 / Teaser1x1**; length
-and switch-on moment in `data.js` → `teaser` (`seconds`, `onAt`). No phone number or website
-on it yet: say so if you want them added.
+All H.264, 30 fps, no audio (music off since 2026-10-11: owner, "ditch the music"; the track
+below stays on disk and can be turned back on in `data.js` → `music.file`).
 
-All H.264, 30 fps, no audio (music off since 2026-10-11: owner, "ditch the music"; the track below stays on disk and can be turned back on in `data.js` → `music.file`).
+The story ad, scene by scene:
 
-| Seconds | Scene | Words |
+| Seconds | Scene | What happens |
 |---|---|---|
-| 0–5.5 | winter night, snow, the cottage logo in the dark; it switches on (neon flicker) on the music's first hit | Christmas Light Creations · Pearland, TX · since 2011 |
-| 5.5–9 | the three-gable brick house (photo 34), slow push-in, headline lands word by word | Christmas light installation / for homes and businesses around south Houston |
-| 9–12 | ring draws around 30 min, ladder struck through, stone house (57) drifting behind | Free estimate / No ladder needed |
-| 12–16.5 | the /design/ tool, full frame: house photo (58) on the canvas, the cursor picks Cool white then Red and the bulbs change colour | Design your lights online first |
-| 16.5–19 | illustrated street whose lights come on bulb by bulb; three cards light along a line | Installed · Serviced all season · Taken down |
-| 19–22 | a map: Galveston Bay, the 20 towns at their real positions lighting up, Pearland pinned | Where we install · South Houston |
-| 22–24 | 10 % OFF stamp, typed line, calendar flips to OCT 31, green-lit street behind | Installs done by October 31 |
-| 24–28 | logo flickers on, snow, phone number (the scene the owner liked, unchanged) | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate |
+| 0–8.5 | Text thread, Tuesday 8:14 pm | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
+| 8.5–15 | The plan | Three beats: "Thursday 9:02 am · Everyone's gone." "9:30 am · We're on the roof." "3:48 pm · Done. Timer set for dusk." The cottage beside them is dark and switches on with the last beat. |
+| 15–21.5 | 5:41 pm | Black, then the three-gable house (photo 34) opens out of the dark and settles; "She's home." |
+| 21.5–26 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
+| 26–31 | The ask | Over the stone house (57): "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
+| 31–35 | End card | Unchanged: logo flickers on, snow, 281-819-0163, the site, Free 30-minute estimate. |
 
-Photos used: only 34, 57 and 58 (the strong ones). Weak spots are graphics instead.
-Real footage: drop a phone or drone clip (MP4) of a finished house into
-`assets-source/ads/clips/` and name it as `clip` on `photos.hero` in `video/src/data.js`; it
-replaces the hero photo in scene 2.
+Every word of the story is in `video/src/data.js` → `story` (bubbles with their timing, the three
+beats, the two lines, the ask). Photos: only 34 (the reveal) and 57 (the ask).
+
+**Real or generated footage.** The reveal and the ask take a clip instead of the photo: put an
+MP4 in `assets-source/ads/clips/` and name it as `clip` on `photos.home` or `photos.pitch` in
+`data.js` (for example a phone clip of a family pulling up to a lit house, or an AI-generated
+one from Veo, Sora or Runway). Claude cannot generate video or actors itself in this setup;
+it can cut whatever clips are dropped in. Keep a clip's licence or prompt in this README.
 
 ## Open the studio (scrub, change words, see it live)
 
@@ -83,11 +87,12 @@ second of each MP4 into `video/out/frames/<name>/` (`-- teaser 2` for the short 
 
 | Want | Where |
 |---|---|
-| Words, phone, towns | `video/src/data.js` → `words` |
-| Photos (by contact-sheet number) and the point to keep in frame | `data.js` → `photos` |
+| The story's words (bubbles, beats, lines) and when each bubble lands | `video/src/data.js` → `story` |
+| Phone, site, offer line, the 5-second ad's name lines | `data.js` → `words` |
+| Photos (by contact-sheet number), the point to keep in frame, a clip instead | `data.js` → `photos` |
 | Scene lengths | `data.js` → `scenes` (seconds) |
 | Drop the October offer when it ends | `data.js` → `offer.enabled: false`, then render |
-| Roofline the design mock draws on | `data.js` → `photos.design.roofline` (fractions of the photo) |
+| The 5-second ad's length and switch-on moment | `data.js` → `teaser` |
 | How a scene moves | `video/src/scenes/<Scene>.jsx` |
 | Brand colours | `data.js` → `colors` |
 

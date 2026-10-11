@@ -1,5 +1,5 @@
 // Scene order and frame maths, shared by the composition and its metadata (duration).
-export const ORDER = ['intro', 'headline', 'estimate', 'design', 'season', 'areas', 'offer', 'end']
+export const ORDER = ['thread1', 'plan', 'home', 'thread2', 'pitch', 'end']
 // Scenes overlap by this many frames: the outgoing fade-out and the incoming fade-in cross-dissolve.
 export const OVERLAP = 8
 // Length of the light sweep that crosses the frame at each scene change.
@@ -10,7 +10,6 @@ export function sceneList(props) {
   let from = 0
   const out = []
   for (const key of ORDER) {
-    if (key === 'offer' && !props.offer?.enabled) continue
     const dur = Math.round((props.scenes[key] || 0) * fps)
     if (dur <= 0) continue
     out.push({ key, from, dur })
