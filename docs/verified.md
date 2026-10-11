@@ -249,3 +249,7 @@ What was actually checked working, and how. Newest first.
 - Tour: ? → Take the tour shows 7 cards (Welcome, Customer messages, Leads, Accounts, Customers & Season, Prices and getting paid, Home); Next through to "Start on Home" closes it, sets clcTourDone=1 and lands on #home. Auto-open after a real first sign-in not yet seen (demo is excluded).
 
 - 2026-10-10 (later) Tour "Open it" (owner): shows the tab with the tour folded into a bar at the bottom ("Tour 3/7: Leads… Back · Next · ✕"); Next brings the next card back. Welcome card greets by name ("Welcome, Demo!" in demo). Checked at 375px.
+
+## 2026-10-10 General email templates (demo, 375px)
+
+- Emails tab shows a GENERAL group first with 6 templates (Yes, put me on the schedule! · Got your message · Got your photos · Thanks for the details · We'll call you · Let me check and get back to you); each has Send… / Read / Copy / Edit. Fixed a pre-existing sideways overflow on the Emails tab (long subject lines widened the cards: min-w-0 on the grid items).

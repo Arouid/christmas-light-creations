@@ -94,7 +94,7 @@ export default function EmailsView({ saved = [], onSave, customers = [], season,
             <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-glow-300">{g}</h2>
             <ul className="grid gap-2 lg:grid-cols-2">
               {list.map((t) => (
-                <li key={t.id} className="rounded-2xl border border-white/10 bg-night-900 p-4">
+                <li key={t.id} className="min-w-0 rounded-2xl border border-white/10 bg-night-900 p-4">
                   {editing === t.id ? (
                     <Editor template={t} onSave={save} onCancel={() => setEditing(null)} />
                   ) : (

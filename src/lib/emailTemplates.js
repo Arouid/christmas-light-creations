@@ -5,9 +5,69 @@
 
 const sign = '\n\nThank you,\n{business}\n{businessPhone}'
 
-export const TEMPLATE_GROUPS = ['Estimates', 'Booking', 'Install', 'Service', 'Takedown', 'Thank you', 'Our templates']
+export const TEMPLATE_GROUPS = ['General', 'Estimates', 'Booking', 'Install', 'Service', 'Takedown', 'Thank you', 'Our templates']
 
 export const STOCK_TEMPLATES = [
+  // General: quick "we got it" replies for when there's no date or answer yet
+  // (owner 2026-10-10: people write "yes, put me on the schedule!" before we know the day).
+  {
+    id: "got-it-schedule", group: "General", label: "Yes, put me on the schedule!",
+    when: "They said yes but the install date isn't set yet.",
+    subject: "You're on our list for {season}",
+    body: `Hi {first},
+
+Great, you're on the list! We don't have your exact install date yet: we build the schedule area by area as the season fills in, and we'll email or text you your date as soon as it's set. Nothing to do on your end for now.
+
+If some dates work best for you (or don't work at all), reply and we'll do our best to match them.
+
+Reminder: installs done by October 31st get 10% off.${sign}`,
+  },
+  {
+    id: "got-message", group: "General", label: "Got your message",
+    when: "Any message you can't answer right away.",
+    subject: "Got your message",
+    body: `Hi {first},
+
+Thanks for your message, we've got it. We're out installing most of the day, so we check messages between jobs and reply within a day, usually sooner.
+
+Need us faster? Call or text {businessPhone}.${sign}`,
+  },
+  {
+    id: "got-photos", group: "General", label: "Got your photos",
+    when: "They sent photos of the house for a rough quote.",
+    subject: "Got your photos, thank you",
+    body: `Hi {first},
+
+Thanks for the photos of {address}! That's a big help. We'll look them over and get back to you with a rough quote. If we need a closer look at anything, we'll let you know.${sign}`,
+  },
+  {
+    id: "got-info", group: "General", label: "Thanks for the details",
+    when: "Gate code, access notes, a change of plans, anything we noted down.",
+    subject: "Got it, thank you",
+    body: `Hi {first},
+
+Got it, thank you! We've added that to your notes so the crew has it when they come out.
+
+Anything else changes, just reply here.${sign}`,
+  },
+  {
+    id: "will-call", group: "General", label: "We'll call you",
+    when: "The answer is easier by phone.",
+    subject: "We'll give you a call",
+    body: `Hi {first},
+
+Thanks for your message. This one is easier to sort out by phone, so we'll give you a call in the next day or so. If there's a time that works best, reply with it and we'll aim for that.${sign}`,
+  },
+  {
+    id: "checking", group: "General", label: "Let me check and get back to you",
+    when: "A question you need to check with the crew or the schedule first.",
+    subject: "Checking on that for you",
+    body: `Hi {first},
+
+Good question. Let me check with the crew and our schedule and get back to you shortly.
+
+If it's urgent, call or text {businessPhone}.${sign}`,
+  },
   {
     id: 'estimate-thanks', group: 'Estimates', label: 'Got your request',
     when: 'Right after a website estimate request comes in.',
