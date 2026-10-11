@@ -22,6 +22,7 @@ export const TASKS = [
   ['Text a customer', 'Tap **Text**: the message is copied and Google Voice opens as the business number. Paste and send.'],
   ['Email a customer', 'Tap **Email**, pick a template (it fills in their name, dates and prices), check it, then **Send from info@**. It goes out right away without leaving the app and shows in their **Text & email history** with your name; their reply comes to info@. Need an attachment or Cc? **Open in Gmail instead**.'],
   ['Let Claude draft the reply', 'On a message in **💬**, in Unmatched, or at the top of someone’s **Text & email history**: tap **✨ Suggest a reply**. In a few seconds you get what they’re asking, a suggested next step (answer, send an estimate, schedule, or hand to a person) and a draft in our voice. Edit it, then **✉️ Email this** or **Text this**: it goes through the normal Email / Text screens and nothing is sent until you press Send. Claude never quotes a price that isn’t on file, never promises a date and never invents a discount, but read every draft: it can be wrong. Upset customer or anything about damage or money back: it writes a short “a person will call you” and marks it red.'],
+  ['Ask Claude a question about the database', 'Tap **🤖** (top right) and ask in plain words: “Which invoices are overdue?”, “What did Pat Sample ask us last year?”, “Who’s on Thursday’s route?”, “Is the text sync working?”. Claude looks it up (customers, website requests, invoices, routes, message history, system status) and answers in a few seconds, with the records it used as links under the answer; tap one to open it. Follow-up questions keep the thread. When the answer is about one person, **✨ Draft a reply to them** opens the normal Suggest a reply flow. It is read-only: it can’t change a record or send anything, and it can be wrong, so open the record before acting. The owner can turn it off in **⚙ Settings → Ask Claude**.'],
   ['Ask for a Google review', 'Shows up after an install is completed, a service call is done, or a lead is booked: **Text/Email review link**. Never offer anything for a review.'],
   ['A red “website problem” banner showed up', 'Tap it: it says in plain words what broke (a request alert email, a payment, the text sync). Deal with it (or forward it to whoever looks after the website), then tap **Dealt with ✓**. The alert list also gets an email, and every Monday an “all OK” email; if that stops coming, say so.'],
   ['A customer picked a date on the website', 'Their request says “Preferred install date: …” at the top. It’s a request, not a booking: confirm the date when you send the estimate, then put it in their Season planned date so the website stops offering it.'],
@@ -212,6 +213,7 @@ export const SECTIONS = [
       '**How booked we are (home page)**: a short, true line like “October is 80% booked” under the main buttons on the website. Update it weekly; it hides itself after 14 days.',
       '**Home base** (for distances and routes), **price per foot** for designs, **early-install discounts**.',
       '**Proposals & contracts**: deposit %, takedown % and minimum (set both to 0 if takedown is ever included), countersigner, contract terms.',
+      '**🤖 Ask Claude**: the on/off switch for the question panel (off hides the button and the server refuses questions).',
     ],
   },
   {
@@ -231,7 +233,7 @@ export const SECTIONS = [
 // each group as a short folded list). Titles must match TASKS exactly;
 // anything left over shows under "Other".
 export const TASK_GROUPS = [
-  ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'Find anyone fast', 'Text a customer', 'Email a customer', 'Let Claude draft the reply', 'Get a notification on my phone', 'Ask for a Google review']],
+  ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'Find anyone fast', 'Text a customer', 'Email a customer', 'Let Claude draft the reply', 'Ask Claude a question about the database', 'Get a notification on my phone', 'Ask for a Google review']],
   ['New requests', ['A new estimate request came in', 'A request says “🎨 sent a design”', 'A customer picked a date on the website']],
   ['Prices & money', ['Send a price / contract', 'Get paid', 'Bill a customer (invoice)', 'Bill everyone for the season', 'They paid cash, check or Zelle', 'A customer asks “why did my price go up?”']],
   ['Installs, takedowns & service', ['Plan installs or takedowns', 'A customer’s lights are out']],

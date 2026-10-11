@@ -26,12 +26,15 @@
 // - draftReply: the sales assistant. Staff press "Suggest a reply" on a
 //   customer thread; Claude drafts one from their history and record, staff
 //   edit and send it themselves (docs/specs/sales-assistant.md).
+// - askClaude: "Ask Claude" in the staff app. Staff ask a question about
+//   customers, leads, invoices, routes or messages; Claude answers with
+//   read-only tools (docs/specs/ask-claude.md). Nothing is written or sent.
 //
 // Secrets (set with `firebase functions:secrets:set`, never in code):
 //   SMTP_PASSWORD  app password for info@ (Google Workspace SMTP)
 //   PAYPAL_SECRET  PayPal app secret (sandbox or live, matching PAYPAL_ENV)
 //   MESSAGE_SYNC_KEY  shared key with the info@ Apps Script (Script Properties)
-//   ANTHROPIC_API_KEY  Claude API key for the sales assistant (draftReply)
+//   ANTHROPIC_API_KEY  Claude API key for the sales assistant (draftReply, askClaude)
 // Plain settings in functions/.env: PAYPAL_CLIENT_ID, PAYPAL_ENV.
 import { getApp, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
@@ -55,10 +58,12 @@ import { TEST_PUSH, devicesOf, deviceGone, fcmMessage, pushFor, requestPush } fr
 import { MAX_SIDE, cleanDesign, cutoff, jpegBytes } from './leadDesigns.js'
 import { MODEL, draftAllowed, draftRequest } from './assistant/prompt.js'
 import { DraftError, PRESENCE_ID, draftFor, threadFor } from './assistant/draft.js'
+import { askAllowed, askRequest } from './assistant/askPrompt.js'
+import { AskError, askFor } from './assistant/ask.js'
 import sharp from 'sharp'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import {
-  centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceSummary, KIND_SHORT, paidInfo,
+  centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceState, invoiceSummary, KIND_SHORT, paidInfo,
   payableInvoiceProblem, receiptEmail, reminderDue, seasonFillsOnPaid, seasonFillsOnSend, shownInvoice, staffPaidEmail, toMs, validToken,
 } from './invoices.js'
 
@@ -914,6 +919,45 @@ export const draftReply = onCall({ region: REGION, invoker: 'public', secrets: [
   // Who's on (Home): Claude shows as a team member with when it last drafted.
   db.doc(`presence/${PRESENCE_ID}`).set({ lastSeen: FieldValue.serverTimestamp(), device: `drafted a reply for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
   return { ...result.draft, contact: thread.contact, model: result.model, cost: result.cost }
+})
+
+// ---- Ask Claude (docs/specs/ask-claude.md) ------------------------------------
+// Staff only. The tools and the loop live in functions/assistant/ask.js; this
+// gates the call (staff list, kill switch settings/app.askClaude, 100 a day in
+// serverState/askClaude), counts it and reports. Read-only: nothing is written
+// or sent. Logs carry token counts and cost, never the question or answer.
+export const askClaude = onCall({ region: REGION, invoker: 'public', secrets: [ANTHROPIC_API_KEY], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK, timeoutSeconds: 120 }, async (req) => {
+  if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
+  if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Staff only.')
+  const staff = normEmail(req.auth.token.email)
+  const r = askRequest(req.data)
+  if (r.problem) throw new HttpsError(...r.problem)
+
+  const db = getFirestore()
+  const settings = (await db.doc('settings/app').get()).data() ?? {}
+  if (settings.askClaude === false) throw new HttpsError('failed-precondition', 'Ask Claude is turned off (⚙ Settings → Ask Claude).')
+
+  const gate = db.doc('serverState/askClaude')
+  await db.runTransaction(async (tx) => {
+    const allowed = askAllowed((await tx.get(gate)).data(), staff, Date.now(), centralDay())
+    if (allowed.problem) throw new HttpsError(...allowed.problem)
+    tx.set(gate, allowed.next)
+  })
+
+  const today = centralDay()
+  let out
+  try {
+    out = await askFor({
+      apiKey: ANTHROPIC_API_KEY.value(), model: AI_MODEL.value() || MODEL, question: r.question, history: r.history, today, season: bookingSeason(today), db, log: logger,
+      helpers: { invoiceState, invoiceCents, paidInfo, alertRecipients },
+      onKeyRefused: () => reportIncident('other', 'Ask Claude’s API key was refused (ANTHROPIC_API_KEY). Set it again and redeploy askClaude.'),
+    })
+  } catch (e) {
+    if (e instanceof AskError) throw new HttpsError(e.code, e.message)
+    throw e
+  }
+  db.doc(`presence/${PRESENCE_ID}`).set({ lastSeen: FieldValue.serverTimestamp(), device: `answered a question for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
+  return { ...out.result, model: out.model, cost: out.cost }
 })
 
 // ---- Daily check (7:30 am Central) ------------------------------------------

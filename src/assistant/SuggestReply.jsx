@@ -12,7 +12,7 @@ import { activityTarget, emailTarget } from './lib/targets'
 // target: { customerId } | { leadId } | { messageId } (an unmatched sender).
 const box = 'block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2 text-base text-slate-100 placeholder:text-slate-500'
 
-export default function SuggestReply({ target, season, className = pill }) {
+export default function SuggestReply({ target, season, className = pill, label = 'Suggest a reply' }) {
   const [state, setState] = useState({ step: 'idle' }) // idle | loading | ready | error
   const [subject, setSubject] = useState('')
   const [reply, setReply] = useState('')
@@ -35,7 +35,7 @@ export default function SuggestReply({ target, season, className = pill }) {
   if (state.step === 'idle' || state.step === 'loading') {
     return (
       <button type="button" onClick={suggest} disabled={state.step === 'loading'} className={`${className} disabled:opacity-60`} aria-busy={state.step === 'loading'}>
-        ✨ {state.step === 'loading' ? 'Thinking…' : 'Suggest a reply'}
+        ✨ {state.step === 'loading' ? 'Thinking…' : label}
       </button>
     )
   }

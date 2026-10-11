@@ -10,6 +10,7 @@ import MapView from './MapView'
 import SeasonView from './SeasonView'
 import SettingsPanel from './SettingsPanel'
 import GuidePanel from './GuidePanel'
+import AskClaude from '../assistant/AskClaude'
 import Tour from './Tour'
 import { tourDone } from './tourState'
 import IncidentsBanner from './Incidents'
@@ -89,6 +90,7 @@ export default function LeadsApp() {
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  const [showAsk, setShowAsk] = useState(false)
   // null = not decided (show once per device after the first sign-in), true = asked for, false = closed.
   const [tour, setTour] = useState(null)
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
@@ -296,6 +298,10 @@ export default function LeadsApp() {
                 </span>
               )}
             </button>
+            {settingsApi.settings?.askClaude !== false && (
+              <button type="button" onClick={() => setShowAsk(true)} aria-label="Ask Claude" title="Ask Claude a question about customers, invoices, routes or messages"
+                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-base"><span aria-hidden="true">🤖</span></button>
+            )}
             <button type="button" onClick={() => setShowGuide(true)} aria-label="Staff guide" title="Staff guide: what the app does"
               className="shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold">?</button>
             <button type="button" onClick={() => setShowSettings(true)} aria-label="Settings" title="Settings"
@@ -404,6 +410,7 @@ export default function LeadsApp() {
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} user={user} />
       )}
       {showMessages && <MessagesPanel user={user} alerts={alerts} names={names} feed={feed} onClose={closeMessages} />}
+      {showAsk && <AskClaude season={season} onClose={() => setShowAsk(false)} />}
       {showGuide && <GuidePanel onClose={() => setShowGuide(false)} onTour={() => { setShowGuide(false); setTour(true) }} />}
       {(tour === true || (tour === null && !demo && !tourDone())) && <Tour name={user ? staffName(user.email, feed.names) : ''} onClose={() => setTour(false)} />}
       {showSettings && (

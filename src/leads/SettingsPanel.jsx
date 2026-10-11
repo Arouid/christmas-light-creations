@@ -286,6 +286,14 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
           </label>
         </div>
 
+        <div className={box}>
+          <p className="font-semibold">🤖 Ask Claude</p>
+          <p className="text-sm text-slate-400">The question panel in the top bar. Claude reads the database (customers, leads, invoices, routes, messages) and answers; it can’t change or send anything. Turning it off hides the button for everyone and the server refuses questions. Suggest a reply is separate.</p>
+          <label className="flex min-h-11 items-center gap-3 text-sm">
+            <input type="checkbox" checked={settings.askClaude !== false} onChange={(e) => onSave({ askClaude: e.target.checked })} className="size-5" /> Ask Claude is on
+          </label>
+        </div>
+
         <ProposalDefaults settings={settings} onSave={onSave} />
 
         <DiscountSchedule settings={settings} onSave={onSave} />

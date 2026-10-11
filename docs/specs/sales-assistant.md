@@ -59,7 +59,7 @@ What goes to Anthropic per call: the fixed business prompt, the person's name, a
 | Sending anything by itself | Owner's decision: review ~50 drafts first |
 | Storing drafts (`aiDrafts` collection) | Would need a rules change; nothing needs it yet |
 | Reading other customers, routes or invoices | One thread at a time keeps the prompt small and the answers checkable |
-| A chat with Claude inside the staff app | Phase 3 below |
+| A chat with Claude inside the staff app | Phase 3, built: `docs/specs/ask-claude.md` |
 | Tool use / web search | Nothing to look up; everything it may say is in the prompt |
 
 ## Phase 2 (written up, not built): auto-replies
@@ -79,9 +79,9 @@ What goes to Anthropic per call: the fixed business prompt, the person's name, a
 
 **To build**: a Firestore trigger on new `leads` and new incoming `messages` → the same prompt with an "auto mode" line → `sendStaffEmail`'s mailer path (email) or … texts: Google Voice has no API, so Phase 2 texts need the texting service decision first (decisions 2026-10-08). Email-only until then.
 
-## Phase 3 (idea, not built): "Ask Claude" in the staff app
+## Phase 3 (built 2026-10-10): "Ask Claude" in the staff app
 
-A chat panel for staff questions over the database ("who hasn't paid", "draft a text to everyone on Tuesday's route", "what did Pat ask last year"). Needs read-only tools over customers / invoices / routes / messages, the same staff gate, a per-question cost of a few cents, and its own spec. It does **not** replace Claude Code for fixing or changing the site: the in-app Claude never sees code, logs or Firebase settings.
+A chat panel for staff questions over the database ("who hasn't paid", "what did Pat ask last year"), with read-only tools, the same staff gate and a few cents a question. Its own spec: `docs/specs/ask-claude.md`. It does **not** replace Claude Code for fixing or changing the site: the in-app Claude never sees code, logs or Firebase settings.
 
 ## How to check (owner)
 
