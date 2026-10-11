@@ -330,3 +330,11 @@ What was actually checked working, and how. Newest first.
 - 2026-10-11 Flush columns: at 1200px with a tall Recent activity in the left column, the right column (System status, Who's on, …) stacks with 16px gaps and no hole under short panels; a Wide panel (Today's routes) takes a full row; 375px shows the plain order, one column, 375 wide.
 
 - 2026-10-11 googleSpend redeployed (owner: "deploy it") with the Ads changes from 836b129 (tables by customer id, clicks/impressions/conversions/search terms); checks passed first (315 tests). The owner's Ads transfer "Google Ads spend" is saved and its first run is in progress with a 7-day backfill queued. Not yet seen: the Google Ads line and box filling after the next 6-hourly run.
+
+## 2026-10-11 Google Ads video, Remotion cut (`video/`)
+
+- `npm run video:render` wrote `assets-source/ads/video/clc-ad-16x9.mp4` (1920×1080, 15.1 MB), `clc-ad-9x16.mp4` (1080×1920, 14.3 MB), `clc-ad-1x1.mp4` (1080×1080, 10.6 MB): ffprobe (Remotion's) shows h264 High, 30 fps, 27.13 s, no audio; pixel format reported as yuvj420p (full range).
+- One frame a second extracted from each (`npm --prefix video run frames`) and 0.4-scale full sequences viewed as contact sheets: all eight scenes render in the three shapes; the switch-on wipe and bloom, the word-by-word headline, the ring drawing to 360°, the ladder strike, the design mock's string drawing along photo 58's roofline, the three season cards, the 20 town pills, the stamp + OCT 31 calendar and the flickering logo with the phone number all present; rooflines whole in the 9:16 4:5 window; "Installs done by October 31" on one line in all three after the vertical size fix; scenes cross-dissolve (8 frames).
+- Remotion Studio opened in the browser pane from `.claude/launch.json` (`video-studio`, port 3010): three compositions listed, duration 27.2 s, scrubbed to the design scene, no console errors.
+- `npm run check` (lint, tests, build) passes with the workspace in place; `video/` is not part of the Vite build.
+- Not checked: playback in a real player, YouTube/Google Ads acceptance (owner uploads, TODO #48), the owner's verdict on the design.

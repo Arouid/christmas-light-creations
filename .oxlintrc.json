@@ -1,6 +1,8 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["public/__/**"],
+  "ignorePatterns": [
+    "public/__/**"
+  ],
   "plugins": [
     "react",
     "oxc"
@@ -24,7 +26,8 @@
       "files": [
         "scripts/**",
         "functions/**",
-        "*.config.js"
+        "*.config.js",
+        "video/scripts/**"
       ],
       "env": {
         "node": true

@@ -1,0 +1,23 @@
+{
+  "name": "clc-ads-video",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Remotion workspace for the Christmas Light Creations Google Ads video. Separate from the site: its own dependencies, never part of the Vite build or deploy.",
+  "scripts": {
+    "prepare-assets": "node scripts/prepare-assets.mjs",
+    "studio": "npm run prepare-assets && remotion studio src/index.jsx --port 3010",
+    "render": "npm run prepare-assets && node scripts/render-all.mjs",
+    "frames": "node scripts/frames.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "@remotion/fonts": "4.0.534",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "4.0.534"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
+  }
+}

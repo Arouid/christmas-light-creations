@@ -1,11 +1,14 @@
 # Google Ads video ad (Performance Max)
 
-Short silent video made from the business's own photos, for the Performance Max
-campaign's asset group. Without a video Google auto-generates a slideshow; these
-replace it. Built 2026-10-11 by `scripts/ads-video.py`.
+Motion-design ad made in **Remotion** (React video): the house switches on, kinetic type, a ring
+that draws itself, a mock of the /design/ page placing lights, Nov→Dec→Jan cards, the towns
+served, the October stamp and a neon end card with the phone number. Built 2026-10-11 in
+`video/` (storyboard: `docs/specs/ads-video.md`). It replaced the photo slideshow from
+`scripts/ads-video.py` (owner: "more than just some gallery photos stitched together"); the
+Python script still works as a fallback.
 
-The MP4s are not in git (`.gitignore`: this folder except this README). Rebuild them
-with the script whenever they are missing or the photos or words change.
+The MP4s are not in git (`.gitignore`: this folder except this README). Rebuild them whenever
+they are missing or the words, photos or offer change.
 
 ## Files
 
@@ -15,61 +18,81 @@ with the script whenever they are missing or the photos or words change.
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | Discover, Gmail, square feeds |
 
-All three: H.264, 30 fps, no audio, 14.5 s, 7–10 MB each.
+All three: H.264, 30 fps, 27 s with the October offer (25 s without), silent.
 
-What's in them, in order:
-
-| Seconds | Photo (contact-sheet number) | Caption |
+| Seconds | Scene | Words |
 |---|---|---|
-| 0–4 | 57 stone house, then 34 three-gable brick house | Christmas light installation / Homes and businesses around south Houston |
-| 4–8 | 60 house with lit trees, then 46 green & white house | Free 30-minute estimate / No ladder needed. Design your lights online first. |
-| 8–11 | 14 wrapped trees, then 53 League City restaurant | Installs done by October 31 get 10% off / Installed, serviced all season, taken down in January |
-| 11–14.5 | navy end card | logo, 281-819-0163, christmas-light-creations.com, Free 30-minute estimate |
+| 0–4 | house switches on (wipe + bloom + sparkle) | – |
+| 4–8 | kinetic headline | Christmas light installation / for homes and businesses around south Houston |
+| 8–11.5 | ring draws around 30 min, ladder struck through | Free estimate / No ladder needed |
+| 11.5–16 | /design/ page mock: string drawn along the roofline | Design your lights online first |
+| 16–19 | three cards light up along a line | Installed · Serviced all season · Taken down |
+| 19–22 | towns pop in by region | South Houston + the 20 towns |
+| 22–24 | 10 % OFF stamp, calendar flips to OCT 31 | Installs done by October 31 |
+| 24–27 | logo flickers on, snow, phone number | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate |
 
-Each photo has a slow zoom (Ken Burns) and a half-second crossfade into the next.
-Fonts are the site's (Fraunces for headlines in gold #ffcf4d, Inter for the sub-lines),
-background navy #050b1a. The vertical version shows the photo in a 4:5 window with the
-small logo above and the captions below, so rooflines are never sliced off.
+## Open the studio (scrub, change words, see it live)
 
-The third caption is the October offer. When the offer ends, change `CAPTIONS` in the
-script (for example to "Book early for the best install dates") and rebuild.
-
-## Rebuild
-
-Needs Python 3 with Pillow, numpy and fontTools (already on this PC) and ffmpeg from the
-`imageio-ffmpeg` pip package (installed 2026-10-11, user scope; no system ffmpeg):
+From the repo root:
 
 ```bash
-pip install --user imageio-ffmpeg
+npm run video:studio
 ```
 
-Then from the repo root:
+Opens Remotion Studio at http://localhost:3010 (also `video-studio` in `.claude/launch.json`,
+so Claude can open it in the browser pane). Pick **Ad16x9**, **Ad9x16** or **Ad1x1** on the
+left, press space to play, drag the timeline to scrub. The **Props** panel on the right edits
+every word, photo number, timing and the `offer.enabled` switch live; to keep a change, put it
+in `video/src/data.js` (the panel starts from that file).
+
+## Render
 
 ```bash
-python scripts/ads-video.py
+npm run video:render
 ```
 
-Options:
+Writes the three MP4s into this folder (about 2–3 minutes each on the office PC; Remotion
+bundles the scenes, renders every frame in headless Chrome and encodes with its own ffmpeg).
+One shape only: `npm --prefix video run render -- 9x16`.
 
-| Command | What |
+Before either command, `video/scripts/prepare-assets.mjs` runs on its own and copies what the
+video needs into `video/public/` (gitignored): the photos named in `data.js` from
+`photos-incoming/` (resized to 1920 wide, EXIF and GPS stripped), the cottage logo SVG from
+`assets-source/logo-vector/` and the site's two fonts. First run of Remotion downloads a
+headless Chrome (~150 MB) into `video/node_modules/.remotion`; nothing else is installed.
+
+Setup once on a new PC: `cd video && npm install`.
+
+To look at frames without a video player: `npm --prefix video run frames` puts one frame a
+second of each MP4 into `video/out/frames/<shape>/`.
+
+## Changing things
+
+| Want | Where |
 |---|---|
-| `python scripts/ads-video.py` | all three formats into this folder (about 2 minutes) |
-| `python scripts/ads-video.py --preview` | 1 fps drafts (`*-preview.mp4`) in a few seconds, to check framing |
-| `python scripts/ads-video.py --formats 16x9` | one format only (`16x9`, `9x16`, `1x1`) |
-| `python scripts/ads-video.py --photos 57,34,60,46,14,53` | other photos, by their number in `../contact-sheet-index.txt` |
+| Words, phone, towns | `video/src/data.js` → `words` |
+| Photos (by contact-sheet number) and the point to keep in frame | `data.js` → `photos` |
+| Scene lengths | `data.js` → `scenes` (seconds) |
+| Drop the October offer when it ends | `data.js` → `offer.enabled: false`, then render |
+| Roofline the design mock draws on | `data.js` → `photos.design.roofline` (fractions of the photo) |
+| How a scene moves | `video/src/scenes/<Scene>.jsx` |
+| Brand colours | `data.js` → `colors` |
 
-The photos come from `photos-incoming/` (never committed). To change which part of a
-photo stays in frame, edit the focus point for that photo in `PHOTOS` at the top of the
-script (x, y as fractions; keep y around 0.4–0.45 so the roof stays in the tall crops).
-The script converts the site's woff2 fonts to TTF into `build/` on first run.
+## Music
 
-To look at frames without a video player:
+Silent on purpose. A music bed goes in only if it is clearly licence-free (Pixabay content
+licence, CC0 or similar): drop the file into `video/public/music/`, set `music.file` in
+`data.js` (and `music.volume`), render, and record the track, source URL and licence here:
 
-```bash
-python -c "import imageio_ffmpeg as f; print(f.get_ffmpeg_exe())"
-```
+| Track | Source | Licence |
+|---|---|---|
+| none yet | | |
 
-then `<that exe> -i clc-ad-16x9.mp4 -vf fps=1 build/frames/f-%02d.jpg`.
+## Licence
+
+Remotion is free for a for-profit business with up to 3 employees (checked 2026-10-11,
+`docs/decisions.md`). If the business grows past that, buy a company licence at remotion.pro
+before rendering again.
 
 ## Upload to YouTube (owner)
 
