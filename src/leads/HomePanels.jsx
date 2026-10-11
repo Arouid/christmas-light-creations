@@ -237,7 +237,9 @@ export function SignInsPanel({ entries, error, now, names, wall, limit = 12 }) {
 
 // Spent this month (docs/specs/spend.md): what the services behind the app
 // cost so far this month. summary: spentSummary(); error: usage doc refused.
-const HOW = { exact: 'exact', estimate: 'typed in ⚙', link: 'see billing', none: '' }
+// Google Cloud comes from the billing export (functions/googleBilling.js), a
+// day behind; `pending` until its first run. "see billing" stays as a small link.
+const HOW = { exact: 'exact', estimate: 'typed in ⚙', pending: '', none: '' }
 const BILLING = 'https://console.cloud.google.com/billing?project=clc-leads-site'
 export function SpendPanel({ summary, month, error, loading, wall }) {
   const title = new Date(`${month}-15T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -247,20 +249,23 @@ export function SpendPanel({ summary, month, error, loading, wall }) {
       {error && <p className="mt-3 text-sm text-glow-300">Needs the database rules published again (firestore.rules) before Claude and PayPal costs can show.</p>}
       <p className="mt-1 flex items-baseline justify-between gap-2">
         <span className={`font-semibold tabular-nums text-glow-300 ${wall ? 'text-5xl' : 'text-3xl'}`}>{loading && !error ? '…' : spendText(summary.totalCents)}</span>
-        <span className="text-right text-xs text-slate-400">Claude + PayPal fees + fixed<br />Google Cloud not included</span>
+        <span className="text-right text-xs text-slate-400">Claude + PayPal fees + Google Cloud + fixed{summary.partial && <><br />Google Cloud not in yet</>}</span>
       </p>
       <ul className={`mt-3 space-y-2 ${wall ? 'text-lg' : 'text-sm'}`}>
         {summary.rows.map((r) => (
           <li key={r.key} className="min-w-0">
             <span className="flex items-baseline justify-between gap-2">
-              <span className="font-medium">{r.name}</span>
-              {r.how === 'link'
-                ? <a href={BILLING} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-glow-300 underline">see billing ↗</a>
-                : <span className="tabular-nums text-slate-50">{spendText(r.cents)}{r.how === 'exact' ? '' : ' ~'}</span>}
+              <span className="font-medium">
+                {r.name}
+                {r.key === 'google' && (
+                  <a href={BILLING} target="_blank" rel="noreferrer" className="-my-3 ml-2 inline-flex min-h-11 items-center align-middle text-xs font-normal text-glow-300 underline">see billing ↗</a>
+                )}
+              </span>
+              <span className="tabular-nums text-slate-50">{r.how === 'pending' ? '' : spendText(r.cents)}{r.how === 'exact' || r.how === 'pending' ? '' : ' ~'}</span>
             </span>
-            <span className="block truncate text-xs text-slate-400">{r.note}{HOW[r.how] && r.how !== 'link' ? ` · ${HOW[r.how]}` : ''}</span>
-            {r.parts?.length > 0 && r.key === 'claude' && (
-              <span className="block truncate text-xs text-slate-500">{r.parts.map((p) => `${p.name} ${spendText(p.cents)} (${p.calls})`).join(' · ')}</span>
+            <span className="block truncate text-xs text-slate-400">{r.note}{HOW[r.how] ? ` · ${HOW[r.how]}` : ''}</span>
+            {r.parts?.length > 0 && (r.key === 'claude' || r.key === 'google') && (
+              <span className="block truncate text-xs text-slate-500">{r.parts.map((p) => `${p.name} ${spendText(p.cents)}${p.calls ? ` (${p.calls})` : ''}`).join(' · ')}</span>
             )}
           </li>
         ))}

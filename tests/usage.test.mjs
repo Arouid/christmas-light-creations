@@ -47,7 +47,7 @@ test('fixedCosts: cleans the settings list', () => {
   assert.deepEqual(fixedCosts(null), [])
 })
 
-test('spentSummary: sums Claude, PayPal fees and fixed costs; Google is a link', () => {
+test('spentSummary: sums Claude, PayPal fees and fixed costs; Google pending until the export runs', () => {
   const doc = {
     claude: { draft: { calls: 12, microCents: 360000 }, ask: { calls: 3, microCents: 90000 } },
     paypal: { payments: 2, feeCents: 2960, grossCents: 100000 },
@@ -61,7 +61,8 @@ test('spentSummary: sums Claude, PayPal fees and fixed costs; Google is a link',
   assert.equal(by.paypal.cents, 2960)
   assert.equal(by.paypal.note, '2 online payments')
   assert.equal(by.google.cents, null)
-  assert.equal(by.google.how, 'link')
+  assert.equal(by.google.how, 'pending')
+  assert.equal(s.partial, true)
   assert.equal(by.fixed.cents, 1615)
   assert.equal(by.fixed.how, 'estimate')
 })

@@ -23,6 +23,8 @@ const customers = [
     phone: '555-0102', email: 'test.homeowner@example.com', address: '456 Sample Ln League City, TX 77573', city: 'League City',
     locationBlock: 'League City - East side of 45', installType: 'Regular Install',
     seasons: { 2026: { installStatus: '' }, 2025: { installStatus: 'Install Completed' } },
+    // Their reminder email bounced (docs/specs/email-bounces.md; the history entry is em-demo-bounce-test-homeowner).
+    bouncedEmails: { 'test.homeowner@example.com': { at: new Date(Date.now() - 1.5 * 3600000).toISOString(), reason: 'the address doesn’t exist (check it for a typo)', entryId: 'em-demo-bounce-test-homeowner' } },
   },
   {
     id: 'example-family', fullName: 'Example Family', firstName: 'Example', lastName: 'Family',
@@ -50,10 +52,11 @@ export const demoData = {
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
   ]),
   settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 }, monthlyCosts: [{ name: 'Google Workspace', amount: 14.4 }, { name: 'Google Voice', amount: 10 }, { name: 'Domain', amount: 1.75 }] } },
-  // Home → Spent this month (docs/specs/spend.md): this month's Claude calls and PayPal fees.
+  // Home → Spent this month (docs/specs/spend.md): this month's Claude calls, PayPal fees and Google Cloud export.
   usage: { [monthKey()]: {
     claude: { draft: { calls: 14, inputTokens: 71000, outputTokens: 11200, microCents: 42300 }, ask: { calls: 5, inputTokens: 40500, outputTokens: 2100, microCents: 18800 }, plan: { calls: 2, inputTokens: 30000, outputTokens: 7000, microCents: 29600 } },
     paypal: { payments: 3, grossCents: 185000, feeCents: 5667 },
+    google: { totalCents: 212, byService: { 'Cloud Firestore': 118, 'Cloud Functions': 54, 'Maps API': 31, 'Cloud Storage': 9 }, asOf: new Date(Date.now() - 3 * 3600e3).toISOString(), lastExportAt: new Date(Date.now() - 20 * 3600e3).toISOString() },
   } },
   signs: byId([
     { id: 'demo-sign-1', corner: 'Broadway & 288', code: 'broadway-288', lat: 29.5695, lng: -95.3864, placedAt: hoursAgo(30), cost: 10, updatedBy: 'demo@example.com' },
@@ -79,6 +82,9 @@ export const demoData = {
       subject: 'Re: Your 2026 install', text: 'Thursday evening is perfect, thanks! Same gate code as last year.\n\nAlso, could you add the small tree by the mailbox this year? We bought a new one and it is about six feet tall, right next to the driveway. Let me know what that would cost and whether you can do it the same day as the install. Thanks again for everything last season.' },
     { id: 'em-demo-2-sample-customer', customerId: 'sample-customer', email: 'sample@example.com', kind: 'email', direction: 'out', source: 'gmail', at: hoursAgo(3), syncedAt: hoursAgo(2.95),
       subject: 'Re: Your 2026 install', text: 'Hi Sample, yes we can add the tree the same day. It adds $45 this year.' },
+    { id: 'em-demo-bounce-test-homeowner', customerId: 'test-homeowner', email: 'test.homeowner@example.com', kind: 'email', direction: 'out', source: 'app', sentBy: 'katiep@example.com', at: hoursAgo(1.6), gmailSeenAt: hoursAgo(1.55),
+      subject: 'Your 2026 Christmas lights', text: 'Hi Test,\n\nJust a reminder that your takedown invoice is still open.\n\nThank you,\nChristmas Light Creations\n281-819-0163',
+      bounced: true, bouncedAt: hoursAgo(1.5), bounceReason: 'the address doesn’t exist (check it for a typo)', bounceCode: '5.1.1' },
     { id: 'gv-demo-lead', leadId: 'demo-2', phone: '+15550102', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(20), syncedAt: hoursAgo(19.95), text: 'Hi, I sent the form on your website. Do you do roofline only?' },
     { id: 'gv-demo-unmatched-1', unmatched: true, phone: '+15550100166', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(2), syncedAt: hoursAgo(1.95), text: 'Hi! Saw your sign on Broadway. How much for a one story house?' },
     { id: 'em-demo-new-unmatched', unmatched: true, email: 'pat.new@example.org', kind: 'email', direction: 'in', source: 'gmail', at: hoursAgo(1.2), syncedAt: hoursAgo(1.15),
@@ -134,6 +140,7 @@ export const demoData = {
   leadDesigns: byId([{ id: 'demo-design', design: JSON.stringify(sampleDesign()), photo: 'sample', image: SAMPLE_PHOTO.src }]),
   incidents: byId([
     { id: 'demo-incident-1', kind: 'lead-alert', open: true, message: 'New request from Pat Sample (555-0101) is in the staff app, but the alert email failed: Invalid login (sample).' },
+    { id: 'demo-incident-bounce', kind: 'bounce', open: true, message: `An email to Test Homeowner (sent ${new Date(Date.now() - 1.6 * 3600000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}) bounced: the address doesn’t exist (check it for a typo). Open their record and fix the email address, then send it again.` },
   ]),
   views: byId([
     { id: 'demo-view-1', name: 'Needs scheduling', order: 1, mode: 'install', statuses: ['Confirmed - Needs to be Scheduled'],

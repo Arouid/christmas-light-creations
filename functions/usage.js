@@ -2,7 +2,8 @@
 // Pure: the server adds to usage/{YYYY-MM} after each Claude call and each
 // PayPal capture; Home reads that one document (via src/lib/spend.js) and
 // adds the fixed monthly costs from ⚙ Settings. No imports from the rest of
-// functions/. Tested in tests/usage.test.mjs.
+// functions/ except googleBilling.js (also pure). Tested in tests/usage.test.mjs.
+import { topServices } from './googleBilling.js'
 
 // Anthropic list prices, dollars per million tokens (claude-api skill, cached
 // 2026-10-06). Cache writes are 1.25× input, cache reads 0.1× (0.05× on 5.x).
@@ -83,7 +84,8 @@ export function fixedCosts(list) {
 }
 
 // The box on Home. usageDoc: usage/{month} (or null); settings: settings/app.
-// Every amount in cents. `how`: exact | estimate | link | none.
+// Every amount in cents. `how`: exact | estimate | pending | none; `partial`
+// is true while Google Cloud has no number yet (then it's not in the total).
 export function spentSummary(usageDoc, settings = {}) {
   const u = usageDoc ?? {}
   const claude = Object.entries(u.claude ?? {}).map(([key, s]) => ({
@@ -98,17 +100,32 @@ export function spentSummary(usageDoc, settings = {}) {
   const unknown = Number(pp.unknownFees) || 0
   const fixed = fixedCosts(settings.monthlyCosts)
   const fixedCents = Math.round(fixed.reduce((a, x) => a + x.amount, 0) * 100)
+  // Google Cloud: from the billing export (functions/googleBilling.js), about a
+  // day behind; until the first run the line says so and stays out of the total.
+  const g = u.google
+  const googleCents = g ? Number(g.totalCents) || 0 : null
+  const asOf = g ? asOfText(g.lastExportAt ?? g.asOf) : ''
+  const top = topServices(g)
   const rows = [
     { key: 'claude', name: 'Claude', cents: claudeCents, how: 'exact',
       note: claudeCalls ? `${claudeCalls} call${claudeCalls === 1 ? '' : 's'} · list price per token` : 'no calls yet · list price per token',
       parts: claude.filter((s) => s.calls).sort((a, b) => b.cents - a.cents) },
     { key: 'paypal', name: 'PayPal fees', cents: feeCents, how: 'exact',
       note: payments ? `${payments} online payment${payments === 1 ? '' : 's'}${unknown ? ` · ${unknown} fee${unknown === 1 ? '' : 's'} unknown` : ''}` : 'no online payments yet' },
-    { key: 'google', name: 'Google Cloud', cents: null, how: 'link', note: 'Firebase, Maps, email: see billing' },
+    { key: 'google', name: 'Google Cloud', cents: googleCents, how: g ? 'exact' : 'pending',
+      note: g ? [top.length ? '' : 'nothing billed yet', asOf ? `as of ${asOf}` : 'from the billing export'].filter(Boolean).join(' · ') : 'export on, first numbers within a day',
+      parts: top },
     { key: 'fixed', name: 'Fixed', cents: fixedCents, how: fixed.length ? 'estimate' : 'none',
       note: fixed.length ? fixed.map((x) => x.name).join(', ') : 'add Workspace, Voice, domain in ⚙ Settings', parts: fixed },
   ]
-  return { totalCents: claudeCents + feeCents + fixedCents, rows, partial: true }
+  return { totalCents: claudeCents + feeCents + (googleCents ?? 0) + fixedCents, rows, partial: googleCents == null }
+}
+
+// "Oct 10" (Central) for the export's last timestamp; '' when unknown.
+export function asOfText(iso) {
+  const d = iso ? new Date(iso) : null
+  if (!d || Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Chicago' })
 }
 
 // "$12.34"; under a dollar shows cents ("3.2¢") so a day's Claude use isn't "$0.03".

@@ -2,7 +2,7 @@
 // Plain words for the team; update it whenever a feature changes.
 // tab: the #hash the "Open" link goes to (none = no link).
 
-export const GUIDE_UPDATED = 'October 10, 2026'
+export const GUIDE_UPDATED = 'October 11, 2026'
 
 // The jobs people actually do, each pointing at where to do it.
 export const TASKS = [
@@ -27,6 +27,7 @@ export const TASKS = [
   ['Ask Claude a question about the database', 'Open the **🤖 Ask Claude** tab (right after Home) and ask in plain words: “Which invoices are overdue?”, “What did Pat Sample ask us last year?”, “Who’s on Thursday’s route?”, “Is the text sync working?”. Claude looks it up (customers, website requests, invoices, routes, message history, system status) and answers in a few seconds, with the records it used as links under the answer; tap one to open it. Follow-up questions keep the thread. When the answer is about one person, **✨ Draft a reply to them** opens the normal Suggest a reply flow. It is read-only: it can’t change a record or send anything, and it can be wrong, so open the record before acting. Your thread stays while the app is open, even when you switch tabs; **Clear** starts over. The owner can turn it off in **⚙ Settings → Ask Claude**.'],
   ['Ask for a Google review', 'Shows up after an install is completed, a service call is done, or a lead is booked: **Text/Email review link**. Never offer anything for a review.'],
   ['A red “website problem” banner showed up', 'Tap it: it says in plain words what broke (a request alert email, a payment, the text sync). Deal with it (or forward it to whoever looks after the website), then tap **Dealt with ✓**. The alert list also gets an email, and every Monday an “all OK” email; if that stops coming, say so.'],
+  ['An email bounced (❌ Bounced)', 'Gmail sent it, but their mail server sent it back: usually a typo in the address, or a closed account. You see **❌ Bounced** and the reason on that email in their **Text & email history**, a red banner, a phone notification (if you turned them on) and a red **Outgoing email** light on Home. Open their account, tap **Edit details** and fix the email under Contact, then send it again. The ⚠ warning next to their email goes away by itself once the address changes. **Mailbox full**: try again in a few days, or call them. A website lead’s email can’t be edited: call or text them, or make them a customer and fix it there. The Email box warns before you send to a bounced address, and **Send the rest** skips them.'],
   ['A customer picked a date on the website', 'Their request says “Preferred install date: …” at the top. It’s a request, not a booking: confirm the date when you send the estimate, then put it in their Season planned date so the website stops offering it.'],
   ['A customer asks “why did my price go up?”', 'Their account → **💲 Yearly price & add-ons** shows the breakdown. Tick **Customer can see this** so they can see it on their own account too.'],
 ]
@@ -42,8 +43,8 @@ export const SECTIONS = [
       '**Counters**: new messages (yours), new website requests, unpaid invoices (and how many overdue), open service calls. Tap one to go there.',
       '**Scheduled emails**: every email waiting to go out (⏰ Send later), soonest first, with who scheduled it. A list scheduled together is one line (**Show names**, **Cancel all**). Anyone can **Edit** the time or text, or **Cancel**, until it goes. **Didn’t go** ones stay here with the reason until someone gives them a **New time…** or **Removes** them.',
       '**Today’s routes**: each route with stops done, skipped and left. **Season**: installs and takedowns by step, and money collected (season billing marked paid) next to last season.',
-      '**System status** lights: text/email sync, website problems, payments, the request-alert email list, the activity log, and notifications on this device. Green is good; amber means look; red means something broke (tap the red banner).',
-      '**Spent this month**: what the services behind the app cost so far this month. **Claude** (Suggest a reply, Ask Claude, Plan with Claude) is exact: every call’s tokens at Anthropic’s list price. **PayPal fees** are exact: what PayPal kept on each online payment. **Google Cloud** (Firebase, Maps, email) can’t be read by the app: tap **see billing**. **Fixed** is what you typed in **⚙ Settings → Monthly costs** (Workspace, Voice, domain). The total leaves Google Cloud out.',
+      '**System status** lights: text/email sync, outgoing email (red when an email didn’t go or bounced), website problems, payments, the request-alert email list, the activity log, and notifications on this device. Green is good; amber means look; red means something broke (tap the red banner).',
+      '**Spent this month**: what the services behind the app cost so far this month. **Claude** (Suggest a reply, Ask Claude, Plan with Claude) is exact: every call’s tokens at Anthropic’s list price. **PayPal fees** are exact: what PayPal kept on each online payment. **Google Cloud** (Firebase, Maps, email) is exact too, about a day behind: Google’s billing export is read every 6 hours, and the line says “as of” which day; **see billing** opens Google’s page. **Fixed** is what you typed in **⚙ Settings → Monthly costs** (Workspace, Voice, domain). Until the export’s first run the Google line says so and the total leaves it out.',
       '**⛶ Wall screen**: full screen with big numbers for a TV in the shop; it updates by itself. **✕** or Esc to leave.',
       '**⠿ Arrange**: drag the panels where you want them (on a phone, use the ▲ ▼ arrows on each panel), then **Done arranging**. It’s saved on that phone or computer; **Reset layout** puts them back.',
       'Names show as first name + last initial (Scott M., Lacie M., Katie P.), also at the top right instead of your email. Anyone new (or a different name): **⚙ Settings → Staff names**.',
@@ -244,7 +245,7 @@ export const TASK_GROUPS = [
   ['New requests', ['A new estimate request came in', 'A request says “🎨 sent a design”', 'A customer picked a date on the website']],
   ['Prices & money', ['Send a price / contract', 'Get paid', 'Bill a customer (invoice)', 'Bill everyone for the season', 'They paid cash, check or Zelle', 'A customer asks “why did my price go up?”']],
   ['Installs, takedowns & service', ['Plan installs or takedowns', 'Let Claude plan install days', 'A customer’s lights are out']],
-  ['When something breaks', ['A red “website problem” banner showed up']],
+  ['When something breaks', ['A red “website problem” banner showed up', 'An email bounced (❌ Bounced)']],
 ]
 
 export function groupedTasks(tasks = TASKS) {
