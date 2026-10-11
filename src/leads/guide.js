@@ -21,6 +21,7 @@ export const TASKS = [
   ['Get a notification on my phone', 'Tap **💬** → **Turn on** → Allow → **Send a test**. Do it once on each phone or computer. From then on you get a notification within about 5 minutes of every customer text, voicemail, missed call or email; tap it to open their account. iPhone: install the app first (Safari → Share → Add to Home Screen) and turn it on from there. **Turn off** in the same place.'],
   ['Text a customer', 'Tap **Text**: the message is copied and Google Voice opens as the business number. Paste and send.'],
   ['Email a customer', 'Tap **Email**, pick a template (it fills in their name, dates and prices), check it, then **Send from info@**. It goes out right away without leaving the app and shows in their **Text & email history** with your name; their reply comes to info@. Need an attachment or Cc? **Open in Gmail instead**.'],
+  ['Let Claude draft the reply', 'On a message in **💬**, in Unmatched, or at the top of someone’s **Text & email history**: tap **✨ Suggest a reply**. In a few seconds you get what they’re asking, a suggested next step (answer, send an estimate, schedule, or hand to a person) and a draft in our voice. Edit it, then **✉️ Email this** or **Text this**: it goes through the normal Email / Text screens and nothing is sent until you press Send. Claude never quotes a price that isn’t on file, never promises a date and never invents a discount, but read every draft: it can be wrong. Upset customer or anything about damage or money back: it writes a short “a person will call you” and marks it red.'],
   ['Ask for a Google review', 'Shows up after an install is completed, a service call is done, or a lead is booked: **Text/Email review link**. Never offer anything for a review.'],
   ['A red “website problem” banner showed up', 'Tap it: it says in plain words what broke (a request alert email, a payment, the text sync). Deal with it (or forward it to whoever looks after the website), then tap **Dealt with ✓**. The alert list also gets an email, and every Monday an “all OK” email; if that stops coming, say so.'],
   ['A customer picked a date on the website', 'Their request says “Preferred install date: …” at the top. It’s a request, not a booking: confirm the date when you send the estimate, then put it in their Season planned date so the website stops offering it.'],
@@ -195,6 +196,7 @@ export const SECTIONS = [
       'Tap one: their account opens with the full Text & call history. Unknown numbers and emails from new people open the **Unmatched** list on Leads: **Link to customer**, **Reply in Gmail** or **Dismiss**.',
       'Emails from someone we don’t know yet are kept unless they look like junk: no-reply and notification senders, PayPal/Google-type services, and newsletters with an unsubscribe link. Those stay only in Gmail.',
       'Texts, voicemails and emails arrive within about 5 minutes (the info@ sync); estimate requests at once. Our own replies aren’t listed.',
+      '**✨ Suggest a reply** under any message: Claude reads their history and record and drafts an answer with a one-line summary and a next step. You edit it and send it through the normal Email / Text screens; it never sends on its own. Shows on Home’s Who’s on as “Claude (assistant)” with when it last drafted.',
       '**📲 Phone notifications on this device**: **Turn on** once per phone or computer, then **Send a test**. Everyone who turned it on gets every new customer message. **Turn off** (or **Remove** an old phone) in the same place. Quiet at night? Use your phone’s Do Not Disturb.',
       'iPhone/iPad: works only in the installed app (Safari → Share → Add to Home Screen), iOS 16.4 or later. If it says notifications are blocked, allow them in the phone’s settings for CLC Staff.',
     ],
@@ -229,7 +231,7 @@ export const SECTIONS = [
 // each group as a short folded list). Titles must match TASKS exactly;
 // anything left over shows under "Other".
 export const TASK_GROUPS = [
-  ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'Find anyone fast', 'Text a customer', 'Email a customer', 'Get a notification on my phone', 'Ask for a Google review']],
+  ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'Find anyone fast', 'Text a customer', 'Email a customer', 'Let Claude draft the reply', 'Get a notification on my phone', 'Ask for a Google review']],
   ['New requests', ['A new estimate request came in', 'A request says “🎨 sent a design”', 'A customer picked a date on the website']],
   ['Prices & money', ['Send a price / contract', 'Get paid', 'Bill a customer (invoice)', 'Bill everyone for the season', 'They paid cash, check or Zelle', 'A customer asks “why did my price go up?”']],
   ['Installs, takedowns & service', ['Plan installs or takedowns', 'A customer’s lights are out']],

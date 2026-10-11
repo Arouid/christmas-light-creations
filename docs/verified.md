@@ -253,3 +253,10 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-10 General email templates (demo, 375px)
 
 - Emails tab shows a GENERAL group first with 6 templates (Yes, put me on the schedule! · Got your message · Got your photos · Thanks for the details · We'll call you · Let me check and get back to you); each has Send… / Read / Copy / Edit. Fixed a pre-existing sideways overflow on the Emails tab (long subject lines widened the cards: min-w-0 on the grid items).
+
+## 2026-10-10 Sales assistant, Phase 1 (demo, 375px; not deployed, no real API call yet)
+
+- 💬 New messages: every row has **✨ Suggest a reply** under I've got it; tapping it shows "Thinking…" then the panel: They're asking: … / Next: Get them on the schedule / ⚠ reason / Subject / editable Email / ✉️ Email this · Text this · ↻ Try again / "Drafted by Claude…" note. No sideways scroll (scrollWidth 375), no console errors.
+- **✉️ Email this** opens the normal compose box with the draft's subject and text loaded (Template = Blank), Send from info@ and Open in Gmail present.
+- `npm run check` green: lint, 30 tests in the touched files (11 new in tests/salesAssistant.test.mjs: prompt contents, record without gate code, thread cap, channel choice, request checks, answer tidying, daily limit, cost, fallback, Who's on row, knowledge JSON up to date), build.
+- Not checked: a real `draftReply` call (needs ANTHROPIC_API_KEY + deploy: TODO #43), the Accounts-page history button on a real customer, Text this on a phone, the Who's on row with a real presence write.

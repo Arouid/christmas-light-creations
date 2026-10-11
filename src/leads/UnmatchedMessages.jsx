@@ -6,6 +6,7 @@ import { TextButton, pill } from './Reach'
 import { Bubble } from './TextHistory'
 import { saveRecord, useLiveQuery } from './staffStore'
 import Handling from './Handling'
+import SuggestReply from './SuggestReply'
 
 const newestFirst = (a, b) => (b.at ?? '').localeCompare(a.at ?? '')
 const prettyPhone = (p) => {
@@ -56,6 +57,7 @@ function Row({ m, user, customers, feed }) {
         <button type="button" disabled={busy} onClick={() => save({ dismissed: true })} className={pill}>Dismiss</button>
       </div>
       <Handling m={m} who={m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'} feed={feed} user={user} />
+      <div className="mt-2"><SuggestReply target={{ messageId: m.id }} /></div>
       {linking && <LinkPicker customers={customers} onCancel={() => setLinking(false)}
         onPick={(customerId) => save({ customerId, unmatched: false, dismissed: false })} />}
     </li>

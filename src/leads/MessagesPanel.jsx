@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import { KIND_WORD, LIST_DAYS, isNew, messageLink, needsSomeone, previewOf, whoOf } from '../lib/staffAlerts'
 import Handling from './Handling'
 import PushSetup from './PushSetup'
+import SuggestReply from './SuggestReply'
+
+// Whose thread the sales assistant should read for this list entry.
+const draftTarget = (m) => (m.customerId ? { customerId: m.customerId } : m.leadId ? { leadId: m.leadId } : { messageId: m.id })
 
 // 💬 New messages (docs/specs/staff-alerts.md): texts, voicemails, missed
 // calls, emails and website estimate requests from the last 7 days, newest first; the ones
@@ -68,7 +72,10 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
                       {previewOf(m) && <span className="mt-0.5 line-clamp-2 block break-words text-sm text-slate-400">{previewOf(m)}</span>}
                     </span>
                   </button>
-                  <div className="pl-13"><Handling m={m} who={whoOf(m, names)} feed={feed} user={user} /></div>
+                  <div className="space-y-2 pl-13">
+                    <Handling m={m} who={whoOf(m, names)} feed={feed} user={user} />
+                    <SuggestReply target={draftTarget(m)} />
+                  </div>
                 </li>
               )
             })}

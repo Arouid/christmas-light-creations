@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SuggestReply from './SuggestReply'
 import { useLiveQuery } from './staffStore'
 
 const newestFirst = (a, b) => (b.at ?? '').localeCompare(a.at ?? '')
@@ -37,16 +38,20 @@ export function Bubble({ m, who }) {
 }
 
 // Texts, calls, voicemails and emails with this customer (or lead): the old
-// Voice import plus what the message sync files from info@. Read-only.
+// Voice import plus what the message sync files from info@. Read-only, apart
+// from ✨ Suggest a reply (docs/specs/sales-assistant.md), which hands a
+// draft to the Email / Text flow.
 export default function TextHistory({ user, customerId, field = 'customerId', value = customerId }) {
   const items = useLiveQuery(user, 'messages', field, value, newestFirst)
   const [all, setAll] = useState(false)
+  const suggest = <SuggestReply target={field === 'leadId' ? { leadId: value } : { customerId: value }} />
   if (!items) return <p className="text-sm text-slate-400">Loading history…</p>
-  if (!items.length) return <p className="text-sm text-slate-400">No texts, calls or emails on file.</p>
+  if (!items.length) return <div className="space-y-2"><p className="text-sm text-slate-400">No texts, calls or emails on file.</p>{suggest}</div>
 
   const shown = all ? items : items.slice(0, SHOW)
   return (
     <div className="space-y-2">
+      {suggest}
       <ul className="space-y-2">
         {shown.map((m) => (
           <li key={m.id} className={`flex ${m.direction === 'out' ? 'justify-end' : 'justify-start'}`}>

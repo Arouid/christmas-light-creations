@@ -10,8 +10,10 @@ import { useEmailTemplates } from './templatesContext'
 // needed, then Send from info@ without leaving the app (filed in their
 // history), or open it as a Gmail draft instead. `person` is a customer (or a
 // lead / past request mapped to customer fields); `target` says whose history
-// it goes in: { customerId } | { leadId } | { pastRequestId }.
-export default function ComposeEmail({ person, season, target, start = 'custom', label = 'Email', className = pill, onSent }) {
+// it goes in: { customerId } | { leadId } | { pastRequestId }. `initial`
+// ({ subject, body }) opens with that text instead of a template (the sales
+// assistant's draft, docs/specs/sales-assistant.md).
+export default function ComposeEmail({ person, season, target, start = 'custom', initial, label = 'Email', className = pill, onSent }) {
   const templates = useEmailTemplates()
   const { user } = useStaff()
   const [open, setOpen] = useState(false)
@@ -34,7 +36,12 @@ export default function ComposeEmail({ person, season, target, start = 'custom',
 
   function openBox(e) {
     e.stopPropagation()
-    pick(start)
+    if (initial) {
+      setId('custom')
+      setSubject(initial.subject ?? '')
+      setBody(initial.body ?? '')
+      setMissing([])
+    } else pick(start)
     setTo(addresses[0] ?? person.email)
     setStatus({ step: 'edit' })
     setOpen(true)

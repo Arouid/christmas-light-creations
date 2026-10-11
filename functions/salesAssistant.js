@@ -1,0 +1,262 @@
+// The sales assistant (draftReply in index.js): turns a customer's message
+// thread and record into a prompt for Claude, and checks what comes back.
+// Draft mode only: staff read, edit and send every reply themselves.
+// Pure: no Firebase, no network. Spec: docs/specs/sales-assistant.md.
+// Tested in tests/salesAssistant.test.mjs.
+
+export const MODEL = 'claude-opus-5-5' // owner (2026-10-10): quality over cost, within $150/month
+export const MAX_OUTPUT_TOKENS = 1500
+export const MAX_THREAD = 30 // newest messages sent to the model
+export const MAX_MESSAGE_CHARS = 1500 // per message in the thread
+export const MAX_REPLY_CHARS = 2500
+export const DAILY_LIMIT = 150 // drafts a day, all staff together (worst case ~$4.50/day on Opus)
+export const MIN_GAP_MS = 2000 // per staff member
+
+// Claude Opus 5.5 list price, dollars per million tokens (docs/specs/sales-assistant.md).
+export const PRICE = { input: 4, output: 20, cacheRead: 0.2, cacheWrite: 5 }
+
+export const NEXT_ACTIONS = {
+  answer: 'Answer their question',
+  estimate: 'Send an estimate (measure first)',
+  schedule: 'Get them on the schedule',
+  escalate: 'A person should follow up',
+}
+export const CHANNELS = ['text', 'email']
+
+// Request field -> collection, as sendStaffEmail. messageId = an unmatched
+// text/email from someone we don't know yet.
+export const TARGETS = { customerId: 'customers', leadId: 'leads', messageId: 'messages' }
+const ID_RE = /^(?!__)[^/]{1,200}$/
+const bad = (msg) => ({ problem: ['invalid-argument', msg] })
+
+// Browser request -> { target: { field, coll, id } } or { problem }.
+export function draftRequest(data) {
+  if (!data || typeof data !== 'object') return bad('Nothing to draft')
+  const fields = Object.keys(TARGETS).filter((f) => data[f] !== undefined && data[f] !== null && data[f] !== '')
+  if (fields.length !== 1) return bad('Say whose thread this is')
+  const [field] = fields
+  const id = data[field]
+  if (typeof id !== 'string' || !ID_RE.test(id)) return bad('Unknown person')
+  return { target: { field, coll: TARGETS[field], id } }
+}
+
+// serverState/aiDraft -> { next } or { problem }. Counts drafts per Central day.
+export function draftAllowed(state, staff, now, day) {
+  const today = state?.day === day
+  const count = today ? Number(state.count) || 0 : 0
+  if (count >= DAILY_LIMIT) return { problem: ['resource-exhausted', `That's ${DAILY_LIMIT} drafts today, the daily limit. Write this one yourself, or try tomorrow.`] }
+  const last = today ? state.last ?? {} : {}
+  if (now - (Number(last[staff]) || 0) < MIN_GAP_MS) return { problem: ['resource-exhausted', 'One at a time: wait a moment, then try again.'] }
+  return { next: { day, count: count + 1, last: { ...last, [staff]: now } } }
+}
+
+// ---- Prompt --------------------------------------------------------------------
+
+// Fixed for every call (so the API can cache it): who we are, what we know,
+// and the hard rules. Nothing that changes per request goes in here.
+export function systemPrompt(k) {
+  const areas = k.serviceAreas.map((g) => `${g.region}: ${g.towns.join(', ')}`).join('\n')
+  const faq = k.faq.map((f) => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
+  const tone = k.toneSamples.map((t) => `(${t.when})\nSubject: ${t.subject}\n${t.body}`).join('\n\n---\n\n')
+  const d = (x) => `${x.month}/${x.day}`
+  return `You help the staff of ${k.business.name}, a family-owned Christmas light installation company in ${k.business.city} (since ${k.business.since}, ${k.business.homesServed} homes), draft replies to customers. A staff member reads, edits and sends every reply; you never send anything. Write as the business ("we"), never as an AI.
+
+## What we do
+${k.highlights.map((h) => `- ${h}`).join('\n')}
+
+Included in every install:
+${k.included.map((h) => `- ${h}`).join('\n')}
+Free service calls all season: ${k.serviceCalls.join(', ').toLowerCase()}.
+
+## How it works
+${k.steps.map((s) => `- ${s}`).join('\n')}
+
+## Pricing (how we work; most of it is NOT for quoting)
+- Every home is priced after we measure the roofline (about 30 minutes, measuring wheel, no roof climbing, nobody needs to be home unless there is a gate). Internally the price is per foot of roofline with commercial C9 bulbs at 12-inch spacing, plus trees, wreaths and other extras. Never tell a customer a per-foot rate or a formula.
+- Installs start ${d(k.dates.installStart)}. Installs done by ${d(k.dates.discountEnd)} get 10% off (the early install discount). From ${d(k.dates.bookingClose)} we book for next season.
+- ${k.pricingNotes.join('\n- ')}
+- Takedown (removal) is a set price shown in the customer's estimate, due in January. Internally it defaults to 15% of the install price with a $150 minimum; don't quote that rule, just say it is shown in their estimate.
+- Add-ons (an arch, a tree, more roofline) are charged in full the year they are added, then add about half their price to the yearly re-install.
+- Payment: a deposit when they sign holds the date; the rest is due once the lights are up; removal is paid in January. PayPal, Venmo, card (from the link we send), Zelle, check or cash.
+
+## Service areas (only these)
+${areas}
+Outside these towns: say we're sorry, we don't serve that area, and don't suggest we might.
+
+## FAQ (our answers, in our words)
+${faq}
+
+## How we write (match this voice)
+${tone}
+
+## Hard rules
+1. Never quote an exact price, range, per-foot rate or estimate unless the customer's record (below) already has a price for THIS season that was sent to them. Otherwise say we'll measure (about 30 minutes, no roof climbing, no need to be home) and send a price, or ask for phone photos for a rough quote that a person will work out.
+2. Never promise a specific install or takedown date or time. We schedule area by area as the season fills in and send the date once it's set. You may repeat a date that is already on their record as planned.
+3. Never offer a discount, credit or free extra beyond the published 10% early install discount (installs done by ${d(k.dates.discountEnd)}) and the 50% re-install price. Never offer anything in exchange for a review.
+4. Never invent a policy, guarantee, product, person or time. If the answer isn't in what you were given, say a person will follow up and set nextAction to "escalate".
+5. If the customer is upset, mentions damage, an injury, a refund, a complaint, legal words, cancelling, or anything about money owed to them, keep the reply short and kind, promise that a person will call, and set escalate to true.
+6. Don't repeat back personal details that aren't needed (gate codes, payment details).
+7. Plain, warm and short. Texts: 1 to 4 sentences, no subject, no sign-off beyond the business name if needed. Emails: a short greeting with their first name if known, 1 to 3 short paragraphs, then "Thank you,\\n${k.business.name}\\n${k.business.phone}".
+8. Use only facts from this prompt and the customer's record. When the thread is empty or unclear, write a friendly check-in that asks what they need.
+9. Mention the website (${k.business.website}) or account page only when it helps answer the question.
+
+## Output
+Answer with JSON only:
+- summary: one line, what the customer is asking or saying (for staff, not the customer).
+- nextAction: one of ${Object.keys(NEXT_ACTIONS).map((a) => `"${a}"`).join(', ')}.
+- channel: "text" or "email", the same channel the customer used last (requests from the website: email if they gave one).
+- subject: email subject (empty string for a text).
+- reply: the message, ready to send after a staff member's check.
+- escalate: true when a person must follow up before anything else.
+- reason: one short line for staff on anything they should check or fix before sending (empty string if nothing).`
+}
+
+export const OUTPUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    summary: { type: 'string' },
+    nextAction: { type: 'string', enum: Object.keys(NEXT_ACTIONS) },
+    channel: { type: 'string', enum: CHANNELS },
+    subject: { type: 'string' },
+    reply: { type: 'string' },
+    escalate: { type: 'boolean' },
+    reason: { type: 'string' },
+  },
+  required: ['summary', 'nextAction', 'channel', 'subject', 'reply', 'escalate', 'reason'],
+  additionalProperties: false,
+}
+
+const KIND_WORD = { text: 'text', voicemail: 'voicemail', missed: 'missed call', call: 'call', email: 'email', request: 'website estimate request', payment: 'payment', invoice: 'invoice' }
+const oldestFirst = (a, b) => String(a.at ?? '').localeCompare(String(b.at ?? ''))
+const clip = (s, n) => {
+  const t = String(s ?? '').replace(/[ \t]+\n/g, '\n').trim() // trailing spaces off, blank lines kept
+  return t.length > n ? `${t.slice(0, n - 1)}…` : t
+}
+const dayOf = (iso) => {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10)
+}
+
+// The last MAX_THREAD messages, oldest first, as lines the model can read.
+export function threadText(messages) {
+  const sorted = [...(messages ?? [])].filter((m) => m && (m.text || m.subject || m.kind)).sort(oldestFirst).slice(-MAX_THREAD)
+  if (!sorted.length) return '(no messages on file)'
+  return sorted.map((m) => {
+    const who = m.direction === 'out' ? 'Us' : 'Customer'
+    const kind = KIND_WORD[m.kind] ?? m.kind ?? 'message'
+    const head = `[${dayOf(m.at)}] ${who} (${kind}${m.subject ? `, subject: ${clip(m.subject, 120)}` : ''}${m.duration ? `, ${m.duration}` : ''})`
+    const body = clip(m.text, MAX_MESSAGE_CHARS)
+    return body ? `${head}: ${body}` : head
+  }).join('\n')
+}
+
+// The customer the model may use (never gate codes or payment details).
+// The last incoming message's channel decides text vs email.
+const money = (v) => (v === undefined || v === null || v === '' ? '' : String(v))
+export function recordText(record, coll, season) {
+  if (!record) return 'Unknown person: not a customer or lead we have on file. Treat them as a new inquiry.'
+  if (coll === 'leads') {
+    const name = `${record.firstName ?? ''} ${record.lastName ?? ''}`.trim()
+    return [
+      'Website estimate request (new lead):',
+      name && `Name: ${name}`,
+      record.address && `Address: ${[record.address, record.city, record.zip].filter(Boolean).join(', ')}`,
+      record.city && !record.address && `City: ${record.city}`,
+      record.contactMethod && `Prefers: ${record.contactMethod}`,
+      record.status && `Our status: ${record.status}`,
+      record.source && `Heard about us: ${record.source}`,
+      record.message && `Their request: ${clip(record.message, 1000)}`,
+      record.notes && `Staff notes (internal, don't repeat): ${clip(record.notes, 500)}`,
+    ].filter(Boolean).join('\n')
+  }
+  const lines = [
+    `Customer: ${record.fullName ?? ''}`.trim(),
+    record.address && `Address: ${[record.address, record.city].filter(Boolean).join(', ')}`,
+    record.neighborhood && `Neighborhood: ${record.neighborhood}`,
+    record.since && `Customer since: ${record.since}`,
+    record.installType && `Install type: ${record.installType}`,
+    record.originalRate && `Original (first-year) price on file: $${money(record.originalRate)}`,
+    record.reinstallBase && `Re-install price on file: $${money(record.reinstallBase)} a year`,
+  ].filter(Boolean)
+  const seasons = Object.entries(record.seasons ?? {}).sort(([a], [b]) => a.localeCompare(b)).slice(-4)
+  for (const [year, s] of seasons) {
+    const parts = [
+      s.installStatus && `install status: ${s.installStatus}`,
+      s.firstContact && `wants lights: ${s.firstContact}`,
+      (s.plannedDate || s.weekOf || s.day) && `planned: ${[s.day, s.plannedDate, s.weekOf && `week of ${s.weekOf}`, s.timeframe].filter(Boolean).join(' ')}`,
+      s.install?.rate && `install price ${s.install.rate}${s.install.discount ? ` (discount ${s.install.discount})` : ''}${s.install.total ? `, total ${s.install.total}` : ''}`,
+      s.install?.paid && `paid: ${s.install.paid}`,
+      s.takedown?.rate && `takedown price ${s.takedown.rate}`,
+      s.takedownStatus && `takedown: ${s.takedownStatus}`,
+      s.addOn && `add-on: ${clip(s.addOn, 200)}`,
+      s.schedulingNotes && `scheduling notes (internal): ${clip(s.schedulingNotes, 300)}`,
+    ].filter(Boolean)
+    lines.push(`Season ${year}${String(year) === String(season) ? ' (this season)' : ''}: ${parts.join('; ') || 'on file, no details'}`)
+  }
+  if (record.notes) lines.push(`Staff notes (internal, don't repeat): ${clip(record.notes, 500)}`)
+  return lines.join('\n')
+}
+
+// Which channel the reply should use: what the customer used last.
+export function channelFor(messages, record) {
+  const incoming = [...(messages ?? [])].filter((m) => m?.direction !== 'out').sort(oldestFirst)
+  const last = incoming.at(-1)
+  if (last?.kind === 'email') return 'email'
+  if (last && ['text', 'voicemail', 'missed', 'call'].includes(last.kind)) return 'text'
+  if (last?.kind === 'request' || !last) return record?.email ? 'email' : 'text'
+  return record?.email ? 'email' : 'text'
+}
+
+// The per-request half of the prompt. `today` is a YYYY-MM-DD string.
+export function userPrompt({ today, season, coll, record, messages, channel }) {
+  return `Today: ${today}. Season: ${season}.
+
+## Their record
+${recordText(record, coll, season)}
+
+## The conversation (oldest first)
+${threadText(messages)}
+
+Draft our next reply as a ${channel}. Follow the hard rules.`
+}
+
+// What the model answered -> a checked draft, or { problem }.
+export function parseDraft(raw) {
+  let o = raw
+  if (typeof raw === 'string') {
+    try { o = JSON.parse(raw) } catch { return { problem: 'The assistant answered in a shape we could not read.' } }
+  }
+  if (!o || typeof o !== 'object') return { problem: 'The assistant gave an empty answer.' }
+  const reply = clip(o.reply, MAX_REPLY_CHARS)
+  if (!reply) return { problem: 'The assistant gave no reply text.' }
+  const nextAction = NEXT_ACTIONS[o.nextAction] ? o.nextAction : 'escalate'
+  const channel = CHANNELS.includes(o.channel) ? o.channel : 'email'
+  return {
+    summary: clip(o.summary, 200) || 'Customer message',
+    nextAction, nextActionLabel: NEXT_ACTIONS[nextAction], channel,
+    subject: channel === 'email' ? clip(o.subject, 150).replace(/[\r\n]+/g, ' ') : '',
+    reply,
+    escalate: Boolean(o.escalate) || nextAction === 'escalate',
+    reason: clip(o.reason, 300),
+  }
+}
+
+// Dollars for one call, from the API's usage object.
+export function costOf(usage = {}) {
+  const n = (x) => Number(x) || 0
+  return (n(usage.input_tokens) * PRICE.input + n(usage.output_tokens) * PRICE.output
+    + n(usage.cache_read_input_tokens) * PRICE.cacheRead + n(usage.cache_creation_input_tokens) * PRICE.cacheWrite) / 1e6
+}
+
+// Reply we return when the model declined (safety stop) or something broke:
+// staff still get a usable, cautious draft.
+export function fallbackDraft(channel, firstName, business) {
+  const hi = firstName ? `Hi ${firstName}, ` : 'Hi, '
+  const text = `${hi}thanks for your message! We've got it and someone from ${business.name} will get back to you shortly. Need us sooner? Call or text ${business.phone}.`
+  return {
+    summary: 'Could not read the message well enough to draft a reply', nextAction: 'escalate', nextActionLabel: NEXT_ACTIONS.escalate,
+    channel, subject: channel === 'email' ? 'Got your message' : '',
+    reply: channel === 'email' ? `${text}\n\nThank you,\n${business.name}\n${business.phone}` : text,
+    escalate: true, reason: 'The assistant could not draft this one; a stock acknowledgement is loaded instead.',
+  }
+}
