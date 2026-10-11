@@ -1,17 +1,17 @@
 # Google Ads video (Performance Max) — motion-design cut
 
-Status: storyboard agreed with Claude 2026-10-11, built the same day in `video/` (Remotion).
+Status: storyboarded and built 2026-10-11 in `video/` (Remotion); waiting for the owner's verdict.
 Owner's brief: "more than just some gallery photos stitched together"; the first slideshow cut
 (`scripts/ads-video.py`, 2026-10-11) "looks pretty cheap".
 
 ## What it is for
 
-One 28-second silent video, rendered in three shapes (16:9, 9:16, 1:1) for the Performance Max
+One 27-second silent video, rendered in three shapes (16:9, 9:16, 1:1) for the Performance Max
 asset group (YouTube in-stream, Shorts, square feeds). Google trims nothing, but viewers skip
 after 5 s, so the first 5 s carry the name of the service and the second line of the story. The
 phone number and the website close it and stay on screen 4 s.
 
-## Storyboard (30 fps, 28 s = 840 frames)
+## Storyboard (30 fps; scenes overlap 8 frames in a cross-dissolve, so 29 s of scenes play in about 27 s)
 
 | # | Seconds | Scene | What moves | Words | Photo |
 |---|---|---|---|---|---|
@@ -24,7 +24,7 @@ phone number and the website close it and stay on screen 4 s.
 | 7 | 23–25 | **Offer** | A round "10 % OFF" stamp slams in (scale 3→1, rotates −8°, shake), "Installs done by October 31" types in underneath, a small calendar page flips to OCT 31. Short on purpose: this scene is cut when the offer ends (`offer.enabled` in the data file). | 10 % off · Installs done by October 31 | none (photo 46 very dark behind) |
 | 8 | 25–29 | **End card** | The cottage logo fades in with a neon flicker (three stutters, then steady) and a soft snowfall; the phone number rolls in large; website and "Free 30-minute estimate" under it. Held 4 s. | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate | logo |
 
-Scene 7 off → 27 s total; the end card still holds 4 s.
+Scene 7 off → about 25 s; the end card still holds 4 s.
 
 ## Shapes
 
@@ -51,6 +51,6 @@ Scene 7 off → 27 s total; the end card still holds 4 s.
 - `npm run video:studio` opens Remotion Studio in the browser pane; the three compositions
   (Ad16x9, Ad9x16, Ad1x1) can be scrubbed and the words changed in the props panel.
 - `npm run video:render` writes `clc-ad-16x9.mp4`, `clc-ad-9x16.mp4`, `clc-ad-1x1.mp4`
-  (H.264, 30 fps, 28 s) into `assets-source/ads/video/`.
+  (H.264, 30 fps, about 27 s) into `assets-source/ads/video/`.
 - Watching the 16:9 render: no two consecutive scenes are a plain photo crossfade; the phone
   number is readable for the last 4 s; the vertical cut never cuts a roofline.

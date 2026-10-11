@@ -8,7 +8,7 @@ import { ActivityPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel,
 import { ScheduledPanel } from './ScheduledEmails'
 import { usePresence, useSignIns } from './usePresence'
 import { useOutgoingMail } from './useOutgoingMail'
-import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, nudge, placeBefore, readLayout } from '../lib/dashLayout'
+import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, isWide, nudge, placeBefore, readLayout, toggleWide } from '../lib/dashLayout'
 import { permission, storedFid } from './push'
 import { useLiveDoc, useLiveQuery } from './staffStore'
 
@@ -76,7 +76,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const [layout, setLayout] = useState(() => { try { return readLayout(localStorage.getItem(LAYOUT_KEY)) } catch { return DEFAULT_LAYOUT } })
   const [arranging, setArranging] = useState(false)
   const apply = (next) => { setLayout(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)) } catch { /* private mode: fine */ } }
-  const drop = (key, col, beforeKey) => { if (key) apply(placeBefore(layout, key, col, beforeKey)) }
+  const drop = (key, beforeKey) => { if (key) apply(placeBefore(layout, key, beforeKey)) }
 
   const panels = {
     season: <SeasonPanel season={season} progress={progress} money={cash} wall={wall} />,
@@ -88,19 +88,6 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
     status: <StatusPanel lights={lights} wall={wall} />,
     spent: <SpendPanel summary={spent} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
   }
-  const column = (col) => (
-    <div className={`min-w-0 space-y-4 ${col === 'left' ? 'lg:col-span-7' : 'lg:col-span-5'}`}
-      onDragOver={arranging ? (e) => e.preventDefault() : undefined}
-      onDrop={arranging ? (e) => { e.preventDefault(); drop(e.dataTransfer.getData('text/plain'), col, null) } : undefined}>
-      {layout[col].map((k, i) => (
-        <Slot key={k} k={k} col={col} arranging={arranging} first={i === 0} last={i === layout[col].length - 1}
-          onNudge={(dir) => apply(nudge(layout, k, dir))} onDrop={drop}>
-          {panels[k]}
-        </Slot>
-      ))}
-      {arranging && !layout[col].length && <p className="rounded-3xl border border-dashed border-white/20 p-6 text-center text-sm text-slate-400">Drop a panel here</p>}
-    </div>
-  )
 
   const board = (
     <div className={`space-y-4 ${wall ? 'p-6 lg:p-8' : ''}`}>
@@ -123,10 +110,17 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
         </div>
       </header>
       <Counters tiles={tiles} wall={wall} />
-      {arranging && <p className="text-sm text-glow-300">Drag a panel where you want it, or use its arrows. On a phone the panels run top to bottom: left column first, then right. Saved on this device.</p>}
-      <div className="grid gap-4 lg:grid-cols-12">
-        {column('left')}
-        {column('right')}
+      {arranging && <p className="text-sm text-glow-300">Drag a panel where you want it, or use its arrows. <strong>Wide</strong> makes a panel span the whole row; <strong>Half</strong> lets two sit side by side. Phones show them in this order, one under another. Saved on this device.</p>}
+      {/* One flow: half panels pair up, wide ones take the row (dense packing fills gaps). */}
+      <div className="grid gap-4 lg:grid-flow-dense lg:grid-cols-2 lg:items-start"
+        onDragOver={arranging ? (e) => e.preventDefault() : undefined}
+        onDrop={arranging ? (e) => { e.preventDefault(); drop(e.dataTransfer.getData('text/plain'), null) } : undefined}>
+        {layout.order.map((k, i) => (
+          <Slot key={k} k={k} wide={isWide(layout, k)} arranging={arranging} first={i === 0} last={i === layout.order.length - 1}
+            onNudge={(dir) => apply(nudge(layout, k, dir))} onToggleWide={() => apply(toggleWide(layout, k))} onDrop={drop}>
+            {panels[k]}
+          </Slot>
+        ))}
       </div>
     </div>
   )
@@ -138,20 +132,22 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
 // and a drop target (drop = put the dragged panel before this one).
 const PANEL_LABEL = Object.fromEntries(PANELS)
 const arrow = 'size-9 rounded-full border border-white/20 text-sm font-semibold hover:bg-white/10 disabled:opacity-30'
-function Slot({ k, col, arranging, first, last, onNudge, onDrop, children }) {
-  if (!arranging) return children
+function Slot({ k, wide, arranging, first, last, onNudge, onToggleWide, onDrop, children }) {
+  const span = wide ? 'lg:col-span-2' : ''
+  if (!arranging) return <div className={`min-w-0 ${span}`}>{children}</div>
   return (
     <div draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', k); e.dataTransfer.effectAllowed = 'move' }}
       onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e.dataTransfer.getData('text/plain'), col, k) }}
-      className="cursor-grab rounded-3xl ring-2 ring-glow-400/50 active:cursor-grabbing">
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e.dataTransfer.getData('text/plain'), k) }}
+      className={`min-w-0 cursor-grab rounded-3xl ring-2 ring-glow-400/50 active:cursor-grabbing ${span}`}>
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 text-xs text-glow-300">
         <span className="font-semibold">⠿ {PANEL_LABEL[k]}</span>
-        <span className="flex gap-1">
-          <button type="button" onClick={() => onNudge('up')} disabled={first} aria-label="Move up" className={arrow}>▲</button>
-          <button type="button" onClick={() => onNudge('down')} disabled={last} aria-label="Move down" className={arrow}>▼</button>
-          <button type="button" onClick={() => onNudge('left')} disabled={col === 'left'} aria-label="Move to the left column" className={`${arrow} hidden lg:inline-block`}>◀</button>
-          <button type="button" onClick={() => onNudge('right')} disabled={col === 'right'} aria-label="Move to the right column" className={`${arrow} hidden lg:inline-block`}>▶</button>
+        <span className="flex items-center gap-1">
+          <button type="button" onClick={() => onNudge('up')} disabled={first} aria-label="Move earlier" className={arrow}>▲</button>
+          <button type="button" onClick={() => onNudge('down')} disabled={last} aria-label="Move later" className={arrow}>▼</button>
+          <button type="button" onClick={onToggleWide} aria-pressed={wide} className="hidden min-h-9 rounded-full border border-white/20 px-3 text-xs font-semibold hover:bg-white/10 lg:inline-block">
+            {wide ? '⇔ Wide' : '⇹ Half'}
+          </button>
         </span>
       </div>
       <div className="pointer-events-none">{children}</div>

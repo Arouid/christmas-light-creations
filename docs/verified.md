@@ -320,3 +320,8 @@ What was actually checked working, and how. Newest first.
 
 - 2026-10-11 Ads tag on: /thanks/ in dev loads gtag.js?id=AW-18506316066 and pushes config AW-18506316066 to dataLayer (checked in the browser pane). Google's "tag found on your website" (G-13D7FRKGKH / GT-NB9VKDMC) is NOT on the new site (curl of the live home page: 0 matches); it's the old WordPress site's Analytics tag, so Install manually was used.
 - 2026-10-11 Conversion label 7UM3CJ-e45gdEKLyv_hE (Submit lead form) set in src/lib/ads.js; /thanks/ now sends gtag event conversion to AW-18506316066/7UM3CJ-e45gdEKLyv_hE. Not yet seen: a real form send showing up in Google Ads → Conversions (allow a few hours).
+
+## 2026-10-11 Home layout v2 (demo)
+
+- 1200px: default shows Season | Who's on, Recent activity full width (1153px), then pairs; Half → Wide on Sign-ins makes it span the row and saves wide:['activity','signins']; dragging System status onto Season reorders (status first).
+- 375px: every panel 343px wide (one column), Wide/Half buttons hidden, page 375 wide.

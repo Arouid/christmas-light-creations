@@ -1,24 +1,25 @@
-// Home panel layout: which panel sits where (two columns on a computer, one
-// list on a phone). Staff arrange it themselves (drag, or the arrow buttons);
-// the result is kept per device in localStorage (src/leads/HomeView.jsx).
+// Home panel layout: one ordered flow of panels, each "half" (two fit side by
+// side on a computer) or "wide" (full width). Phones show them in order, one
+// column. Staff arrange it themselves (drag, arrows, Wide/Half); the result
+// is kept per device in localStorage (src/leads/HomeView.jsx).
 
 export const PANELS = [
   ['season', 'Season'], ['activity', 'Recent activity'], ['who', 'Who’s on'], ['scheduled', 'Scheduled emails'],
   ['signins', 'Sign-ins'], ['routes', 'Today’s routes'], ['status', 'System status'], ['spent', 'Spent this month'],
 ]
-export const DEFAULT_LAYOUT = { left: ['season', 'activity'], right: ['who', 'scheduled', 'signins', 'routes', 'status', 'spent'] }
+export const DEFAULT_LAYOUT = { order: ['season', 'who', 'activity', 'scheduled', 'signins', 'routes', 'status', 'spent'], wide: ['activity'] }
 export const LAYOUT_KEY = 'clcHomeLayout'
 const KNOWN = PANELS.map(([k]) => k)
 
-// Every known panel exactly once; unknown keys dropped; panels added since
-// the layout was saved go to the end of the right column.
+// Every known panel exactly once, unknown keys dropped, panels added since the
+// layout was saved appended. Also reads the first version ({ left, right }).
 export function normalize(layout) {
   const seen = new Set()
-  const col = (list) => (Array.isArray(list) ? list : []).filter((k) => KNOWN.includes(k) && !seen.has(k) && seen.add(k))
-  const left = col(layout?.left)
-  const right = col(layout?.right)
+  const keep = (list) => (Array.isArray(list) ? list : []).filter((k) => KNOWN.includes(k) && !seen.has(k) && seen.add(k))
+  const order = layout?.order ? keep(layout.order) : [...keep(layout?.left), ...keep(layout?.right)]
   const missing = KNOWN.filter((k) => !seen.has(k))
-  return { left, right: [...right, ...missing] }
+  const wide = (Array.isArray(layout?.wide) ? layout.wide : []).filter((k) => KNOWN.includes(k))
+  return { order: [...order, ...missing], wide: [...new Set(wide)] }
 }
 
 // What's stored (JSON, or junk) -> a usable layout.
@@ -26,38 +27,30 @@ export function readLayout(stored) {
   try { return normalize(JSON.parse(stored ?? '')) } catch { return DEFAULT_LAYOUT }
 }
 
-// Put `key` in column `col` before `beforeKey` (or at the end when null).
-export function placeBefore(layout, key, col, beforeKey = null) {
-  if (!KNOWN.includes(key) || !['left', 'right'].includes(col) || key === beforeKey) return layout
-  const left = layout.left.filter((k) => k !== key)
-  const right = layout.right.filter((k) => k !== key)
-  const next = { left, right }
-  const list = next[col]
-  const at = beforeKey ? list.indexOf(beforeKey) : -1
-  if (at < 0) list.push(key)
-  else list.splice(at, 0, key)
-  return normalize(next)
+export const isWide = (layout, key) => layout.wide.includes(key)
+
+export function toggleWide(layout, key) {
+  if (!KNOWN.includes(key)) return layout
+  return normalize({ ...layout, wide: isWide(layout, key) ? layout.wide.filter((k) => k !== key) : [...layout.wide, key] })
 }
 
-// Arrow buttons: 'up' / 'down' within the column, 'left' / 'right' to the
-// other column (same row, or the end). Unchanged when it can't move.
+// Drag: put `key` right before `beforeKey` (or at the end when null).
+export function placeBefore(layout, key, beforeKey = null) {
+  if (!KNOWN.includes(key) || key === beforeKey) return layout
+  const order = layout.order.filter((k) => k !== key)
+  const at = beforeKey ? order.indexOf(beforeKey) : -1
+  if (at < 0) order.push(key)
+  else order.splice(at, 0, key)
+  return normalize({ ...layout, order })
+}
+
+// Arrows: one step earlier ('up') or later ('down') in the flow. Unchanged at the ends.
 export function nudge(layout, key, dir) {
-  const col = layout.left.includes(key) ? 'left' : layout.right.includes(key) ? 'right' : null
-  if (!col) return layout
-  const list = layout[col]
-  const i = list.indexOf(key)
-  if (dir === 'up' || dir === 'down') {
-    const j = dir === 'up' ? i - 1 : i + 1
-    if (j < 0 || j >= list.length) return layout
-    const moved = [...list]
-    moved.splice(i, 1)
-    moved.splice(j, 0, key)
-    return normalize({ ...layout, [col]: moved })
-  }
-  const other = dir === 'left' ? 'left' : 'right'
-  if (other === col) return layout
-  return placeBefore(layout, key, other, layout[other][i] ?? null)
+  const i = layout.order.indexOf(key)
+  const j = dir === 'up' ? i - 1 : i + 1
+  if (i < 0 || j < 0 || j >= layout.order.length) return layout
+  const order = [...layout.order]
+  order.splice(i, 1)
+  order.splice(j, 0, key)
+  return normalize({ ...layout, order })
 }
-
-// Phone order: one list, left column then right.
-export const asList = (layout) => [...layout.left, ...layout.right]
