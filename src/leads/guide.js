@@ -224,3 +224,39 @@ export const SECTIONS = [
     ],
   },
 ]
+
+// "How do I…" grouped by what the person is trying to do (the guide shows
+// each group as a short folded list). Titles must match TASKS exactly;
+// anything left over shows under "Other".
+export const TASK_GROUPS = [
+  ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'Find anyone fast', 'Text a customer', 'Email a customer', 'Get a notification on my phone', 'Ask for a Google review']],
+  ['New requests', ['A new estimate request came in', 'A request says “🎨 sent a design”', 'A customer picked a date on the website']],
+  ['Prices & money', ['Send a price / contract', 'Get paid', 'Bill a customer (invoice)', 'Bill everyone for the season', 'They paid cash, check or Zelle', 'A customer asks “why did my price go up?”']],
+  ['Installs, takedowns & service', ['Plan installs or takedowns', 'A customer’s lights are out']],
+  ['When something breaks', ['A red “website problem” banner showed up']],
+]
+
+export function groupedTasks(tasks = TASKS) {
+  const byTitle = new Map(tasks.map((t) => [t[0], t]))
+  const used = new Set()
+  const groups = TASK_GROUPS.map(([name, titles]) => [name, titles.map((t) => { used.add(t); return byTitle.get(t) }).filter(Boolean)])
+  const rest = tasks.filter(([t]) => !used.has(t))
+  return rest.length ? [...groups, ['Other', rest]] : groups
+}
+
+// Long "A → B → C" answers read better as numbered steps (3 or more parts).
+export function howSteps(how) {
+  const parts = String(how).split(' → ')
+  return parts.length >= 3 ? parts : null
+}
+
+// First-login tour (src/leads/Tour.jsx): the handful of things staff use most.
+export const TOUR = [
+  { icon: '👋', title: 'Welcome to CLC Staff', body: ['Two minutes on the six things you’ll use most. Everything else is in the **?** guide at the top, any time.', 'On a phone, install it like an app: **⚙ Settings → Get the CLC Staff app**.'] },
+  { icon: '💬', title: 'Customer messages', tab: 'home', body: ['The **💬** button (top right) shows a red count of texts, voicemails, missed calls and emails **nobody has taken yet**.', 'Tap **I’ve got it** on the one you’ll answer, so the others don’t answer it too. Turn on phone notifications there.'] },
+  { icon: '📥', title: 'Leads: new estimate requests', tab: 'leads', body: ['Every request from the website lands here. Call or text them, set the status, add notes.', 'When they say yes: **Make this a customer**. Junk: set it to **Spam / test**, then delete it.'] },
+  { icon: '🔎', title: 'Accounts: find anyone', tab: 'accounts', body: ['Type a name, street, phone or gate code. Their whole account opens: photo of the house, seasons, proposals, messages.', 'Set this season’s **install status and date right there**: no need to go back to the Customers list.'] },
+  { icon: '📅', title: 'Customers & Season', tab: 'season', body: ['**Customers** is the full list, with saved filters in the chip row at the top. **Season** is this year’s installs and takedowns by status.', 'From either one: **✉ Email these** or **＋ Route these** to send the list to an installer.'] },
+  { icon: '📝', title: 'Prices and getting paid', tab: 'invoices', body: ['On a customer: **📝 New proposal** → **Send**. They sign on their phone and pay the deposit by PayPal, Venmo or card.', 'For the rest (or returning customers): **Invoices → ＋ New invoice**. You get an email when anything is paid.'] },
+  { icon: '🛰', title: 'Home: before you do anything', tab: 'home', body: ['**Recent activity** shows who emailed, called or invoiced whom. Glance at it before you call someone, so nobody does it twice.', '**Who’s on** shows who has the app open right now. That’s the tour. Reopen it any time: **? → 🧭 Take the tour**.'] },
+]

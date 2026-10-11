@@ -10,6 +10,8 @@ import MapView from './MapView'
 import SeasonView from './SeasonView'
 import SettingsPanel from './SettingsPanel'
 import GuidePanel from './GuidePanel'
+import Tour from './Tour'
+import { tourDone } from './tourState'
 import IncidentsBanner from './Incidents'
 import InstallApp, { InstallButtons } from './InstallApp'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
@@ -87,6 +89,8 @@ export default function LeadsApp() {
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  // null = not decided (show once per device after the first sign-in), true = asked for, false = closed.
+  const [tour, setTour] = useState(null)
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const feed = useActivityFeed(user, settingsApi.settings?.staffNames)
@@ -400,7 +404,8 @@ export default function LeadsApp() {
           gates={gates} calls={calls} onLogCall={serviceApi.log} onUpdateCall={serviceApi.update} user={user} />
       )}
       {showMessages && <MessagesPanel user={user} alerts={alerts} names={names} feed={feed} onClose={closeMessages} />}
-      {showGuide && <GuidePanel onClose={() => setShowGuide(false)} />}
+      {showGuide && <GuidePanel onClose={() => setShowGuide(false)} onTour={() => { setShowGuide(false); setTour(true) }} />}
+      {(tour === true || (tour === null && !demo && !tourDone())) && <Tour onClose={() => setTour(false)} />}
       {showSettings && (
         <SettingsPanel settings={settingsApi.settings ?? {}} onSave={settingsApi.save} textFrom={textFrom}
           onTextFrom={(v) => { setTextFrom(v); saveTextFrom(v) }} onClose={() => setShowSettings(false)} />

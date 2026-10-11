@@ -242,3 +242,8 @@ What was actually checked working, and how. Newest first.
 - 2026-10-10 (later) Slider between the arrows (owner sketch): dragging it scrolls the table (set to 250 → scrollLeft 250; max 788 with 16 columns at 1200px); styled thin track + round glow handle (.range-slim in index.css). The hidden browser pane doesn't fire scroll events, so table→slider sync was not observable here.
 
 - 2026-10-10 (later) Customers tab tightened (owner): + Add and Columns ▾ sit on the chip row (right side), the "116 of 116 customers" line is gone (count is in the All chip and the search placeholder; a match count shows inside the search box while typing), table starts 8px under the search box. Checked at 1200px and 375px.
+
+## 2026-10-10 Staff guide and first-login tour (demo, 375px)
+
+- Guide: groups Customers & messages / New requests / Prices & money / Installs, takedowns & service / When something breaks; lines closed by default and open on tap; "Send a price / contract" shows 5 numbered steps; page 375 wide.
+- Tour: ? → Take the tour shows 7 cards (Welcome, Customer messages, Leads, Accounts, Customers & Season, Prices and getting paid, Home); Next through to "Start on Home" closes it, sets clcTourDone=1 and lands on #home. Auto-open after a real first sign-in not yet seen (demo is excluded).

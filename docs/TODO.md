@@ -48,3 +48,4 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | ~2026-11-08 | Review DMARC reports; if clean, change `_dmarc` to `p=quarantine` |
 | Nov 7, 2026 | GoDaddy hosting ends (nothing to do, just confirm the site is unaffected) |
 | Early July 2027 | Domain renews Jul 23, 2027 via PayPal: make sure the payment method still works |
+| 42 | **Tour on a real first sign-in**: on a phone that hasn't used the app before, sign in and check the 7-card tour appears once; reopen it from ? → Take the tour | |
