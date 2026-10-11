@@ -12,14 +12,12 @@
 // blur) is drawn solid so the PDFs stay pure vector; lines under 1 pt (0.5 pt on the card
 // and sticker) are thickened in their own colour, and at card size the specks, small
 // snowflakes and wood-grain scratches are left out, as on the shirts.
-import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import QRCode from 'qrcode'
 import sharp from 'sharp'
 import { COLORS, COLOR_ROLES, FONTS, NAVY_ROLES, WHITE_ROLES, checkRoles, fmt, glyphs, letteringGroups, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
+import { svgToPdf } from './lib/pdf.mjs'
 
 const OUT = fileURLToPath(new URL('../assets-source/print/', import.meta.url))
 const U = 100 // SVG units per inch
@@ -35,16 +33,6 @@ const FREE = 'FREE ESTIMATES'
 const SCAN = 'SCAN FOR A FREE ESTIMATE'
 const CARD_NAME = 'Scott Minor' // on the back of the business card (owner, 2026-10-11)
 const HEAVY = { wght: 800 }, BOLD = { wght: 700 }, MEDIUM = { wght: 500 }, DISPLAY = { opsz: 144, wght: 900 }
-
-const chrome = [
-  process.env.CHROME_PATH,
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/usr/bin/google-chrome',
-  '/usr/bin/chromium',
-].find((p) => p && existsSync(p))
-if (!chrome) throw new Error('Chrome not found (needed for the PDFs): set CHROME_PATH')
 
 const slug = (c) => c.toLowerCase().trim().replace(/&/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)
 const args = process.argv.slice(2)
@@ -202,17 +190,7 @@ function sticker() {
 
 // --- output: SVG, PDF via Chrome, PNG preview on grey (navy for the transparent decals) with the trim shown ---
 async function pdf(item) {
-  const dir = mkdtempSync(join(tmpdir(), 'clc-print-'))
-  const html = join(dir, 'page.html')
-  writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"><style>@page{size:${item.w}in ${item.h}in;margin:0}html,body{margin:0;padding:0}svg{display:block}</style></head><body>${item.svg}</body></html>`)
-  const out = `${OUT}${item.name}.pdf`
-  try {
-    execFileSync(chrome, ['--headless=new', '--disable-gpu', '--no-pdf-header-footer', `--print-to-pdf=${out}`, 'file:///' + html.replace(/\\/g, '/')], { stdio: 'ignore' })
-  } finally {
-    rmSync(dir, { recursive: true, force: true })
-  }
-  // Chrome stamps the time into the PDF; pin it (same length, so the file's offsets hold) so a rebuild is byte-identical.
-  writeFileSync(out, readFileSync(out, 'latin1').replace(/\/(CreationDate|ModDate) \(D:\d{14}/g, '/$1 (D:20260101000000'), 'latin1')
+  svgToPdf(item.svg, item.w, item.h, `${OUT}${item.name}.pdf`)
 }
 async function preview(item) {
   const density = Math.min(300, Math.round(1400 / item.w))

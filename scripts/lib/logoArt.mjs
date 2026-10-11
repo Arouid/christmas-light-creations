@@ -128,6 +128,19 @@ export function prepCottage(logo, roles, { minUnits, look, drop = [], keepFlakeM
   return { svg: logo.wrap ? `<g transform="${logo.wrap}">${inner}</g>` : inner, log }
 }
 
+// Any other art file (the trees, the sign, the scene): its viewBox, defs and drawing. Paths are kept as they are.
+export function parseArt(file) {
+  const svg = readFileSync(VEC + file, 'utf8').replace(/\r\n?/g, '\n')
+  const vb = svg.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number)
+  const defs = (svg.match(/<defs>[^]*?<\/defs>/) || [''])[0]
+  const inner = svg.replace(defs, '').replace(/^[^]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '')
+  return { file, viewBox: { x: vb[0], y: vb[1], w: vb[2], h: vb[3] }, defs, inner }
+}
+// The glow in the art is a blur filter on semi-transparent shapes; drawn solid instead (vector-only output, dark-garment printing).
+export function flattenArt(inner) {
+  return inner.replace(/<(path|ellipse|circle|rect|g)\b[^>]*filter="url\(#[^"]*\)"[^>]*>/g, (tag) => tag.replace(/ filter="[^"]*"/, '').replace(/ opacity="[^"]*"/, ''))
+}
+
 // The lettering groups, optionally stroked a little: extraByScale = { '0.095': units, ... } keyed by the group's scale.
 export function letteringGroups(lettering, extraByScale = {}) {
   return lettering.map((g) => {
@@ -149,7 +162,7 @@ export function glyphs(text, font = FONTS.inter, location = { wght: 700 }) {
 }
 // Lays out one line. em in the drawing's units (or fitWidth: as big as fits); tracking as a fraction of em.
 // Returns width and cap height, and svg(x, y, anchor) draws it with the baseline at y, anchored start/middle/end at x.
-export function textLine(text, { font = FONTS.inter, location = { wght: 700 }, em, fitWidth, tracking = 0.06, fill = '#ffffff' } = {}) {
+export function textLine(text, { font = FONTS.inter, location = { wght: 700 }, em, fitWidth, tracking = 0.06, fill = '#ffffff', stroke, strokeWidth } = {}) {
   const { upem, capHeight, glyphs: gs } = glyphs(text, font, location)
   const advEm = gs.reduce((s, g) => s + g.advance, 0) / upem + tracking * (gs.length - 1)
   if (fitWidth) em = fitWidth / advEm
@@ -163,7 +176,8 @@ export function textLine(text, { font = FONTS.inter, location = { wght: 700 }, e
       if (g.d) parts.push(`<path transform="translate(${fmt(cx)} 0) scale(${s} ${-s})" d="${g.d}"/>`)
       cx += g.advance * s + tracking * em
     }
-    return `<g transform="translate(0 ${fmt(y)})" fill="${fill}">${parts.join('')}</g>`
+    const paint = stroke ? ` stroke="${stroke}" stroke-width="${fmt(strokeWidth)}" stroke-linejoin="round"` : ''
+    return `<g transform="translate(0 ${fmt(y)})" fill="${fill}"${paint}>${parts.join('')}</g>`
   }
   return { width, cap, em, svg }
 }

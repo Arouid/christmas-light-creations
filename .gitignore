@@ -45,3 +45,9 @@ video/public/
 video/out/
 # ...except the 5-second ad (owner 2026-10-11: "commit the 5 second ad, I don't want to lose it"; ~5 MB in all)
 !assets-source/ads/video/clc-teaser-5s-*.mp4
+
+# Shirt designs (assets-source/shirts/designs/): the 300-dpi print PNGs are 1–5 MB each and rebuild in two
+# minutes with `node scripts/shirt-designs.mjs`; the SVG, PDF, mockups, sheet and README stay in git.
+assets-source/shirts/designs/*.png
+!assets-source/shirts/designs/mockup-*.png
+!assets-source/shirts/designs/preview-sheet.png
