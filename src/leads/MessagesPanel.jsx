@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react'
 import { KIND_WORD, LIST_DAYS, isNew, messageLink, needsSomeone, previewOf, whoOf } from '../lib/staffAlerts'
 import Handling from './Handling'
 import PushSetup from './PushSetup'
-import SuggestReply from './SuggestReply'
-
-// Whose thread the sales assistant should read for this list entry.
-const draftTarget = (m) => (m.customerId ? { customerId: m.customerId } : m.leadId ? { leadId: m.leadId } : { messageId: m.id })
+import SuggestReply from '../assistant/SuggestReply'
+import { draftTarget } from '../assistant/lib/targets'
 
 // 💬 New messages (docs/specs/staff-alerts.md): texts, voicemails, missed
 // calls, emails and website estimate requests from the last 7 days, newest first; the ones

@@ -2,9 +2,9 @@
 // docs/specs/sales-assistant.md) for a suggested reply to one thread. The
 // browser only says whose thread: { customerId } | { leadId } | { messageId }.
 // In demo mode a sample draft comes back after a short pause.
-import { NEXT_ACTIONS } from '../../functions/salesAssistant.js'
+import { NEXT_ACTIONS } from '../../functions/assistant/prompt.js'
 import { getFirebaseApp } from '../lib/firebase'
-import { demoMode } from './demo'
+import { demoMode } from '../leads/demo'
 
 export { NEXT_ACTIONS }
 

@@ -3,10 +3,11 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import {
   DAILY_LIMIT, MAX_THREAD, NEXT_ACTIONS, OUTPUT_SCHEMA, channelFor, costOf, draftAllowed, draftRequest, fallbackDraft, parseDraft, recordText, systemPrompt, threadText, userPrompt,
-} from '../functions/salesAssistant.js'
-import { salesKnowledge } from '../src/lib/salesKnowledge.js'
+} from '../functions/assistant/prompt.js'
+import { salesKnowledge } from '../src/assistant/lib/knowledge.js'
 import { presenceRows } from '../src/lib/presence.js'
 import { ACTIONS } from '../src/lib/activity.js'
+import { activityTarget, draftTarget, emailTarget } from '../src/assistant/lib/targets.js'
 
 const knowledge = salesKnowledge()
 
@@ -24,8 +25,8 @@ const thread = [
   { id: 'b', kind: 'text', direction: 'in', at: '2026-10-09T20:10:00Z', text: 'Yes! Put me on the schedule. When can you come?' },
 ]
 
-test('the knowledge file the server ships matches the site copy (run node scripts/build-sales-knowledge.mjs)', async () => {
-  const shipped = JSON.parse(await readFile(new URL('../functions/salesKnowledge.json', import.meta.url), 'utf8'))
+test('the knowledge file the server ships matches the site copy (run node scripts/build-assistant-knowledge.mjs)', async () => {
+  const shipped = JSON.parse(await readFile(new URL('../functions/assistant/knowledge.json', import.meta.url), 'utf8'))
   assert.deepEqual(shipped, knowledge)
 })
 
@@ -141,4 +142,13 @@ test('Claude shows on Who’s on after it drafted, never as "on now"', () => {
   assert.equal(bot.device, 'drafted a reply for katie')
   assert.equal(presenceRows([{ id: 'scott@example.com' }], [], {}, now).length, 1, 'no row until it has worked')
   assert.ok(ACTIONS.includes('ai-draft'))
+})
+
+test('targets: a list entry names whose thread, the activity entry and the email filing match', () => {
+  assert.deepEqual(draftTarget({ id: 'm1', customerId: 'c1', leadId: 'l1' }), { customerId: 'c1' })
+  assert.deepEqual(draftTarget({ id: 'request-l1', leadId: 'l1' }), { leadId: 'l1' })
+  assert.deepEqual(draftTarget({ id: 'm9', unmatched: true }), { messageId: 'm9' })
+  assert.deepEqual(activityTarget({ messageId: 'm9' }), { type: 'message', id: 'm9' })
+  assert.deepEqual(emailTarget({ leadId: 'l1' }), { leadId: 'l1' })
+  assert.equal(emailTarget({ messageId: 'm9' }), undefined)
 })

@@ -8,6 +8,8 @@ Customers text, call and email all day while the crew is on roofs. Replies wait,
 
 ## Phase 1 (built): draft mode
 
+**Where the code lives** (owner, 2026-10-10: its own folders, like `src/designer/`, so it can be split into its own app later): the brain in `functions/assistant/` (`prompt.js`, `draft.js`, generated `knowledge.json`; no imports from the rest of `functions/`; `index.js` only registers the `draftReply` callable) and the staff-side pieces in `src/assistant/` (`SuggestReply.jsx`, `draftReply.js`, `lib/targets.js`, `lib/knowledge.js`), imported by the 💬 panel, Unmatched and Text & email history. Each folder has a README.
+
 **Where**: a **✨ Suggest a reply** button under every message in **💬 New messages**, under every row in **Unmatched** (Leads), and at the top of anyone's **Text & email history** (Accounts customer and lead pages, customer detail).
 
 **What happens**: the staff app asks the server (`draftReply`, `functions/index.js`) for a draft, saying only whose thread it is (`{ customerId }`, `{ leadId }` or `{ messageId }` for an unknown sender). The server:
@@ -22,7 +24,7 @@ Customers text, call and email all day while the crew is on roofs. Replies wait,
 
 ### What the assistant knows
 
-`functions/salesKnowledge.json`, generated from the site's own copy by `node scripts/build-sales-knowledge.mjs` (`src/lib/salesKnowledge.js`): business name, phone, service areas (the Google Business Profile list), highlights, what's included, how it works, pricing notes, FAQ, the season dates from `urgency`, and four stock emails as voice samples. A test fails `npm run check` when the JSON is older than the copy. The system prompt (`systemPrompt()` in `functions/salesAssistant.js`) adds the internal rules of thumb (per-foot C9 pricing after measuring, 10% early discount Oct 15–31, 50% re-install, takedown 15% / $150 default, add-ons) marked as **not for quoting**.
+`functions/assistant/knowledge.json`, generated from the site's own copy by `node scripts/build-assistant-knowledge.mjs` (`src/assistant/lib/knowledge.js`): business name, phone, service areas (the Google Business Profile list), highlights, what's included, how it works, pricing notes, FAQ, the season dates from `urgency`, and four stock emails as voice samples. A test fails `npm run check` when the JSON is older than the copy. The system prompt (`systemPrompt()` in `functions/assistant/prompt.js`) adds the internal rules of thumb (per-foot C9 pricing after measuring, 10% early discount Oct 15–31, 50% re-install, takedown 15% / $150 default, add-ons) marked as **not for quoting**.
 
 ### Hard rules in the prompt
 

@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import ComposeEmail from './ComposeEmail'
-import { TextButton, pill } from './Reach'
-import { logActivity } from './activity'
+import ComposeEmail from '../leads/ComposeEmail'
+import { TextButton, pill } from '../leads/Reach'
+import { logActivity } from '../leads/activity'
 import { requestDraft } from './draftReply'
+import { activityTarget, emailTarget } from './lib/targets'
 
 // ✨ Suggest a reply (docs/specs/sales-assistant.md): asks the server's
 // assistant for a draft to this person's thread, shows what they're asking
 // and the suggested next step, then hands the (edited) text to the normal
 // Email or Text flow. Staff press Send themselves; nothing is sent from here.
 // target: { customerId } | { leadId } | { messageId } (an unmatched sender).
-const activityTarget = (t) => (t.customerId ? { type: 'customer', id: t.customerId } : t.leadId ? { type: 'lead', id: t.leadId } : { type: 'message', id: t.messageId })
 const box = 'block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2 text-base text-slate-100 placeholder:text-slate-500'
 
 export default function SuggestReply({ target, season, className = pill }) {
@@ -54,7 +54,6 @@ export default function SuggestReply({ target, season, className = pill }) {
   const d = state.draft
   const c = d.contact ?? {}
   const person = { firstName: c.firstName, fullName: c.fullName || c.email || c.phone, email: c.email }
-  const emailTarget = target.customerId ? { customerId: target.customerId } : target.leadId ? { leadId: target.leadId } : undefined
   const canEmail = Boolean(c.email)
   const canText = Boolean(c.phone)
   const primary = 'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-glow-400 px-4 py-2 text-sm font-semibold text-night-950'
@@ -85,7 +84,7 @@ export default function SuggestReply({ target, season, className = pill }) {
 
       <div className="flex flex-wrap gap-2">
         {canEmail && (
-          <ComposeEmail person={person} season={season} target={emailTarget} initial={{ subject, body: reply }} label="✉️ Email this"
+          <ComposeEmail person={person} season={season} target={emailTarget(target)} initial={{ subject, body: reply }} label="✉️ Email this"
             className={d.channel === 'email' ? primary : pill} onSent={() => sent('email')} />
         )}
         {canText && <TextButton phone={c.phone} message={reply} label="Text this" className={d.channel === 'text' ? primary : pill} onSent={() => sent('text')} />}

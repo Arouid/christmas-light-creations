@@ -6,7 +6,7 @@ import { TextButton, pill } from './Reach'
 import { Bubble } from './TextHistory'
 import { saveRecord, useLiveQuery } from './staffStore'
 import Handling from './Handling'
-import SuggestReply from './SuggestReply'
+import SuggestReply from '../assistant/SuggestReply'
 
 const newestFirst = (a, b) => (b.at ?? '').localeCompare(a.at ?? '')
 const prettyPhone = (p) => {

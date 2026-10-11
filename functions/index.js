@@ -53,8 +53,8 @@ import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary, parseIte
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
 import { TEST_PUSH, devicesOf, deviceGone, fcmMessage, pushFor, requestPush } from './staffPush.js'
 import { MAX_SIDE, cleanDesign, cutoff, jpegBytes } from './leadDesigns.js'
-import { MAX_OUTPUT_TOKENS, MODEL, OUTPUT_SCHEMA, channelFor, costOf, draftAllowed, draftRequest, fallbackDraft, parseDraft, systemPrompt, userPrompt } from './salesAssistant.js'
-import salesKnowledge from './salesKnowledge.json' with { type: 'json' }
+import { MODEL, draftAllowed, draftRequest } from './assistant/prompt.js'
+import { DraftError, PRESENCE_ID, draftFor, threadFor } from './assistant/draft.js'
 import sharp from 'sharp'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import {
@@ -877,36 +877,11 @@ export const sendStaffEmail = onCall({ region: REGION, invoker: 'public', secret
 })
 
 // ---- Sales assistant: draft a reply (docs/specs/sales-assistant.md) ----------
-// Staff only. Reads the thread and record here (the browser only says whose),
-// asks Claude for one JSON draft, and returns it with a summary and next
-// action. Nothing is sent or stored; staff edit and send through the normal
-// Email / Text flow. Limited to 150 drafts a day (serverState/aiDraft). Logs
-// carry token counts and cost, never customer text.
-const messagesWhere = async (db, field, value) => (await db.collection('messages').where(field, '==', value).limit(200).get()).docs.map((d) => ({ id: d.id, ...d.data() }))
-
-async function threadFor(db, target) {
-  if (target.coll === 'messages') {
-    const m = (await db.doc(`messages/${target.id}`).get()).data()
-    if (!m) return null
-    // An unknown sender: everything from the same number or address.
-    const key = m.phone ? ['phone', m.phone] : m.email ? ['email', m.email] : null
-    const messages = key ? (await messagesWhere(db, ...key)).filter((x) => x.unmatched || x.id === target.id) : [m]
-    return { record: null, messages: messages.length ? messages : [{ id: target.id, ...m }], contact: { firstName: '', fullName: m.name ?? '', phone: m.phone ?? '', email: m.email ?? '' } }
-  }
-  const record = (await db.doc(`${target.coll}/${target.id}`).get()).data()
-  if (!record) return null
-  const messages = await messagesWhere(db, target.field, target.id)
-  if (target.coll === 'leads') {
-    // The website request itself is the first message of the thread.
-    if (record.message || record.createdAt) {
-      const at = record.createdAt?.toDate ? record.createdAt.toDate().toISOString() : String(record.createdAt ?? '')
-      messages.push({ id: `request-${target.id}`, kind: 'request', direction: 'in', at, text: [record.city, record.message].filter(Boolean).join(' · ') })
-    }
-    return { record, messages, contact: { firstName: record.firstName ?? '', fullName: `${record.firstName ?? ''} ${record.lastName ?? ''}`.trim(), phone: record.phone ?? '', email: record.email ?? '' } }
-  }
-  return { record, messages, contact: { firstName: record.firstName ?? '', fullName: record.fullName ?? '', phone: record.phone ?? '', email: record.email ?? '' } }
-}
-
+// Staff only. The brain lives in functions/assistant/ (thread, prompt, the
+// Claude call, checks); this only gates the call, counts it, and reports.
+// Nothing is sent or stored; staff edit and send through the normal Email /
+// Text flow. Limited to 150 drafts a day (serverState/aiDraft). Logs carry
+// token counts and cost, never customer text.
 export const draftReply = onCall({ region: REGION, invoker: 'public', secrets: [ANTHROPIC_API_KEY], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK, timeoutSeconds: 90 }, async (req) => {
   if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
   if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Staff only.')
@@ -925,44 +900,20 @@ export const draftReply = onCall({ region: REGION, invoker: 'public', secrets: [
     tx.set(gate, allowed.next)
   })
 
-  const channel = channelFor(thread.messages, thread.record ?? thread.contact)
   const today = centralDay()
-  const season = bookingSeason(today)
-  const { default: Anthropic } = await import('@anthropic-ai/sdk')
-  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY.value(), maxRetries: 1, timeout: 60_000 })
-  let draft
-  let usage = {}
+  let result
   try {
-    const res = await client.messages.create({
-      model: AI_MODEL.value() || MODEL,
-      max_tokens: MAX_OUTPUT_TOKENS,
-      system: [{ type: 'text', text: systemPrompt(salesKnowledge), cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: userPrompt({ today, season, coll: r.target.coll, record: thread.record, messages: thread.messages, channel }) }],
-      output_config: { effort: 'medium', format: { type: 'json_schema', schema: OUTPUT_SCHEMA } },
+    result = await draftFor({
+      apiKey: ANTHROPIC_API_KEY.value(), model: AI_MODEL.value() || MODEL, thread, coll: r.target.coll, today, season: bookingSeason(today), log: logger,
+      onKeyRefused: () => reportIncident('other', 'The sales assistant’s Claude API key was refused (ANTHROPIC_API_KEY). Set it again and redeploy draftReply.'),
     })
-    usage = res.usage ?? {}
-    if (res.stop_reason === 'refusal') {
-      logger.warn('draftReply refused', { category: res.stop_details?.category ?? null })
-      draft = fallbackDraft(channel, thread.contact.firstName, salesKnowledge.business)
-    } else {
-      const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('')
-      const parsed = parseDraft(text)
-      draft = parsed.problem ? { ...fallbackDraft(channel, thread.contact.firstName, salesKnowledge.business), reason: parsed.problem } : parsed
-    }
   } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError) {
-      await reportIncident('other', 'The sales assistant’s Claude API key was refused (ANTHROPIC_API_KEY). Set it again and redeploy draftReply.')
-      throw new HttpsError('failed-precondition', 'The assistant isn’t set up yet (its API key was refused). Write the reply yourself for now.')
-    }
-    if (e instanceof Anthropic.RateLimitError) throw new HttpsError('resource-exhausted', 'The assistant is busy right now. Try again in a minute.')
-    logger.error('draftReply failed', { status: e.status ?? null, message: e.message })
-    throw new HttpsError('unavailable', 'The assistant didn’t answer. Try again in a minute, or write the reply yourself.')
+    if (e instanceof DraftError) throw new HttpsError(e.code, e.message)
+    throw e
   }
   // Who's on (Home): Claude shows as a team member with when it last drafted.
-  db.doc('presence/claude').set({ lastSeen: FieldValue.serverTimestamp(), device: `drafted a reply for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
-  logger.info('draftReply', { record: r.target.coll, channel: draft.channel, nextAction: draft.nextAction, escalate: draft.escalate,
-    input: usage.input_tokens ?? 0, output: usage.output_tokens ?? 0, cacheRead: usage.cache_read_input_tokens ?? 0, cacheWrite: usage.cache_creation_input_tokens ?? 0, cost: Number(costOf(usage).toFixed(4)) })
-  return { ...draft, contact: thread.contact, model: AI_MODEL.value() || MODEL, cost: Number(costOf(usage).toFixed(4)) }
+  db.doc(`presence/${PRESENCE_ID}`).set({ lastSeen: FieldValue.serverTimestamp(), device: `drafted a reply for ${staff.split('@')[0]}` }).catch((e) => logger.warn('presence not written', e.message))
+  return { ...result.draft, contact: thread.contact, model: result.model, cost: result.cost }
 })
 
 // ---- Daily check (7:30 am Central) ------------------------------------------

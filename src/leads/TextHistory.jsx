@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import SuggestReply from './SuggestReply'
+import SuggestReply from '../assistant/SuggestReply'
 import { useLiveQuery } from './staffStore'
 
 const newestFirst = (a, b) => (b.at ?? '').localeCompare(a.at ?? '')

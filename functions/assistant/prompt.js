@@ -2,7 +2,7 @@
 // thread and record into a prompt for Claude, and checks what comes back.
 // Draft mode only: staff read, edit and send every reply themselves.
 // Pure: no Firebase, no network. Spec: docs/specs/sales-assistant.md.
-// Tested in tests/salesAssistant.test.mjs.
+// Tested in tests/assistant.test.mjs.
 
 export const MODEL = 'claude-opus-5-5' // owner (2026-10-10): quality over cost, within $150/month
 export const MAX_OUTPUT_TOKENS = 1500

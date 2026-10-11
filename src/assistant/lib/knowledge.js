@@ -1,10 +1,10 @@
 // What the sales assistant may say about the business: the public site copy
 // (src/data/content.js) plus the tone of our stock emails. Pure; shared by
-// scripts/build-sales-knowledge.mjs (which writes functions/salesKnowledge.json
+// scripts/build-assistant-knowledge.mjs (which writes functions/assistant/knowledge.json
 // for the server) and the test that keeps that file current.
 // Spec: docs/specs/sales-assistant.md.
-import { business, faq, highlights, included, pricingNotes, serviceAreaGroups, serviceCalls, steps, urgency } from '../data/content.js'
-import { STOCK_TEMPLATES } from './emailTemplates.js'
+import { business, faq, highlights, included, pricingNotes, serviceAreaGroups, serviceCalls, steps, urgency } from '../../data/content.js'
+import { STOCK_TEMPLATES } from '../../lib/emailTemplates.js'
 
 // Templates whose wording shows how we talk (greeting, length, sign-off).
 const TONE_SAMPLES = ['got-message', 'estimate-thanks', 'got-it-schedule', 'service-timer']
