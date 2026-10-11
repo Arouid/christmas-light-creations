@@ -1,6 +1,6 @@
 # Scheduled email ("Send later")
 
-> Status: live 2026-10-10 (owner's end-to-end test pending: TODO #45) · Decided 2026-10-10 by Scott (owner)
+> Status: live 2026-10-10; sending checked by the owner (a single and a list of 2, once each, in history); Cancel test pending (TODO #45) · Decided 2026-10-10 by Scott (owner)
 
 ## The problem
 
