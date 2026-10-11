@@ -57,7 +57,7 @@ import { dailyReport, incidentEmail, missedLeadAlerts, shouldMail, syncStale } f
 import { SEASON, bookedByDay, bookingSeason, capacity, openDays } from './availability.js'
 import { captureOrder, createOrder, getOrder } from './paypal.js'
 import { claudeIncrement, monthKey, paypalFeeCents, paypalIncrement } from './usage.js'
-import { adsQuery, adsSpend, billingQuery, googleSpend as googleSpendOf, isMissingTable, previousMonth } from './googleBilling.js'
+import { adsQuery, adsSpend, billingQuery, googleSpend as googleSpendOf, isMissingTable, previousMonth, termsQuery, topTerms } from './googleBilling.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
@@ -122,17 +122,27 @@ export const googleSpend = onSchedule({ schedule: '20 */6 * * *', timeZone: 'Ame
   const db = getFirestore()
   const sources = { google: [billingQuery, googleSpendOf], ads: [adsQuery, adsSpend] }
   const log = {}
-  for (const [field, [queryOf, sumOf]] of Object.entries(sources)) {
-    let rows
-    try { [rows] = await bq.query(queryOf(months)) } catch (e) {
-      if (isMissingTable(e)) { log[field] = `no table yet: ${String(e.message).slice(0, 200)}`; continue }
+  // A query whose table isn't there yet → null (logged); anything else throws.
+  const rowsOf = async (field, query) => {
+    try { return (await bq.query(query))[0] } catch (e) {
+      if (isMissingTable(e)) { log[field] = `no table yet: ${String(e.message).slice(0, 200)}`; return null }
       throw e
     }
+  }
+  for (const [field, [queryOf, sumOf]] of Object.entries(sources)) {
+    const rows = await rowsOf(field, queryOf(months))
+    if (!rows) continue
     const spend = sumOf(rows, months)
+    if (field === 'ads') {
+      // Search terms for the Google Ads panel (docs/specs/ads-stats.md): a
+      // separate transfer table, so missing on its own leaves topTerms empty.
+      const termRows = await rowsOf('terms', termsQuery(months))
+      if (termRows) for (const [month, list] of Object.entries(topTerms(termRows, months))) spend[month].topTerms = list
+    }
     for (const [month, value] of Object.entries(spend)) {
       await db.doc(`usage/${month}`).set({ [field]: value, updatedAt: FieldValue.serverTimestamp() }, { mergeFields: [field, 'updatedAt'] })
     }
-    log[field] = Object.fromEntries(months.map((m) => [m, { cents: spend[m].totalCents, lines: Object.keys(spend[m].byService ?? spend[m].byCampaign).length, through: spend[m].lastExportAt ?? spend[m].lastDay }]))
+    log[field] = Object.fromEntries(months.map((m) => [m, { cents: spend[m].totalCents, lines: Object.keys(spend[m].byService ?? spend[m].byCampaign).length, clicks: spend[m].clicks, through: spend[m].lastExportAt ?? spend[m].lastDay }]))
   }
   logger.info('googleSpend', log)
 })
