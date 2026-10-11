@@ -24,7 +24,7 @@ export async function logSignIn({ ok, email = '', code = '' }) {
       ok: Boolean(ok),
       email: String(email ?? '').toLowerCase().slice(0, 200),
       code: String(code ?? '').slice(0, 60),
-      device: deviceLabel(navigator.userAgent, homeScreen),
+      device: deviceLabel(navigator.userAgent, homeScreen, navigator.userAgentData?.platform),
     })
   } catch (e) {
     console.warn('Sign-in not logged', e.code ?? e.message) // rules not published yet

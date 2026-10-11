@@ -13,7 +13,7 @@ export function usePresenceBeat(user) {
   useEffect(() => {
     if (demoMode || !user?.email) return
     const homeScreen = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true
-    const device = deviceLabel(navigator.userAgent, homeScreen)
+    const device = deviceLabel(navigator.userAgent, homeScreen, navigator.userAgentData?.platform)
     let stopped = false
     async function beat() {
       if (stopped || document.visibilityState !== 'visible') return

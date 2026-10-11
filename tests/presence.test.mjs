@@ -14,9 +14,14 @@ test('presence rows: on now first, then last seen, then never; names from the st
 })
 
 test('device labels', () => {
-  assert.equal(deviceLabel('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)', true), 'iPhone app')
-  assert.equal(deviceLabel('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'), 'Windows')
-  assert.equal(deviceLabel('Mozilla/5.0 (Linux; Android 14)'), 'Android')
+  assert.equal(deviceLabel('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Version/17.0 Mobile/15E148 Safari/604.1', true), 'iPhone app')
+  assert.equal(deviceLabel('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Version/17.0 Mobile/15E148 Safari/604.1'), 'iPhone · Safari')
+  assert.equal(deviceLabel('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36'), 'Windows · Chrome')
+  assert.equal(deviceLabel('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36 Edg/130.0'), 'Windows · Edge')
+  assert.equal(deviceLabel('Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) Chrome/130.0 Safari/537.36'), 'Chromebook · Chrome')
+  assert.equal(deviceLabel('Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0 Safari/537.36', false, 'Chrome OS'), 'Chromebook · Chrome')
+  assert.equal(deviceLabel('Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36'), 'Android · Chrome')
+  assert.ok(deviceLabel('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36 Edg/130.0').length <= 40)
 })
 
 test('two staff entries with the same name show their emails', () => {

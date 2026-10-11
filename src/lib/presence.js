@@ -7,15 +7,27 @@ export const BEAT_MS = 2 * 60 * 1000
 // On now = checked in within the last 5 minutes (two missed beats of slack).
 export const ON_MS = 5 * 60 * 1000
 
-// "iPhone app", "Android", "Mac", "Windows"… short, for the list.
-export function deviceLabel(ua = '', homeScreen = false) {
+// "iPhone app", "Windows · Chrome", "Chromebook · Chrome", "iPad · Safari"…
+// (≤40 chars; firestore.rules). platform = navigator.userAgentData?.platform
+// when the browser offers it (Chrome hides the OS in the user agent string).
+export function deviceLabel(ua = '', homeScreen = false, platform = '') {
+  const p = String(platform)
   const kind = /iPhone|iPod/.test(ua) ? 'iPhone'
     : /iPad/.test(ua) || (/Macintosh/.test(ua) && /Mobile/.test(ua)) ? 'iPad'
-      : /Android/.test(ua) ? 'Android'
-        : /Macintosh/.test(ua) ? 'Mac'
-          : /Windows/.test(ua) ? 'Windows'
-            : 'Computer'
-  return homeScreen ? `${kind} app` : kind
+      : /Android/i.test(p) || /Android/.test(ua) ? 'Android'
+        : /Chrome ?OS|CrOS/i.test(p) || /CrOS/.test(ua) ? 'Chromebook'
+          : /mac/i.test(p) || /Macintosh/.test(ua) ? 'Mac'
+            : /win/i.test(p) || /Windows/.test(ua) ? 'Windows'
+              : /linux/i.test(p) || /Linux/.test(ua) ? 'Linux'
+                : 'Computer'
+  if (homeScreen) return `${kind} app`
+  const browser = /Edg\//.test(ua) ? 'Edge'
+    : /SamsungBrowser/.test(ua) ? 'Samsung'
+      : /Firefox\//.test(ua) ? 'Firefox'
+        : /Chrome\/|CriOS\//.test(ua) ? 'Chrome'
+          : /Safari\//.test(ua) ? 'Safari'
+            : ''
+  return browser ? `${kind} · ${browser}` : kind
 }
 
 // staffDocs: the staff list (id = email); seen: presence docs (id = email).
