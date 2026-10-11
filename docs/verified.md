@@ -328,3 +328,5 @@ What was actually checked working, and how. Newest first.
 - 375px: every panel 343px wide (one column), Wide/Half buttons hidden, page 375 wide.
 
 - 2026-10-11 Flush columns: at 1200px with a tall Recent activity in the left column, the right column (System status, Who's on, …) stacks with 16px gaps and no hole under short panels; a Wide panel (Today's routes) takes a full row; 375px shows the plain order, one column, 375 wide.
+
+- 2026-10-11 googleSpend redeployed (owner: "deploy it") with the Ads changes from 836b129 (tables by customer id, clicks/impressions/conversions/search terms); checks passed first (315 tests). The owner's Ads transfer "Google Ads spend" is saved and its first run is in progress with a 7-day backfill queued. Not yet seen: the Google Ads line and box filling after the next 6-hourly run.
