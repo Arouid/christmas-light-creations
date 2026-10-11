@@ -36,7 +36,8 @@ printing). `preview-sheet.png` shows them all, not to scale.
   `road-sign-24x18-<code>` files with the QR tagged `?sign=<code>` (use the codes from the Signs
   tab). Road-sign codes are 4.8 in wide so a phone scans them from a car; the card's 1-in code
   scans from a hand.
-- The cards carry no person's name. Say whose, and the script gets a name line.
+- The card back names Scott Minor (`CARD_NAME` at the top of the script); change it and rerun for
+  another person's cards.
 - The cut decal's smallest letters (PEARLAND, TX · SINCE 2011) are 0.3 in tall; that is about the
   smallest a vinyl cutter weeds cleanly. If the shop objects, ask for the decal without that line.
 

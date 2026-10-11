@@ -33,6 +33,7 @@ const SERVICE = 'INSTALLED · SERVICED ALL SEASON · TAKEN DOWN IN JANUARY'
 const AREA = 'PEARLAND, TX · SERVING SOUTH HOUSTON SINCE 2011 · FAMILY-OWNED & INSURED'
 const FREE = 'FREE ESTIMATES'
 const SCAN = 'SCAN FOR A FREE ESTIMATE'
+const CARD_NAME = 'Scott Minor' // on the back of the business card (owner, 2026-10-11)
 const HEAVY = { wght: 800 }, BOLD = { wght: 700 }, MEDIUM = { wght: 500 }, DISPLAY = { opsz: 144, wght: 900 }
 
 const chrome = [
@@ -181,11 +182,12 @@ async function cardBack() {
   const w = 3.75, h = 2.25, x = 0.3
   const q = await qr('card', { x: 2.5, y: 0.55, size: 0.95 })
   const body = [
-    text('Christmas Light Creations', { fit: 2.0, font: FONTS.fraunces, location: DISPLAY, fill: INK, tracking: 0 }).at(x, 0.55),
-    text(PHONE, { cap: 0.2, fill: INK, tracking: 0.02 }).at(x, 1.02),
-    text(SITE, { fit: 2.0, location: { wght: 600 }, fill: INK, tracking: 0.01 }).at(x, 1.3),
-    text('Free estimates · Family-owned & insured', { cap: 0.072, location: MEDIUM, fill: INK, tracking: 0.01 }).at(x, 1.58),
-    text('Pearland, TX · South Houston since 2011', { cap: 0.072, location: MEDIUM, fill: INK, tracking: 0.01 }).at(x, 1.78),
+    text('Christmas Light Creations', { fit: 2.0, font: FONTS.fraunces, location: DISPLAY, fill: INK, tracking: 0 }).at(x, 0.5),
+    text(CARD_NAME, { cap: 0.115, location: { wght: 600 }, fill: INK, tracking: 0.01 }).at(x, 0.78),
+    text(PHONE, { cap: 0.2, fill: INK, tracking: 0.02 }).at(x, 1.18),
+    text(SITE, { fit: 2.0, location: { wght: 600 }, fill: INK, tracking: 0.01 }).at(x, 1.45),
+    text('Free estimates · Family-owned & insured', { cap: 0.072, location: MEDIUM, fill: INK, tracking: 0.01 }).at(x, 1.7),
+    text('Pearland, TX · South Houston since 2011', { cap: 0.072, location: MEDIUM, fill: INK, tracking: 0.01 }).at(x, 1.88),
     q.svg,
     text('FREE ESTIMATE', { cap: 0.065, fill: INK, tracking: 0.08 }).at(2.5 + 0.475, 1.68, 'middle'),
   ]
