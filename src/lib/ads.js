@@ -4,7 +4,7 @@
 // area pages, /design/, /thanks/), never on /leads/, /proposal/, /account/ or
 // /invoice/. Empty tagId = nothing loads. Disclosed on /privacy/.
 export const ADS = {
-  tagId: '', // "AW-123456789" from Google Ads → Goals → Conversions → Google tag
+  tagId: 'AW-18506316066', // Google Ads account tag (campaign created 2026-10-11)
   labels: { estimate: '' }, // conversion label for "estimate request sent" (/thanks/)
 }
 
