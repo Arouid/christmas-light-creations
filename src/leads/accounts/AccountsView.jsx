@@ -18,6 +18,9 @@ import ProposalsPanel from '../proposals/ProposalsPanel'
 import CustomerInvoices from '../invoices/CustomerInvoices'
 import { TextButton } from '../Reach'
 import StreetViewPhoto from '../StreetViewPhoto'
+import PhotosPanel from '../photos/PhotosPanel'
+import { WhatsUpSummary } from '../WhatsUp'
+import { installedLines, photoList } from '../../lib/jobRecord'
 import { noAutofill } from '../ui'
 import TextHistory from '../TextHistory'
 import { Grid } from '../CustomerDetail'
@@ -208,6 +211,12 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
         {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}
       </Header>
       <ThisSeason c={c} season={season} onUpdate={onUpdateCustomer} />
+      <Section title={`📷 Photos${photoList(c.photos).length ? ` (${photoList(c.photos).length})` : ''}`} open={photoList(c.photos).length > 0}>
+        <PhotosPanel customer={c} season={season} />
+      </Section>
+      <Section title={`🎄 What’s up${installedLines(c).length ? ` (${installedLines(c).length})` : ''}`}>
+        <WhatsUpSummary customer={c} onEdit={onOpenCustomer ? () => onOpenCustomer(c.id) : undefined} />
+      </Section>
       <Section title="Seasons"><SeasonRows customer={c} /></Section>
       <Section title="🧾 Invoices"><CustomerInvoices customer={c} /></Section>
       <OldRecordsPanel customer={c} customers={customers} user={user} past={myPast} />

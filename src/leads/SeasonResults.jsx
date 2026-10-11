@@ -1,4 +1,5 @@
 import { INSTALL_STATUSES, TAKEDOWN_STATUSES, gateFor, todayISO, withOption } from '../lib/customers'
+import { installedSummary } from '../lib/jobRecord'
 import { textMessages } from '../lib/messages'
 import { DEFAULT_COLUMNS, VIEW_COLUMNS, statusKey } from '../lib/views'
 import DataTable from './DataTable'
@@ -51,6 +52,7 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
     timeframe: { get: (c) => s(c).timeframe, className: 'max-w-[12rem] truncate' },
     gate: { get: (c) => gateFor(c, gates)?.code, className: 'whitespace-nowrap' },
     notes: { get: (c) => s(c).schedulingNotes, className: 'max-w-xs truncate' },
+    installed: { get: (c) => installedSummary(c), className: 'max-w-xs truncate' },
     status: { get: (c) => statusOf(c) || blank, render: (c) => statusSelect(c, 'py-1.5') },
     ask: { get: () => '', render: (c) => (askable(c) ? askLink(c) : null) },
     review: { get: (c) => s(c).reviewAsked ?? '', render: (c) => (reviewable(c) ? reviewLink(c) : null) },
@@ -107,6 +109,7 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
                     {[c.locationBlock, c.installType, when || s(c).timeframe].filter(Boolean).join(' · ') || 'No details yet'}
                   </span>
                   {gate && <span className="block text-xs text-glow-300">Gate {gate.code}</span>}
+                  {columns.includes('installed') && installedSummary(c) && <span className="block truncate text-xs text-slate-300">🎄 {installedSummary(c)}</span>}
                 </button>
                 {columns.includes('ask') && askable(c) && askLink(c)}
                 {columns.includes('review') && reviewable(c) && reviewLink(c)}

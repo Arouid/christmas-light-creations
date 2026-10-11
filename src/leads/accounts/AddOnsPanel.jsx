@@ -30,6 +30,7 @@ export default function AddOnsPanel({ customer: c, user }) {
 
   return (
     <div className="space-y-4 text-sm">
+      <p className="text-xs text-slate-400">Prices only. The lights themselves (lines, feet, colours, where the boxes are) are listed under <strong>🎄 What’s up</strong> on this page.</p>
       {y.baseCents == null
         ? <p className="text-glow-300">Set this customer’s <strong>Original rate</strong> (first-year full price, before discounts) in Edit details, or type their re-install price below.</p>
         : (

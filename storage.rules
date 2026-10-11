@@ -1,0 +1,48 @@
+rules_version = '2';
+
+// Firebase Storage: after-install photos of customers' houses
+// (docs/specs/job-record.md). Staff only, the same test as firestore.rules:
+// Google sign-in, verified email, listed in the Firestore `staff` collection.
+// Nobody else can read, list, upload or delete anything, anywhere.
+//
+// Publish: Firebase console → Storage → Rules → paste → Publish. The first
+// time, the console asks to let Storage read Firestore (cross-service rules):
+// accept it.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isStaff() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
+        && firestore.exists(/databases/(default)/documents/staff/$(request.auth.token.email.lower()));
+    }
+
+    // The owner's staff doc carries `owner: true` (set in the Firebase console).
+    function isOwner() {
+      return firestore.get(/databases/(default)/documents/staff/$(request.auth.token.email.lower())).data.get('owner', false) == true;
+    }
+
+    // customers/{customer id}/{season year}/{photo id}.jpg and -thumb.jpg
+    match /customers/{customerId}/{season}/{file} {
+      allow read: if isStaff();
+
+      // A JPEG under 2 MB, stamped with who added it; a season is a year.
+      // `create` also covers overwriting a file (update = metadata only), so a
+      // file may only be written where there is none: never overwrite a photo.
+      allow create: if isStaff()
+        && resource == null
+        && season.matches('^20[0-9]{2}$')
+        && request.resource.contentType == 'image/jpeg'
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.metadata.by == request.auth.token.email;
+
+      // Metadata changes: never.
+      allow update: if false;
+
+      // Only the person who added it, or the owner, can remove it.
+      allow delete: if isStaff()
+        && (resource.metadata.get('by', '') == request.auth.token.email || isOwner());
+    }
+  }
+}

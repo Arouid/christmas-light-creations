@@ -12,7 +12,7 @@
     "check:rules": "node scripts/check-rules.mjs",
     "test": "node --test tests/*.test.mjs",
     "sign-qr": "node scripts/sign-qr.mjs",
-    "test:rules": "npx --yes firebase-tools@14.11.0 emulators:exec --only firestore --project demo-clc \"node --test tests/rules/firestore.rules.test.mjs\"",
+    "test:rules": "npx --yes firebase-tools@14.11.0 emulators:exec --only firestore,storage --project demo-clc \"node --test --test-concurrency=1 tests/rules/firestore.rules.test.mjs tests/rules/storage.rules.test.mjs\"",
     "video:studio": "npm --prefix video run studio",
     "video:render": "npm --prefix video run render"
   },

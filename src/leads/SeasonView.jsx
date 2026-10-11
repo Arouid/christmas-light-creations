@@ -111,7 +111,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
 
       <div className="mt-2">
         <SeasonResults rows={shown} mode={mode} season={season} gates={gates} onOpen={onOpen} onUpdate={onUpdate}
-          columns={['name', 'area', 'type', 'week', 'day', 'date', 'timeframe', 'status', 'ask', 'review']} />
+          columns={['name', 'area', 'type', 'week', 'day', 'date', 'timeframe', 'installed', 'status', 'ask', 'review']} />
       </div>
       {planning && <PlanSchedule customers={inFilters} season={season} onUpdate={onUpdate} onClose={() => setPlanning(false)} />}
     </>

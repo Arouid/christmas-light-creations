@@ -15,6 +15,9 @@ import DesignsPanel from './designs/DesignsPanel'
 import ProposalsPanel from './proposals/ProposalsPanel'
 import CustomerInvoices from './invoices/CustomerInvoices'
 import DiscountSuggestion from './DiscountSuggestion'
+import PhotosPanel from './photos/PhotosPanel'
+import WhatsUpEditor from './WhatsUp'
+import { installedLines, photoList } from '../lib/jobRecord'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
 
@@ -143,6 +146,13 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             </div>
           </div>
         )}
+
+        <Section title={`📷 Photos${photoList(customer.photos).length ? ` (${photoList(customer.photos).length})` : ''}`}>
+          <PhotosPanel customer={customer} season={season} />
+        </Section>
+        <Section title={`🎄 What’s up${installedLines(customer).length ? ` (${installedLines(customer).length})` : ''}`}>
+          <WhatsUpEditor customer={customer} user={user} onUpdate={onUpdate} />
+        </Section>
 
         <Section title="🎨 Light designs" open={false}>
           <DesignsPanel owner={{ type: 'customer', id: customer.id, name: customer.fullName, address: customer.address }} />
