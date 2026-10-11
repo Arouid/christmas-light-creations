@@ -18,3 +18,8 @@ test('device labels', () => {
   assert.equal(deviceLabel('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'), 'Windows')
   assert.equal(deviceLabel('Mozilla/5.0 (Linux; Android 14)'), 'Android')
 })
+
+test('two staff entries with the same name show their emails', () => {
+  const rows = presenceRows([{ id: 'lacie@example.com' }, { id: 'lacie.m@example.com' }, { id: 'katie@example.com' }], [], { 'lacie@example.com': 'Lacie', 'lacie.m@example.com': 'Lacie' })
+  assert.deepEqual(rows.map((r) => [r.name, r.dupe]), [['Katie', false], ['Lacie', true], ['Lacie', true]])
+})

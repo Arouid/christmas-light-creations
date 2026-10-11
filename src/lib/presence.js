@@ -29,6 +29,9 @@ export function presenceRows(staffDocs = [], seen = [], names = {}, now = Date.n
     const state = !last ? 'never' : now - last <= ON_MS ? 'on' : 'away'
     return { email, name: staffName(email, names), last, device: p?.device ?? '', state }
   })
+  // Two staff entries with the same name (two emails for one person): show which is which.
+  const count = rows.reduce((m, r) => m.set(r.name, (m.get(r.name) ?? 0) + 1), new Map())
+  for (const r of rows) r.dupe = count.get(r.name) > 1
   const rank = { on: 0, away: 1, never: 2 }
-  return rows.sort((a, b) => rank[a.state] - rank[b.state] || b.last - a.last || a.name.localeCompare(b.name))
+  return rows.sort((a, b) => rank[a.state] - rank[b.state] || b.last - a.last || a.name.localeCompare(b.name) || a.email.localeCompare(b.email))
 }

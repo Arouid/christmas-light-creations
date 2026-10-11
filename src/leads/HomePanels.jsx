@@ -197,7 +197,7 @@ export function WhoPanel({ rows, error, now, wall }) {
           {rows.map((r) => (
             <li key={r.email} className="flex items-center gap-2.5">
               <span className={`size-2.5 shrink-0 rounded-full ${DOT[r.state]} ${r.state === 'on' ? 'shadow-[0_0_8px_rgba(52,211,153,0.8)]' : ''}`} aria-hidden="true" />
-              <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
+              <span className="min-w-0 flex-1 truncate font-semibold">{r.name}{r.dupe && <span className="font-normal text-slate-500"> · {r.email}</span>}</span>
               <span className="shrink-0 text-right text-slate-400">
                 {r.state === 'on' ? <span className="text-emerald-300">on now</span> : r.state === 'away' ? agoText(r.last, now) : 'never'}
                 {r.device && r.state !== 'never' && <span className="text-slate-500"> · {r.device}</span>}
