@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  DAILY_LIMIT, MAX_CUSTOMERS, MAX_RANGE_DAYS, PROPOSAL_SCHEMA, customerRow, dayList, dayLoads, deadlineOf, defaultRange, dropFrom, moveTo,
+  DAILY_LIMIT, MAX_CUSTOMERS, MAX_INSTRUCTION_CHARS, MAX_RANGE_DAYS, PROPOSAL_SCHEMA, currentOf, customerRow, dayList, dayLoads, deadlineOf, defaultRange, diffPlans, dropFrom, moveTo,
   parseProposal, scheduleAllowed, schedulePrompt, scheduleRequest, scheduleSystemPrompt, unscheduled, weekOfFor, wishesFrom, writesFor,
 } from '../functions/assistant/schedulePrompt.js'
 import { bookedByDay, capacity } from '../functions/availability.js'
@@ -148,4 +148,35 @@ test('writesFor: the sheet’s style for date, day, week and status', () => {
 test('the guide tells staff how to plan with Claude', () => {
   assert.ok(TASKS.some(([title, body]) => /plan install/i.test(title) && body.includes('Plan with Claude')))
   assert.ok(SECTIONS.find((s) => s.id === 'season').items.some((i) => i.includes('Plan with Claude')))
+})
+
+test('re-plan request: the plan as it stands plus one instruction, cleaned and checked', () => {
+  const base = { from: '2026-10-20', to: '2026-11-02', customerIds: ['a', 'b', 'c'] }
+  assert.equal(scheduleRequest({ ...base, instruction: '' }, { season }).instruction, undefined, 'blank note = plain plan')
+  const r = scheduleRequest({ ...base, instruction: '  move  a to the 22nd\n with b ', current: { assignments: [{ customerId: 'a', day: '2026-10-21' }, { customerId: 'ghost', day: '2026-10-21' }, { customerId: 'b', day: '2026-12-01' }, { customerId: 'a', day: '2026-10-25' }], unplaced: ['c', 'a', 7] } }, { season })
+  assert.equal(r.instruction, 'move a to the 22nd with b')
+  assert.deepEqual(r.current, { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: ['c'] }, 'strangers, out-of-range days and repeats dropped')
+  for (const bad of [{ ...base, instruction: 7 }, { ...base, instruction: 'x'.repeat(MAX_INSTRUCTION_CHARS + 1) }, { ...base, current: 'no' }, { ...base, current: { assignments: [{ customerId: 'a', day: 'Oct 21' }], unplaced: [] } }]) {
+    assert.equal(scheduleRequest(bad, { season }).problem?.[0], 'invalid-argument', JSON.stringify(bad).slice(0, 60))
+  }
+  const plan = { assignments: [{ customerId: 'a', day: '2026-10-21', reason: 'r' }], unplaced: [{ customerId: 'c', reason: 'x' }] }
+  assert.deepEqual(currentOf(plan), { assignments: [{ customerId: 'a', day: '2026-10-21' }], unplaced: ['c'] })
+  const rows = [{ id: 'a', name: 'Alice' }, { id: 'c', name: 'Cal' }]
+  const prompt = schedulePrompt({ today: '2026-10-10', season, deadline: '10-31', days, rows, current: r.current, instruction: r.instruction })
+  assert.match(prompt, /CURRENT PLAN[\s\S]*2026-10-21: Alice \(a\)\nnot placed: Cal \(c\)/)
+  assert.match(prompt, /STAFF INSTRUCTION[^\n]*\nmove a to the 22nd with b$/)
+  assert.ok(!schedulePrompt({ today: '2026-10-10', season, deadline: '10-31', days, rows }).includes('CURRENT PLAN'), 'a plain plan has no current section')
+  assert.match(scheduleSystemPrompt(), /The instruction wins/)
+})
+
+test('diffPlans: who moved, from where to where', () => {
+  const before = { assignments: [{ customerId: 'a', day: '2026-10-19' }, { customerId: 'b', day: '2026-10-20' }, { customerId: 'd', day: '2026-10-20' }], unplaced: [{ customerId: 'c' }] }
+  const after = { assignments: [{ customerId: 'a', day: '2026-10-20' }, { customerId: 'b', day: '2026-10-20' }, { customerId: 'c', day: '2026-10-19' }], unplaced: [{ customerId: 'd' }] }
+  const diff = diffPlans(before, after).sort((x, y) => x.customerId.localeCompare(y.customerId))
+  assert.deepEqual(diff, [
+    { customerId: 'a', from: '2026-10-19', to: '2026-10-20' },
+    { customerId: 'c', from: null, to: '2026-10-19' },
+    { customerId: 'd', from: '2026-10-20', to: null },
+  ])
+  assert.deepEqual(diffPlans(after, after), [])
 })

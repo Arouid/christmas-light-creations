@@ -42,7 +42,7 @@ export async function gatherSchedule(db, { season, from, to, customerIds }, help
 
 // One plan. Returns { plan, usage, cost, model }. Throws ScheduleError for
 // things the staff member should hear about; `onKeyRefused` is called once before that.
-export async function proposeFor({ apiKey, model = MODEL, input, today, season, log, onKeyRefused }) {
+export async function proposeFor({ apiKey, model = MODEL, input, today, season, current, instruction, log, onKeyRefused }) {
   const ids = input.rows.map((r) => r.id)
   const client = new Anthropic({ apiKey, maxRetries: 1, timeout: 150_000 })
   let res
@@ -51,7 +51,7 @@ export async function proposeFor({ apiKey, model = MODEL, input, today, season, 
       model: model || MODEL,
       max_tokens: MAX_OUTPUT_TOKENS,
       system: [{ type: 'text', text: scheduleSystemPrompt(), cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: schedulePrompt({ today, season, deadline: input.deadline, days: input.days, rows: input.rows }) }],
+      messages: [{ role: 'user', content: schedulePrompt({ today, season, deadline: input.deadline, days: input.days, rows: input.rows, current, instruction }) }],
       output_config: { effort: 'high', format: { type: 'json_schema', schema: PROPOSAL_SCHEMA } },
     })
   } catch (e) {
@@ -73,7 +73,7 @@ export async function proposeFor({ apiKey, model = MODEL, input, today, season, 
     plan = parsed.problem ? fallbackProposal(ids, parsed.problem) : parsed
   }
   const cost = Number(costOf(usage).toFixed(4))
-  log?.info?.('proposeSchedule', { people: ids.length, days: input.days.length, placed: plan.assignments.length, unplaced: plan.unplaced.length,
+  log?.info?.('proposeSchedule', { replan: Boolean(current && instruction), people: ids.length, days: input.days.length, placed: plan.assignments.length, unplaced: plan.unplaced.length,
     input: usage.input_tokens ?? 0, output: usage.output_tokens ?? 0, cacheRead: usage.cache_read_input_tokens ?? 0, cacheWrite: usage.cache_creation_input_tokens ?? 0, cost })
   return { plan, usage, cost, model: model || MODEL }
 }

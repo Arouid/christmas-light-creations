@@ -14,6 +14,7 @@ export const MAX_MESSAGES = 5 // last incoming messages per customer sent to the
 export const MAX_MESSAGE_CHARS = 300
 export const MAX_REASON_CHARS = 200
 export const MAX_EXPLANATION_CHARS = 1200
+export const MAX_INSTRUCTION_CHARS = 500 // one staff note per re-plan
 export const DAILY_LIMIT = 20 // plans a day, all staff together
 export const MIN_GAP_MS = 5000 // per staff member
 export const SEASON_BOUNDS = { start: '10-15', close: '12-15' } // same as functions/availability.js SEASON
@@ -82,7 +83,36 @@ export function scheduleRequest(data, { season, bounds = SEASON_BOUNDS } = {}) {
   if (!ids || !ids.length) return bad('Pick at least one person')
   if (ids.length > MAX_CUSTOMERS) return bad(`At most ${MAX_CUSTOMERS} people per plan: narrow the area or the range`)
   if (!ids.every((id) => typeof id === 'string' && id && id.length <= 200)) return bad('Someone on the list can’t be read')
-  return { from, to, customerIds: [...new Set(ids)] }
+  const out = { from, to, customerIds: [...new Set(ids)] }
+  // A re-plan: the plan as it stands (with staff's own moves) and what to change.
+  if (data.instruction !== undefined && data.instruction !== null && data.instruction !== '') {
+    if (typeof data.instruction !== 'string') return bad('The change must be text')
+    const instruction = data.instruction.replace(/\s+/g, ' ').trim()
+    if (instruction.length > MAX_INSTRUCTION_CHARS) return bad(`Keep the change under ${MAX_INSTRUCTION_CHARS} characters`)
+    if (instruction) out.instruction = instruction
+  }
+  if (data.current !== undefined && data.current !== null) {
+    const cur = data.current
+    if (!cur || typeof cur !== 'object' || !Array.isArray(cur.assignments) || !Array.isArray(cur.unplaced)) return bad('The current plan can’t be read')
+    const known = new Set(out.customerIds)
+    const seen = new Set()
+    const assignments = []
+    for (const a of cur.assignments) {
+      if (!a || typeof a !== 'object' || typeof a.customerId !== 'string' || !DAY_RE.test(String(a.day))) return bad('The current plan can’t be read')
+      if (!known.has(a.customerId) || seen.has(a.customerId)) continue
+      if (a.day < from || a.day > to) continue
+      seen.add(a.customerId)
+      assignments.push({ customerId: a.customerId, day: a.day })
+    }
+    const unplaced = []
+    for (const id of cur.unplaced) {
+      if (typeof id !== 'string' || !known.has(id) || seen.has(id)) continue
+      seen.add(id)
+      unplaced.push(id)
+    }
+    out.current = { assignments, unplaced }
+  }
+  return out
 }
 
 export function scheduleAllowed(state, staff, now, day) {
@@ -192,12 +222,14 @@ export function scheduleSystemPrompt() {
     '6. A customer with no address or an address outside the area still gets a day if they asked for one; mention the gap in the reason.',
     '',
     'Every customer in the input appears exactly once, in assignments or in unplaced. Use the ids and days exactly as given. Reasons are one short line in plain words for the office, never for the customer. The explanation is one paragraph: how you filled the days, which days are full, and who to call.',
+    '',
+    'When the office sends a CURRENT PLAN and a STAFF INSTRUCTION, you are revising, not starting over. The instruction wins over your own preferences and over rules 2, 4 and 5 (never over rule 3: if it cannot fit, say so in that person’s reason and keep them where they were). Keep every other person exactly where they are unless the instruction forces a change (for example, making room on a day). Start the explanation with what you changed and why, person by person, then anything the office should know.',
   ].join('\n')
 }
 
-export function schedulePrompt({ today, season, deadline, days, rows }) {
+export function schedulePrompt({ today, season, deadline, days, rows, current, instruction }) {
   const dayLines = days.map((d) => `${d.day} ${d.weekday}: ${d.open} open (capacity ${d.capacity}, ${d.booked} booked)`)
-  return [
+  const lines = [
     `Today: ${today}. Season: ${season}. Early-install discount deadline: ${deadline ? `${season}-${deadline}` : 'none'}.`,
     '',
     'DAYS (only these; "0 open" means full):',
@@ -205,7 +237,15 @@ export function schedulePrompt({ today, season, deadline, days, rows }) {
     '',
     `CUSTOMERS TO PLACE (${rows.length}):`,
     JSON.stringify(rows, null, 1),
-  ].join('\n')
+  ]
+  if (current && instruction) {
+    const name = (id) => rows.find((r) => r.id === id)?.name ?? id
+    lines.push('', 'CURRENT PLAN (keep it unless the instruction forces a change):',
+      ...current.assignments.map((a) => `${a.day}: ${name(a.customerId)} (${a.customerId})`),
+      ...current.unplaced.map((id) => `not placed: ${name(id)} (${id})`),
+      '', 'STAFF INSTRUCTION (from the office, follow it):', instruction)
+  }
+  return lines.join('\n')
 }
 
 // ---- Checking the answer -----------------------------------------------------------
@@ -252,6 +292,25 @@ export function costOf(usage = {}) {
 }
 
 // ---- Adjusting and applying (used by the panel) -------------------------------------
+
+// What a re-plan changed: one entry per person whose day differs
+// ({ from: day | null, to: day | null }; null = not placed).
+export function diffPlans(prev, next) {
+  const dayIn = (plan) => new Map((plan?.assignments ?? []).map((a) => [a.customerId, a.day]))
+  const before = dayIn(prev)
+  const after = dayIn(next)
+  const ids = new Set([...before.keys(), ...after.keys(), ...(prev?.unplaced ?? []).map((u) => u.customerId), ...(next?.unplaced ?? []).map((u) => u.customerId)])
+  const out = []
+  for (const id of ids) {
+    const from = before.get(id) ?? null
+    const to = after.get(id) ?? null
+    if (from !== to) out.push({ customerId: id, from, to })
+  }
+  return out
+}
+
+// The plan as the server wants it back for a re-plan (ids and days only).
+export const currentOf = (plan) => ({ assignments: plan.assignments.map((a) => ({ customerId: a.customerId, day: a.day })), unplaced: plan.unplaced.map((u) => u.customerId) })
 
 // Per day: booked + proposed, and whether it is over capacity.
 export function dayLoads(assignments = [], days = []) {
