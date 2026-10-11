@@ -232,3 +232,7 @@ What was actually checked working, and how. Newest first.
 - 1200px, 16 columns: the "table is wider than the screen" row with ◀ Left / Right ▶ shows; scrolling moves the table and the Name column stays pinned at the left edge; the box is screen-high so the horizontal scrollbar is always visible. With the default 7 columns the row is hidden.
 - More ▾ now floats over the page (it was inside the scrolling tab row and made the row scroll up and down: owner screenshot). Checked at 1200 and 375: tabs stay visible, no vertical scroll on the row, More pinned at the right on phones.
 - Note for next time: this browser pane is hidden, so requestAnimationFrame/ResizeObserver callbacks never fire in it; measure synchronously in effects.
+
+## 2026-10-10 Public designer header (375px)
+
+- Buttons read ✕ · ↶ · ↷ · ⬇ Save · Estimate → and the row fits with no sideways scroll (right edge at 363px). Wider screens say ⬇ Save picture and Get my estimate →.

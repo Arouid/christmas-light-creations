@@ -20,8 +20,9 @@ const colorName = (list) => Object.entries(COLOR_SETS).find(([, v]) => v.join() 
 // onSatelliteMeasure (optional): the host measures the house from above and
 // resolves { feet, label } (or null); the designer offers it as a measure preset.
 // simple: the public website's version (homeowners): no measuring, history,
-// feet, bulb counts or prices anywhere. saveLabel: the Save button's text.
-export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose, onSatelliteMeasure, simple = false, saveLabel = 'Save' }) {
+// feet, bulb counts or prices anywhere. saveLabel: the Save button's text
+// (saveLabelShort on phones, so the header row fits).
+export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose, onSatelliteMeasure, saveLabelShort, simple = false, saveLabel = 'Save' }) {
   const canvas = useRef(null)
   const box = useRef(null) // the viewport the photo is zoomed/panned inside
   // Keyboard focus moves into the dialog as it opens and back out as it closes.
@@ -457,8 +458,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
         <button type="button" onClick={undo} disabled={hist.at === 0} className={`${off} disabled:opacity-30`} aria-label="Undo">↶</button>
         <button type="button" onClick={redo} disabled={hist.at >= hist.list.length - 1} className={`${off} disabled:opacity-30`} aria-label="Redo">↷</button>
         {!simple && <button type="button" onClick={() => setShowHistory((v) => !v)} className={showHistory ? on : off} aria-label="History">🕘<span className="hidden sm:inline"> History</span></button>}
-        <button type="button" onClick={download} className={off} aria-label="Download image">⬇<span className="hidden sm:inline"> Image</span></button>
-        {onSave && <button type="button" onClick={save} className={on}>{saveLabel}</button>}
+        <button type="button" onClick={download} className={off} aria-label="Save a picture of the design">⬇ Save<span className="hidden sm:inline"> picture</span></button>
+        {onSave && <button type="button" onClick={save} className={on}><span className="sm:hidden">{saveLabelShort ?? saveLabel}</span><span className="hidden sm:inline">{saveLabel}</span></button>}
       </header>
 
       <div className="flex gap-1.5 overflow-x-auto border-b border-white/10 px-3 py-2">

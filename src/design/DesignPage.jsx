@@ -168,7 +168,7 @@ export default function DesignPage() {
 
       {open && (untouched || img) && (
         <Suspense fallback={<div className="fixed inset-0 z-50 grid place-items-center bg-night-950 text-slate-400">Loading designer…</div>}>
-          <Designer simple photo={photo} design={design} title="Your light design" brand={BRAND} saveLabel={t.saveLabel}
+          <Designer simple photo={photo} design={design} title="Your light design" brand={BRAND} saveLabel={t.saveLabel} saveLabelShort={t.saveLabelShort}
             onSave={async (d) => { setDesign(d); setOpen(false); setTimeout(toForm, 50) }}
             onClose={(d) => { if (d) setDesign(d); setOpen(false) }} />
         </Suspense>
