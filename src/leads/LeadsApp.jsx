@@ -344,7 +344,7 @@ export default function LeadsApp() {
             : <p className="p-6 text-slate-400">Loading map…</p>}
         </div>
       )}
-      <main className={tab === 'map' || tab === 'ask' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl'}>
+      <main className={tab === 'map' || tab === 'ask' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-6 lg:max-w-7xl'}>
         {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
         {tab === 'home' && (customers
           ? <HomeView user={user} season={season} alerts={alerts} feed={feed} customers={customers} leads={leads ?? []} invoices={invoicesApi.invoices ?? []}
