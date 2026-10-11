@@ -147,7 +147,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
           ? bands(layout, heights).map((row, i) => (
             <div key={`row-${i}`} className="grid grid-cols-6 gap-4">
               {row.cells.map((cell) => (
-                <div key={cell.keys[0]} className={`min-w-0 space-y-4 ${SPAN[cell.units]}`}>{cell.keys.map(slot)}</div>
+                <div key={cell.keys[0]} className={`flex min-w-0 flex-col gap-4 ${SPAN[cell.units]}`}>{cell.keys.map(slot)}</div>
               ))}
             </div>
           ))
@@ -164,6 +164,8 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
 const PANEL_LABEL = Object.fromEntries(PANELS)
 // Cell widths in sixths of the row (literal class names so Tailwind keeps them).
 const SPAN = { 2: 'col-span-2', 3: 'col-span-3', 4: 'col-span-4', 6: 'col-span-6' }
+// A panel grows to its row's height, so neighbours' edges line up (phones: no stretching needed).
+const STRETCH = 'flex min-w-0 flex-1 flex-col [&>section]:flex-1'
 const arrow = 'size-9 rounded-full border border-white/20 text-sm font-semibold hover:bg-white/10 disabled:opacity-30'
 function Slot({ k, size, arranging, first, last, onNudge, onCycleSize, onDrop, onHeight, children }) {
   // Report the panel's own height (not the handle bar) whenever it changes.
@@ -171,18 +173,25 @@ function Slot({ k, size, arranging, first, last, onNudge, onCycleSize, onDrop, o
   useEffect(() => {
     const el = body.current
     if (!el || typeof ResizeObserver === 'undefined') return
-    const report = () => onHeight?.(k, el.offsetHeight)
+    // The card is stretched to its row, so measure what's inside it: padding plus its children.
+    const report = () => {
+      const sec = el.querySelector('section') ?? el
+      const cs = getComputedStyle(sec)
+      const inner = [...sec.children].reduce((t, c) => t + c.getBoundingClientRect().height, 0)
+      const gaps = Math.max(0, sec.children.length - 1) * (parseFloat(cs.rowGap) || 0)
+      onHeight?.(k, inner + gaps + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth))
+    }
     const first = setTimeout(report, 0) // right after layout (a hidden tab never paints, so not a frame callback)
     const ro = new ResizeObserver(report)
     ro.observe(el)
     return () => { clearTimeout(first); ro.disconnect() }
   }, [k, onHeight])
-  if (!arranging) return <div ref={body} className="min-w-0">{children}</div>
+  if (!arranging) return <div ref={body} className={STRETCH}>{children}</div>
   return (
     <div draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', k); e.dataTransfer.effectAllowed = 'move' }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e.dataTransfer.getData('text/plain'), k) }}
-      className="min-w-0 cursor-grab rounded-3xl ring-2 ring-glow-400/50 active:cursor-grabbing">
+      className="flex min-w-0 flex-1 cursor-grab flex-col rounded-3xl ring-2 ring-glow-400/50 active:cursor-grabbing">
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 text-xs text-glow-300">
         <span className="font-semibold">⠿ {PANEL_LABEL[k]}</span>
         <span className="flex items-center gap-1">
@@ -193,7 +202,7 @@ function Slot({ k, size, arranging, first, last, onNudge, onCycleSize, onDrop, o
           </button>
         </span>
       </div>
-      <div ref={body} className="pointer-events-none">{children}</div>
+      <div ref={body} className={`pointer-events-none ${STRETCH}`}>{children}</div>
     </div>
   )
 }

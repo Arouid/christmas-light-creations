@@ -351,3 +351,5 @@ What was actually checked working, and how. Newest first.
 - Music: Pixabay page for the JuliusH track shows no "Content ID Registered" badge (the three other Carol of the Bells candidates do); file 64.3 s, 256 kbps stereo; loudness per second shows the first hit at ~4 s, so the cottage comes on at frame 104.
 - Remotion Studio reloaded in the browser pane on the new cut, no console errors, scrubbed to the switch-on frame. `npm run check` not re-run after cut 2 (only `video/` changed, linted clean with the site's oxlint).
 - Not checked: listening to the mix (no speakers in this session: music level 0.6 is a guess), playback in a real player, YouTube/Google Ads acceptance, the owner's verdict on cut 2.
+
+- 2026-10-11 Stretch at 1200px (demo): every cell in a row shares top and bottom (Recent activity 430–1036 beside System status + Sign-ins stacked 430–1036; Spent | Season 1052–1373; Scheduled emails | Today's routes + Who's on 1389–1895; Google Ads wide). 316 tests.
