@@ -40,6 +40,7 @@ const cases = [
   ['Public can read designs sent with requests', () => getDocsFromServer(collection(db, 'leadDesigns'))],
   ['Public can read staff alert settings and devices', () => getDocsFromServer(collection(db, 'staffPrefs'))],
   ['Public can read staff activity', () => getDocsFromServer(collection(db, 'activity'))],
+  ['Public can read monthly spend (usage)', () => getDocsFromServer(collection(db, 'usage'))],
   ['Public can read account-link bookkeeping', () => getDocsFromServer(collection(db, 'accountLinks'))],
   ['Public can list proposals', () => getDocsFromServer(collection(db, 'proposals'))],
   ['Public can list invoices', () => getDocsFromServer(collection(db, 'invoices'))],
