@@ -376,3 +376,10 @@ What was actually checked working, and how. Newest first.
 - Owner spotted two identical photos in the public gallery. A perceptual-hash pass over `public/images/gallery` found the pair (`two-story-wrapped-trees-arched-door.jpg` from DSCF6305.JPG and `warm-white-roofline-lit-trees.jpg` from unnamed.jpg); the second was removed from `content.js`, the repo and the `process-photos.mjs` mapping (left as a comment so a re-run doesn't bring it back).
 - Dev server, public page at phone width: gallery shows 9 photos, no repeated `src`, no broken images, the removed file not referenced; no new console errors on a fresh load. `npm run check` passed (lint, 316 tests, build).
 - Not checked: the live site after deploy.
+
+## 2026-10-11 Customer app, phase 1: /account/ installs on phones
+
+- Dev server at 375 px, `/account/?demo`: the **Get the app** box (Install on Android / iPhone) shows under the account; the page links `/account/manifest.webmanifest`; the manifest (application/manifest+json), `sw.js`, `offline.html` and the icons all answer 200; no horizontal overflow. `/leads/?demo` still loads after the install buttons moved to `src/components/`, no console errors mentioning Install.
+- Icons from `scripts/make-account-icons.mjs` viewed: the cottage tile at 192/512, the maskable one with the cottage in the middle 70% on navy, the 180 iPhone one on flat navy.
+- `npm run check` passed (lint, 319 tests including the new manifest test, build); `node --check public/account/sw.js` clean.
+- Not checked: service worker registration. The browser pane refuses to register any service worker (the existing staff `/leads/sw.js` fails the same way: "An unknown error occurred when fetching the script"), so one-tap install, the offline page and the home-screen icon need a real phone (test checklist #75–77).

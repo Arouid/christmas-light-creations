@@ -6,6 +6,12 @@ import AccountPage from './AccountPage.jsx'
 // Never inside another site's frame (someone could overlay Sign or Pay).
 const framed = window.top !== window.self
 
+// The installed app's helper (public/account/sw.js): an offline page, and
+// Chrome needs it before it offers one-tap install. Nothing else is cached.
+if ('serviceWorker' in navigator && !framed) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register(`${import.meta.env.BASE_URL}account/sw.js`).catch(() => {}) })
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {framed

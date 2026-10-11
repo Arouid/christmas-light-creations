@@ -7,6 +7,8 @@ import RecaptchaNote from '../components/RecaptchaNote'
 import { REINSTALL_PCT, yearlyPrice } from '../lib/addOns'
 import { seasonYear } from '../lib/customers'
 import { KIND_SHORT, longDate } from '../lib/invoices'
+import { InstallButtons } from '../components/InstallApp'
+import { isIos, standalone, useInstall } from '../components/useInstall'
 
 // The customer's own account: /account/ (sign in with Google or an emailed
 // link, no password). Lists every proposal sent to their email, what's paid and what's
@@ -143,6 +145,8 @@ function Body({ view, email, setEmail, busy, submit, google, reload, logOut }) {
               <GoogleG /> Sign in with Google
             </button>
             <p className="text-center text-sm text-slate-400">or get a sign-in link by email</p>
+            {/* iPhone opens emailed links in Safari, not in the home-screen app. */}
+            {isIos() && standalone() && <p className="text-sm text-slate-400">In the app on an iPhone, Sign in with Google is the one that works: an emailed link opens in Safari instead.</p>}
           </>
         )}
         <label className="block">
@@ -206,11 +210,26 @@ function Account({ data, reload, logOut }) {
       {list.map((p) => <ProposalCard key={p.token} p={p} reload={reload} />)}
       {invoices.length > unpaid.length && <PaidInvoices invoices={invoices.filter((i) => i.state === 'paid')} />}
       {data.price?.history?.length > 0 && <PaymentHistory history={data.price.history} />}
+      <GetTheApp />
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-slate-400">Questions about your lights or a bill?</span>
         {call}
       </div>
     </div>
+  )
+}
+
+// The account on their home screen (docs/specs/customer-app.md). Gone once
+// they're in the installed app.
+function GetTheApp() {
+  const { installed } = useInstall()
+  if (installed) return null
+  return (
+    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">Get the app</h2>
+      <p className="text-sm text-slate-300">Put Christmas Light Creations on your phone’s home screen: opens full-screen, no password, always up to date.</p>
+      <InstallButtons app="Christmas Light Creations" signIn="sign in the same way" />
+    </section>
   )
 }
 
