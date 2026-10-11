@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { claudeIncrement, costOf, fixedCosts, monthKey, paypalFeeCents, paypalIncrement, priceFor, spendText, spentSummary } from '../functions/usage.js'
+import { claudeIncrement, costOf, monthKey, paypalFeeCents, paypalIncrement, priceFor, spendText, spentSummary } from '../functions/usage.js'
 
 const usage = { input_tokens: 1000, output_tokens: 500, cache_read_input_tokens: 4000, cache_creation_input_tokens: 2000 }
 
@@ -41,19 +41,13 @@ test('paypalFeeCents: from the capture breakdown, USD only, null when missing', 
   assert.equal(paypalIncrement({}, 100)['paypal.unknownFees'], 1)
 })
 
-test('fixedCosts: cleans the settings list', () => {
-  assert.deepEqual(fixedCosts([{ name: ' Google Workspace ', amount: '14.40' }, { name: '', amount: 5 }, { name: 'Bad', amount: 'x' }, { name: 'Neg', amount: -1 }]),
-    [{ name: 'Google Workspace', amount: 14.4 }])
-  assert.deepEqual(fixedCosts(null), [])
-})
-
-test('spentSummary: sums Claude, PayPal fees and fixed costs; Google pending until the export runs', () => {
+test('spentSummary: sums Claude and PayPal fees; Google Cloud and Ads pending until connected; no fixed costs', () => {
   const doc = {
     claude: { draft: { calls: 12, microCents: 360000 }, ask: { calls: 3, microCents: 90000 } },
     paypal: { payments: 2, feeCents: 2960, grossCents: 100000 },
   }
-  const s = spentSummary(doc, { monthlyCosts: [{ name: 'Google Workspace', amount: 14.4 }, { name: 'Domain', amount: 1.75 }] })
-  assert.equal(s.totalCents, 450 + 2960 + 1615)
+  const s = spentSummary(doc)
+  assert.equal(s.totalCents, 450 + 2960)
   const by = Object.fromEntries(s.rows.map((r) => [r.key, r]))
   assert.equal(by.claude.cents, 450)
   assert.equal(by.claude.note, '15 calls · list price per token')
@@ -63,14 +57,15 @@ test('spentSummary: sums Claude, PayPal fees and fixed costs; Google pending unt
   assert.equal(by.google.cents, null)
   assert.equal(by.google.how, 'pending')
   assert.equal(s.partial, true)
-  assert.equal(by.fixed.cents, 1615)
-  assert.equal(by.fixed.how, 'estimate')
+  assert.deepEqual(s.missing, ['Google Cloud', 'Google Ads'])
+  assert.equal(by.ads.how, 'pending')
+  assert.equal(by.fixed, undefined)
+  assert.deepEqual(s.rows.map((r) => r.key), ['claude', 'paypal', 'google', 'ads'])
 })
 
 test('spentSummary: empty month', () => {
-  const s = spentSummary(null, {})
+  const s = spentSummary(null)
   assert.equal(s.totalCents, 0)
-  assert.equal(s.rows.find((r) => r.key === 'fixed').how, 'none')
   assert.equal(s.rows.find((r) => r.key === 'paypal').note, 'no online payments yet')
 })
 
@@ -82,7 +77,7 @@ test('spendText: cents under a dollar, dollars otherwise', () => {
 })
 
 test('spentSummary: the total keeps fractional cents so it matches its lines ("2.1¢", not "2¢")', () => {
-  const s = spentSummary({ claude: { ask: { calls: 1, microCents: 2100 } } }, {})
+  const s = spentSummary({ claude: { ask: { calls: 1, microCents: 2100 } } })
   assert.equal(s.totalCents, 2.1)
   assert.equal(spendText(s.totalCents), '2.1¢')
 })

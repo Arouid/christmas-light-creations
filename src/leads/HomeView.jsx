@@ -46,7 +46,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   const today = todayISO()
   const month = monthKey(minute)
   const usage = useLiveDoc(user, 'usage', month)
-  const spent = useMemo(() => spentSummary(usage.data, settings), [usage.data, settings])
+  const spent = useMemo(() => spentSummary(usage.data), [usage.data])
 
   const nums = useMemo(() => counters({ leads, invoices, calls, today }), [leads, invoices, calls, today])
   const progress = useMemo(() => seasonProgress(customers, season), [customers, season])

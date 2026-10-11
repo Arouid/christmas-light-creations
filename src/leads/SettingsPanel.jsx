@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import { STAFF_NAMES, staffName } from '../lib/activity'
-import { fixedCosts } from '../lib/spend'
 import { useStaff } from './staffContext'
 import { useLiveCollection } from './staffStore'
 import HomeBase from './HomeBase'
@@ -201,38 +200,6 @@ function StaffNames({ settings, onSave }) {
   )
 }
 
-// Fixed monthly costs (Google Workspace, Google Voice, the domain…) for the
-// "Spent this month" box on Home (settings/app.monthlyCosts, docs/specs/spend.md).
-function MonthlyCosts({ settings, onSave }) {
-  const [rows, setRows] = useState(() => fixedCosts(settings.monthlyCosts).map((r) => ({ name: r.name, amount: String(r.amount) })))
-  const [msg, setMsg] = useState(null)
-  const set = (i, patch) => { setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r))); setMsg(null) }
-  async function save() {
-    const kept = rows.filter((r) => r.name.trim() || r.amount.trim())
-    if (kept.some((r) => !r.name.trim() || !(Number(r.amount) >= 0))) return setMsg('Each line needs a name and a dollar amount (0 or more).')
-    await onSave({ monthlyCosts: fixedCosts(kept) })
-    setMsg('Saved ✓')
-  }
-  return (
-    <div className={box}>
-      <p className="font-semibold">Monthly costs (Home → Spent this month)</p>
-      <p className="text-sm text-slate-400">Fixed bills the app can’t see on its own: Google Workspace, Google Voice, the domain. Dollars a month; they’re added to the box on Home as “what you typed”.</p>
-      {rows.map((r, i) => (
-        <div key={i} className="grid grid-cols-[1fr_6rem_auto] items-center gap-2 text-sm">
-          <input aria-label="Name" value={r.name} onChange={(e) => set(i, { name: e.target.value })} className={small} placeholder="Google Workspace" />
-          <label className="flex items-center gap-1">$<input aria-label="Dollars a month" value={r.amount} inputMode="decimal" onChange={(e) => set(i, { amount: e.target.value })} className={small} placeholder="14.40" /></label>
-          <button type="button" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} aria-label="Remove line" className="min-h-11 min-w-11 text-slate-400">✕</button>
-        </div>
-      ))}
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={() => setRows((rs) => [...rs, { name: '', amount: '' }])} className="min-h-11 rounded-full bg-white/10 px-4 text-sm">+ Add a cost</button>
-        <button type="button" onClick={save} className="min-h-11 rounded-full bg-glow-400 px-5 text-sm font-semibold text-night-950">Save</button>
-        {msg && <span className={`text-sm ${msg.startsWith('Saved') ? 'text-emerald-400' : 'text-berry-500'}`}>{msg}</span>}
-      </div>
-    </div>
-  )
-}
-
 // Defaults for new proposals: deposit, takedown %, who countersigns, and the
 // contract terms (owner + attorney to finish every [TO FILL IN]).
 function ProposalDefaults({ settings, onSave }) {
@@ -326,8 +293,6 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
             <input type="checkbox" checked={settings.askClaude !== false} onChange={(e) => onSave({ askClaude: e.target.checked })} className="size-5" /> Ask Claude is on
           </label>
         </div>
-
-        <MonthlyCosts settings={settings} onSave={onSave} />
 
         <ProposalDefaults settings={settings} onSave={onSave} />
 

@@ -44,7 +44,7 @@ export const SECTIONS = [
       '**Scheduled emails**: every email waiting to go out (⏰ Send later), soonest first, with who scheduled it. A list scheduled together is one line (**Show names**, **Cancel all**). Anyone can **Edit** the time or text, or **Cancel**, until it goes. **Didn’t go** ones stay here with the reason until someone gives them a **New time…** or **Removes** them.',
       '**Today’s routes**: each route with stops done, skipped and left. **Season**: installs and takedowns by step, and money collected (season billing marked paid) next to last season.',
       '**System status** lights: text/email sync, outgoing email (red when an email didn’t go or bounced), website problems, payments, the request-alert email list, the activity log, and notifications on this device. Green is good; amber means look; red means something broke (tap the red banner).',
-      '**Spent this month**: what the services behind the app cost so far this month. **Claude** (Suggest a reply, Ask Claude, Plan with Claude) is exact: every call’s tokens at Anthropic’s list price. **PayPal fees** are exact: what PayPal kept on each online payment. **Google Cloud** (Firebase, Maps, email) is exact too, about a day behind: Google’s billing export is read every 6 hours, and the line says “as of” which day; **see billing** opens Google’s page. **Fixed** is what you typed in **⚙ Settings → Monthly costs** (Workspace, Voice, domain). Until the export’s first run the Google line says so and the total leaves it out.',
+      '**Spent this month**: what the services behind the app cost so far this month. **Claude** (Suggest a reply, Ask Claude, Plan with Claude) is exact: every call’s tokens at Anthropic’s list price. **PayPal fees** are exact: what PayPal kept on each online payment. **Google Cloud** (Firebase, Maps, email) is exact too, about a day behind: Google’s billing export is read every 6 hours, and the line says “as of” which day; **see billing** opens Google’s page. **Google Ads** comes the same way once the Ads transfer is connected; **see ads** opens Google Ads. Only costs that go up with use are shown, no fixed bills. Until a Google line has its first numbers it says so and the total leaves it out.',
       '**⛶ Wall screen**: full screen with big numbers for a TV in the shop; it updates by itself. **✕** or Esc to leave.',
       '**⠿ Arrange**: drag the panels where you want them (on a phone, use the ▲ ▼ arrows on each panel), then **Done arranging**. It’s saved on that phone or computer; **Reset layout** puts them back.',
       'Names show as first name + last initial (Scott M., Lacie M., Katie P.), also at the top right instead of your email. Anyone new (or a different name): **⚙ Settings → Staff names**.',
@@ -221,7 +221,6 @@ export const SECTIONS = [
       '**Home base** (for distances and routes), **price per foot** for designs, **early-install discounts**.',
       '**Proposals & contracts**: deposit %, takedown % and minimum (set both to 0 if takedown is ever included), countersigner, contract terms.',
       '**🤖 Ask Claude**: the on/off switch for the question panel (off hides the tab and the server refuses questions).',
-      '**Monthly costs**: fixed bills (Google Workspace, Google Voice, the domain) in dollars a month, added to **Home → Spent this month**.',
     ],
   },
   {

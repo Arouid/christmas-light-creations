@@ -51,12 +51,13 @@ export const demoData = {
     { id: 'demo-call-2', customerId: 'example-family', customerName: 'Example Family', issue: 'Tripped GFCI',
       received: '2026-11-28', status: 'Done', completed: '2026-11-28' },
   ]),
-  settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 }, monthlyCosts: [{ name: 'Google Workspace', amount: 14.4 }, { name: 'Google Voice', amount: 10 }, { name: 'Domain', amount: 1.75 }] } },
-  // Home → Spent this month (docs/specs/spend.md): this month's Claude calls, PayPal fees and Google Cloud export.
+  settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 } } },
+  // Home → Spent this month (docs/specs/spend.md): this month's Claude calls, PayPal fees, Google Cloud export and Google Ads transfer.
   usage: { [monthKey()]: {
     claude: { draft: { calls: 14, inputTokens: 71000, outputTokens: 11200, microCents: 42300 }, ask: { calls: 5, inputTokens: 40500, outputTokens: 2100, microCents: 18800 }, plan: { calls: 2, inputTokens: 30000, outputTokens: 7000, microCents: 29600 } },
     paypal: { payments: 3, grossCents: 185000, feeCents: 5667 },
     google: { totalCents: 212, byService: { 'Cloud Firestore': 118, 'Cloud Functions': 54, 'Maps API': 31, 'Cloud Storage': 9 }, asOf: new Date(Date.now() - 3 * 3600e3).toISOString(), lastExportAt: new Date(Date.now() - 20 * 3600e3).toISOString() },
+    ads: { totalCents: 4850, byCampaign: { 'Pearland lights': 3900, Friendswood: 950 }, asOf: new Date(Date.now() - 3 * 3600e3).toISOString(), lastDay: new Date(Date.now() - 30 * 3600e3).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }) },
   } },
   signs: byId([
     { id: 'demo-sign-1', corner: 'Broadway & 288', code: 'broadway-288', lat: 29.5695, lng: -95.3864, placedAt: hoursAgo(30), cost: 10, updatedBy: 'demo@example.com' },

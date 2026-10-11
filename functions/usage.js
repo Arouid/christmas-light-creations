@@ -1,7 +1,7 @@
 // What the app spends on outside services, month to date (docs/specs/spend.md).
 // Pure: the server adds to usage/{YYYY-MM} after each Claude call and each
 // PayPal capture; Home reads that one document (via src/lib/spend.js) and
-// adds the fixed monthly costs from ⚙ Settings. No imports from the rest of
+// shows it. Only costs that go up with use (owner, 2026-10-11): no fixed bills. No imports from the rest of
 // functions/ except googleBilling.js (also pure). Tested in tests/usage.test.mjs.
 import { topServices } from './googleBilling.js'
 
@@ -75,18 +75,11 @@ export function paypalIncrement(capture, grossCents) {
   }
 }
 
-// Fixed monthly costs from ⚙ Settings (settings/app.monthlyCosts):
-// [{ name, amount }] in dollars. Bad rows are ignored.
-export function fixedCosts(list) {
-  return (Array.isArray(list) ? list : [])
-    .map((x) => ({ name: String(x?.name ?? '').trim().slice(0, 60), amount: Number(x?.amount) }))
-    .filter((x) => x.name && Number.isFinite(x.amount) && x.amount >= 0)
-}
-
-// The box on Home. usageDoc: usage/{month} (or null); settings: settings/app.
-// Every amount in cents. `how`: exact | estimate | pending | none; `partial`
-// is true while Google Cloud has no number yet (then it's not in the total).
-export function spentSummary(usageDoc, settings = {}) {
+// The box on Home. usageDoc: usage/{month} (or null).
+// Every amount in cents. `how`: exact | pending; `partial`
+// is true while Google Cloud or Google Ads has no number yet (then it's not
+// in the total) and `missing` names them.
+export function spentSummary(usageDoc) {
   const u = usageDoc ?? {}
   const claude = Object.entries(u.claude ?? {}).map(([key, s]) => ({
     key, name: CLAUDE_SERVICES[key] ?? 'Other', calls: Number(s?.calls) || 0,
@@ -98,14 +91,18 @@ export function spentSummary(usageDoc, settings = {}) {
   const feeCents = Number(pp.feeCents) || 0
   const payments = Number(pp.payments) || 0
   const unknown = Number(pp.unknownFees) || 0
-  const fixed = fixedCosts(settings.monthlyCosts)
-  const fixedCents = Math.round(fixed.reduce((a, x) => a + x.amount, 0) * 100)
   // Google Cloud: from the billing export (functions/googleBilling.js), about a
   // day behind; until the first run the line says so and stays out of the total.
   const g = u.google
   const googleCents = g ? Number(g.totalCents) || 0 : null
   const asOf = g ? asOfText(g.lastExportAt ?? g.asOf) : ''
   const top = topServices(g)
+  // Google Ads: from the BigQuery Data Transfer for Google Ads (same dataset,
+  // same function); `pending` until the owner connects it.
+  const a = u.ads
+  const adsCents = a ? Number(a.totalCents) || 0 : null
+  const adsAsOf = a ? (a.lastDay ? asOfText(`${a.lastDay}T12:00:00-06:00`) : asOfText(a.asOf)) : ''
+  const topAds = topServices(a)
   const rows = [
     { key: 'claude', name: 'Claude', cents: claudeCents, how: 'exact',
       note: claudeCalls ? `${claudeCalls} call${claudeCalls === 1 ? '' : 's'} · list price per token` : 'no calls yet · list price per token',
@@ -115,10 +112,12 @@ export function spentSummary(usageDoc, settings = {}) {
     { key: 'google', name: 'Google Cloud', cents: googleCents, how: g ? 'exact' : 'pending',
       note: g ? [top.length ? '' : 'nothing billed yet', asOf ? `as of ${asOf}` : 'from the billing export'].filter(Boolean).join(' · ') : 'export on, first numbers within a day',
       parts: top },
-    { key: 'fixed', name: 'Fixed', cents: fixedCents, how: fixed.length ? 'estimate' : 'none',
-      note: fixed.length ? fixed.map((x) => x.name).join(', ') : 'add Workspace, Voice, domain in ⚙ Settings', parts: fixed },
+    { key: 'ads', name: 'Google Ads', cents: adsCents, how: a ? 'exact' : 'pending',
+      note: a ? [topAds.length ? '' : 'no ad spend yet', adsAsOf ? `as of ${adsAsOf}` : 'from the Ads transfer'].filter(Boolean).join(' · ') : 'not connected yet · BigQuery → Data transfers → Google Ads',
+      parts: topAds },
   ]
-  return { totalCents: claudeCents + feeCents + (googleCents ?? 0) + fixedCents, rows, partial: googleCents == null }
+  const missing = [googleCents == null && 'Google Cloud', adsCents == null && 'Google Ads'].filter(Boolean)
+  return { totalCents: claudeCents + feeCents + (googleCents ?? 0) + (adsCents ?? 0), rows, partial: missing.length > 0, missing }
 }
 
 // "Oct 10" (Central) for the export's last timestamp; '' when unknown.

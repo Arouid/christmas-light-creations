@@ -57,7 +57,7 @@ import { dailyReport, incidentEmail, missedLeadAlerts, shouldMail, syncStale } f
 import { SEASON, bookedByDay, bookingSeason, capacity, openDays } from './availability.js'
 import { captureOrder, createOrder, getOrder } from './paypal.js'
 import { claudeIncrement, monthKey, paypalFeeCents, paypalIncrement } from './usage.js'
-import { billingQuery, googleSpend as googleSpendOf, previousMonth } from './googleBilling.js'
+import { adsQuery, adsSpend, billingQuery, googleSpend as googleSpendOf, isMissingTable, previousMonth } from './googleBilling.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
@@ -106,22 +106,35 @@ function recordUsage(increments) {
     .catch((e) => logger.warn('usage not recorded', e.message))
 }
 
-// Google Cloud spend for Home (docs/specs/spend.md): every 6 hours, read this
-// and last month's net cost per service from the Cloud Billing export in
-// BigQuery (dataset `billing`, owner enabled it 2026-10-11) and write it as
-// usage/{YYYY-MM}.google, leaving the Claude and PayPal counters alone.
+// Google Cloud and Google Ads spend for Home (docs/specs/spend.md): every 6
+// hours, read this and last month's net cost per service from the Cloud
+// Billing export in BigQuery (dataset `billing`, owner enabled it 2026-10-11)
+// and the Ads cost per campaign from the Google Ads transfer (same dataset),
+// and write them as usage/{YYYY-MM}.google and .ads, leaving the Claude and
+// PayPal counters alone. A source whose table isn't there yet is skipped
+// (Home keeps saying it isn't connected); the other one still updates.
 // The functions service account needs BigQuery Job User (project) and
 // BigQuery Data Viewer (dataset billing); a refusal is logged, nothing else breaks.
 export const googleSpend = onSchedule({ schedule: '20 */6 * * *', timeZone: 'America/Chicago', region: REGION, timeoutSeconds: 120, retryCount: 1 }, async () => {
   const { BigQuery } = await import('@google-cloud/bigquery')
+  const bq = new BigQuery()
   const months = [monthKey(), previousMonth(monthKey())]
-  const [rows] = await new BigQuery().query(billingQuery(months))
-  const spend = googleSpendOf(rows, months)
   const db = getFirestore()
-  for (const [month, google] of Object.entries(spend)) {
-    await db.doc(`usage/${month}`).set({ google, updatedAt: FieldValue.serverTimestamp() }, { mergeFields: ['google', 'updatedAt'] })
+  const sources = { google: [billingQuery, googleSpendOf], ads: [adsQuery, adsSpend] }
+  const log = {}
+  for (const [field, [queryOf, sumOf]] of Object.entries(sources)) {
+    let rows
+    try { [rows] = await bq.query(queryOf(months)) } catch (e) {
+      if (isMissingTable(e)) { log[field] = 'no table yet'; continue }
+      throw e
+    }
+    const spend = sumOf(rows, months)
+    for (const [month, value] of Object.entries(spend)) {
+      await db.doc(`usage/${month}`).set({ [field]: value, updatedAt: FieldValue.serverTimestamp() }, { mergeFields: [field, 'updatedAt'] })
+    }
+    log[field] = Object.fromEntries(months.map((m) => [m, { cents: spend[m].totalCents, lines: Object.keys(spend[m].byService ?? spend[m].byCampaign).length, through: spend[m].lastExportAt ?? spend[m].lastDay }]))
   }
-  logger.info('googleSpend', Object.fromEntries(months.map((m) => [m, { cents: spend[m].totalCents, services: Object.keys(spend[m].byService).length, lastExportAt: spend[m].lastExportAt }])))
+  logger.info('googleSpend', log)
 })
 const PAYPAL_CLIENT_ID = defineString('PAYPAL_CLIENT_ID')
 const PAYPAL_ENV = defineString('PAYPAL_ENV', { default: 'sandbox' })
