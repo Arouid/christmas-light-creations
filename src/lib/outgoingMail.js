@@ -7,13 +7,16 @@ import { toMs } from './activity.js'
 export const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 // The sync runs every few minutes; give a send this long before expecting Gmail to show it.
 export const GRACE_MS = 15 * 60 * 1000
+// When the sync started stamping Sent copies (messageSync deploy): emails sent
+// before this had already been passed over, so they can never be confirmed.
+export const CONFIRM_SINCE = Date.parse('2026-10-11T04:20:00Z')
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 // sent: history entries with source 'app' (at ISO, gmailSeenAt?); scheduled:
 // scheduledEmails docs; lastSync: ms of the last sync that filed something.
 export function outgoingLight({ sent = [], scheduled = [], lastSync = 0, now = Date.now() }) {
-  const week = sent.filter((m) => now - toMs(m.at) <= WEEK_MS)
+  const week = sent.filter((m) => now - toMs(m.at) <= WEEK_MS && toMs(m.at) >= CONFIRM_SINCE)
   const failed = scheduled.filter((s) => s.status === 'failed' && s.open !== false)
   const unconfirmed = week.filter((m) => !m.gmailSeenAt)
   // The sync ran after this went out (something else got filed later) and still didn't see it.
