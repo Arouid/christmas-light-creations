@@ -125,7 +125,7 @@ export const googleSpend = onSchedule({ schedule: '20 */6 * * *', timeZone: 'Ame
   for (const [field, [queryOf, sumOf]] of Object.entries(sources)) {
     let rows
     try { [rows] = await bq.query(queryOf(months)) } catch (e) {
-      if (isMissingTable(e)) { log[field] = 'no table yet'; continue }
+      if (isMissingTable(e)) { log[field] = `no table yet: ${String(e.message).slice(0, 200)}`; continue }
       throw e
     }
     const spend = sumOf(rows, months)
