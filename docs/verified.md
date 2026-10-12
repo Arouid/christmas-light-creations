@@ -404,4 +404,4 @@ What was actually checked working, and how. Newest first.
 
 ## 2026-10-11 Report a problem, live
 
-- Owner, from his phone on the live /account/ (his own customer record): **Report a problem** → Section out, with a note → Send. `functions:log --only reportProblem` at 2026-10-12T03:09Z: callable verification passed (auth VALID, App Check VALID), `{"issue":"Section out","note":true,"emailed":3}`. Not yet seen: the phone notification, the Service tab entry and marking it Done (checklist #83–84).
+- Owner, from his phone on the live /account/ (his own customer record): **Report a problem** → Section out, with a note → Send. `functions:log --only reportProblem` at 2026-10-12T03:09Z: callable verification passed (auth VALID, App Check VALID), `{"issue":"Section out","note":true,"emailed":3}`. Owner confirmed the phone notification and the call on the Service tab; marking it Done still to try (checklist #84).
