@@ -409,3 +409,7 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-12 Firebase Storage on, rules published
 
 - Owner created the bucket from his phone (Firebase console → Storage → Get started, production mode, no-cost location US-EAST1; bucket `clc-leads-site.firebasestorage.app`, the name already in `src/lib/firebase.js`). `firebase deploy --only storage` (owner's command): rules compiled and released. Not yet checked: a real upload from the staff app (checklist #78–81), and whether the cross-service Firestore read was granted automatically (a refused upload would show it).
+
+## 2026-10-12 First install photo uploaded
+
+- Owner, staff app on his phone, his own record → 📷 Photos → Take photo: first attempt refused (`storage/unauthorized`): the Storage rules read the `staff` collection and the project wasn't allowed cross-service calls yet. Firebase console → Storage → Rules showed the red "cross-service database calls" warning; **Fix issue** granted it; the next upload worked and the photo shows on the record. The CLI route (`deploy --only storage --force`, file changed) had not granted it. Not yet checked: Remove, another staff member's photo, the owner flag (checklist #79–81).
