@@ -7,7 +7,9 @@ rules_version = '2';
 //
 // Publish: Firebase console → Storage → Rules → paste → Publish. The first
 // time, the console asks to let Storage read Firestore (cross-service rules):
-// accept it.
+// accept it. From the CLI: `firebase deploy --only storage --force`, never with
+// --non-interactive (that skips the grant), and only a changed file triggers
+// the check: an unchanged one is "already up to date" and skips it (2026-10-12).
 service firebase.storage {
   match /b/{bucket}/o {
 
