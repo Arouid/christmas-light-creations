@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { business } from '../data/content'
+import { ALL_TABS, BEFORE, LABEL, MORE } from '../lib/staffMenu'
+import Drawer from './Drawer'
 import { leadToCustomer, seasonYear } from '../lib/customers'
 import CustomerDetail from './CustomerDetail'
 import CustomersView from './CustomersView'
@@ -50,10 +52,7 @@ import { staffName } from '../lib/activity'
 // requests inside Leads (#past), and the rarely used tabs under "More"
 // (the row got too long: owner 2026-10-10). The app opens on Home.
 // Ask Claude sits right after Home so it shows without scrolling on a phone (owner, 2026-10-10).
-const BEFORE = [['home', 'Home'], ['ask', '🤖 Ask Claude'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes'], ['service', 'Service']]
-const MORE = [['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
-const HIDDEN = [['past', 'Past requests']]
-const ALL_TABS = [...BEFORE, ...MORE, ...HIDDEN]
+// The lists live in src/lib/staffMenu.js (BEFORE, MORE, HIDDEN); phones use the ☰ drawer instead of the row.
 // Which top-row tab a hash belongs to.
 const sectionOf = (tab) => (tab.startsWith('view-') ? 'customers' : tab === 'past' ? 'leads' : MORE.some(([k]) => k === tab) ? 'more' : tab)
 const chip = (on) => `inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-medium ${on ? 'bg-glow-400 text-night-950' : 'bg-white/10 hover:bg-white/15'}`
@@ -65,7 +64,7 @@ function Screen({ children }) {
 const tabFromHash = () => {
   const h = window.location.hash.slice(1)
   if (h.startsWith('route-')) return 'route' // #route-<id> (installer) or #route-<id>~edit
-  if (h.startsWith('accounts/')) return 'accounts' // #accounts/<kind>/<id>
+  if (h.startsWith('accounts/') || h.startsWith('accounts?')) return 'accounts' // #accounts/<kind>/<id>, #accounts?q=<search>
   return h.startsWith('view-') || ALL_TABS.some(([k]) => k === h) ? h : 'home'
 }
 const routeFromHash = () => {
@@ -91,6 +90,8 @@ export default function LeadsApp() {
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  const [menu, setMenu] = useState(false) // the phone's ☰ drawer
+  const closeMenu = useCallback(() => setMenu(false), [])
   // null = not decided (show once per device after the first sign-in), true = asked for, false = closed.
   const [tour, setTour] = useState(null)
   const [installHidden, setInstallHidden] = useState(() => { try { return localStorage.getItem('clcInstallHidden') === '1' } catch { return false } })
@@ -286,7 +287,12 @@ export default function LeadsApp() {
       )}
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 lg:max-w-7xl">
-          <h1 className="font-display text-xl font-extrabold">CLC Staff</h1>
+          <div className="flex min-w-0 items-center gap-2">
+            <button type="button" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu}
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl lg:hidden">☰</button>
+            <h1 className="shrink-0 font-display text-xl font-extrabold">CLC Staff</h1>
+            <span className="truncate text-sm text-slate-400 lg:hidden">· {section === 'more' ? LABEL[tab] : LABEL[section]}</span>
+          </div>
           <div className="flex min-w-0 items-center gap-2 text-sm sm:gap-3">
             <span className="hidden truncate text-slate-400 sm:inline" title={user.email}>{staffName(user.email, feed.names)}</span>
             <button type="button" onClick={() => setShowMessages(true)} title="Customer messages (red = nobody has taken them yet)"
@@ -300,13 +306,14 @@ export default function LeadsApp() {
               )}
             </button>
             <button type="button" onClick={() => setShowGuide(true)} aria-label="Staff guide" title="Staff guide: what the app does"
-              className="shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold">?</button>
+              className="hidden shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold lg:block">?</button>
             <button type="button" onClick={() => setShowSettings(true)} aria-label="Settings" title="Settings"
-              className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">⚙</button>
-            {!demo && <button type="button" onClick={signOut} className="shrink-0 rounded-full border border-white/20 px-3 py-1.5">Sign out</button>}
+              className="hidden shrink-0 rounded-full border border-white/20 px-3 py-1.5 lg:block">⚙</button>
+            {!demo && <button type="button" onClick={signOut} className="hidden shrink-0 rounded-full border border-white/20 px-3 py-1.5 lg:block">Sign out</button>}
           </div>
         </div>
-        <div className="mx-auto flex max-w-3xl items-stretch px-2 lg:max-w-7xl">
+        {/* Computers: the row of sections. Phones: the ☰ drawer instead. */}
+        <div className="mx-auto hidden max-w-3xl items-stretch px-2 lg:flex lg:max-w-7xl">
           <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="Sections">
             {BEFORE.filter(([k]) => k !== 'ask' || askOn).map(([k, label]) => (
               <a key={k} href={`#${k}`} aria-current={section === k ? 'page' : undefined}
@@ -329,6 +336,8 @@ export default function LeadsApp() {
           </details>
         </div>
       </header>
+      <Drawer open={menu} onClose={closeMenu} tab={tab} askOn={askOn} count={alerts.count} who={staffName(user.email, feed.names)} demo={demo}
+        onMessages={() => setShowMessages(true)} onGuide={() => setShowGuide(true)} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
 
       {tab === 'ask' && (
         <div className="min-h-0 flex-1">

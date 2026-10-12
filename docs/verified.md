@@ -413,3 +413,10 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-12 First install photo uploaded
 
 - Owner, staff app on his phone, his own record → 📷 Photos → Take photo: first attempt refused (`storage/unauthorized`): the Storage rules read the `staff` collection and the project wasn't allowed cross-service calls yet. Firebase console → Storage → Rules showed the red "cross-service database calls" warning; **Fix issue** granted it; the next upload worked and the photo shows on the record. The CLI route (`deploy --only storage --force`, file changed) had not granted it. Not yet checked: Remove, another staff member's photo, the owner flag (checklist #79–81).
+
+## 2026-10-12 Staff app: ☰ drawer menu on phones
+
+- Dev `/leads/?demo` at 375 px: ☰ opens the drawer (Find anyone box; Home, Accounts, Map, Ask Claude, Messages with the red 5; four folded groups; Staff guide, Settings, Demo footer); no horizontal overflow; the tab row is `display: none`. Tapping a group shows its four rows. Typing "sample" in Find anyone and submitting → `#accounts?q=sample`, drawer closed, the Accounts search box prefilled with 6 matches, header reads "· Accounts".
+- 1280 px: the tab row is back (`flex`), ☰ and the section label hidden, header buttons 💬 ? ⚙ as before.
+- `npm run check`: lint clean, 354 tests (new `staffMenu` test: every section reachable exactly once), build.
+- Console: only the browser pane's "unknown error occurred when fetching the script" lines (it refuses every service worker; not the app). Not checked: a real phone (checklist #88–89), the tour over the drawer, Escape/backdrop by hand.

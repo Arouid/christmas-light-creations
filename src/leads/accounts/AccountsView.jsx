@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { buildIndex, searchAccounts } from '../../lib/accountSearch'
+import { searchFromHash } from '../../lib/staffMenu'
 import { gateFor } from '../../lib/customers'
 import { money, parseMoney } from '../../lib/discounts'
 import { findCustomer } from '../../lib/oldEstimates'
@@ -48,8 +49,8 @@ function Section({ title, children, open = true }) {
   )
 }
 
-function SearchBox({ index, autoFocus, compact, onPick }) {
-  const [q, setQ] = useState('')
+function SearchBox({ index, autoFocus, compact, initial = '', onPick }) {
+  const [q, setQ] = useState(initial) // initial: a term typed in the phone's ☰ menu
   const [hi, setHi] = useState(0)
   const results = useMemo(() => searchAccounts(index, q), [index, q])
   const pick = (e) => { setQ(''); onPick(e.key) }
@@ -288,12 +289,13 @@ function PastAccount({ p, onMakeCustomer, onOpenAccount }) {
 // Accounts tab: a search box for everyone, and one page per person.
 export default function AccountsView({ customers, leads = [], past = [], calls = [], gates = [], season, user, onOpenCustomer, onUpdateCustomer, onMakeLeadCustomer, onMakePastCustomer }) {
   const [key, setKey] = useState(keyFromHash)
+  const [term, setTerm] = useState(() => searchFromHash(window.location.hash)) // #accounts?q=… from the ☰ menu
   const [recent, setRecent] = useState(readRecent)
   const index = useMemo(() => buildIndex({ customers, leads, past }), [customers, leads, past])
   const top = useRef(null)
 
   useEffect(() => {
-    const onHash = () => setKey(keyFromHash())
+    const onHash = () => { setKey(keyFromHash()); setTerm(searchFromHash(window.location.hash)) }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -317,7 +319,7 @@ export default function AccountsView({ customers, leads = [], past = [], calls =
     return (
       <div ref={top} className="mx-auto max-w-2xl pt-[12vh]">
         <h1 className="mb-6 text-center font-display text-4xl font-extrabold">Accounts</h1>
-        <SearchBox index={index} autoFocus onPick={open} />
+        <SearchBox key={term} index={index} initial={term} autoFocus onPick={open} />
         <p className="mt-4 text-center text-sm text-slate-400">{customers.length} customers · {leads.filter((x) => !x.customerId).length} website leads · {past.length} past requests</p>
         <AddOnChecks customers={customers} open={open} />
         <OldRecordsToFill customers={customers} past={past} user={user} open={open} />

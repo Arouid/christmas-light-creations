@@ -33,7 +33,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 
 ## Site rules
 
-- Staff app on desktop (`lg:`): Customers and Season are sortable tables (`DataTable.jsx`), customer detail is a right side panel; phones keep lists and a full-screen detail.
+- Staff app on desktop (`lg:`): Customers and Season are sortable tables (`DataTable.jsx`), customer detail is a right side panel, sections are a tab row; phones keep lists, a full-screen detail and a ☰ drawer menu (`src/leads/Drawer.jsx`; section lists, shortcuts and groups in `src/lib/staffMenu.js`, tested). A new section goes in `staffMenu.js` (row + a drawer group) or the test fails.
 - Area pages: content in `src/data/areas.js`; keep them few and genuinely local (no near-duplicate town pages). Adding one updates the sitemap and homepage links automatically.
 - Mobile first: design for phones, then scale up with `sm:`/`md:`/`lg:`. No horizontal scroll at 375px. Tap targets at least 44px.
 - All copy, photos, reviews and FAQ live in `src/data/content.js`. Components hold layout only.
