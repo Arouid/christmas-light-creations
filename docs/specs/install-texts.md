@@ -1,6 +1,6 @@
 # Install-day texts (day-before reminder, On our way, All done)
 
-> Status: built 2026-10-11 and checked in `/leads/?demo` (nothing to deploy: no server change); **waiting for the owner's OK** on the wording and the open questions below · Decided by Claude Code from the owner's brief
+> Status: built 2026-10-11 and checked in `/leads/?demo`, pushed the same day (nothing to deploy: no server change); **wording, the 3-hour window and the 6 pm reminders approved by the owner 2026-10-11** ("1. Is a go") · Decided by Claude Code from the owner's brief
 
 ## The problem
 
