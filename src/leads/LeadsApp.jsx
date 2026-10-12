@@ -286,7 +286,8 @@ export default function LeadsApp() {
         </div>
       )}
       <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-night-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-3 lg:max-w-7xl">
+        {/* Phones: the bar is this row alone, so it needs its own bottom padding; computers get it from the tab row below. */}
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 lg:max-w-7xl lg:pb-0">
           <div className="flex min-w-0 items-center gap-2">
             <button type="button" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu}
               className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl lg:hidden">☰</button>

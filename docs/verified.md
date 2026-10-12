@@ -420,3 +420,4 @@ What was actually checked working, and how. Newest first.
 - 1280 px: the tab row is back (`flex`), ☰ and the section label hidden, header buttons 💬 ? ⚙ as before.
 - `npm run check`: lint clean, 354 tests (new `staffMenu` test: every section reachable exactly once), build.
 - Console: only the browser pane's "unknown error occurred when fetching the script" lines (it refuses every service worker; not the app). Not checked: a real phone (checklist #88–89), the tour over the drawer, Escape/backdrop by hand.
+- Follow-up (owner, live: "not much of a gap between the top bar and the content"): the bar's bottom padding came from the tab row, now hidden on phones. Row gets `py-3` on phones (`lg:pb-0`). Dev at 375: header 69 px tall, 16 px of page padding below it on a customer page; check green (354 tests).
