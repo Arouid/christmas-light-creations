@@ -74,7 +74,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
                   </button>
                   <div className="space-y-2 pl-13">
                     <Handling m={m} who={whoOf(m, names)} feed={feed} user={user} />
-                    <SuggestReply target={draftTarget(m)} />
+                    <SuggestReply target={draftTarget(m)} chat={m.kind === 'chat'} />
                   </div>
                 </li>
               )

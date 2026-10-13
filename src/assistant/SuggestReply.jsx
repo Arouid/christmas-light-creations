@@ -2,6 +2,8 @@ import { useState } from 'react'
 import ComposeEmail from '../leads/ComposeEmail'
 import { TextButton, pill } from '../leads/Reach'
 import { logActivity } from '../leads/activity'
+import { sendReply } from '../leads/chat'
+import { useStaff } from '../leads/staffContext'
 import { requestDraft } from './draftReply'
 import { activityTarget, emailTarget } from './lib/targets'
 
@@ -10,10 +12,14 @@ import { activityTarget, emailTarget } from './lib/targets'
 // and the suggested next step, then hands the (edited) text to the normal
 // Email or Text flow. Staff press Send themselves; nothing is sent from here.
 // target: { customerId } | { leadId } | { messageId } (an unmatched sender).
+// chat: the entry is an account-chat message (owner 2026-10-13: "is there a way to send this
+// back to their open chat?"): a Send in chat button posts the draft to their thread.
 const box = 'block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2 text-base text-slate-100 placeholder:text-slate-500'
 
-export default function SuggestReply({ target, season, className = pill, label = 'Suggest a reply' }) {
+export default function SuggestReply({ target, season, className = pill, label = 'Suggest a reply', chat = false }) {
+  const { user } = useStaff()
   const [state, setState] = useState({ step: 'idle' }) // idle | loading | ready | error
+  const [chatState, setChatState] = useState(null) // null | 'sending' | { note } | { error }
   const [subject, setSubject] = useState('')
   const [reply, setReply] = useState('')
 
@@ -31,6 +37,18 @@ export default function SuggestReply({ target, season, className = pill, label =
   }
 
   const sent = (how) => logActivity('ai-draft', { ...activityTarget(target), name: state.draft?.contact?.fullName }, `${how}: ${state.draft?.summary ?? ''}`)
+  async function sendInChat() {
+    const body = reply.trim()
+    if (!body) { setChatState({ error: 'Write the reply first.' }); return }
+    setChatState('sending')
+    try {
+      const r = await sendReply(user, { id: target.customerId, fullName: state.draft?.contact?.fullName }, body)
+      sent('chat')
+      setChatState({ note: r?.note || 'Sent to their chat.' })
+    } catch (err) {
+      setChatState({ error: err.message })
+    }
+  }
 
   if (state.step === 'idle' || state.step === 'loading') {
     return (
@@ -78,16 +96,23 @@ export default function SuggestReply({ target, season, className = pill, label =
           <input value={subject} onChange={(e) => setSubject(e.target.value)} className={`${box} mt-1`} />
         </label>
       )}
-      <label className="block text-sm text-slate-400">{d.channel === 'email' ? 'Email' : 'Text'} (edit before sending)
+      <label className="block text-sm text-slate-400">{chat ? 'Chat reply' : d.channel === 'email' ? 'Email' : 'Text'} (edit before sending)
         <textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={Math.min(14, Math.max(4, reply.split('\n').length + 1))} className={`${box} mt-1 whitespace-pre-wrap`} />
       </label>
 
+      {chatState?.note && <p className="text-sm text-emerald-300">{chatState.note}</p>}
+      {chatState?.error && <p className="text-sm text-berry-500" role="alert">{chatState.error}</p>}
       <div className="flex flex-wrap gap-2">
+        {chat && target.customerId && !chatState?.note && (
+          <button type="button" onClick={sendInChat} disabled={chatState === 'sending'} className={`${primary} disabled:opacity-60`}>
+            {chatState === 'sending' ? 'Sending…' : '🗨️ Send in chat'}
+          </button>
+        )}
         {canEmail && (
           <ComposeEmail person={person} season={season} target={emailTarget(target)} initial={{ subject, body: reply }} label="✉️ Email this"
             className={d.channel === 'email' ? primary : pill} onSent={() => sent('email')} />
         )}
-        {canText && <TextButton phone={c.phone} message={reply} label="Text this" className={d.channel === 'text' ? primary : pill} onSent={() => sent('text')} />}
+        {canText && <TextButton phone={c.phone} message={reply} label="Text this" className={d.channel === 'text' && !chat ? primary : pill} onSent={() => sent('text')} />}
         {!canEmail && !canText && <p className="text-sm text-slate-400">No email or phone on file: copy the text above into Gmail or Voice.</p>}
         <button type="button" onClick={suggest} className={pill}>↻ Try again</button>
       </div>
