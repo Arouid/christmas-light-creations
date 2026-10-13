@@ -44,7 +44,7 @@ Not written yet. Proposed terms:
 | Term | **No initial term**: season by season. We call in late summer to book the next season; nothing renews by itself |
 | Price changes | Year-one price from the quote. A returning-customer discount is undecided |
 | Moving | The plan can move to a new address in our service area, or be **assigned to the home's buyer if the buyer agrees**. Payments already made are not refunded |
-| Early cancellation | The first payment is refundable in full within **3 days of signing**. After that the customer owes the **full season total** in the three payments, whether or not they cancel (owner, 2026-10-12) |
+| Early cancellation | The first payment is the deposit: refundable in full within **3 days of signing**, then non-refundable. Cancel before the lights are up: nothing more owed. Once the lights are up, the **full season total** is owed in the remaining payments (owner, 2026-10-12) |
 | Still to decide | Missed or declined payments; damage to our lights by the customer; renewal price increases; notice before renewal |
 
 For comparison, our standard **lease** (paid up front) is year one at full price, then 10% more off for each returning year, capped at 50% off. The pay-in-3 plan is that lease, paid in thirds (owner, 2026-10-12: "no 2-year commitment, and thirds").
