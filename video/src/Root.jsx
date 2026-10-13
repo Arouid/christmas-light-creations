@@ -1,7 +1,7 @@
 import { Composition } from 'remotion'
 import { Ad } from './Ad.jsx'
 import { Teaser } from './Teaser.jsx'
-import { Banner } from './Banner.jsx'
+import { Banner, Profile } from './Banner.jsx'
 import data from './data.js'
 import { totalFrames } from './timeline.js'
 
@@ -20,6 +20,7 @@ export function Root() {
   return (
     <>
       <Composition id="YouTubeBanner" component={Banner} width={2048} height={1152} fps={data.fps} durationInFrames={1} defaultProps={data} />
+      <Composition id="YouTubeProfile" component={Profile} width={1080} height={1080} fps={data.fps} durationInFrames={1} defaultProps={data} />
       {SHAPES.map((s) => (
         <Composition
           key={`teaser-${s.id}`}

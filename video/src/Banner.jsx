@@ -31,3 +31,20 @@ export function Banner(props) {
     </AbsoluteFill>
   )
 }
+
+// The YouTube profile picture: 1080 × 1080, shown as a circle, so the cottage sits small and
+// centred with room all round. Rendered as a still.
+export function Profile(props) {
+  loadFonts()
+  const { colors } = props
+  const logoH = 600
+  const logoW = logoH * 0.886
+  return (
+    <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 42%, #0e1d44 0%, ${colors.navy} 70%)` }}>
+      <Snow count={60} opacity={0.6} />
+      <div style={{ position: 'absolute', left: (1080 - logoW) / 2, top: (1080 - logoH) / 2 + 10, width: logoW, height: logoH, filter: 'drop-shadow(0 0 30px rgba(240,56,238,0.5)) drop-shadow(0 0 70px rgba(255,207,77,0.3))' }}>
+        <Img src={staticFile('logo/clc-cottage-color.svg')} style={{ width: '100%', height: '100%' }} />
+      </div>
+    </AbsoluteFill>
+  )
+}
