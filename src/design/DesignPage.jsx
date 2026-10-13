@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { business, designPage as t, footerLinks } from '../data/content'
 import { newDesign } from '../designer/model.js'
 import { attachmentProblem } from '../lib/publicDesign'
+import { useToday } from '../lib/prerendered'
 import EstimateForm from '../components/EstimateForm'
 import Icon from '../components/Icon'
 import SkipLink from '../components/SkipLink'
@@ -14,7 +15,8 @@ import { SAMPLE_PHOTO, SAMPLE_PICTURE, sampleDesign } from './sampleDesign'
 // ready-made picture; the designer and the drawing code load only when needed.
 const Designer = lazy(() => import('../designer/Designer.jsx'))
 const drawing = () => import('./photo.js')
-const BRAND = `${business.name} · christmas-light-creations.com`
+// Every picture that leaves the page carries our mark (spec: "Watermark and terms").
+const stamp = (ctx, w, h) => drawing().then((m) => m.stamp(ctx, w, h))
 const primary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-glow-400 px-6 py-3 font-semibold text-night-950 shadow-[0_0_28px_-6px] shadow-glow-400 hover:bg-glow-300 disabled:opacity-60'
 const secondary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 px-6 py-3 font-semibold hover:bg-white/5 disabled:opacity-60'
 
@@ -30,13 +32,14 @@ export default function DesignPage() {
   const [busy, setBusy] = useState(false)
   const canvas = useRef(null)
   const file = useRef(null)
+  const today = useToday()
   const untouched = photo.sample && design === start // shown as SAMPLE_PICTURE, nothing to draw
 
   useEffect(() => {
     if (untouched) return
     let live = true
     drawing()
-      .then(async (m) => { const i = await m.loadImage(photo.src); if (live) { setDraw(m); setImg(i) } })
+      .then(async (m) => { const [i] = await Promise.all([m.loadImage(photo.src), m.loadBrand()]); if (live) { setDraw(m); setImg(i) } })
       .catch(() => live && setProblem(t.errors.unreadable))
     return () => { live = false }
   }, [photo.src, untouched])
@@ -73,7 +76,8 @@ export default function DesignPage() {
       let image = picture
       if (!image) {
         const m = await drawing()
-        image = m.finishedPicture(design, await m.loadImage(photo.src))
+        const [i] = await Promise.all([m.loadImage(photo.src), m.loadBrand()])
+        image = m.finishedPicture(design, i)
       }
       const a = { design: JSON.stringify(design), photo: photo.sample ? 'sample' : photo.src, image }
       return attachmentProblem(a) ? null : a
@@ -113,7 +117,8 @@ export default function DesignPage() {
               {!untouched && !img && <p className="absolute inset-0 grid place-items-center text-slate-400">Loading…</p>}
               <span className="absolute left-3 top-3 rounded-full bg-night-950/80 px-3 py-1 text-xs font-semibold">{photo.sample ? t.sampleNote : t.ownNote}</span>
             </div>
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <p className="mt-1 flex flex-wrap items-center gap-x-1 text-xs text-slate-500">© {today.getFullYear()} {business.name} · <a href={`${import.meta.env.BASE_URL}terms/`} className="inline-flex min-h-11 items-center underline underline-offset-2 hover:text-glow-300">Terms of use</a></p>
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
               {/* Never disabled: the designer waits for the photo itself, and focus returns here when it closes. */}
               <button type="button" onClick={() => setOpen(true)} className={primary}>✏️ {photo.sample ? t.open : t.edit}</button>
               <button type="button" onClick={() => file.current?.click()} disabled={busy} className={secondary}>📷 {busy ? 'Opening…' : photo.sample ? t.upload : t.uploadAgain}</button>
@@ -168,7 +173,7 @@ export default function DesignPage() {
 
       {open && (untouched || img) && (
         <Suspense fallback={<div className="fixed inset-0 z-50 grid place-items-center bg-night-950 text-slate-400">Loading designer…</div>}>
-          <Designer simple photo={photo} design={design} title="Your light design" brand={BRAND} saveLabel={t.saveLabel} saveLabelShort={t.saveLabelShort}
+          <Designer simple photo={photo} design={design} title="Your light design" stamp={stamp} saveLabel={t.saveLabel} saveLabelShort={t.saveLabelShort}
             onSave={async (d) => { setDesign(d); setOpen(false); setTimeout(toForm, 50) }}
             onClose={(d) => { if (d) setDesign(d); setOpen(false) }} />
         </Suspense>

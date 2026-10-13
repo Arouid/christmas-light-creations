@@ -20,7 +20,7 @@ export default function Footer() {
         </a>
       </div>
       <div className="mx-auto mt-10 flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-400">
-        <p>© {today.getFullYear()} {business.name} · {business.city}</p>
+        <p><a href={`${import.meta.env.BASE_URL}terms/`} className="hover:text-glow-300">© {today.getFullYear()} {business.name}</a> · {business.city}</p>
         {footerLinks.map((l) => <a key={l.href} href={l.href} className="inline-flex min-h-11 items-center underline-offset-2 hover:text-glow-300 hover:underline">{l.label}</a>)}
       </div>
     </footer>

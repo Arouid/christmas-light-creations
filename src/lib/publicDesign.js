@@ -23,3 +23,70 @@ export function attachmentProblem({ design, photo, image } = {}) {
   if (!(jpeg(image) && image.length <= LIMITS.image)) return 'image'
   return ''
 }
+
+// The business mark on every picture the public designer saves or sends
+// (spec: "Watermark and terms"): the wide logo on a dark see-through plate in
+// the bottom-right corner, the designer's address under it, sized with the
+// picture, so a screenshot still says where it came from. Only exported
+// bitmaps get it (design/photo.js); the editor on screen stays clean.
+export const WATERMARK_TEXT = 'christmas-light-creations.com/design'
+
+// Text size for a picture this wide: 19 px on a 1280-px photo, never under 12.
+export const watermarkFontSize = (width) => Math.max(12, Math.round(width / 68))
+
+// Where everything goes, in picture pixels. logoAspect = logo width / height
+// (0 = no logo, text only); textWidth = the measured text, or 0 for a guess.
+export function watermarkLayout(width, height, { logoAspect = 0, textWidth = 0 } = {}) {
+  const font = watermarkFontSize(width)
+  const pad = Math.round(font * 0.7)
+  const gap = Math.round(font * 0.35)
+  const logoW = logoAspect > 0 ? Math.round(width * 0.24) : 0
+  const logoH = logoAspect > 0 ? Math.round(logoW / logoAspect) : 0
+  const textW = Math.round(textWidth > 0 ? textWidth : font * 0.52 * WATERMARK_TEXT.length)
+  const w = Math.max(logoW, textW) + pad * 2
+  const h = pad + (logoH ? logoH + gap : 0) + font + pad
+  const x = width - pad - w
+  const y = height - pad - h
+  return {
+    font,
+    plate: { x, y, w, h, r: Math.round(font * 0.6) },
+    logo: logoH ? { x: Math.round(x + (w - logoW) / 2), y: y + pad, w: logoW, h: logoH } : null,
+    text: { x: Math.round(x + w / 2), y: y + h - pad },
+  }
+}
+
+// Draw the mark on a finished picture through its 2D context. `logo` is a
+// loaded image (anything with width/height that drawImage accepts) or null
+// for text only. Returns the layout it used.
+export function watermark(ctx, width, height, { logo = null, text = WATERMARK_TEXT } = {}) {
+  const font = `600 ${watermarkFontSize(width)}px Inter, system-ui, sans-serif`
+  ctx.save()
+  ctx.globalCompositeOperation = 'source-over'
+  ctx.globalAlpha = 1
+  ctx.font = font
+  const measured = ctx.measureText?.(text)?.width
+  const aspect = logo && logo.width > 0 && logo.height > 0 ? logo.width / logo.height : 0
+  const L = watermarkLayout(width, height, { logoAspect: aspect, textWidth: Number.isFinite(measured) ? measured : 0 })
+  const { x, y, w, h, r } = L.plate
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.arcTo(x + w, y, x + w, y + h, r)
+  ctx.arcTo(x + w, y + h, x, y + h, r)
+  ctx.arcTo(x, y + h, x, y, r)
+  ctx.arcTo(x, y, x + w, y, r)
+  ctx.closePath()
+  ctx.fillStyle = 'rgba(5,11,26,0.55)'
+  ctx.fill()
+  if (L.logo) {
+    ctx.globalAlpha = 0.92
+    ctx.drawImage(logo, L.logo.x, L.logo.y, L.logo.w, L.logo.h)
+    ctx.globalAlpha = 1
+  }
+  ctx.font = font
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'alphabetic'
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
+  ctx.fillText(text, L.text.x, L.text.y)
+  ctx.restore()
+  return L
+}

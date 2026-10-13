@@ -27,6 +27,7 @@ const photo = await photoToDataUrl(file) // { dataUrl, width, height }, EXIF dro
   defaults={{ pricePerFoot: 4.5 }}   // new designs start with this rate
   title="Pat Sample, 123 Example St"
   brand="Christmas Light Creations"   // optional text on exported images
+  stamp={(ctx, w, h) => …}            // optional: draw your own mark on exported images instead (may be async)
   onSave={async (design, { blob, stats }) => { /* store JSON + image */ }}
   onClose={() => {}}
   onSatelliteMeasure={async () => ({ feet: 52, label: 'Satellite edge' })} // optional
