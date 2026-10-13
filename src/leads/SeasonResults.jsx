@@ -1,6 +1,7 @@
 import { INSTALL_STATUSES, TAKEDOWN_STATUSES, gateFor, todayISO, withOption } from '../lib/customers'
 import { installedSummary } from '../lib/jobRecord'
 import { textMessages } from '../lib/messages'
+import { reviewShort } from '../lib/reviewAsk'
 import { DEFAULT_COLUMNS, VIEW_COLUMNS, statusKey } from '../lib/views'
 import DataTable from './DataTable'
 import { TextButton } from './Reach'
@@ -33,9 +34,11 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
   )
   const smallPill = 'inline-flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium'
   const askLink = (c) => <TextButton phone={c.phone} label="Ask" className={smallPill} message={textMessages.confirm(c, season)} />
+  // The website asks by itself 2 days after the install (docs/specs/review-ask.md): the
+  // column says where it stands; the ★ Review button is for a hand ask before that.
   const reviewable = (c) => s(c).installStatus === 'Install Completed' && phoneOf(c)
-  const reviewLink = (c) => (s(c).reviewAsked
-    ? <span className="text-xs text-slate-500">asked {s(c).reviewAsked}</span>
+  const reviewLink = (c) => (reviewShort(s(c))
+    ? <span className="text-xs text-slate-500">{reviewShort(s(c))}</span>
     : <TextButton phone={c.phone} label="★ Review" className={smallPill} message={textMessages.review(c)}
         onSent={() => onUpdate(c.id, `seasons.${season}.reviewAsked`, todayISO())} />)
 
@@ -55,7 +58,7 @@ export default function SeasonResults({ rows, mode, season, columns = DEFAULT_CO
     installed: { get: (c) => installedSummary(c), className: 'max-w-xs truncate' },
     status: { get: (c) => statusOf(c) || blank, render: (c) => statusSelect(c, 'py-1.5') },
     ask: { get: () => '', render: (c) => (askable(c) ? askLink(c) : null) },
-    review: { get: (c) => s(c).reviewAsked ?? '', render: (c) => (reviewable(c) ? reviewLink(c) : null) },
+    review: { get: (c) => reviewShort(s(c)), render: (c) => (reviewable(c) ? reviewLink(c) : null) },
   }
   const labels = Object.fromEntries(VIEW_COLUMNS)
   const tableColumns = columns.filter((k) => ALL[k]).map((k) => ({ key: k, label: k === 'ask' ? '' : k === 'review' ? 'Review' : labels[k], ...ALL[k] }))

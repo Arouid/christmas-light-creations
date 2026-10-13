@@ -158,7 +158,8 @@ export function RoutesPanel({ today, list = [], customers = [], wall }) {
   )
 }
 
-export function SeasonPanel({ season, progress, money: m, wall }) {
+// reviews: reviewStats() (docs/specs/review-ask.md); onOpenMessages opens 💬 for the texts to send.
+export function SeasonPanel({ season, progress, money: m, wall, reviews, onOpenMessages }) {
   const i = progress.install
   const t = progress.takedown
   const installs = [
@@ -191,6 +192,15 @@ export function SeasonPanel({ season, progress, money: m, wall }) {
               <Bar parts={takedowns} total={tdTotal} />
               <Legend parts={takedowns} />
             </div>
+          )}
+          {reviews?.installed > 0 && (
+            <p className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm" aria-label="Google reviews this season">
+              <span className="font-semibold">⭐ Reviews</span>
+              <span className="tabular-nums text-slate-300">
+                asked {reviews.asked} · reviewed {reviews.reviewed}
+                {reviews.toText > 0 && <> · <button type="button" onClick={onOpenMessages} className="min-h-11 text-glow-300 underline">{reviews.toText} text{reviews.toText === 1 ? '' : 's'} to send</button></>}
+              </span>
+            </p>
           )}
         </div>
       )}

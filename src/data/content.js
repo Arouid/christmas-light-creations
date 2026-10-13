@@ -1,6 +1,8 @@
 // All site copy lives here so text can be edited without touching layout code.
 // (Years and dates on prerendered pages come from useToday in lib/prerendered.js.)
 
+import { REVIEW_URL } from '../../functions/brand.js'
+
 // Vite sets BASE_URL ('/' or the github.io sub-path); plain Node (tests) has none.
 const base = import.meta.env?.BASE_URL ?? '/'
 
@@ -16,8 +18,9 @@ export const business = {
   city: 'Pearland, TX',
   since: 2011,
   homesServed: '250+',
-  // Google review link for the main Business Profile (listing without a store code).
-  reviewLink: 'https://g.page/r/CWKRhzePqUvIEAI/review',
+  // Google review link for the main Business Profile (listing without a store
+  // code); one place for the site, the staff templates and the server (docs/specs/review-ask.md).
+  reviewLink: REVIEW_URL,
   // The neon cottage from the 2012 site (assets-source/2012-backdrop); square, transparent.
   logo: `${base}images/clc-cottage.png`, // square cottage: documents, app icons, small spots
   logoWide: `${base}images/clc-logo-wide.png`, // cottage + name (owner's pick 2026-10-11): site header and footer
@@ -191,40 +194,45 @@ export const testimonials = [
   },
 ]
 
+// Gallery photos. `place` is where the photo was taken, as the owner named it
+// from a numbered contact sheet on 2026-10-13: it is the caption on the area
+// pages and in the lightbox, and every alt text ends with it. Never guess a
+// place from a file name (the pearland-highland-glen-* files are Stonebridge
+// and Cobblestone); a photo without a confirmed place gets its town only.
 const photo = (file) => `${base}images/gallery/${file}`
 export const gallery = [
-  { src: photo('warm-white-two-story-stone-home.jpg'), alt: 'Warm white lights tracing every gable, window and the garage of a two-story stone home' },
-  { src: photo('iowa-colony-clear-led-gables.jpg'), alt: 'Clear LED lights outlining three gables on a brick home in Iowa Colony' },
-  { src: photo('estate-wrapped-oaks-gazebo.jpg'), alt: 'Wrapped oak trees, a lit gazebo and pathway lights at an estate entrance' },
-  { src: photo('two-story-wrapped-trees-arched-door.jpg'), alt: 'Two-story home with wrapped trees and a lit arched front door' },
-  { src: photo('blue-wrapped-trees-nativity.jpg'), alt: 'Blue and multicolor wrapped trees with a lit nativity and roofline' },
-  { src: photo('friendswood-warm-white-ivy-home.jpg'), alt: 'Warm white roofline and garden lights on an ivy-covered home in Friendswood' },
-  { src: photo('white-stone-two-story-warm-white.jpg'), alt: 'Warm white lights on a two-story stone and brick home' },
-  { src: photo('pearland-highland-glen-two-story.jpg'), alt: 'Warm white lights on a two-story home in Lakes of Highland Glen, Pearland' },
-  { src: photo('warm-white-roofline-garden-beds.jpg'), alt: 'Roofline, windows and garden beds outlined in warm white lights' },
-  { src: photo('league-city-commercial-restaurant.jpg'), alt: 'Commercial holiday lighting on a restaurant in League City' },
-  { src: photo('pearland-multicolor-led.jpg'), alt: 'Multicolor LED lights on a Pearland home' },
-  { src: photo('pearland-highland-glen-dusk.jpg'), alt: 'Warm white lights at dusk on a brick home in Lakes of Highland Glen, Pearland' },
-  { src: photo('warm-white-brick-home-two-car-garage.jpg'), alt: 'Warm white roofline and ground lights on a brick home with a two-car garage' },
-  { src: photo('warm-white-garage-and-windows.jpg'), alt: 'Lights outlining the garage, windows and roofline of a two-story brick home' },
-  { src: photo('warm-white-single-story-home.jpg'), alt: 'Warm white roofline on a single-story brick home' },
-  { src: photo('league-city-roofline-and-yard.jpg'), alt: 'Roofline and yard-edge lights on a League City home' },
-  { src: photo('pearland-highland-glen-garage.jpg'), alt: 'Roofline and garage lights in Lakes of Highland Glen, Pearland' },
-  { src: photo('friendswood-west-ranch.jpg'), alt: 'Warm white roofline lights in West Ranch, Friendswood' },
-  { src: photo('pearland-red-and-white.jpg'), alt: 'Red and white lights on a two-story Pearland home' },
-  { src: photo('pearland-highland-glen-multicolor.jpg'), alt: 'Multicolor LED lights in Lakes of Highland Glen, Pearland' },
-  { src: photo('community-entrance-sign.jpg'), alt: 'Holiday lighting on a neighborhood entrance sign' },
-  { src: photo('commercial-building-red-lights.jpg'), alt: 'Red holiday lights along the roofline of a commercial building' },
-  { src: photo('pearland-highland-glen-walkway.jpg'), alt: 'Roofline, wreath and walkway lights in Lakes of Highland Glen, Pearland' },
-  { src: photo('blue-wrapped-oaks-estate.jpg'), alt: 'Live oaks wrapped in blue lights along an estate drive' },
-  { src: photo('nativity-trees-roofline.jpg'), alt: 'Roofline, lit shrubs and a nativity scene on a brick home' },
-  { src: photo('lit-driveway-and-roofline.jpg'), alt: 'Roofline and lit driveway edges on a single-story home' },
-  { src: photo('twin-gables-under-full-moon.jpg'), alt: 'Twin gables outlined in warm white lights under a full moon' },
-  { src: photo('gated-estate-gazebo-lights.jpg'), alt: 'Gated estate entry with a lit gazebo, walls and pathway' },
-  { src: photo('wrapped-trees-arched-entry.jpg'), alt: 'Wrapped tree trunks, arched entry and walkway lights at dusk' },
-  { src: photo('pink-and-white-roofline.jpg'), alt: 'Pink and white lights outlining the roofline, arches and garage of a brick home' },
-  { src: photo('multicolor-windows-and-roofline-dusk.jpg'), alt: 'Multicolor lights framing every window and roofline of a two-story home at dusk' },
-  { src: photo('green-led-two-story-home.jpg'), alt: 'Green LED lights outlining the gables, windows and garage of a two-story home' },
+  { src: photo('warm-white-two-story-stone-home.jpg'), place: 'Stonebridge, Pearland', alt: 'Warm white lights tracing every gable, window and the garage of a two-story stone home in Stonebridge, Pearland' },
+  { src: photo('iowa-colony-clear-led-gables.jpg'), place: 'Iowa Colony', alt: 'Clear LED lights outlining three gables on a brick home in Iowa Colony' },
+  { src: photo('estate-wrapped-oaks-gazebo.jpg'), place: 'The Lakefront Preserve, League City', alt: 'Wrapped oak trees, a lit gazebo and pathway lights at the entrance of The Lakefront Preserve, League City' },
+  { src: photo('two-story-wrapped-trees-arched-door.jpg'), place: 'Silverlake, Pearland', alt: 'Two-story home with wrapped trees and a lit arched front door in Silverlake, Pearland' },
+  { src: photo('blue-wrapped-trees-nativity.jpg'), place: 'Cabot Cove, Pearland', alt: 'Blue and multicolor wrapped trees with a lit nativity and roofline in Cabot Cove, Pearland' },
+  { src: photo('friendswood-warm-white-ivy-home.jpg'), place: 'The Forest of Friendswood, Friendswood', alt: 'Warm white roofline and garden lights on an ivy-covered home in The Forest of Friendswood, Friendswood' },
+  { src: photo('white-stone-two-story-warm-white.jpg'), place: 'Shadow Creek Ranch, Pearland', alt: 'Warm white lights on a two-story stone and brick home in Shadow Creek Ranch, Pearland' },
+  { src: photo('pearland-highland-glen-two-story.jpg'), place: 'Stonebridge, Pearland', alt: 'Warm white lights on a two-story home in Stonebridge, Pearland' },
+  { src: photo('warm-white-roofline-garden-beds.jpg'), place: 'The Lakes of Highland Glen, Pearland', alt: 'Roofline, windows and garden beds outlined in warm white lights in The Lakes of Highland Glen, Pearland' },
+  { src: photo('league-city-commercial-restaurant.jpg'), place: 'Restaurant on the I-45 service road, League City', alt: 'Commercial holiday lighting on a restaurant on the I-45 service road, League City' },
+  { src: photo('pearland-multicolor-led.jpg'), place: 'Cobblestone, Pearland', alt: 'Multicolor LED lights on a home in Cobblestone, Pearland' },
+  { src: photo('pearland-highland-glen-dusk.jpg'), place: 'Stonebridge, Pearland', alt: 'Warm white lights at dusk on a brick home in Stonebridge, Pearland' },
+  { src: photo('warm-white-brick-home-two-car-garage.jpg'), place: 'The Lakes of Highland Glen, Pearland', alt: 'Warm white roofline and ground lights on a brick home with a two-car garage in The Lakes of Highland Glen, Pearland' },
+  { src: photo('warm-white-garage-and-windows.jpg'), place: 'Clear Lake City', alt: 'Lights outlining the garage, windows and roofline of a two-story brick home in Clear Lake City' },
+  { src: photo('warm-white-single-story-home.jpg'), place: 'Victory Lakes, League City', alt: 'Warm white roofline on a single-story brick home in Victory Lakes, League City' },
+  { src: photo('league-city-roofline-and-yard.jpg'), place: 'League City', alt: 'Roofline and yard-edge lights on a home in League City' },
+  { src: photo('pearland-highland-glen-garage.jpg'), place: 'Stonebridge, Pearland', alt: 'Roofline and garage lights in Stonebridge, Pearland' },
+  { src: photo('friendswood-west-ranch.jpg'), place: 'West Ranch, Friendswood', alt: 'Warm white roofline lights in West Ranch, Friendswood' },
+  { src: photo('pearland-red-and-white.jpg'), place: 'Stonebridge, Pearland', alt: 'Red and white lights on a two-story home in Stonebridge, Pearland' },
+  { src: photo('pearland-highland-glen-multicolor.jpg'), place: 'Cobblestone, Pearland', alt: 'Multicolor LED lights in Cobblestone, Pearland' },
+  { src: photo('community-entrance-sign.jpg'), place: 'Towne Lake Estates, Pearland', alt: 'Holiday lighting on the neighborhood entrance sign of Towne Lake Estates, Pearland' },
+  { src: photo('commercial-building-red-lights.jpg'), place: 'Kids R Kids, Pearland', alt: 'Red commercial holiday lights along the roofline of Kids R Kids, Pearland' },
+  { src: photo('pearland-highland-glen-walkway.jpg'), place: 'Stonebridge, Pearland', alt: 'Roofline, wreath and walkway lights in Stonebridge, Pearland' },
+  { src: photo('blue-wrapped-oaks-estate.jpg'), place: 'The Lakefront Preserve, League City', alt: 'Live oaks wrapped in blue lights along the estate drive of The Lakefront Preserve, League City' },
+  { src: photo('nativity-trees-roofline.jpg'), place: 'Cabot Cove, Pearland', alt: 'Roofline, lit shrubs and a nativity scene on a brick home in Cabot Cove, Pearland' },
+  { src: photo('lit-driveway-and-roofline.jpg'), place: 'Westover Park, League City', alt: 'Roofline and lit driveway edges on a single-story home in Westover Park, League City' },
+  { src: photo('twin-gables-under-full-moon.jpg'), place: 'Southwyck, Pearland', alt: 'Twin gables outlined in warm white lights under a full moon in Southwyck, Pearland' },
+  { src: photo('gated-estate-gazebo-lights.jpg'), place: 'The Lakefront Preserve, League City', alt: 'Gated estate entry with a lit gazebo, walls and pathway at The Lakefront Preserve, League City' },
+  { src: photo('wrapped-trees-arched-entry.jpg'), place: 'Green Tee, on the Pearland/Friendswood line', alt: 'Wrapped tree trunks, arched entry and walkway lights at dusk in Green Tee, on the Pearland/Friendswood line' },
+  { src: photo('pink-and-white-roofline.jpg'), place: 'Westover Park, League City', alt: 'Pink and white lights outlining the roofline, arches and garage of a brick home in Westover Park, League City' },
+  { src: photo('multicolor-windows-and-roofline-dusk.jpg'), place: 'League City', alt: 'Multicolor lights framing every window and roofline of a two-story home at dusk in League City' },
+  { src: photo('green-led-two-story-home.jpg'), place: 'The Lakes of Highland Glen, Pearland', alt: 'Green LED lights outlining the gables, windows and garage of a two-story home in The Lakes of Highland Glen, Pearland' },
 ]
 
 // FAQ, rewritten from scratch with the owner (2026-10-09). Keep answers short
@@ -237,6 +245,7 @@ export const faq = [
       ['What do you do?', 'We design, install, maintain and take down Christmas lights for homes and businesses across Pearland, Manvel, Friendswood, League City, the Bay Area and Galveston County. You never touch a ladder.'],
       ['How do I get a price?', 'Request a free estimate. We measure your home in about 30 minutes without climbing on the roof, and you don’t need to be home unless we need to get through a gate. In a hurry? Text us a few photos for a rough price. You get a “Got your request” email right away, then your exact price by text or email, and you sign online. Want to see it first? Draw your lights on a photo of your home with our free designer.'],
       ['How do you price it?', `Every home is different. We look at how much you want lit, the size and shape of your home, and how tricky it is to reach, then give you one clear price. What’s in your estimate is what you pay. Curious what moves the number? Read [what Christmas light installation costs in Pearland](${base}cost/).`],
+      ['How do I pick a Christmas light installer near Pearland?', 'Ask any installer four things: are they insured, do they measure before they quote (no guessing over the phone), what happens when a strand goes out in December, and who takes the lights down and stores them. For us: insured, every price comes from a measured visit, service calls are free all season, takedown is included, and the lifetime warranty replaces worn-out lights at no charge. Family-owned in Pearland since 2011.'],
       ['Do you work on tile roofs?', 'No. Clay and other tile roofs are too fragile to work on safely.'],
       ['Do you do businesses?', 'Yes: storefronts, restaurants, neighborhood entrances and more.'],
     ],
@@ -250,6 +259,7 @@ export const faq = [
       ['Is there a warranty on the lights?', 'Yes, for life, for as long as you stay a customer: when we install your lights, you’re covered from that install until your next one with us, season after season. Five or more years in, when the Texas sun has finally worn out the plastic housings, we replace everything brand new at no charge. In 15 years we have never charged a cent for it. Decide not to have us install one year, and the coverage ends there. The season guarantee covers everything else: anything goes out, we fix it free, usually the same day.'],
       ['What’s included?', 'Everything: lights, clips, cords, timers, design, installation and all-season service. It’s all measured and cut to fit your home, with no extra strands hanging off the roof.'],
       ['What kind of lights do you use?', 'Commercial-grade LED only: brighter, cheaper to run, and sealed in plastic so they don’t break.'],
+      ['My permanent Christmas lights failed. Can you replace them?', 'We don’t install permanent systems, and we don’t plan to. We get more calls every year from homeowners whose consumer-grade permanent lights stopped working after a season or two in the Texas sun. A permanent system done right costs several times what those installs sell for, which is why we stay with seasonal lights. If yours failed: we come out, write an estimate your insurance company can use, and put up our seasonal lights instead, commercial-grade, installed and taken down for you every year, with the lifetime warranty. Mention the failed system when you request your estimate.'],
     ],
   },
   {

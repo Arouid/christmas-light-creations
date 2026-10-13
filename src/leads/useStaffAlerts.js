@@ -5,6 +5,7 @@
 // activity log it falls back to "since you last looked" (staffPrefs).
 import { useMemo, useState } from 'react'
 import { chatItems, countNew, countOpen, listSince, recentIncoming, reportItems, requestItems, toMs } from '../lib/staffAlerts'
+import { reviewTextItems } from '../lib/reviewAsk'
 import { prefsId } from './push'
 import { SERVER_TIME, mergePaths, useLiveDoc, useLiveSince } from './staffStore'
 
@@ -14,17 +15,18 @@ const bySynced = (a, b) => (b.syncedAt?.toMillis?.() ?? 0) - (a.syncedAt?.toMill
 const byLastAt = (a, b) => toMs(b.lastAt) - toMs(a.lastAt)
 
 // feed: useActivityFeed() (who's on which message). calls: service calls, for
-// problems customers reported from their account. Account chats
-// (docs/specs/account-chat.md) are read here; a refused read (rules not
-// published yet) just leaves them out. The count is what nobody has taken
-// yet; without the activity log it falls back to "since you looked".
-export function useStaffAlerts(user, leads, feed, calls) {
+// problems customers reported from their account. customers + season: the
+// review-link texts the website queued for a person (docs/specs/review-ask.md).
+// Account chats (docs/specs/account-chat.md) are read here; a refused read
+// (rules not published yet) just leaves them out. The count is what nobody
+// has taken yet; without the activity log it falls back to "since you looked".
+export function useStaffAlerts(user, leads, feed, calls, customers, season) {
   const [since] = useState(() => new Date(listSince()))
   const { items, error } = useLiveSince(user, 'messages', 'syncedAt', since, bySynced)
   const chats = useLiveSince(user, 'conversations', 'lastAt', since, byLastAt).items
   const prefs = useLiveDoc(user, 'staffPrefs', prefsId(user))
   const [localSeen, setLocalSeen] = useState(readLocal)
-  const list = useMemo(() => recentIncoming([...(items ?? []), ...requestItems(leads), ...reportItems(calls), ...chatItems(chats)]), [items, leads, calls, chats])
+  const list = useMemo(() => recentIncoming([...(items ?? []), ...requestItems(leads), ...reportItems(calls), ...chatItems(chats), ...reviewTextItems(customers, season)]), [items, leads, calls, chats, customers, season])
   const loading = !items || (prefs.data === undefined && !prefs.error)
   const seenAt = prefs.error ? localSeen : prefs.data?.messagesSeenAt ?? null
 

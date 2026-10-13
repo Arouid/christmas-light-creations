@@ -106,9 +106,9 @@ export default function LeadsApp() {
   const [textFrom, setTextFrom] = useState(getTextFrom)
   const feed = useActivityFeed(user, settingsApi.settings?.staffNames)
   usePresenceBeat(user)
-  const alerts = useStaffAlerts(user, leads, feed, serviceApi.calls)
-  const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
   const season = seasonYear()
+  const alerts = useStaffAlerts(user, leads, feed, serviceApi.calls, customersApi.customers, season)
+  const [showMessages, setShowMessages] = useState(() => window.location.hash === '#messages')
 
   useEffect(() => {
     // #messages (a notification for several messages) opens 💬 over the current tab.

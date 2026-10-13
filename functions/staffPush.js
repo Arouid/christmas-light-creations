@@ -6,8 +6,9 @@
 // notification say the same thing. Spec: docs/specs/staff-alerts.md.
 
 // report = a problem a customer reported from their account (docs/specs/account-service.md);
-// chat = a message typed in the account's Chat with us (docs/specs/account-chat.md).
-export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email', request: 'Estimate request', report: 'Problem report', chat: 'Account message' }
+// chat = a message typed in the account's Chat with us (docs/specs/account-chat.md);
+// review = a review-link text the website queued for a person to send (docs/specs/review-ask.md).
+export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email', request: 'Estimate request', report: 'Problem report', chat: 'Account message', review: 'Review text to send' }
 export const PREVIEW_CHARS = 120
 export const MAX_DEVICES = 10
 // A catch-up of old mail (sync down for a while) doesn't buzz phones.

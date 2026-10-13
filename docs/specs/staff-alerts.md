@@ -99,6 +99,10 @@ The service worker reads `event.data.json().data`, shows `title`/`body` (icon `/
 
 **Links in the app**: `#messages` opens the New messages list over the current tab.
 
+## ⭐ Review texts to send (2026-10-13)
+
+The Google review ask (`docs/specs/review-ask.md`) goes by email from the server, but the app can't send texts, so for a customer who prefers texts the server records `channel: 'email+text'` (or `'text'`) and the 💬 list shows **⭐ Review text to send** (`reviewTextItems` in `functions/reviewAsk.js`, id `review-<customerId>`, kind `review`, dated the ask): tap → their account → **★ Text review link** (the tap writes `reviewAsk.textedAt` and the item goes). Client-side only: the hourly "still waiting" nudge does not count them (it is for customers waiting on us). Like every row it drops out after 7 days; the customer's ★ box keeps saying "text still to send".
+
 ## "Still waiting" nudge (2026-10-12)
 
 The list's rules moved to `functions/nudge.js` (re-exported by `src/lib/staffAlerts.js`). The server's `staffNudge` (hourly, 8 am to 8 pm Central) sends one push and one email to the alert list when anything in the list has waited 2+ hours with nobody tapping I've got it, again when the list changes or after 4 hours. Off in ⚙ Settings → Automatic emails. Details: `docs/specs/auto-emails.md`.

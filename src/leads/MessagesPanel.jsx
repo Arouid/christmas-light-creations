@@ -8,9 +8,10 @@ import { draftTarget } from '../assistant/lib/targets'
 // 💬 New messages (docs/specs/staff-alerts.md): texts, voicemails, missed
 // calls, emails, website estimate requests, problems customers reported
 // from their account and messages typed in their account's chat
-// (docs/specs/account-chat.md), from the last 7 days, newest first; the ones
-// that arrived since you last looked are marked. Tap one → their account.
-const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝', report: '🛠', chat: '🗨️' }
+// (docs/specs/account-chat.md), plus review-link texts the website queued for
+// a person to send (docs/specs/review-ask.md), from the last 7 days, newest
+// first; the ones that arrived since you last looked are marked. Tap one → their account.
+const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝', report: '🛠', chat: '🗨️', review: '⭐' }
 
 function when(iso) {
   const d = new Date(iso)
@@ -74,7 +75,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
                   </button>
                   <div className="space-y-2 pl-13">
                     <Handling m={m} who={whoOf(m, names)} feed={feed} user={user} />
-                    <SuggestReply target={draftTarget(m)} chat={m.kind === 'chat'} />
+                    {m.kind !== 'review' && <SuggestReply target={draftTarget(m)} chat={m.kind === 'chat'} />}
                   </div>
                 </li>
               )
@@ -82,7 +83,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
           </ul>
         )}
         <p className="text-xs text-slate-500">
-          What customers and new people sent in the last {LIST_DAYS} days: texts, voicemails and emails arrive within about 5 minutes, website estimate requests, problem reports and account messages at once. Our own replies aren’t listed. Tap one to open their account and full history (account messages: the 💬 Chat box at the top); unknown numbers and emails open the Unmatched list on Leads.
+          What customers and new people sent in the last {LIST_DAYS} days: texts, voicemails and emails arrive within about 5 minutes, website estimate requests, problem reports and account messages at once. Our own replies aren’t listed. Tap one to open their account and full history (account messages: the 💬 Chat box at the top); unknown numbers and emails open the Unmatched list on Leads. ⭐ <em>Review text to send</em>: the website asked them for a Google review by email and they prefer texts; open their account and tap ★ Text review link.
         </p>
       </div>
     </div>
