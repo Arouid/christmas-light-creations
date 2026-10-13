@@ -155,7 +155,7 @@ export const customerPerks = {
 // The lifetime warranty, highlighted (owner 2026-10-12: "our customers deserve it").
 export const lifetimeWarranty = {
   title: 'Lifetime warranty',
-  body: 'For as long as you’re a customer, anything we supplied that wears out is replaced brand new, free. When the Texas sun has finally destroyed the plastic housings, five or more years in, you get all-new lights. In 15 years we have never charged a cent for it.',
+  body: 'From each install until your next one with us, season after season, anything we supplied that wears out is replaced brand new, free. When the Texas sun has finally destroyed the plastic housings, five or more years in, you get all-new lights. In 15 years we have never charged a cent for it.',
 }
 
 export const priceBeat = {
@@ -242,7 +242,7 @@ export const faq = [
     items: [
       ['When can you install?', 'Installs start October 15th and fill up fast. Book early: installs done by the end of October get an early install discount.'],
       ['How long does it take? Do I need to be home?', 'About 2 hours for most homes. You don’t need to be home. Just make sure we can reach your outdoor outlets and get through any gate.'],
-      ['Is there a warranty on the lights?', 'Yes, for life, for as long as you stay a customer. Five or more years in, when the Texas sun has finally worn out the plastic housings, we replace everything brand new at no charge. In 15 years we have never charged a cent for it. The season guarantee covers everything else: anything goes out, we fix it free, usually the same day.'],
+      ['Is there a warranty on the lights?', 'Yes, for life, for as long as you stay a customer: when we install your lights, you’re covered from that install until your next one with us, season after season. Five or more years in, when the Texas sun has finally worn out the plastic housings, we replace everything brand new at no charge. In 15 years we have never charged a cent for it. Decide not to have us install one year, and the coverage ends there. The season guarantee covers everything else: anything goes out, we fix it free, usually the same day.'],
       ['What’s included?', 'Everything: lights, clips, cords, timers, design, installation and all-season service. It’s all measured and cut to fit your home, with no extra strands hanging off the roof.'],
       ['What kind of lights do you use?', 'Commercial-grade LED only: brighter, cheaper to run, and sealed in plastic so they don’t break.'],
     ],

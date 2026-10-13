@@ -200,9 +200,9 @@ test('who has the app: the staff login line', () => {
 })
 
 test('lifetime warranty (owner 2026-10-12): in both agreements, the FAQ, Help and the assistant; a replacement while they stay a customer, never a refund', async () => {
-  assert.ok(DEFAULT_TERMS.includes('Lifetime replacement: for as long as you remain our customer') && DEFAULT_TERMS.includes('never a cash refund'))
-  assert.ok(SEASONAL_TERMS.includes('For as long as you remain our customer') && SEASONAL_TERMS.includes('never a cash refund'))
-  for (const t of [DEFAULT_TERMS, SEASONAL_TERMS]) assert.ok(t.includes('when a season passes without us installing your lights'), 'when it ends')
+  assert.ok(DEFAULT_TERMS.includes('Lifetime replacement: when we install your lights, you are covered from that install until your next install with us') && DEFAULT_TERMS.includes('never a cash refund'))
+  assert.ok(SEASONAL_TERMS.includes('covered from that install until your next install with us') && SEASONAL_TERMS.includes('never a cash refund'))
+  for (const t of [DEFAULT_TERMS, SEASONAL_TERMS]) assert.ok(t.includes('If you choose not to have us install the next season'), 'when it ends (owner: choosing not to use us breaks the relationship)')
   const { faq, included } = await import('../src/data/content.js')
   assert.ok(faq.some((g) => g.items.some(([q, a]) => q.includes('warranty') && a.includes('never charged a cent'))))
   assert.ok(included.some((i) => i.startsWith('Lifetime warranty')))
