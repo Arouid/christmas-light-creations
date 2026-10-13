@@ -43,7 +43,7 @@ export function EndCard({ data }) {
         <div style={{ fontFamily: BODY, fontWeight: 600, fontSize: tall ? 52 : square ? 44 : 56, color: colors.white, opacity: site, transform: `translateY(${(1 - site) * 20}px)` }}>{words.site}</div>
         <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 44 : square ? 38 : 46, color: colors.goldSoft, opacity: line, transform: `translateY(${(1 - line) * 20}px)`, marginTop: 8, padding: '12px 32px', border: `2px solid rgba(255,207,77,0.5)`, borderRadius: 999 }}>{words.endLine}</div>
       </div>
-      {data.clips?.end && (data.snowFrontOpacity ?? 0) > 0 ? <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}><SnowOverlay data={{ ...data, clips: { snowOverlay: data.clips.end } }} start={30} opacity={data.snowFrontOpacity} /></div> : null}
+      {data.clips?.end && (data.snowFrontOpacity ?? 0) > 0 ? <SnowOverlay data={{ ...data, clips: { snowOverlay: data.clips.end } }} start={30} opacity={data.snowFrontOpacity} /> : null}
     </AbsoluteFill>
   )
 }
