@@ -63,4 +63,6 @@ For comparison, our standard **lease** (paid up front) is year one at full price
 8. **Lease terms.** Risk of loss and damage to our lights at the customer's home; our right to remove the lights at season's end or on default; whether the lease needs its own agreement instead of the purchase one (A-6 says the lights become the customer's).
 9. **Sales tax.** Is a lease of lights taxed differently from a sale plus installation? (We'll also ask our accountant.)
 
+10. **Crew injuries on a customer's property.** Our crew works on roofs and ladders; wasp and hornet nests under eaves are common. We understand Civ. Prac. & Rem. Code ch. 95 mostly protects the homeowner, so the agreement only asks customers to disclose known hazards and lets us stop and reschedule. Please confirm that is the right approach, and advise on our own coverage: we need to know whether we should carry workers' compensation (we may currently be a non-subscriber) or an occupational-accident policy, and what a non-subscriber's exposure is.
+
 Thank you. We'd welcome a marked-up version of A and a drafted version of B.

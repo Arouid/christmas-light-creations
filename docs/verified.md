@@ -472,3 +472,4 @@ What was actually checked working, and how. Newest first.
 - Plants and beds (owner, 2026-10-12): same two places in both documents, tested. Check green.
 - Garage rule (owner, 2026-10-12): never inside the home; a garage only with express consent or while the customer is present; clause 5 and the seasonal terms, tested. Also: the two pushes before this one (`de1911a`, `0fa1385`) went out with one failing test, my word-count bound on the seasonal terms (979 words); the terms were fine, the bound is now 1,300 and commits are gated on the check's exit code.
 - Clause 5 framing (owner, 2026-10-12): tested; check green.
+- Hazards: nests, rotten fascia, animals in the tell-us list and a safety-stop sentence (owner, 2026-10-12); tested; check green.
