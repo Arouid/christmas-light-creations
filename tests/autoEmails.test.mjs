@@ -198,3 +198,14 @@ test('who has the app: the staff login line', () => {
   assert.ok(loginLine({ firstAt: lastAt, lastAt, provider: 'Google', app: { device: 'iPhone', at: new Date('2026-10-11T10:00:00') } }).endsWith('(Google) · 📱 has the app (iPhone, since Oct 11)'))
   assert.ok(loginLine({ lastAt, app: { device: '', at: null } }).endsWith('· 📱 has the app'))
 })
+
+test('lifetime warranty (owner 2026-10-12): in both agreements, the FAQ, Help and the assistant; a replacement while they stay a customer, never a refund', async () => {
+  assert.ok(DEFAULT_TERMS.includes('Lifetime replacement: for as long as you remain our customer') && DEFAULT_TERMS.includes('never a cash refund'))
+  assert.ok(SEASONAL_TERMS.includes('For as long as you remain our customer') && SEASONAL_TERMS.includes('never a cash refund'))
+  for (const t of [DEFAULT_TERMS, SEASONAL_TERMS]) assert.ok(t.includes('when a season passes without us installing your lights'), 'when it ends')
+  const { faq, included } = await import('../src/data/content.js')
+  assert.ok(faq.some((g) => g.items.some(([q, a]) => q.includes('warranty') && a.includes('never charged a cent'))))
+  assert.ok(included.some((i) => i.startsWith('Lifetime warranty')))
+  assert.ok(HELP.find((h) => h.id === 'warranty').a.includes('brand new at no charge'))
+  assert.ok(systemPrompt(knowledge, '').includes('Lifetime warranty (a fact you may state)'))
+})

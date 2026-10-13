@@ -70,7 +70,7 @@ export const highlights = [
   },
   {
     title: 'Professional-grade lights',
-    body: 'No store-bought strands. Commercial bulbs that shine brighter and last longer.',
+    body: 'No store-bought strands. Commercial bulbs that shine brighter and last longer. Worn out by the Texas sun? Replaced new, free, for as long as you’re a customer.',
     icon: 'c9-bulb',
   },
   {
@@ -91,6 +91,7 @@ export const included = [
   'Everything measured and custom-fit to your home',
   'No extra bulbs dangling off the roof or balled up in the gutter',
   '100% guarantee through the season',
+  'Lifetime warranty: anything we supplied that wears out is replaced brand new, free, for as long as you’re a customer',
 ]
 
 export const serviceCalls = ['Burned-out bulbs', 'Malfunctioning timers', 'Tripped GFCI outlets', 'Unglued bulbs']
@@ -234,6 +235,7 @@ export const faq = [
     items: [
       ['When can you install?', 'Installs start October 15th and fill up fast. Book early: installs done by the end of October get an early install discount.'],
       ['How long does it take? Do I need to be home?', 'About 2 hours for most homes. You don’t need to be home. Just make sure we can reach your outdoor outlets and get through any gate.'],
+      ['Is there a warranty on the lights?', 'Yes, for life, for as long as you stay a customer. Five or more years in, when the Texas sun has finally worn out the plastic housings, we replace everything brand new at no charge. In 15 years we have never charged a cent for it. The season guarantee covers everything else: anything goes out, we fix it free, usually the same day.'],
       ['What’s included?', 'Everything: lights, clips, cords, timers, design, installation and all-season service. It’s all measured and cut to fit your home, with no extra strands hanging off the roof.'],
       ['What kind of lights do you use?', 'Commercial-grade LED only: brighter, cheaper to run, and sealed in plastic so they don’t break.'],
     ],

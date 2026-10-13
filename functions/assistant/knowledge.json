@@ -48,7 +48,7 @@
   ],
   "highlights": [
     "We handle it all: Materials, design, installation, service calls and removal. You never lift a finger.",
-    "Professional-grade lights: No store-bought strands. Commercial bulbs that shine brighter and last longer.",
+    "Professional-grade lights: No store-bought strands. Commercial bulbs that shine brighter and last longer. Worn out by the Texas sun? Replaced new, free, for as long as you’re a customer.",
     "Free service calls: Burned-out bulb or tripped GFCI? We come back at no cost, usually the same day.",
     "Family-owned & insured: Serving south Houston since 2011, fully insured, safety first."
   ],
@@ -57,7 +57,8 @@
     "Clips, cords, timers, plugs, lights and wire",
     "Everything measured and custom-fit to your home",
     "No extra bulbs dangling off the roof or balled up in the gutter",
-    "100% guarantee through the season"
+    "100% guarantee through the season",
+    "Lifetime warranty: anything we supplied that wears out is replaced brand new, free, for as long as you’re a customer"
   ],
   "serviceCalls": [
     "Burned-out bulbs",
@@ -125,6 +126,11 @@
       "group": "Installing",
       "q": "How long does it take? Do I need to be home?",
       "a": "About 2 hours for most homes. You don’t need to be home. Just make sure we can reach your outdoor outlets and get through any gate."
+    },
+    {
+      "group": "Installing",
+      "q": "Is there a warranty on the lights?",
+      "a": "Yes, for life, for as long as you stay a customer. Five or more years in, when the Texas sun has finally worn out the plastic housings, we replace everything brand new at no charge. In 15 years we have never charged a cent for it. The season guarantee covers everything else: anything goes out, we fix it free, usually the same day."
     },
     {
       "group": "Installing",

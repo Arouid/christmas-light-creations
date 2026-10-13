@@ -18,6 +18,8 @@ export const HELP = [
     a: `Three equal payments that cover everything (install and takedown): the first when you sign, then one a month on the 1st or the 15th, whichever you picked when you signed. We email the link the morning each one is due. Same price as paying up front.` },
   { id: 'lights-out', q: 'My lights are out', tags: 'outlet gfci reset breaker timer strand dark not working',
     a: `${GFCI_TIP} If a whole section is dark, or a strand is down, tap Report a problem under Your lights (or text a photo to ${PHONE}): service calls are free all season.` },
+  { id: 'warranty', q: 'Is there a warranty on my lights?', tags: 'lifetime warranty replace worn sun broken guarantee',
+    a: `Yes, for life, for as long as you stay a customer. When the Texas sun has finally worn out the plastic housings, five or more years in, we replace everything brand new at no charge; in 15 years we have never charged a cent for it. During the season, anything that goes out is fixed free, usually the same day. Not covered: damage from trees, storms, animals, vehicles or your home's wiring (see your agreement).` },
   { id: 'timer', q: 'When do the lights come on?', tags: 'timer dusk schedule hours',
     a: `They are on a timer set at the install, usually dusk until late evening. Want different hours? Text us and we will adjust it on our next visit, or on a service call.` },
   { id: 'trees', q: 'A tree pulled my lights down', tags: 'branches trim wind roof gutter rehang service',
