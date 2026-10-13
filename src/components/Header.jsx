@@ -83,8 +83,8 @@ export default function Header() {
             Get a free estimate
           </a>
           {/* The 2012 sign fills the rest of the panel (owner 2026-10-12). Decorative. */}
-          <div className="mt-auto flex flex-col items-center gap-3 pt-8 text-center">
-            <img src={`${import.meta.env.BASE_URL}images/clc-sign.svg`} alt="" width="403" height="508" className="h-44 w-auto" />
+          <div className="mt-auto flex flex-col items-center gap-2 pt-6 text-center">
+            <img src={`${import.meta.env.BASE_URL}images/clc-sign.svg`} alt="" width="403" height="508" className="h-36 w-auto" />
             <p className="text-sm text-slate-400">From your friends in Pearland · since {business.since}</p>
           </div>
         </nav>
