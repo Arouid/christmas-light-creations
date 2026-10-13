@@ -1,6 +1,6 @@
 # Leasing and the pay-in-3 plan on the website
 
-> Status: copy drafted 2026-10-12 for the owner's review (his decision in the claude.ai hand-off, `docs/inbox/sales-agent-handoff-2026-10-12.md`: "yes, put leasing and the monthly plan on the public site; show me the wording before pushing"). **Nothing is on the site yet.** The plan's contract terms (cancellation, moving) stay off the site until the attorney's review (TODO #30).
+> Status: **live 2026-10-12** (owner: "copy ok"): the options row (Buy / Lease / Pay in 3) under the pricing stats on the home page and the four FAQ answers below are on the site; the assistant's FAQ knowledge rebuilt. The plan's contract terms (cancellation, moving) stay off the site until the attorney's review (TODO #30).
 
 ## What customers can choose (facts, from the owner)
 

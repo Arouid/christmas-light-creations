@@ -124,6 +124,14 @@ export const pricingNotes = [
   { label: 'Service calls', value: '$0', note: 'no limit, all season long' },
 ]
 
+// Three ways to have lights (owner's copy OK 2026-10-12, docs/specs/leasing.md).
+// Pay in 3 is a pilot this season; its contract terms stay off the site until the attorney's review.
+export const lightOptions = [
+  { title: 'Buy', body: 'Own your lights. We put them back up every year for 50% of the original price.' },
+  { title: 'Lease', body: 'We keep the lights; pick a new look any year. 10% off for every year you come back, up to 50% off.' },
+  { title: 'Pay in 3', tag: 'New this season', body: 'Split your lease into three equal payments: when you sign, when the lights are up, and in January. No long-term commitment.' },
+]
+
 export const testimonials = [
   {
     quote: 'We have been using CLC since 2012 and have had outstanding service. Change and his crew are professional, prompt, and easy to work with.',
@@ -204,6 +212,8 @@ export const faq = [
       ['How do I pay?', 'A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Pay online by PayPal, Venmo or card from the link we send you, or by Zelle, check or cash.'],
       ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online.'],
       ['Is sales tax included?', 'Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls.'],
+      ['Can I lease the lights instead of buying them?', 'Yes. With a lease we keep the lights, and every year you choose a brand-new design or keep the one you had. Year one is full price; every year you come back takes another 10% off the original price, up to 50% off. Nothing to store, test or replace.'],
+      ['What’s Pay in 3?', 'A lease paid in three equal payments instead of one up front: when you sign, when your lights are up, and in January, with removal included. No long-term commitment: it’s season by season. We go over the details with you on your quote.'],
     ],
   },
   {
@@ -217,7 +227,8 @@ export const faq = [
     items: [
       ['When do you take them down?', 'Between January 3rd and 13th. We take everything down, label it and box it up, and you store the boxes until next season.'],
       ['Is there a cost for removal?', 'Yes, a set price shown in your estimate, due in January.'],
-      ['Do I own the lights?', 'Yes. Once they’re paid for, they’re yours. Every year after, we put them back up for about half the original price. We call in late summer to get you on the schedule.'],
+      ['Do I own the lights?', 'If you buy them, yes: once they’re paid for, they’re yours, and every year after we put them back up for about half the original price. If you lease, we keep them and you get a fresh design any year. Either way, we call in late summer to get you on the schedule.'],
+      ['Can you hang lights I already own?', 'No. We only install lights that came from us, so we can guarantee every bulb all season.'],
       ['Why did my price change?', 'If you add lights (an arch, a tree, more roofline), the new part is charged in full that year. After that it adds about half its price to your yearly re-install. Your online account shows the full breakdown.'],
     ],
   },

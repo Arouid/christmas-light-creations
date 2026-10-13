@@ -1,4 +1,4 @@
-import { highlights, included, serviceCalls, pricingNotes } from '../data/content'
+import { highlights, included, lightOptions, serviceCalls, pricingNotes } from '../data/content'
 import Icon from './Icon'
 import Section from './Section'
 
@@ -50,6 +50,20 @@ export default function Services() {
           </div>
         ))}
       </dl>
+
+      {/* Buy, lease or pay in 3 (owner's copy, docs/specs/leasing.md). */}
+      <h3 className="mt-8 font-display text-2xl font-extrabold">Your options</h3>
+      <ul className="mt-3 grid gap-4 sm:grid-cols-3">
+        {lightOptions.map((o) => (
+          <li key={o.title} className="rounded-2xl border border-white/10 bg-night-950/40 p-5">
+            <p className="flex flex-wrap items-center gap-2 font-display text-xl font-extrabold">
+              {o.title}
+              {o.tag && <span className="rounded-full bg-glow-400 px-2.5 py-0.5 text-xs font-semibold text-night-950">{o.tag}</span>}
+            </p>
+            <p className="mt-2 text-sm text-slate-300">{o.body}</p>
+          </li>
+        ))}
+      </ul>
     </Section>
   )
 }

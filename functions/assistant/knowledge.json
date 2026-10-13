@@ -152,6 +152,16 @@
       "a": "Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls."
     },
     {
+      "group": "Paying",
+      "q": "Can I lease the lights instead of buying them?",
+      "a": "Yes. With a lease we keep the lights, and every year you choose a brand-new design or keep the one you had. Year one is full price; every year you come back takes another 10% off the original price, up to 50% off. Nothing to store, test or replace."
+    },
+    {
+      "group": "Paying",
+      "q": "What’s Pay in 3?",
+      "a": "A lease paid in three equal payments instead of one up front: when you sign, when your lights are up, and in January, with removal included. No long-term commitment: it’s season by season. We go over the details with you on your quote."
+    },
+    {
       "group": "During the season",
       "q": "What if something goes out?",
       "a": "Call or text and we’ll fix it free, with no limit: burned-out or unglued bulbs, timers, tripped outlets. Usually the same day locally, within 48 hours during the busiest weeks. If we can’t fix it, we replace it at no charge."
@@ -169,7 +179,12 @@
     {
       "group": "Removal & next year",
       "q": "Do I own the lights?",
-      "a": "Yes. Once they’re paid for, they’re yours. Every year after, we put them back up for about half the original price. We call in late summer to get you on the schedule."
+      "a": "If you buy them, yes: once they’re paid for, they’re yours, and every year after we put them back up for about half the original price. If you lease, we keep them and you get a fresh design any year. Either way, we call in late summer to get you on the schedule."
+    },
+    {
+      "group": "Removal & next year",
+      "q": "Can you hang lights I already own?",
+      "a": "No. We only install lights that came from us, so we can guarantee every bulb all season."
     },
     {
       "group": "Removal & next year",
