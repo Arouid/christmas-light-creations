@@ -257,6 +257,7 @@ const AUTO_EMAILS = [
   ['ackRequests', '“Got your request” to the customer', 'The moment a website estimate request comes in: what happens next, the designer link, Pay in 3. Filed in the lead’s history.'],
   ['weatherEmails', 'Weather heads-ups', 'Each afternoon the server reads the National Weather Service forecast for Pearland. Storms, strong wind or a freeze ahead: customers on a route that day hear their date may move, customers with lights up get the storm tips (unless they turned them off), and you get a notification and an email.'],
   ['staffNudges', '“Still waiting” reminders to staff', 'Every hour from 8 am to 8 pm: a notification and an email to the alert list when a customer message, request or problem report has waited 2+ hours with nobody tapping I’ve got it.'],
+  ['pitchFilter', 'File sales pitches as spam', 'A request that reads like a cold pitch to a business (an opt-out line, “we help local companies”, a free cleaning / SEO / marketing bid…) goes straight under Leads → Spam / test with the reason: no alert, no “Got your request”. Home’s Recent activity notes it; one tap (It’s a real request) brings a wrong one back.'],
 ]
 function AutoEmails({ settings, onSave }) {
   const [msg, setMsg] = useState(null)
@@ -267,7 +268,7 @@ function AutoEmails({ settings, onSave }) {
   return (
     <div className={box}>
       <p className="font-semibold">Automatic emails</p>
-      <p className="text-sm text-slate-400">What the website sends by itself. Every customer email carries the logo, the phone number and the “found us in spam?” line.</p>
+      <p className="text-sm text-slate-400">What the website does by itself. Every customer email carries the logo, the phone number and the “found us in spam?” line.</p>
       {AUTO_EMAILS.map(([key, label, help]) => (
         <label key={key} className="flex min-h-11 cursor-pointer items-start gap-3">
           <input type="checkbox" checked={settings[key] !== false} onChange={(e) => toggle(key, e.target.checked)} className="mt-1 size-5 accent-glow-400" />

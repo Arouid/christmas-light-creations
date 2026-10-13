@@ -37,6 +37,7 @@ function page(a) {
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#050b1a" />
+<meta name="robots" content="noai, noimageai" />
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}" />
 <link rel="canonical" href="${url}" />
@@ -159,7 +160,7 @@ for (const [from, to] of Object.entries(REDIRECTS)) {
   const dir = new URL(`${from}/`, dist)
   await mkdir(dir, { recursive: true })
   await writeFile(new URL('index.html', dir), `<!doctype html><meta charset="utf-8"><title>Moved</title>`
-    + `<link rel="canonical" href="${SITE}/${/^[#?]/.test(to) ? '' : to}"><meta name="robots" content="noindex">`
+    + `<link rel="canonical" href="${SITE}/${/^[#?]/.test(to) ? '' : to}"><meta name="robots" content="noindex, noai, noimageai">`
     + `<meta http-equiv="refresh" content="0; url=${target}"><script>location.replace(${JSON.stringify(target)})</script>`
     + `<a href="${target}">Continue to Christmas Light Creations</a>
 `)

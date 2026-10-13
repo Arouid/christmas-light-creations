@@ -18,7 +18,7 @@ Within about 5 minutes, new customer contact shows in that customer's **Text & c
 | Customer emails to info@ | info@ inbox | in |
 | info@ emails to customers (To, Cc or Bcc) | info@ Sent | out |
 
-Messages from a number or contact that matches nobody go to an **Unmatched** list (top of the Leads tab), where staff can link one to a customer or dismiss it. Emails from someone who matches nobody go there too (a new customer's first email), unless they look like junk: no-reply/notification senders, service companies (PayPal, Google…), newsletters with an unsubscribe link or a "view in browser" footer. Those are not stored (owner 2026-10-09; before that, all unmatched emails were dropped).
+Messages from a number or contact that matches nobody go to an **Unmatched** list (top of the Leads tab), where staff can link one to a customer or dismiss it. Emails from someone who matches nobody go there too (a new customer's first email), unless they look like junk: no-reply/notification senders, service companies (PayPal, Google…), newsletters with an unsubscribe link or a "view in browser" footer, and since 2026-10-13 bulk-mail relay domains (Constant Contact, Mailchimp, SendGrid…), relay-style senders, footer words without links and the `List-Unsubscribe` header (`docs/specs/spam-filters.md`). Those are not stored (owner 2026-10-09; before that, all unmatched emails were dropped).
 
 A message that matches a website lead (not yet a customer) is stored on that lead and shows on the lead's Accounts page. If the lead was already made a customer, it goes to the customer.
 
@@ -55,6 +55,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 | 2026-10-09 | Unmatched texts/voicemails kept in `messages` with `unmatched: true` (no new collection); ~~unmatched emails dropped~~ superseded below | Unknown numbers are likely new customers |
 | 2026-10-09 | Incoming emails from unknown senders kept as unmatched too, with a junk filter (`junkReason`: automatic sender, service domain, bulk footer; "unsubscribe" only counts with a link, so a person asking is kept) | Owner: "I don't want to miss anyone's texts or emails if I'm only working from the app" |
 | 2026-10-09 | Missed calls use kind `missed` (same as the Takeout import) | One history format |
+| 2026-10-13 | Bulk rule widened: relay domains, relay-style local parts, footer words without links, optional `List-Unsubscribe` from the script (`docs/specs/spam-filters.md`) | A Constant Contact blast showed as Unmatched: Gmail's plain body has the footer words but not the links |
 
 ## Acceptance criteria
 

@@ -20,4 +20,11 @@ export const demoLeads = [
     message: 'Returning customer, same as last year please.',
     status: 'booked', notes: 'Install Nov 3, morning.', createdAt: daysAgo(6),
   },
+  {
+    // Filed by the website (functions/pitch.js, docs/specs/spam-filters.md).
+    id: 'demo-4', firstName: 'Rick', lastName: 'Example', email: 'rick@example.com', phone: '555-0104',
+    address: '15810 Office Park Pl', city: 'Houston', zip: '77084', contactMethod: 'Phone',
+    message: 'I work in Webster and help many local companies. I was hoping I could come by and offer a complimentary cleaning bid?\n\nRick Example\nVP, General Manager\n\nRespond with stop to optout',
+    status: 'spam', notes: '', createdAt: daysAgo(1), source: 'Google search', spamReason: 'Looks like a sales pitch: an opt-out line, sells a service to businesses, offers a free bid', updatedBy: 'website',
+  },
 ]

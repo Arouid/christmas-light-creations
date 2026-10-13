@@ -126,6 +126,18 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
           </dl>
           <BounceNote record={lead} hint={LEAD_HINT} />
           <blockquote className="whitespace-pre-wrap rounded-xl bg-night-950 p-3 text-slate-200">{lead.message}</blockquote>
+          {/* Filed by the website (functions/pitch.js, docs/specs/spam-filters.md): why, and one tap back. */}
+          {lead.spamReason && (
+            <div className="rounded-xl border border-berry-500/40 bg-berry-600/10 p-3 text-sm">
+              <p className="text-slate-200">🚫 Filed under Spam / test by the website: {lead.spamReason}. Nobody was alerted and no “Got your request” went out.</p>
+              {lead.status === 'spam' && (
+                <button type="button" disabled={saving} onClick={() => save({ status: 'new', notes })}
+                  className="mt-2 min-h-11 rounded-full bg-white/10 px-4 py-2 font-semibold hover:bg-white/15 disabled:opacity-40">
+                  It’s a real request
+                </button>
+              )}
+            </div>
+          )}
 
           <label className="block text-sm font-medium text-slate-300">Status
             <select value={lead.status} disabled={saving} onChange={(e) => save({ status: e.target.value, notes })}

@@ -75,6 +75,7 @@ import { brandText, textFooter } from './brand.js'
 import { fromHeader, staffName, staffNamesMap } from './staffNames.js'
 import { TREE_NOTICE, TREE_TITLE } from './notices.js'
 import { ACK_TEMPLATE, ackAddress, ackEmail, ackOn, ackedRecently } from './ack.js'
+import { pitchFilterOn, pitchReason } from './pitch.js'
 import { giftWrappingOn } from './giftWrapping.js'
 import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
 import { NWS_POINTS_URL, NWS_USER_AGENT, WATCH_SCHEDULE, badDays, lightsHeadsUp, lightsUp, noticesOn, pruneSent, routeHeadsUp, sentKey, staffWeather, tipsOk, weatherLine } from './weather.js'
@@ -227,10 +228,19 @@ export const newLeadAlert = onDocumentCreated(
   async (event) => {
     const lead = event.data?.data()
     if (!lead) return
+    const who = `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim() || 'someone'
+    // A cold sales pitch through the form (functions/pitch.js, docs/specs/spam-filters.md):
+    // filed under Spam / test with the reason, nobody alerted, no "Got your request".
+    const pitch = pitchReason(lead)
+    if (pitch && pitchFilterOn((await getFirestore().doc('settings/app').get()).data())) {
+      await event.data.ref.update({ status: 'spam', spamReason: pitch, updatedAt: FieldValue.serverTimestamp(), updatedBy: 'website' })
+      await logWebsite('spam-filed', { type: 'lead', id: event.params.leadId, name: who }, pitch)
+      logger.info('request filed as a sales pitch', { leadId: event.params.leadId, reason: pitch })
+      return
+    }
     // Phone notification first (staff-alerts.md): never throws, and doesn't wait on the email.
     await alertStaff(requestPush(lead, event.params.leadId))
     const to = await staffEmails()
-    const who = `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim() || 'someone'
     if (!to.length) {
       await reportIncident('lead-alert', `New request from ${who}, but nobody is on the alert list (staff app → ⚙ Settings → New-request alerts).`)
     } else {
@@ -1636,6 +1646,7 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
     db.collection('invoices').where('status', '==', 'paid').select('payment').get(),
   ])
   const leads = leadsSnap.docs.map((d) => d.data())
+  const pitches = leads.filter((l) => l.spamReason).length // filed by the website (docs/specs/spam-filters.md)
   const lastSync = lastMsg.docs[0]?.get('syncedAt') ?? null
   const problems = []
   const stale = await loadWaiting(db, now).catch((e) => { logger.warn('waiting list', e.message); return [] })
@@ -1647,7 +1658,7 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
     .filter((x) => x?.status === 'paid' && now - tsMs(x.paidAt) < WEEK).length
   const monday = new Date(now).toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' }) === 'Mon'
   const openIncidents = openSnap.docs.map((d) => d.data()).sort((a, b) => tsMs(b.at) - tsMs(a.at)).slice(0, 10)
-  const report = dailyReport({ problems, openIncidents, monday, stats: { leads: leads.length, payments, lastSync: lastSync?.toDate?.() ?? null } })
+  const report = dailyReport({ problems, openIncidents, monday, stats: { leads: leads.length - pitches, pitches, payments, lastSync: lastSync?.toDate?.() ?? null } })
   logger.info('dailyHealth', { problems: problems.length, open: openSnap.size, sent: Boolean(report) })
   if (!report) return
   const to = await staffEmails()

@@ -53,7 +53,7 @@ import { staffName } from '../../functions/staffNames.js'
 // ---- Entries ----------------------------------------------------------------------
 
 // Website entries: the customer did it ("Pat Sample signed their proposal").
-const WEBSITE = { rebooked: 'said yes to this season from their account (put my lights back up)', 'details-updated': 'updated their property details from their account', 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights', 'chat-message': 'sent a message from their account' }
+const WEBSITE = { rebooked: 'said yes to this season from their account (put my lights back up)', 'details-updated': 'updated their property details from their account', 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights', 'chat-message': 'sent a message from their account', 'spam-filed': 'was filed under Spam / test by the website (a sales pitch)' }
 const VERB = {
   email: 'emailed', 'chat-reply': 'replied in the account chat to', 'invoice-sent': 'sent an invoice to', 'invoice-again': 'emailed the invoice again to',
   'invoice-paid': 'marked paid the invoice for', 'invoice-void': 'voided the invoice for',

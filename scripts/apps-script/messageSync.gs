@@ -97,6 +97,7 @@ function collect_(query, fromMs) {
         from: m.getFrom(), to: m.getTo(), cc: m.getCc(), bcc: m.getBcc(),
         subject: m.getSubject(),
         body: m.getPlainBody().slice(0, MAX_BODY),
+        listUnsubscribe: m.getHeader('List-Unsubscribe'), // mailing lists carry it; the function drops those
       }
       if (BOUNCE_FROM.test(item.from)) {
         item.inReplyTo = m.getHeader('In-Reply-To')

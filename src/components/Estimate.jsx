@@ -1,4 +1,4 @@
-import { business } from '../data/content'
+import { business, estimateSection } from '../data/content'
 import Availability from './Availability'
 import EstimateForm from './EstimateForm'
 import Icon from './Icon'
@@ -23,6 +23,11 @@ export default function Estimate() {
               <Icon name="chat" className="size-5" /> Text us
             </a>
           </div>
+          <p className="mt-6 text-sm text-slate-400">
+            {estimateSection.designer.before}
+            <a href={`${import.meta.env.BASE_URL}design/`} className="font-semibold text-glow-300 underline underline-offset-2 hover:text-glow-200">{estimateSection.designer.link}</a>
+            {estimateSection.designer.after}
+          </p>
         </div>
 
         <EstimateForm />

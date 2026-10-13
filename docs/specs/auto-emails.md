@@ -58,7 +58,7 @@
 
 ## Settings (⚙ → Automatic emails)
 
-Three switches, all on by default: "Got your request", Weather heads-ups, "Still waiting" reminders. Each function reads `settings/app` when it runs.
+Four switches, all on by default: "Got your request", Weather heads-ups, "Still waiting" reminders, and File sales pitches as spam (`pitchFilter`, `docs/specs/spam-filters.md`). Each function reads `settings/app` when it runs.
 
 ## Tests
 

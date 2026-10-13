@@ -533,3 +533,9 @@ export const giftWrapping = {
     placeholder: 'How many gifts, roughly what sizes, colors you like, when you need them…',
   },
 }
+
+// The estimate section's designer line (owner 2026-10-13: "we're not offering our
+// light designer here"). A link, not a third button: the form stays the one ask.
+export const estimateSection = {
+  designer: { before: 'Want to see it first? ', link: 'Draw your lights on a photo of your house', after: ', free, and send the picture with your request.' },
+}

@@ -118,12 +118,21 @@ export function emailText(body) {
 // 2026-10-09). Known customers' emails are always kept, whatever they say.
 const AUTO_SENDER = /^(no-?reply|do-?not-?reply|donotreply|mailer-daemon|postmaster|bounces?|notifications?|alerts?|newsletters?|news|marketing|receipts?|billing|invoices?)([+._-][^@]*)?@/i
 const SERVICE_DOMAINS = ['google.com', 'paypal.com', 'intuit.com', 'squareup.com', 'godaddy.com', 'github.com', 'facebookmail.com', 'linkedin.com', 'amazon.com', 'yelp.com', 'nextdoor.com', 'apple.com', 'microsoft.com']
-const BULK_FOOTER = /view (this email )?in (your |a )?browser|(manage|update) (your )?(email )?(preferences|subscriptions?)|you('re| are) receiving this (email|message)|this (email|message) was sent to [^\s@]+@/i
-export function junkReason(from, body) {
+// Bulk-mail relays (Constant Contact, Mailchimp, SendGrid…): a person never
+// writes from these. Owner 2026-10-13, docs/specs/spam-filters.md: a Constant
+// Contact blast from shared1.ccsend.com showed as "1 message from people we
+// don't know yet" because Gmail's plain body had the footer words without links.
+const BULK_DOMAINS = ['ccsend.com', 'constantcontact.com', 'rs6.net', 'mcsv.net', 'rsgsv.net', 'mailchimpapp.net', 'list-manage.com', 'sendgrid.net', 'hubspotemail.net', 'klaviyomail.com', 'mailgun.org', 'amazonses.com', 'sendinblue.com', 'brevo.com', 'mailjet.com', 'activehosted.com', 'mailerlite.com', 'cmail19.com', 'cmail20.com', 'createsend.com', 'exacttarget.com']
+// A relay's sender carries the customer's domain in the local part ("orders-shop.com@shared1.ccsend.com").
+const RELAY_LOCAL = /^[^@\s]*\.(com|net|org|biz|co|io|us)@/i
+const BULK_FOOTER = /view (this email )?in (your |a )?browser|(manage|update) (your )?(email )?(preferences|subscriptions?|profile)|you('re| are) receiving this (email|message)|this (email|message) was sent to [^\s@]+@|unsubscribe\s*\||\|\s*unsubscribe|safe ?unsubscribe|constant contact|mailchimp|(sent|powered) (via|by|with|using) (hubspot|klaviyo|sendgrid|brevo|mailerlite|activecampaign)|\b(reply|respond|text|answer)\b[^\n.]{0,30}\bstop\b[^\n.]{0,40}\b(opt[- ]?out|unsubscribe)/i
+// listUnsubscribe: the List-Unsubscribe header, when the Apps Script sends it (mailing lists carry one).
+export function junkReason(from, body, { listUnsubscribe = '' } = {}) {
   const domain = from.split('@')[1] ?? ''
   const text = String(body ?? '')
   if (AUTO_SENDER.test(from)) return 'automatic'
   if (SERVICE_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`))) return 'service'
+  if (BULK_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`)) || RELAY_LOCAL.test(from) || listUnsubscribe) return 'bulk'
   // "Unsubscribe" alone could be a person asking; with a link it's a mailing list.
   if (BULK_FOOTER.test(text) || (/unsubscribe/i.test(text) && /https?:\/\//i.test(text))) return 'bulk'
   return ''
@@ -144,7 +153,7 @@ function parseEmail(item) {
   return {
     source: 'gmail', kind: 'email', direction: out ? 'out' : 'in', at: isoOf(item.date),
     text: emailText(item.body), subject: subject.slice(0, 300), emails: counterparts,
-    idBase: emailIdBase(messageId), junk: out ? '' : junkReason(from, item.body),
+    idBase: emailIdBase(messageId), junk: out ? '' : junkReason(from, item.body, { listUnsubscribe: String(item.listUnsubscribe ?? '') }),
   }
 }
 

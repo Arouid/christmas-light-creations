@@ -62,6 +62,6 @@ export function dailyReport({ problems, openIncidents = [], monday, stats }) {
   if (!monday) return null
   return {
     subject: 'CLC website weekly check: all OK ✓',
-    text: `Everything checked out this week.\n\n• New website requests in the last 7 days: ${stats.leads}\n• Online payments in the last 7 days: ${stats.payments}\n• Last text/email synced: ${stats.lastSync ? when(stats.lastSync) : 'none yet'}\n\nIf this email ever stops coming on Mondays, the alerts themselves aren't working: check the staff app.`,
+    text: `Everything checked out this week.\n\n• New website requests in the last 7 days: ${stats.leads}${stats.pitches ? ` (plus ${stats.pitches} filed as ${stats.pitches === 1 ? 'a sales pitch' : 'sales pitches'}, under Leads → Spam / test)` : ''}\n• Online payments in the last 7 days: ${stats.payments}\n• Last text/email synced: ${stats.lastSync ? when(stats.lastSync) : 'none yet'}\n\nIf this email ever stops coming on Mondays, the alerts themselves aren't working: check the staff app.`,
   }
 }

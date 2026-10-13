@@ -2,6 +2,8 @@
 
 Mobile-first site for christmas-light-creations.com. React 19 + Vite + Tailwind CSS 4, hosted on GitHub Pages.
 
+**All rights reserved. No AI use.** Nothing here, and nothing on the website, may be used for training, retrieval, answering or any other AI purpose: see [LICENSE](LICENSE), `public/robots.txt`, `public/ai.txt`, `public/.well-known/tdmrep.json` and the `noai` meta tag on every page.
+
 ## Edit text, photos, FAQ, reviews
 
 Everything lives in [`src/data/content.js`](src/data/content.js). Change it, commit, push to `main`, and the site redeploys in about a minute.

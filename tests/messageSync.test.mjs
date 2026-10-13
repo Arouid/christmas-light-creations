@@ -176,6 +176,12 @@ test('unknown senders: automatic, service and bulk mail is dropped; a person ask
   assert.equal(junkReason('deals@shop.example.com', footer), 'bulk')
   assert.equal(junkReason('deals@shop.example.com', 'Hi!\nView this email in your browser'), 'bulk')
   assert.equal(junkReason('pat.new@example.org', 'Please unsubscribe me from your emails'), '')
+  // 2026-10-13: a Constant Contact blast; Gmail's plain body has the footer words but no links.
+  assert.equal(junkReason('orders-shop.com@shared1.ccsend.com', 'Reminder: Save 15% Off\nUnsubscribe | Update Profile | Constant Contact Data Notice'), 'bulk')
+  assert.equal(junkReason('deals@shop.example.com', 'Save 15%!\nUnsubscribe | Update Profile'), 'bulk', 'the footer without links')
+  assert.equal(junkReason('rick@janpro.example.com', 'We offer free bids.\nRespond with stop to optout'), 'bulk')
+  assert.equal(junkReason('hello@mail.example.com', 'Hi there', { listUnsubscribe: '<mailto:u@example.com>' }), 'bulk')
+  assert.equal(junkReason('hello@mail.example.com', 'Hi there', { listUnsubscribe: '' }), '')
   assert.equal(junkReason('pat.new@example.org', 'Hi, can you quote lights for 12 Oak St? https://maps.example.com/x'), '')
   assert.equal(junkReason('googlefan@example.org', ''), '')
   // Dropped with the reason; nothing is stored.

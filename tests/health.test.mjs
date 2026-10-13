@@ -41,6 +41,8 @@ test('daily report: email when there are problems, all-OK only on Mondays, other
   assert.match(ok.subject, /all OK/)
   assert.match(ok.text, /requests in the last 7 days: 4/)
   assert.match(ok.text, /payments in the last 7 days: 2/)
+  assert.doesNotMatch(ok.text, /sales pitch/)
+  assert.match(dailyReport({ problems: [], monday: true, stats: { ...stats, pitches: 1 } }).text, /requests in the last 7 days: 4 \(plus 1 filed as a sales pitch, under Leads → Spam \/ test\)/)
 })
 
 test('a problem email names the problem plainly and points to the staff app', () => {

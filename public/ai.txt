@@ -1,0 +1,6 @@
+# christmas-light-creations.com (ai.txt, spawning.ai format)
+# No part of this site, its words, photos, designs or code may be used for
+# training, fine-tuning, retrieval, answering or any other AI purpose.
+User-Agent: *
+Disallow: /
+Disallow: *
