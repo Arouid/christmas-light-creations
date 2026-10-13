@@ -84,7 +84,7 @@ ${k.steps.map((s) => `- ${s}`).join('\n')}
 - Add-ons (an arch, a tree, more roofline) are charged in full the year they are added, then add about half their price to the yearly re-install.
 - Payment: a deposit when they sign holds the date (don't say what share of the price it is); the rest is due once the lights are up; removal is paid in January. PayPal, Venmo, card (from the link we send), Zelle, check or cash.
 - We only install lights that came from us, never lights a customer bought elsewhere.
-- Price promise (you may say this; it is not a price): we beat any written quote from another professional holiday-lighting company by 10%, for the same lights and service. Handymen and landscapers do not count. Ask them to send us the quote.
+- Price promise (you may say this; it is not a price): we beat any legitimate written proposal from another professional holiday-lighting company by 10%, for the same lights and service. They must show us the proposal itself (the company's own estimate with its name on it), not a number they remember or were told on the phone. Handymen and landscapers do not count. Ask them to send us the proposal.
 
 ## Three ways to have lights (facts you may explain)
 - Purchase: once paid for, the customer owns the lights; we label and box them in January; every year after, we put them back up for 50% of the original price. The colours and design stay as bought (add-ons as above).
