@@ -1,4 +1,4 @@
-import { highlights, included, lightOptions, priceBeat, serviceCalls, pricingNotes } from '../data/content'
+import { customerPerks, highlights, included, lightOptions, priceBeat, serviceCalls, pricingNotes } from '../data/content'
 import Icon from './Icon'
 import Section from './Section'
 
@@ -70,6 +70,19 @@ export default function Services() {
           </li>
         ))}
       </ul>
+
+      {/* What every customer gets (owner 2026-10-12). */}
+      <h3 id="account" className="mt-10 scroll-mt-24 font-display text-2xl font-extrabold">{customerPerks.title}</h3>
+      <p className="mt-2 max-w-2xl text-slate-300">{customerPerks.intro}</p>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {customerPerks.items.map(([icon, title, body]) => (
+          <li key={title} className="rounded-2xl border border-white/10 bg-night-900 p-4">
+            <p className="font-display text-lg font-extrabold"><span className="mr-2" aria-hidden="true">{icon}</span>{title}</p>
+            <p className="mt-1 text-sm text-slate-400">{body}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-sm text-slate-400">Your account: <a href={`${import.meta.env.BASE_URL}account/`} className="font-semibold text-glow-300 underline">christmas-light-creations.com/account</a></p>
     </Section>
   )
 }

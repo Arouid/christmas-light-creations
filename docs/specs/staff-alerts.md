@@ -99,6 +99,10 @@ The service worker reads `event.data.json().data`, shows `title`/`body` (icon `/
 
 **Links in the app**: `#messages` opens the New messages list over the current tab.
 
+## "Still waiting" nudge (2026-10-12)
+
+The list's rules moved to `functions/nudge.js` (re-exported by `src/lib/staffAlerts.js`). The server's `staffNudge` (hourly, 8 am to 8 pm Central) sends one push and one email to the alert list when anything in the list has waited 2+ hours with nobody tapping I've got it, again when the list changes or after 4 hours. Off in ⚙ Settings → Automatic emails. Details: `docs/specs/auto-emails.md`.
+
 ## Links
 
 - Message sync (what gets filed, `syncedAt`, `direction`): `docs/specs/message-sync.md`

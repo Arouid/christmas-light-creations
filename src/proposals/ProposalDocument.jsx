@@ -1,3 +1,4 @@
+import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
 import { useState } from 'react'
 import { STATUS_LABEL, dueText, fmt, itemCents, partDue, totals } from './model.js'
 
@@ -126,6 +127,9 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
       </section>
 
       {p.notes && <section><h2 className="mb-1 font-semibold">Notes</h2><p className="whitespace-pre-wrap text-slate-300 print:text-black">{p.notes}</p></section>}
+
+      {/* Told plainly, not only inside the agreement (owner 2026-10-12). */}
+      <p className="rounded-2xl border border-glow-400/40 bg-glow-400/10 px-4 py-3 text-sm text-slate-200 print:border-black/30 print:bg-transparent print:text-black"><strong className="text-glow-300 print:text-black">{TREE_TITLE}: </strong>{TREE_NOTICE}</p>
 
       <section>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">

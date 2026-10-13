@@ -76,6 +76,8 @@ What goes to Anthropic per call: the fixed business prompt, the person's name, a
 
 ## Phase 2 (written up, not built): auto-replies
 
+> 2026-10-12: the first-contact "Got your request" acknowledgement is live without AI (fixed words, `functions/ack.js`, `docs/specs/auto-emails.md`). Phase 2 below would replace it with a Claude-written, personalized one; the kill switch and the history entry already exist.
+
 **When**: after the owner has read about 50 drafts in Phase 1 and says the voice and the rules hold.
 
 **What**: the server answers by itself, only for two message kinds:

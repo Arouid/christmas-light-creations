@@ -90,6 +90,13 @@ export default function InvoicePage() {
           </div>
         )}
         {(s === 'open' || s === 'overdue') && (
+          /* Owner 2026-10-12: invoices prompt a sign-in to pay; paying right here still works. */
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-glow-400/40 bg-glow-400/10 px-5 py-4">
+            <p className="min-w-0 flex-1 text-sm text-slate-200"><strong className="text-glow-300">Pay from your account.</strong> Sign in (no password) to pay this invoice and keep every agreement, bill and payment in one place.</p>
+            <a href={`${import.meta.env.BASE_URL}account/`} className={`${btn} bg-glow-400 text-night-950`}>Sign in to pay</a>
+          </div>
+        )}
+        {(s === 'open' || s === 'overdue') && (
           <DepositPanel token={token} of="invoice" title={`Pay invoice ${inv.number}`} amountLabel={money(invoiceCents(inv))}
             note={`${s === 'overdue' ? 'Past due.' : inv.dueDate > today ? `Due ${longDate(inv.dueDate)}.` : 'Due on receipt.'} By paying you agree to the seasonal service terms on this invoice.`} onPaid={() => load(false)} />
         )}

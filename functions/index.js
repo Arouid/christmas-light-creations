@@ -66,6 +66,11 @@ import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { captureProblem, customIdFor, lockProblem, orderProblem, partLabel, payableProblem, validOrderId } from './payments.js'
 import { centralDayOf, dueText, payIn3Due, payIn3Reminder } from './payIn3.js'
 import { detailsChanged, detailsRequest, detailsSummary } from './propertyDetails.js'
+import { brandText, textFooter } from './brand.js'
+import { TREE_NOTICE, TREE_TITLE } from './notices.js'
+import { ACK_TEMPLATE, ackAddress, ackEmail, ackOn, ackedRecently } from './ack.js'
+import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
+import { NWS_POINTS_URL, NWS_USER_AGENT, WATCH_SCHEDULE, badDays, lightsHeadsUp, lightsUp, noticesOn, pruneSent, routeHeadsUp, sentKey, staffWeather, tipsOk, weatherLine } from './weather.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
 import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
@@ -220,18 +225,42 @@ export const newLeadAlert = onDocumentCreated(
     const who = `${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim() || 'someone'
     if (!to.length) {
       await reportIncident('lead-alert', `New request from ${who}, but nobody is on the alert list (staff app → ⚙ Settings → New-request alerts).`)
-      return
+    } else {
+      try {
+        await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, ...leadEmail(lead) })
+        await event.data.ref.update({ alertSentAt: new Date() })
+        logger.info(`Lead alert sent to ${to.length} staff`)
+      } catch (e) {
+        await reportIncident('lead-alert', `New request from ${who} (${lead.phone || lead.email || ''}) is in the staff app, but the alert email failed: ${e.message}`, { leadId: event.params.leadId })
+      }
     }
-    try {
-      await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, ...leadEmail(lead) })
-    } catch (e) {
-      await reportIncident('lead-alert', `New request from ${who} (${lead.phone || lead.email || ''}) is in the staff app, but the alert email failed: ${e.message}`, { leadId: event.params.leadId })
-      return
-    }
-    await event.data.ref.update({ alertSentAt: new Date() })
-    logger.info(`Lead alert sent to ${to.length} staff`)
+    // Then the customer's "Got your request" (never before the staff alert).
+    await acknowledgeRequest(event.data.ref, lead, event.params.leadId)
+      .catch((e) => reportIncident('email', `The "Got your request" email to ${who} didn't go out: ${e.message}`, { leadId: event.params.leadId }))
   },
 )
+
+// "Got your request" (functions/ack.js, docs/specs/auto-emails.md): one plain
+// email to the customer saying what happens next, filed in the lead's history
+// like an email from the staff app. Skipped when the same email got one in
+// the last day, and when ⚙ Settings → Automatic emails turns it off.
+async function acknowledgeRequest(ref, lead, leadId) {
+  const to = ackAddress(lead)
+  if (!to) return
+  const db = getFirestore()
+  const settings = (await db.doc('settings/app').get()).data() ?? {}
+  if (!ackOn(settings)) return
+  const earlier = (await db.collection('leads').where('email', '==', lead.email).select('ackSentAt').get()).docs.filter((d) => d.id !== leadId).map((d) => d.data())
+  if (ackedRecently(earlier)) { logger.info('ack skipped: same email acknowledged in the last day'); return }
+  const message = ackEmail(lead, { designAttached: Boolean(lead.designId) })
+  const messageId = `<${randomUUID()}@christmas-light-creations.com>`
+  await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to, replyTo: FROM, messageId, ...message })
+  await ref.update({ ackSentAt: new Date() })
+  const req = { to, subject: message.subject, text: message.text, template: ACK_TEMPLATE, target: { field: 'leadId', coll: 'leads', id: leadId } }
+  const { id, data } = historyEntry({ req, record: lead, messageId, staff: 'website', at: new Date().toISOString() })
+  await db.doc(`messages/${id}`).set(data, { merge: true }).catch((e) => logger.warn('ack history not saved', e.message))
+  logger.info('ack sent')
+}
 
 // ---- Payments (deposit, install balance, takedown) --------------------------
 
@@ -363,10 +392,11 @@ async function proposalChangeEmails(event) {
     await logWebsite('proposal-signed', proposalTarget(after, name), after.title ?? '')
     const first = name.split(' ')[0] || 'there'
     if (after.customer?.email) {
+      const text = `Hi ${first},\n\nThank you for choosing Christmas Light Creations! Your signed agreement is here any time (save or print it as a PDF):\n${link}\n\nAll your agreements and payments are also in your account (sign in with this email, no password): ${SITE}/account/\n\nWe'll be in touch to confirm your install date.\n\n${TREE_TITLE}: ${TREE_NOTICE}\n\nThank you,\nChristmas Light Creations\n281-819-0163${textFooter()}`
       await mail.sendMail({
         from: `"Christmas Light Creations" <${FROM}>`, to: after.customer.email, replyTo: FROM,
         subject: 'Your signed Christmas light agreement',
-        text: `Hi ${first},\n\nThank you for choosing Christmas Light Creations! Your signed agreement is here any time (save or print it as a PDF):\n${link}\n\nAll your agreements and payments are also in your account (sign in with this email, no password): ${SITE}/account/\n\nWe'll be in touch to confirm your install date.\n\nThank you,\nChristmas Light Creations\n281-819-0163`,
+        text, html: brandText({ heading: 'Your signed agreement', text, button: { href: link, label: 'Open your agreement' } }),
       })
     }
     // An add-on proposal raises the yearly price from next season: record it on the customer.
@@ -659,10 +689,7 @@ export const payIn3Reminders = onSchedule({ schedule: '5 9 * * *', timeZone: 'Am
           const first = String(p.customer?.name ?? '').trim().split(/\s+/)[0] || 'there'
           const link = `${SITE}/proposal/?t=${d.id}`
           const when = kind === 'due' ? 'is due today' : `was due ${dueText(dues[part])} and is still open`
-          await mailer().sendMail({
-            from: `"Christmas Light Creations" <${FROM}>`, to, replyTo: FROM,
-            subject: `${label} ${kind === 'due' ? 'is due today' : 'is a week past due'}: Christmas Light Creations`,
-            text: `Hi ${first},
+          const text = `Hi ${first},
 
 ${label} for your Christmas lights, ${amount}, ${when}. Pay online here (PayPal, Venmo or a card):
 ${link}
@@ -671,7 +698,11 @@ Zelle, check or cash work too: just reply or call ${PHONE}.
 
 Thank you!
 Christmas Light Creations
-${PHONE}`,
+${PHONE}${textFooter()}`
+          await mailer().sendMail({
+            from: `"Christmas Light Creations" <${FROM}>`, to, replyTo: FROM,
+            subject: `${label} ${kind === 'due' ? 'is due today' : 'is a week past due'}: Christmas Light Creations`,
+            text, html: brandText({ heading: `${label} ${kind === 'due' ? 'is due today' : 'is past due'}`, text, button: { href: link, label: 'Pay online' } }),
           })
           sent++
           return { to }
@@ -790,10 +821,7 @@ export const sendAccountLink = onCall({ region: REGION, invoker: 'public', secre
   await limitRef.set({ lastAt: now, day, count: today + 1 })
 
   const link = await getAuth().generateSignInWithEmailLink(email, { url: accountUrl(req.data?.origin), handleCodeInApp: true })
-  await sendOrReport(email, {
-    from: `"Christmas Light Creations" <${FROM}>`, to: email, replyTo: FROM,
-    subject: 'Your Christmas Light Creations sign-in link',
-    text: `Hi,
+  const text = `Hi,
 
 Tap this link to open your account (your agreements, what's paid, and anything due):
 ${link}
@@ -802,14 +830,20 @@ The link works once. If you didn't ask for it, just ignore this email.
 
 Thank you,
 Christmas Light Creations
-281-819-0163`,
+281-819-0163${textFooter()}`
+  await sendOrReport(email, {
+    from: `"Christmas Light Creations" <${FROM}>`, to: email, replyTo: FROM,
+    subject: 'Your Christmas Light Creations sign-in link',
+    text, html: brandText({ heading: 'Your sign-in link', text, button: { href: link, label: 'Open your account' } }),
   })
   return { ok: true }
 })
 
 // For staff (Accounts page): first and last sign-in per email. Times are
 // stored as Firestore timestamps; compared as milliseconds.
-async function recordLogin(db, email, token) {
+// `app`: the device name when the page runs as the installed app (owner
+// 2026-10-12: "can we see who has chosen to install the app"), kept once set.
+async function recordLogin(db, email, token, app = '') {
   if (email.includes('/')) return
   const ref = db.doc(`customerLogins/${email}`)
   await db.runTransaction(async (tx) => {
@@ -817,7 +851,7 @@ async function recordLogin(db, email, token) {
     const ms = (t) => (t?.toMillis ? t.toMillis() : null)
     const rec = loginRecord(prev && { firstAt: ms(prev.firstAt), lastAt: ms(prev.lastAt), provider: prev.provider },
       { email, authTime: Number(token.auth_time) * 1000, provider: providerName(token.firebase?.sign_in_provider) })
-    tx.set(ref, { ...rec, firstAt: new Date(rec.firstAt), lastAt: new Date(rec.lastAt) })
+    tx.set(ref, { ...rec, firstAt: new Date(rec.firstAt), lastAt: new Date(rec.lastAt), ...(app ? { app: { device: app, at: new Date() } } : {}) }, { merge: true })
   })
 }
 
@@ -828,7 +862,7 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const email = normEmail(req.auth?.token?.email)
   if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
   const db = getFirestore()
-  await recordLogin(db, email, req.auth.token).catch((e) => logger.warn('recordLogin', e))
+  await recordLogin(db, email, req.auth.token, String(req.data?.app ?? '').slice(0, 40)).catch((e) => logger.warn('recordLogin', e))
   const tokens = await proposalTokensFor(email)
   const docs = tokens.length ? await db.getAll(...tokens.map((t) => db.doc(`proposals/${t}`)), { fieldMask: ['status', 'title', 'season', 'customer', 'items', 'discountPct', 'depositPct', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt'] }) : []
   const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data(), centralDay())).sort(byNewest)
@@ -1166,7 +1200,7 @@ export const sendStaffEmail = onCall({ region: REGION, invoker: 'public', secret
   // Our own Message-ID, so the history entry gets the id the sync would give the Sent copy.
   const messageId = `<${randomUUID()}@christmas-light-creations.com>`
   try {
-    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, messageId })
+    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, html: brandText({ text: r.text }), messageId })
   } catch (e) {
     await reportIncident('email', `An email from the staff app to ${name} (sent by ${staff}) didn't go out: ${e.message}`)
     throw new HttpsError('unavailable', 'The email didn’t go out (Gmail didn’t take it). Try again in a minute, or use Open in Gmail.')
@@ -1291,7 +1325,7 @@ async function sendScheduled(db, id) {
 
   const r = claim.req
   try {
-    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, messageId })
+    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, html: brandText({ text: r.text }), messageId })
   } catch (e) {
     // Left as "sending" if this write fails too: the stuck check reports it in 15 minutes.
     await ref.update({ status: 'failed', open: true, error: GMAIL_ERROR, failedAt: FieldValue.serverTimestamp() }).catch((e2) => logger.error('scheduled email: marking failed failed', e2.message))
@@ -1461,6 +1495,8 @@ export const dailyHealth = onSchedule({ schedule: '30 7 * * *', timeZone: 'Ameri
   const leads = leadsSnap.docs.map((d) => d.data())
   const lastSync = lastMsg.docs[0]?.get('syncedAt') ?? null
   const problems = []
+  const stale = await loadWaiting(db, now).catch((e) => { logger.warn('waiting list', e.message); return [] })
+  if (stale.length) problems.push(`• ${stale.length} customer message${stale.length === 1 ? '' : 's'} or request${stale.length === 1 ? '' : 's'} ${stale.length === 1 ? 'has' : 'have'} waited 2+ hours with nobody tapping I've got it (💬 in the staff app).`)
   const missed = missedLeadAlerts(leads, now)
   if (missed.length) problems.push(`• ${missed.length} website request${missed.length === 1 ? '' : 's'} from the last day never got an alert email (${missed.map((l) => `${l.firstName ?? ''} ${l.lastName ?? ''}`.trim()).join(', ')}). They're in the staff app under Leads.`)
   if (syncStale(lastSync, now)) problems.push('• No texts or emails have synced into customer history for 3+ days. If customers have been texting, the sync (Apps Script in info@) may have stopped.')
@@ -1519,6 +1555,162 @@ export const leadDesignCreated = onDocumentCreated({ document: 'leadDesigns/{id}
   }
   await event.data.ref.update({ design, image, photo, checkedAt: FieldValue.serverTimestamp() })
   logger.info('leadDesign checked', { id: event.params.id, sample: photo === 'sample' })
+})
+
+// ---- "Still waiting" nudge (functions/nudge.js, docs/specs/auto-emails.md) ----
+// Customer texts, voicemails, missed calls, emails, website requests and
+// problem reports nobody has taken for 2+ hours: one phone notification and
+// one email to the alert list, every hour 8 am to 8 pm Central, again when
+// the list changes or after 4 hours. Off in ⚙ Settings → Automatic emails
+// (settings/app.staffNudges false). Logs carry counts only.
+async function loadWaiting(db, now) {
+  const since = new Date(listSince(now))
+  const all = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  const [msgs, leads, calls, acts] = await Promise.all([
+    db.collection('messages').where('syncedAt', '>=', since).get(),
+    db.collection('leads').where('createdAt', '>=', since).get(),
+    db.collection('serviceCalls').where('source', '==', 'customer').get(),
+    db.collection('activity').where('at', '>=', since).select('action', 'target').get(),
+  ])
+  return waiting({ messages: all(msgs), leads: all(leads), calls: all(calls), activity: all(acts), now })
+}
+
+// { 'customer:<id>': name, 'lead:<id>': name } for the people in the list.
+async function namesFor(db, items) {
+  const names = {}
+  const cust = [...new Set(items.map((m) => m.customerId).filter(Boolean))].slice(0, 50)
+  const leads = [...new Set(items.filter((m) => !m.customerId).map((m) => m.leadId).filter(Boolean))].slice(0, 50)
+  const refs = [...cust.map((id) => db.doc(`customers/${id}`)), ...leads.map((id) => db.doc(`leads/${id}`))]
+  if (!refs.length) return names
+  const docs = await db.getAll(...refs, { fieldMask: ['fullName', 'firstName', 'lastName'] }).catch(() => [])
+  for (const d of docs) {
+    const x = d.data()
+    const name = x && (x.fullName || `${x.firstName ?? ''} ${x.lastName ?? ''}`.trim())
+    if (name) names[`${d.ref.parent.id === 'customers' ? 'customer' : 'lead'}:${d.id}`] = name
+  }
+  return names
+}
+
+export const staffNudge = onSchedule({ schedule: NUDGE_HOURS, timeZone: 'America/Chicago', region: REGION, secrets: [SMTP_PASSWORD] }, async () => {
+  const db = getFirestore()
+  const settings = (await db.doc('settings/app').get()).data() ?? {}
+  if (settings.staffNudges === false) return
+  const now = Date.now()
+  const items = await loadWaiting(db, now)
+  const gate = db.doc('serverState/staffNudge')
+  const state = (await gate.get()).data()
+  if (!nudgeDue(state, items, now)) { logger.info('staffNudge', { waiting: items.length, sent: false }); return }
+  const msg = nudgeMessage(items, await namesFor(db, items), now)
+  await gate.set({ at: now, key: nudgeKey(items), count: items.length })
+  await alertStaff(msg.push)
+  const to = await staffEmails()
+  if (to.length) {
+    try {
+      await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, subject: msg.subject, text: msg.text })
+    } catch (e) {
+      await reportIncident('other', `The "still waiting" reminder email didn't go out: ${e.message}`)
+    }
+  }
+  logger.info('staffNudge', { waiting: items.length, sent: true })
+})
+
+// ---- Weather heads-ups (functions/weather.js, docs/specs/auto-emails.md) ----
+// 4:30 pm Central: the National Weather Service forecast for Pearland (free,
+// no key). On a bad day ahead: customers with a route stop that day get the
+// "your date may move" email; customers with lights up get the storm tips
+// (unless turned off on their account page, at most one per bad day and one
+// every 5 days); staff get one notification and one email. Off in ⚙ Settings
+// → Automatic emails (settings/app.weatherEmails false). Logs carry counts.
+async function nwsForecast() {
+  const headers = { 'User-Agent': NWS_USER_AGENT, Accept: 'application/geo+json' }
+  const point = await (await fetch(NWS_POINTS_URL, { headers })).json()
+  const url = point?.properties?.forecast
+  if (!url) throw new Error('no forecast link for Pearland')
+  const fc = await (await fetch(url, { headers })).json()
+  return fc?.properties?.periods ?? []
+}
+
+export const weatherWatch = onSchedule({ schedule: WATCH_SCHEDULE, timeZone: 'America/Chicago', region: REGION, secrets: [SMTP_PASSWORD], timeoutSeconds: 540, retryCount: 1 }, async () => {
+  const db = getFirestore()
+  const settings = (await db.doc('settings/app').get()).data() ?? {}
+  if (settings.weatherEmails === false) return
+  const today = centralDay()
+  let periods
+  try {
+    periods = await nwsForecast()
+  } catch (e) {
+    await reportIncident('other', `The weather check couldn't read the National Weather Service forecast: ${e.message}`)
+    return
+  }
+  const days = badDays(periods, today)
+  const stateRef = db.doc('serverState/weather')
+  const state = (await stateRef.get()).data() ?? {}
+  const now = Date.now()
+  const sent = pruneSent(state.sent, now)
+  if (!days.length) {
+    await stateRef.set({ sent, checkedAt: now, days: [], staffKey: state.staffKey ?? '' })
+    logger.info('weatherWatch', { bad: 0 })
+    return
+  }
+  const byDay = Object.fromEntries(days.map((d) => [d.day, d]))
+  const from = `"Christmas Light Creations" <${FROM}>`
+
+  // 1. Route stops on those days: the scheduling heads-up (part of their service).
+  const routes = (await db.collection('routes').where('day', 'in', days.map((d) => d.day)).get()).docs.map((d) => ({ id: d.id, ...d.data() }))
+  const routeStops = []
+  let toldRoute = 0
+  for (const r of routes) {
+    const names = []
+    for (const stop of r.stops ?? []) {
+      if (!stop.customerId) continue
+      names.push(stop.name || 'a customer')
+      const key = sentKey(`route-${stop.customerId}`, r.day)
+      if (sent[key]) continue
+      const c = (await db.doc(`customers/${stop.customerId}`).get()).data()
+      const to = recipientsOf(c ?? {})[0]
+      if (!to) continue
+      try {
+        await mailer().sendMail({ from, to, replyTo: FROM, ...routeHeadsUp({ name: c.fullName, day: byDay[r.day], kind: stop.kind }) })
+        sent[key] = now
+        toldRoute++
+      } catch (e) { logger.warn('weather route email failed', e.message) }
+    }
+    if (names.length) routeStops.push({ day: r.day, names })
+  }
+
+  // 2. Lights up this season: the storm tips (optional).
+  const season = String(new Date(now).getMonth() >= 6 ? new Date(now).getFullYear() : new Date(now).getFullYear() - 1)
+  const up = await db.collection('customers').where(`seasons.${season}.installStatus`, '==', 'Install Completed')
+    .select('fullName', 'email', 'otherEmails', 'emailNotices', `seasons.${season}.installStatus`).get()
+  let told = 0
+  let skipped = 0
+  for (const d of up.docs) {
+    const c = d.data()
+    if (!lightsUp(c, season)) continue
+    if (!noticesOn(c) || !tipsOk(sent, d.id, days[0].day, now)) { skipped++; continue }
+    const to = recipientsOf(c)[0]
+    if (!to) continue
+    try {
+      await mailer().sendMail({ from, to, replyTo: FROM, ...lightsHeadsUp({ name: c.fullName, days }) })
+      sent[sentKey(d.id, days[0].day)] = now
+      told++
+    } catch (e) { logger.warn('weather tips email failed', e.message) }
+  }
+
+  // 3. Staff: once per set of bad days.
+  const staffKey = days.map((d) => `${d.day}:${d.concerns.join('+')}`).join(',')
+  if (staffKey !== state.staffKey) {
+    const msg = staffWeather({ days, routeStops, told, skipped })
+    await alertStaff(msg.push)
+    const to = await staffEmails()
+    if (to.length) {
+      try {
+        await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, subject: msg.subject, text: msg.text })
+      } catch (e) { await reportIncident('other', `The weather heads-up email to staff didn't go out: ${e.message}`) }
+    }
+  }
+  await stateRef.set({ sent, checkedAt: now, days: days.map(weatherLine), staffKey })
+  logger.info('weatherWatch', { bad: days.length, routeStops: routeStops.length, toldRoute, told, skipped })
 })
 
 // 3:15 am Central: delete uploads older than 30 days (owner, 2026-10-10).

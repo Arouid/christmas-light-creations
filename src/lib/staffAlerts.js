@@ -2,58 +2,12 @@
 // of phone notifications on this device. What a message says and links to
 // lives in functions/staffPush.js, shared with the server's notifications.
 // Spec: docs/specs/staff-alerts.md.
-import { isAlert } from '../../functions/staffPush.js'
-
 export * from '../../functions/staffPush.js'
 
-export const LIST_DAYS = 7
-const DAY = 24 * 60 * 60 * 1000
-
-// Firestore timestamp, Date, ISO string or milliseconds -> ms (0 if none).
-export const toMs = (t) => {
-  if (!t) return 0
-  if (typeof t.toMillis === 'function') return t.toMillis()
-  if (t instanceof Date) return t.getTime()
-  if (typeof t === 'number') return t
-  return Date.parse(t) || 0
-}
-
-export const listSince = (now = Date.now()) => now - LIST_DAYS * DAY
-
-// Website estimate requests -> list entries shaped like messages (spam/test left out).
-export function requestItems(leads) {
-  return (leads ?? []).filter((l) => l.status !== 'spam' && toMs(l.createdAt)).map((l) => ({
-    id: `request-${l.id}`, kind: 'request', direction: 'in', leadId: l.id, status: l.status ?? 'new',
-    at: new Date(toMs(l.createdAt)).toISOString(), syncedAt: toMs(l.createdAt),
-    text: [l.city, l.message].filter(Boolean).join(' · '),
-  }))
-}
-
-// Problems customers reported from their account (docs/specs/account-service.md)
-// -> list entries shaped like messages. Calls staff logged themselves aren't alerts.
-export function reportItems(calls) {
-  return (calls ?? []).filter((c) => c.source === 'customer' && toMs(c.reportedAt)).map((c) => ({
-    id: `report-${c.id}`, kind: 'report', direction: 'in', customerId: c.customerId, callId: c.id, status: c.status ?? 'Open',
-    at: new Date(toMs(c.reportedAt)).toISOString(), syncedAt: toMs(c.reportedAt),
-    text: [c.issue, c.details].filter(Boolean).join(' · '),
-  }))
-}
-
-// Synced messages, requests and reports -> what the list shows: incoming, last 7 days, newest first.
-export function recentIncoming(items, now = Date.now()) {
-  const since = listSince(now)
-  const when = (m) => Date.parse(m.at) || toMs(m.syncedAt)
-  return (items ?? []).filter((m) => isAlert(m) && toMs(m.syncedAt) >= since).sort((a, b) => when(b) - when(a))
-}
-
-// Still needs someone (owner 2026-10-10: just opening the list mustn't clear
-// it): nobody has tapped I've got it / Take it over, and an estimate request
-// is still New, a problem report still Open. Dismissed ones are already out of
-// the list. `handling` is the Map from src/lib/activity.js handlers().
-export const needsSomeone = (m, handling) => !handling?.has?.(m.id)
-  && !(m.kind === 'request' && m.status && m.status !== 'new')
-  && !(m.kind === 'report' && m.status !== 'Open')
-export const countOpen = (list, handling) => list.filter((m) => needsSomeone(m, handling)).length
+// The list's rules (last 7 days, requests, reports, who still needs someone)
+// live in functions/nudge.js, shared with the server's "still waiting" nudge.
+export { LIST_DAYS, WAIT_MS, countOpen, listSince, needsSomeone, recentIncoming, reportItems, requestItems, toMs } from '../../functions/nudge.js'
+import { toMs } from '../../functions/nudge.js'
 
 // New = arrived after you last opened the list (never opened: all of them).
 // Only used while the activity log isn't available (rules not published).

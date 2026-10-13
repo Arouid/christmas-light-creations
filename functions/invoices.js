@@ -1,8 +1,11 @@
+import { ACCOUNT_URL, BIZ, PHONE, branded, esc } from './brand.js'
+
 // Invoices (docs/specs/invoices.md): our own invoices, paid through the same
 // PayPal Orders flow as proposals. Pure rules shared by the server
 // (functions/index.js) and the pages (src/lib/invoices.js re-exports this
 // file), so the amount charged, the staff list and the customer's page can't
-// disagree. No Firebase and no Node-only APIs here: browsers and tests import it.
+// disagree. No Firebase and no Node-only APIs here: browsers and tests
+// import it. The email shell comes from functions/brand.js.
 //
 // Money is in cents (integers). Dates are 'YYYY-MM-DD' strings in Central time.
 
@@ -202,30 +205,9 @@ export function invoiceSummary(token, inv, today) {
 }
 
 // ---- Emails (from info@) ---------------------------------------------------
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]))
-const firstName = (inv) => String(inv?.customer?.name ?? '').trim().split(/\s+/)[0] || 'there'
-const PHONE = '281-819-0163'
-const BIZ = 'Christmas Light Creations'
-
-// Branded HTML (dark blue header, gold button) with a plain-text twin.
-function branded({ heading, paragraphs, button, rows, footer }) {
-  const p = (t) => `<p style="margin:0 0 14px">${t}</p>`
-  const table = rows?.length
-    ? `<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 18px;font-size:15px">${rows.map(([a, b, strong]) => `<tr><td style="padding:6px 0;border-bottom:1px solid #e5e7eb${strong ? ';font-weight:700' : ''}">${esc(a)}</td><td style="padding:6px 0;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap${strong ? ';font-weight:700' : ''}">${esc(b)}</td></tr>`).join('')}</table>`
-    : ''
-  const btn = button ? `<p style="margin:22px 0"><a href="${esc(button.href)}" style="display:inline-block;background:#ffcf4d;color:#050b1a;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:999px">${esc(button.label)}</a></p>` : ''
-  return `<div style="background:#f3f4f6;padding:24px 12px;font-family:Arial,Helvetica,sans-serif;color:#111827;line-height:1.5">
-<div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden">
-<div style="background:#050b1a;padding:20px 24px;color:#ffcf4d;font-family:Georgia,serif;font-size:22px;font-weight:700">${BIZ}</div>
-<div style="padding:24px">
-<h1 style="font-family:Georgia,serif;font-size:22px;margin:0 0 16px;color:#050b1a">${esc(heading)}</h1>
-${paragraphs.map((x) => p(x)).join('\n')}
-${table}${btn}
-<p style="margin:18px 0 0;color:#4b5563;font-size:14px">${footer}</p>
-</div></div></div>`
-}
-
 const taxRow = (inv) => (invoiceTax(inv) ? [[`Sales tax (${invoiceTaxRate(inv)}%)`, money(invoiceTax(inv))]] : [])
+const firstName = (inv) => String(inv?.customer?.name ?? '').trim().split(/\s+/)[0] || 'there'
+
 const itemRows = (inv) => [...(inv.items ?? []).map((i) => [i.description, money(i.cents)]), ...taxRow(inv), ['Total', money(invoiceCents(inv)), true]]
 const itemText = (inv) => [...(inv.items ?? []).map((i) => `  ${i.description}: ${money(i.cents)}`), ...taxRow(inv).map(([a, b]) => `  ${a}: ${b}`), `  Total: ${money(invoiceCents(inv))}`].join('\n')
 const dueText = (inv, today) => (inv.dueDate && inv.dueDate > today ? `due ${longDate(inv.dueDate)}` : 'due now')
@@ -242,7 +224,7 @@ export function invoiceEmail({ inv, link, today, type = 'invoice', day = 0 }) {
   const opening = late
     ? `Hi ${first}, just a friendly reminder: invoice ${inv.number} for ${total} was due ${longDate(inv.dueDate)}${day ? ` (${day} days ago)` : ''}. If you’ve already paid, thank you, and please ignore this.`
     : `Hi ${first}, here’s your invoice from ${BIZ}. Thank you for letting us light up your home!`
-  const payLine = 'Pay online with PayPal, Venmo or a card. You can also save or print it from the same page. By paying you agree to our seasonal service terms, shown on your invoice page.'
+  const payLine = `Sign in to your account (no password) to pay with PayPal, Venmo or a card and keep every bill in one place: ${ACCOUNT_URL} . You can also pay straight from the invoice page, and save or print it there. By paying you agree to our seasonal service terms, shown on your invoice page.`
   const note = inv.note ? `\n\n${inv.note}` : ''
   const text = `${opening}\n\nInvoice ${inv.number} · ${what}\n${itemText(inv)}\n${late ? '' : `Due: ${inv.dueDate && inv.dueDate > today ? longDate(inv.dueDate) : 'on receipt'}\n`}${note}\n\nView and pay: ${link}\n${payLine}\n\nQuestions? Call or text ${PHONE}.\n\nThank you,\n${BIZ}`
   const html = branded({

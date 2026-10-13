@@ -114,3 +114,10 @@ Owner: "we should have things like that on their account page too so they can se
 - Staff: the same five fields under **Edit details** → Contact (`CustomerDetail.jsx`); the route's installer view (`RouteDrive.jsx`) shows a red **Heads-up** line with the things to avoid and pets on each stop, and the gate code box falls back to the record's gate code; the schedule assistant gets `lightsDownBy` and a rule to place those takedowns before the date.
 - Privacy page: the customer paragraph names these details and that customers can edit them.
 - Boxes on the porch: the day-before reminder text and emails tell returning customers to set their labeled boxes out (re-install) and everyone to set the empty box out (takedown); a first-year install gets no box line (`boxLine` in `src/lib/installTexts.js`).
+
+## Email preferences, Help, who has the app (2026-10-12)
+
+- **Email preferences** (`#emails`): one switch, weather heads-ups and seasonal tips (`customers.emailNotices`, false = off), saved through `updateMyDetails({ emailNotices })`; critical mail has no switch. Rules and words: `docs/specs/auto-emails.md`.
+- **Help** (`#help`, `src/data/help.js`): 16 answers with a search box, shown signed in and on the sign-in screen (owner: self-help instead of tech support).
+- **Trees and your lights** under Your lights (`functions/notices.js`), told plainly as the owner asked.
+- **Who has the app**: `loadAccount()` sends the device name when the page runs standalone; `myAccount` keeps `customerLogins/{email}.app`; staff see "📱 has the app (…)" on the login line. The Get the app box says phone notifications of any kind only work from the installed app.

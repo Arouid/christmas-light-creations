@@ -3,6 +3,8 @@
 // Signing in here never makes anyone staff: staff access is decided only by
 // the `staff` list in Firestore.
 // Firebase loads only on this page, by dynamic import.
+import { standalone } from '../components/useInstall.js'
+import { deviceName } from './staffAlerts.js'
 import { callDeposit } from './paypal.js'
 import { getFirebaseApp } from './firebase.js'
 import { signInWithGoogle } from './googleSignIn.js'
@@ -52,7 +54,8 @@ export async function signOut() {
   await a.signOut(a.auth)
 }
 
-export const loadAccount = () => callDeposit('myAccount', {})
+// `app`: the device name when this runs as the installed app, so staff can see who has it (customerLogins).
+export const loadAccount = () => callDeposit('myAccount', { app: standalone() ? deviceName(navigator.userAgent) : '' })
 
 // Report a problem with their lights (docs/specs/account-service.md): the
 // server logs the service call and alerts staff; the browser never writes it.

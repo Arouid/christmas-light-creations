@@ -3,6 +3,8 @@
 // their own in the app's Emails tab; edits are stored in settings/app as
 // `emailTemplates` and replace the stock one with the same id.
 
+import { TREE_SHORT } from '../../functions/notices.js'
+
 const sign = '\n\nThank you,\n{business}\n{businessPhone}'
 
 export const TEMPLATE_GROUPS = ['General', 'Estimates', 'Booking', 'Install', 'Service', 'Takedown', 'Thank you', 'Our templates']
@@ -148,13 +150,13 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
     id: 'install-reminder', group: 'Install', label: 'We’re coming tomorrow (day-before reminder)',
     when: 'The evening before an install, from the route’s edit screen (Day-before reminders).',
     subject: 'We’re coming tomorrow: your lights on {visitDay}',
-    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, for your {job}.\n\nA few things that help:\n- Leave side gates unlocked (we have your gate code if you gave us one)\n- Keep dogs inside while we're there\n- Make sure the outdoor outlets work\n{boxesEmail}{gateAskEmail}\nYou don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
+    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, for your {job}.\n\nA few things that help:\n- Leave side gates unlocked (we have your gate code if you gave us one)\n- Keep dogs inside while we're there\n- Make sure the outdoor outlets work\n- ${TREE_SHORT}\n{boxesEmail}{gateAskEmail}\nYou don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
   },
   {
     id: 'install-done', group: 'Install', label: 'Your lights are up',
     when: 'Same day the install is finished.',
     subject: 'Your lights are up!',
-    body: `Hi {first},\n\nYour lights are up! They're on a timer, so they'll come on by themselves each evening.\n\nIf anything goes out (a bulb, a strand, a tripped outlet), just call or text {businessPhone}. Service calls are free all season, usually same day.\n\nYour total for this season is {total}. Your invoice will come through PayPal; we also take Zelle, Venmo, Cash App, check or cash.\n\nEnjoy, and Merry Christmas!${sign}`,
+    body: `Hi {first},\n\nYour lights are up! They're on a timer, so they'll come on by themselves each evening.\n\nIf anything goes out (a bulb, a strand, a tripped outlet), just call or text {businessPhone}. Service calls are free all season, usually same day.\n\n${TREE_SHORT}\n\nYour total for this season is {total}. Your invoice will come through PayPal; we also take Zelle, Venmo, Cash App, check or cash.\n\nEnjoy, and Merry Christmas!${sign}`,
   },
   {
     id: 'payment-reminder', group: 'Install', label: 'Payment reminder',

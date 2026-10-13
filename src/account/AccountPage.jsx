@@ -11,6 +11,8 @@ import { InstallButtons } from '../components/InstallApp'
 import { isIos, standalone, useInstall } from '../components/useInstall'
 import AccountDrawer from './AccountDrawer.jsx'
 import { NOTE_MAX, REPORT_ISSUES, scheduleText, shortDate } from '../../functions/service.js'
+import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
+import { searchHelp } from '../data/help.js'
 
 // The customer's own account: /account/ (sign in with Google or an emailed
 // link, no password). Lists every proposal sent to their email, what's paid and what's
@@ -53,8 +55,10 @@ export default function AccountPage() {
     data.price && { href: '#price', label: 'Your yearly price', icon: '💲' },
     data.price?.history?.length > 0 && { href: '#history', label: 'What you’ve paid', icon: '📒' },
     data.details && { href: '#property-details', label: 'Your property details', icon: '🏡' },
+    data.details && { href: '#emails', label: 'Email preferences', icon: '✉️' },
     !installed && { href: '#app', label: 'Get the app', icon: '📱' },
-  ].filter(Boolean) : []
+    { href: '#help', label: 'Help', icon: '❓' },
+  ].filter(Boolean) : [{ href: '#help', label: 'Help', icon: '❓' }]
 
   async function load() {
     if (demo) {
@@ -160,6 +164,7 @@ function Body({ view, email, setEmail, busy, submit, google, reload, logOut }) {
   if (view.name === 'signin' || view.name === 'needEmail') {
     const finishing = view.name === 'needEmail'
     return (
+      <div className="space-y-6">
       <form onSubmit={submit} className="space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
         <h1 className="font-display text-2xl font-extrabold">{finishing ? 'Confirm your email' : 'Sign in to your account'}</h1>
         <p className="text-slate-300">{finishing ? 'Enter the email this link was sent to.' : 'See your agreements, what’s paid and anything due, and pay online. Use the email we sent your proposal to. No password needed.'}</p>
@@ -183,6 +188,8 @@ function Body({ view, email, setEmail, busy, submit, google, reload, logOut }) {
           {busy ? 'One moment…' : finishing ? 'Sign in' : 'Email me a sign-in link'}
         </button>
       </form>
+      <Help />
+      </div>
     )
   }
   return <Account data={view.data} reload={reload} logOut={logOut} />
@@ -226,6 +233,7 @@ function Account({ data, reload, logOut }) {
       {data.details && <DetailsNudge details={data.details} />}
       <Lights schedule={data.schedule} service={data.service} />
       {data.details && <Details details={data.details} onSaved={reload} />}
+      {data.details && <EmailPrefs details={data.details} onSaved={reload} />}
       {data.price && <YearlyPrice price={data.price} />}
       {!list.length && !data.customer && !invoices.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
       <div id="agreements" className="scroll-mt-24 space-y-6">
@@ -240,6 +248,7 @@ function Account({ data, reload, logOut }) {
       {invoices.length > unpaid.length && <PaidInvoices invoices={invoices.filter((i) => i.state === 'paid')} />}
       {data.price?.history?.length > 0 && <PaymentHistory history={data.price.history} />}
       <GetTheApp />
+      <Help />
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-slate-400">Questions about your lights or a bill?</span>
         {call}
@@ -266,6 +275,8 @@ function Lights({ schedule, service }) {
       )}
       {sched?.none && <p className="text-slate-300">You’re not on this season’s schedule yet. Want your lights back up? Call or text us and we’ll book you.</p>}
       {service && <ReportProblem service={service} />}
+      {/* Told plainly, not only in the agreement (owner 2026-10-12). */}
+      <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300"><strong className="text-glow-300">{TREE_TITLE}: </strong>{TREE_NOTICE}</p>
     </section>
   )
 }
@@ -307,7 +318,8 @@ function Details({ details, onSaved }) {
     e.preventDefault()
     setState('saving')
     try {
-      if (!demo) await (await lib).updateMyDetails(v)
+      // Only the text fields: the email switch (EmailPrefs) saves itself.
+      if (!demo) await (await lib).updateMyDetails(Object.fromEntries(DETAIL_INPUTS.map(([k]) => [k, v[k] ?? ''])))
       setState('saved')
       onSaved?.()
     } catch (err) {
@@ -416,6 +428,7 @@ function GetTheApp() {
     <section id="app" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Get the app</h2>
       <p className="text-sm text-slate-300">Put Christmas Light Creations on your phone’s home screen: opens full-screen, no password, always up to date.</p>
+      <p className="text-sm text-glow-300">Phone notifications of any kind only work from the installed app. Without it, you get email only.</p>
       <InstallButtons app="Christmas Light Creations" signIn="sign in the same way" />
     </section>
   )
@@ -556,6 +569,68 @@ function ProposalCard({ p, reload }) {
       {due.map((x) => (
         <DepositPanel key={x.part} token={p.token} part={x.part} title={payTitle(p, x.part)} note={payNote(p, x.part)} amountLabel={fmt(x.amount)} onPaid={reload} />
       ))}
+    </section>
+  )
+}
+
+// Email preferences (owner 2026-10-12): weather heads-ups and seasonal tips
+// can be turned off here; agreements, bills, payment reminders, scheduling and
+// replies always come through. Saved onto their record (emailNotices).
+function EmailPrefs({ details, onSaved }) {
+  const [on, setOn] = useState(details.emailNotices !== false)
+  const [state, setState] = useState(null) // null | 'saving' | 'saved' | { error }
+  async function toggle(next) {
+    setOn(next)
+    setState('saving')
+    try {
+      if (!demo) await (await lib).updateMyDetails({ emailNotices: next })
+      setState('saved')
+      onSaved?.()
+    } catch (err) {
+      setOn(!next)
+      setState({ error: err?.message || 'That didn’t save. Please try again, or call us.' })
+    }
+  }
+  return (
+    <section id="emails" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">Email preferences</h2>
+      <label className="flex min-h-11 cursor-pointer items-start gap-3">
+        <input type="checkbox" checked={on} disabled={state === 'saving'} onChange={(e) => toggle(e.target.checked)} className="mt-1 size-5 accent-glow-400" />
+        <span className="text-slate-200"><span className="font-semibold">Weather heads-ups and seasonal tips</span><span className="block text-sm text-slate-400">When storms, strong wind or a freeze are coming: what usually goes wrong with lights and the one thing that fixes it.</span></span>
+      </label>
+      <p className="text-sm text-slate-400">Agreements, bills, payment reminders, scheduling and replies to you always come through.</p>
+      {state === 'saved' && <p className="text-sm text-emerald-300">Saved ✓</p>}
+      {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+    </section>
+  )
+}
+
+// Help (owner 2026-10-12: self-help with a search box, since we don't run a
+// tech-support line). Answers in src/data/help.js; shown signed in and out.
+function Help() {
+  const [q, setQ] = useState('')
+  const list = searchHelp(q)
+  return (
+    <section id="help" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">Help</h2>
+      <label className="block text-sm text-slate-300">Search for an answer
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. lights out, pay, gate code, app"
+          className="mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100" />
+      </label>
+      {list.length ? (
+        <ul className="divide-y divide-white/10">
+          {list.map((h) => (
+            <li key={h.id}>
+              <details className="group py-1">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
+                  {h.q}<Icon name="chevron" className="size-5 shrink-0 text-glow-400 transition group-open:rotate-180" />
+                </summary>
+                <p className="pb-3 text-sm text-slate-300">{h.a}</p>
+              </details>
+            </li>
+          ))}
+        </ul>
+      ) : <p className="text-sm text-slate-300">Nothing matches that. Call or text {business.phone} and a person will help.</p>}
     </section>
   )
 }

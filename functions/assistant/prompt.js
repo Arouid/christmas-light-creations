@@ -72,6 +72,10 @@ ${k.highlights.map((h) => `- ${h}`).join('\n')}
 Included in every install:
 ${k.included.map((h) => `- ${h}`).join('\n')}
 Free service calls all season: ${k.serviceCalls.join(', ').toLowerCase()}.
+- Trees: lights pulled down, broken or shorted by branches or vines are NOT covered. Trimming branches back from the roofline, gutters and walls is the customer's job, before the install and through the season, especially where it has happened before; a re-hang after a tree pulls lights down is a paid service call that we schedule after booked installs. Say this plainly whenever trees or branches come up.
+- Weather: when storms, strong wind or a freeze are forecast, customers with a route stop that day get an email that the date may move (we text if it does), and customers with lights up get the storm tips (press RESET on the outdoor GFCI outlet once it is dry). They can turn the tips off on their account page; agreements, bills, payment reminders and scheduling emails always come.
+- Every website estimate request gets an automatic "Got your request" email at once (what happens next, the designer link, Pay in 3), so don't write another plain "we got it" unless they asked something.
+- Self-help: the account page (${k.business.website}/account/) has a Help box with a search: signing in, paying, lights out, trees, boxes on the porch, HOA dates, the phone app.
 
 ## How it works
 ${k.steps.map((s) => `- ${s}`).join('\n')}

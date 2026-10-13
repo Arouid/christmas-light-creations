@@ -224,6 +224,34 @@ function AlertEmails({ settings, onSave }) {
   )
 }
 
+// Automatic emails (docs/specs/auto-emails.md): what the server sends on its
+// own. Off at once: each function reads settings/app when it runs.
+const AUTO_EMAILS = [
+  ['ackRequests', '“Got your request” to the customer', 'The moment a website estimate request comes in: what happens next, the designer link, Pay in 3. Filed in the lead’s history.'],
+  ['weatherEmails', 'Weather heads-ups', 'Each afternoon the server reads the National Weather Service forecast for Pearland. Storms, strong wind or a freeze ahead: customers on a route that day hear their date may move, customers with lights up get the storm tips (unless they turned them off), and you get a notification and an email.'],
+  ['staffNudges', '“Still waiting” reminders to staff', 'Every hour from 8 am to 8 pm: a notification and an email to the alert list when a customer message, request or problem report has waited 2+ hours with nobody tapping I’ve got it.'],
+]
+function AutoEmails({ settings, onSave }) {
+  const [msg, setMsg] = useState(null)
+  async function toggle(key, on) {
+    await onSave({ [key]: on })
+    setMsg('Saved ✓')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">Automatic emails</p>
+      <p className="text-sm text-slate-400">What the website sends by itself. Every customer email carries the logo, the phone number and the “found us in spam?” line.</p>
+      {AUTO_EMAILS.map(([key, label, help]) => (
+        <label key={key} className="flex min-h-11 cursor-pointer items-start gap-3">
+          <input type="checkbox" checked={settings[key] !== false} onChange={(e) => toggle(key, e.target.checked)} className="mt-1 size-5 accent-glow-400" />
+          <span className="text-sm"><span className="font-semibold text-slate-100">{label}</span><span className="block text-slate-400">{help}</span></span>
+        </label>
+      ))}
+      {msg && <span className="text-sm text-emerald-400">{msg}</span>}
+    </div>
+  )
+}
+
 // Names on Home (Recent activity, "… is on it"): one box per person on the
 // staff list, shared by everyone (settings/app.staffNames, docs/specs/dashboard.md).
 const byEmail = (a, b) => a.id.localeCompare(b.id)
@@ -310,6 +338,7 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
         <div className={box}><InstallApp /></div>
 
         <AlertEmails settings={settings} onSave={onSave} />
+        <AutoEmails settings={settings} onSave={onSave} />
 
         <StaffNames settings={settings} onSave={onSave} />
 
