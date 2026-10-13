@@ -11,6 +11,7 @@ Where the site shows for the searches that matter, checked by hand so there is s
 
 - **Google** `site:` → about 24 pages: the new home page and FAQ, the four area pages (Pearland, Friendswood, Manvel, League City) with their new titles, plus old WordPress URLs still listed with old titles (`/info/`, `/photos/`, `/pearland-christmas-light-installation/`, `/spt-cable-whats-the-difference/`). Those now serve the `noindex` redirect stubs and should drop out on their own.
 - **Bing** `site:` → only old WordPress URLs with old titles (`/signup/`, `/info/`, `/get-an-estimate/`, `/photos/`, `/free-estimates/`, `/faq/`, `/test/`, `/shadow-creek-ranch/`, `/led-or-incandescent/`), the home page under its old title. Bing has not recrawled since the new site went live. Fix: Bing Webmaster Tools + sitemap (TODO #70); IndexNow pings on each deploy would keep it current.
+- **IndexNow pings start with the first push after 2026-10-13** (`docs/specs/indexnow.md`): the deploy job sends the sitemap's URLs to api.indexnow.org, which reaches Bing, Yandex, Naver and Seznam. The next Bing check should show the new titles and the `/christmas-light-installation/…` area pages; if it still shows the old WordPress titles, look at the IndexNow step in the last deploy run (Actions → Deploy to GitHub Pages) and at Webmaster Tools → IndexNow.
 
 ## Next check
 

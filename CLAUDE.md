@@ -8,7 +8,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Lint: oxlint (`.oxlintrc.json`)
 - Static site: public page (`index.html`) + staff Leads page (`leads/index.html`), no router
 - Firebase (Firestore + Google Auth) for estimate requests; config in `src/lib/firebase.js`
-- Hosted on GitHub Pages, deployed by `.github/workflows/deploy.yml` on push to `main`; custom domain in `public/CNAME`; DNS at GoDaddy
+- Hosted on GitHub Pages, deployed by `.github/workflows/deploy.yml` on push to `main`; custom domain in `public/CNAME`; DNS at GoDaddy. The deploy job's last step pings IndexNow (`scripts/indexnow.mjs`) so Bing recrawls within hours
 
 ## Commands
 
@@ -44,6 +44,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Keep the phone number (281-819-0163) one tap away on every screen.
 - Service areas: `serviceAreaGroups` in content.js and `areaServed` in index.html must match the Google Business Profile's service areas exactly.
 - Don't reword customer reviews; quote them as written.
+- IndexNow (spec `docs/specs/indexnow.md`): the key file `public/3bcc247f6ab0920d551117209063808d.txt` (body = its name; public by design) must stay at the site root, and after every Pages deploy the workflow POSTs the sitemap's URLs once to api.indexnow.org (Bing, Yandex, Naver, Seznam; Google ignores IndexNow and reads the sitemap). Best effort, never fails a deploy; no per-page pings from the app.
 - Old WordPress URLs must keep redirecting: the `REDIRECTS` map in `scripts/build-areas.mjs` (21 old pages, from the old site's database). Anything else missing shows `public/404.html` (estimate + call buttons).
 - Estimate form saves to Firestore `leads`; staff read and update them at `/leads/` (Google sign-in, allowlist in the `staff` collection). Access rules live in `firestore.rules`; any new lead field must be added there and in `LEAD_FIELDS` in `src/lib/firebase.js`. With Firebase not configured, the form shows a call button and `/leads/` shows sample data.
 - New Firestore collections need `firestore.rules` republished by the owner (paste in Firebase console). Until then that list is refused; it must not lock staff out (only leads/customers decide access). Say so before shipping a feature that adds a collection.

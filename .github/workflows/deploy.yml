@@ -32,6 +32,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+      # The sitemap alone, for the IndexNow ping after the deploy (the Pages artifact can't be read there).
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sitemap
+          path: dist/sitemap.xml
+          retention-days: 1
 
   deploy:
     needs: build
@@ -42,3 +48,17 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      # Once the site is live, tell Bing and the other IndexNow engines which pages to recrawl
+      # (scripts/indexnow.mjs, docs/specs/indexnow.md). Best effort: none of this can fail the deploy.
+      - uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: sitemap
+          path: dist
+      - name: IndexNow
+        continue-on-error: true
+        run: node scripts/indexnow.mjs
