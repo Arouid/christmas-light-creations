@@ -9,6 +9,7 @@ import { seasonYear } from '../lib/customers'
 import { KIND_SHORT, longDate } from '../lib/invoices'
 import { InstallButtons } from '../components/InstallApp'
 import { isIos, standalone, useInstall } from '../components/useInstall'
+import AccountDrawer from './AccountDrawer.jsx'
 import { NOTE_MAX, REPORT_ISSUES, scheduleText, shortDate } from '../../functions/service.js'
 
 // The customer's own account: /account/ (sign in with Google or an emailed
@@ -41,6 +42,19 @@ export default function AccountPage() {
   const [view, setView] = useState({ name: 'checking' })
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
+  const [menu, setMenu] = useState(false) // the ☰ drawer (AccountDrawer.jsx)
+  const { installed } = useInstall()
+  const data = view.name === 'account' ? view.data : null
+  // What the drawer links to, by what's on the page (anchors below).
+  const menuItems = data ? [
+    (data.schedule || data.service) && { href: '#lights', label: 'Your lights', icon: '🎄' },
+    ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0) && { href: '#agreements', label: 'Agreements & payments', icon: '🧾' },
+    (data.invoices ?? []).some((i) => i.state === 'paid') && { href: '#paid', label: 'Paid invoices', icon: '✓' },
+    data.price && { href: '#price', label: 'Your yearly price', icon: '💲' },
+    data.price?.history?.length > 0 && { href: '#history', label: 'What you’ve paid', icon: '📒' },
+    data.details && { href: '#property-details', label: 'Your property details', icon: '🏡' },
+    !installed && { href: '#app', label: 'Get the app', icon: '📱' },
+  ].filter(Boolean) : []
 
   async function load() {
     if (demo) {
@@ -123,10 +137,14 @@ export default function AccountPage() {
           <img src={business.logo} alt="" className="size-10" />
           <span className="font-display text-lg font-extrabold leading-tight">Your account</span>
         </a>
-        <a href={business.phoneHref} className={`${btn} bg-glow-400 px-4 text-night-950`} aria-label={`Call ${business.phone}`}>
-          <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span><span className="sm:hidden">Call</span>
-        </a>
+        <div className="flex items-center gap-2">
+          <a href={business.phoneHref} className={`${btn} bg-glow-400 px-4 text-night-950`} aria-label={`Call ${business.phone}`}>
+            <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span><span className="sm:hidden">Call</span>
+          </a>
+          <button type="button" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl print:hidden">☰</button>
+        </div>
       </header>
+      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email ?? ''} onSignOut={data && !demo ? logOut : null} />
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data</p>}
       <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} reload={load} logOut={logOut} />
       <RecaptchaNote className="mt-10" />
@@ -210,13 +228,15 @@ function Account({ data, reload, logOut }) {
       {data.details && <Details details={data.details} onSaved={reload} />}
       {data.price && <YearlyPrice price={data.price} />}
       {!list.length && !data.customer && !invoices.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
-      {(list.length > 0 || invoices.length > 0) && (
-        <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
-          {owed ? `Due now: ${fmt(owed)}` : 'You’re all paid up. Thank you!'}
-        </p>
-      )}
-      {unpaid.map((i) => <InvoiceCard key={i.token} i={i} reload={reload} />)}
-      {list.map((p) => <ProposalCard key={p.token} p={p} reload={reload} />)}
+      <div id="agreements" className="scroll-mt-24 space-y-6">
+        {(list.length > 0 || invoices.length > 0) && (
+          <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
+            {owed ? `Due now: ${fmt(owed)}` : 'You’re all paid up. Thank you!'}
+          </p>
+        )}
+        {unpaid.map((i) => <InvoiceCard key={i.token} i={i} reload={reload} />)}
+        {list.map((p) => <ProposalCard key={p.token} p={p} reload={reload} />)}
+      </div>
       {invoices.length > unpaid.length && <PaidInvoices invoices={invoices.filter((i) => i.state === 'paid')} />}
       {data.price?.history?.length > 0 && <PaymentHistory history={data.price.history} />}
       <GetTheApp />
@@ -235,7 +255,7 @@ function Lights({ schedule, service }) {
   const sched = scheduleText(schedule)
   if (!sched && !service) return null
   return (
-    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+    <section id="lights" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Your lights{sched?.season ? `, ${sched.season} season` : ''}</h2>
       {sched && !sched.none && (
         <p className="text-lg">
@@ -393,7 +413,7 @@ function GetTheApp() {
   const { installed } = useInstall()
   if (installed) return null
   return (
-    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+    <section id="app" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Get the app</h2>
       <p className="text-sm text-slate-300">Put Christmas Light Creations on your phone’s home screen: opens full-screen, no password, always up to date.</p>
       <InstallButtons app="Christmas Light Creations" signIn="sign in the same way" />
@@ -408,7 +428,7 @@ function YearlyPrice({ price }) {
   const y = yearlyPrice(price, seasonYear())
   if (y.yearlyCents == null) return null
   return (
-    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+    <section id="price" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Your yearly price</h2>
       <p className="text-sm text-slate-300">You own your lights. Each year we put them back up for less than they first cost (usually {REINSTALL_PCT}%). Anything you add is charged in full the year it’s added, then adds to the yearly price after that.</p>
       <table className="w-full text-left text-sm">
@@ -449,7 +469,7 @@ function PaymentHistory({ history }) {
     </div>
   )
   return (
-    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+    <section id="history" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">What you’ve paid</h2>
       <ul className="divide-y divide-white/10 text-sm">
         {history.map((h) => (
@@ -488,7 +508,7 @@ function InvoiceCard({ i, reload }) {
 // Paid invoices, newest first, each with its receipt. No total (owner's request).
 function PaidInvoices({ invoices }) {
   return (
-    <section className="space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+    <section id="paid" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Paid invoices</h2>
       <ul className="divide-y divide-white/10 text-sm">
         {invoices.map((i) => (

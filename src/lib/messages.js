@@ -51,6 +51,8 @@ export const PLACEHOLDERS = [
   // "Set your boxes out" for a re-install or takedown stop; blank for a first-year install (they get a box).
   ['boxes', 'Set your box(es) out (re-install / takedown, from the route)', (c, y, x) => x?.boxes, true],
   ['boxesEmail', 'Same, as an email bullet line', (c, y, x) => x?.boxesEmail, true],
+  ['gateAsk', 'Gate code ask (none on file / changed?, from the route)', (c, y, x) => x?.gateAsk, true],
+  ['gateAskEmail', 'Same, as an email bullet line', (c, y, x) => x?.gateAskEmail, true],
 ].map(([key, label, get, optional = false]) => ({ key, label, get, optional })) // optional: blank is fine, never "missing"
 
 // extra: values a route stop fills in ({ when, visitDay, job, eta }).

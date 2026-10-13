@@ -148,7 +148,7 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
     id: 'install-reminder', group: 'Install', label: 'We’re coming tomorrow (day-before reminder)',
     when: 'The evening before an install, from the route’s edit screen (Day-before reminders).',
     subject: 'We’re coming tomorrow: your lights on {visitDay}',
-    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, for your {job}.\n\nA few things that help:\n- Leave side gates unlocked (we have your gate code if you gave us one)\n- Keep dogs inside while we're there\n- Make sure the outdoor outlets work\n{boxesEmail}\nYou don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
+    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, for your {job}.\n\nA few things that help:\n- Leave side gates unlocked (we have your gate code if you gave us one)\n- Keep dogs inside while we're there\n- Make sure the outdoor outlets work\n{boxesEmail}{gateAskEmail}\nYou don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
   },
   {
     id: 'install-done', group: 'Install', label: 'Your lights are up',
@@ -184,7 +184,7 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
     id: 'takedown-reminder', group: 'Takedown', label: 'We’re coming tomorrow (takedown reminder)',
     when: 'The evening before a takedown, from the route’s edit screen (Day-before reminders).',
     subject: 'We’re coming tomorrow to take down your lights',
-    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, to take down your lights. We'll label, wrap and bin them so they're ready for next year.\n\n{boxes}Please leave side gates unlocked and keep dogs inside while we're there. You don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
+    body: `Hi {first},\n\nJust a reminder that we'll be at {address} tomorrow, {visitDay}, {when}, to take down your lights. We'll label, wrap and bin them so they're ready for next year.\n\n{boxes}{gateAsk}Please leave side gates unlocked and keep dogs inside while we're there. You don't need to be home. Questions? Call or text {businessPhone}.${sign}`,
   },
   {
     id: 'takedown-done', group: 'Takedown', label: 'Lights are down',

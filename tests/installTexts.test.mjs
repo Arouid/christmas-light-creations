@@ -174,8 +174,9 @@ test('reminder list: install and takedown stops to do, how each can be reached',
 test('set your boxes out: returning re-install and every takedown, never a first-year install; texts stay under one segment', async () => {
   const { boxLine, isReturning } = await import('../src/lib/installTexts.js')
   const route = { day: '2026-11-12', startTime: '08:00', stops: [] }
-  const returning = { firstName: 'Pat', seasons: { 2025: { installStatus: 'Install Completed' }, 2026: {} } }
-  const first = { firstName: 'Sam', seasons: { 2026: {} } }
+  const returning = { firstName: 'Pat', gateCode: '#1234', seasons: { 2025: { installStatus: 'Install Completed' }, 2026: {} } }
+  const first = { firstName: 'Sam', gateCode: '#1234', seasons: { 2026: {} } }
+  const noGate = { firstName: 'Lee', seasons: { 2025: { installStatus: 'Install Completed' }, 2026: {} } }
   assert.ok(isReturning(returning, 2026) && !isReturning(first, 2026) && isReturning({ since: '2021' }, 2026))
   assert.match(boxLine('install', returning, 2026), /boxes of lights out on the porch/)
   assert.match(boxLine('install', returning, 2026, true), /labeled boxes of lights out on the porch by the morning/)
@@ -194,5 +195,14 @@ test('set your boxes out: returning re-install and every takedown, never a first
   assert.ok(!fillTemplate(inst, first, 2026, x(first)).includes('box') && !fillTemplate(inst, first, 2026, x(first)).includes('\n\n\n'))
   const take = STOCK_TEMPLATES.find((t) => t.id === 'takedown-reminder').body
   assert.ok(fillTemplate(take, first, 2026, stopExtras({ kind: 'takedown' }, route, false, first, 2026)).includes('Please set your empty box out on the porch.'))
-  assert.ok(fillTemplate(inst, returning, 2026, x(returning)).includes('reply if your gate code has changed'))
+  assert.ok(fillTemplate(inst, returning, 2026, x(returning)).includes('- Reply if your gate code has changed'))
+  assert.ok(!fillTemplate(inst, first, 2026, x(first)).includes('gate code has changed'), 'a first-year customer just gave us the code')
+  // No gate code on file: every reminder asks whether there is a gate (text and email).
+  const { gateLine } = await import('../src/lib/installTexts.js')
+  assert.equal(gateLine(noGate, 2026), 'Gate? Reply with the code.')
+  assert.equal(gateLine(returning, 2026), ''); assert.equal(gateLine(returning, 2026, true), 'Reply if your gate code has changed'); assert.equal(gateLine(first, 2026, true), '')
+  const ng = stopText('reminder', { stop: { kind: 'install', customerId: 'n' }, route, customer: noGate, season: 2026 })
+  assert.ok(ng.includes('Gate? Reply with the code.') && ng.includes('boxes of lights') && ng.length <= 2 * MAX_TEXT, `${ng.length}`)
+  assert.ok(fillTemplate(inst, noGate, 2026, x(noGate)).includes('- If there is a gate, reply with the code'))
+  assert.ok(!stopText('reminder', { stop: { kind: 'install', customerId: 'f' }, route, customer: first, season: 2026 }).includes('Gate?'))
 })

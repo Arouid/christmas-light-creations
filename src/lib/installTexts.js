@@ -15,13 +15,13 @@ export const OPT_OUT = 'Reply STOP to opt out of texts.'
 // The stock wording; the owner edits them in ⚙ Settings → Install-day texts
 // (settings/app.textTemplates, a blank one falls back to stock).
 export const STOCK_TEXTS = {
-  reminder: `Hi {first}, {business} here. We're coming tomorrow ({visitDay}) {when} for your {job}. Please leave side gates unlocked and keep dogs inside; nobody needs to be home. {boxes}Questions? Call or text {businessPhone}. ${OPT_OUT}`,
+  reminder: `Hi {first}, {business} here. We're coming tomorrow ({visitDay}) {when} for your {job}. Please leave side gates unlocked and keep dogs inside; nobody needs to be home. {boxes}{gateAsk}Questions? Call or text {businessPhone}. ${OPT_OUT}`,
   onway: `Hi {first}, {business} here. We're on our way to you now, {eta}. Please keep dogs inside while we work. ${OPT_OUT}`,
   done: `Hi {first}, your lights are up! Take a look tonight: they're on a timer and come on by themselves. Anything off, call or text {businessPhone}. Thank you! {business}. ${OPT_OUT}`,
   doneTakedown: `Hi {first}, your lights are down, labeled and binned for next year. Thank you for another season! Anything we missed, call or text {businessPhone}. {business}. ${OPT_OUT}`,
 }
 export const TEXT_LABELS = [
-  ['reminder', 'Day-before reminder', 'From the route’s edit screen, for people with no email (the others get the email template). {boxes} becomes "set your boxes out" on re-installs and takedowns, nothing on a first-year install.'],
+  ['reminder', 'Day-before reminder', 'From the route’s edit screen, for people with no email (the others get the email template). {boxes} becomes "set your boxes out" on re-installs and takedowns, nothing on a first-year install; {gateAsk} asks for the gate code when we have none on file.'],
   ['onway', 'On our way', 'Tapped by the crew on the stop. {eta} is the drive time of that leg.'],
   ['done', 'All done (install)', 'Offered right after ✓ Done on an install stop.'],
   ['doneTakedown', 'All done (takedown)', 'Offered right after ✓ Done on a takedown stop.'],
@@ -84,7 +84,15 @@ export const isReturning = (customer, season) =>
 // Short for a text (the reminder must stay one SMS segment), long for an email.
 export function boxLine(kind, customer, season, long = false) {
   if (kind === 'takedown') return long ? 'Set your empty storage box or bin out on the porch so we can pack your lights into it' : 'Please set your empty box out on the porch.'
-  if (kind === 'install' && isReturning(customer, season)) return long ? 'Set your labeled boxes of lights out on the porch by the morning so we can reach them, and reply if your gate code has changed' : 'Set your boxes of lights out on the porch, please.'
+  if (kind === 'install' && isReturning(customer, season)) return long ? 'Set your labeled boxes of lights out on the porch by the morning so we can reach them' : 'Set your boxes of lights out on the porch, please.'
+  return ''
+}
+// Gate codes (owner 2026-10-12): no code on file → ask whether there is a
+// gate at all; a code on file for a returning customer → ask if it changed
+// (email only, to keep the text short); a first-year install with a code → nothing.
+export function gateLine(customer, season, long = false) {
+  if (!String(customer?.gateCode ?? '').trim()) return long ? 'If there is a gate, reply with the code' : 'Gate? Reply with the code.'
+  if (isReturning(customer, season)) return long ? 'Reply if your gate code has changed' : ''
   return ''
 }
 
@@ -94,6 +102,8 @@ export function boxLine(kind, customer, season, long = false) {
 export function stopExtras(stop, route, timed = routeTimed(route), customer = null, season = null) {
   const box = boxLine(stop?.kind, customer, season)
   const boxLong = boxLine(stop?.kind, customer, season, true)
+  const gate = customer ? gateLine(customer, season) : ''
+  const gateLong = customer ? gateLine(customer, season, true) : ''
   return {
     when: timed ? windowText(stop?.eta) : 'during the day',
     visitDay: visitDayText(route?.day),
@@ -101,6 +111,8 @@ export function stopExtras(stop, route, timed = routeTimed(route), customer = nu
     eta: timed ? etaText(stop?.driveMin) : etaText(0),
     boxes: box ? `${box} ` : '',
     boxesEmail: boxLong ? `- ${boxLong}\n` : '',
+    gateAsk: gate ? `${gate} ` : '',
+    gateAskEmail: gateLong ? `- ${gateLong}\n` : '',
   }
 }
 
