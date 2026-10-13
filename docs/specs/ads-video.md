@@ -32,16 +32,26 @@ phone number and the website close it and stay on screen 4 s.
 | Season cards "look like a warehouse commercial"; estimate ring "looks cheap"; "uh the red?" on the recoloured bulbs | Rings, icon cards, stamps and UI mocks read as a template kit; the bulb tint recoloured only the cores, the warm halos stayed. All dropped. |
 | "Husband meets the installer secretly because it's his wife's birthday; install while everyone's gone; she comes home and sees the lights." "Holiday commercials, but with Christmas lights." "If this doesn't work out, generate AI assets and actors." | Cut 3 tells that story with what exists: the business texts customers, so the secret plan is a text thread; the plan beats in the cottage world (the cottage comes on at "timer set for dusk"); the one real photo as the reveal; the ask; the end card. No actors. Claude cannot generate video here; the reveal and the ask take a dropped-in clip (`photos.home.clip`, `photos.pitch.clip`) if the owner generates one elsewhere. |
 
+## Sound and footage (2026-10-13, owner's Uppbeat Pro)
+
+Music "Anticipation And Joy" (Giulio Fazio) from 4.4 s in, so its hit at 22 s lands on the
+reveal; fades out over the last 2.5 s. Effects: a pop as each bubble lands, typing under the dots,
+a flicker + harp chime as the cottage comes on (plan, end card, the 5-second ad), the chime again
+as the house appears, a very low wind loop under everything. Footage in four slots (texting,
+drive, reaction, bokeh), all under one grade (`look.grade`: saturation 0.8, contrast 1.06, blacks
+lifted toward navy, gold warmth) so the sources read as one film. Files and licences in
+`assets-source/ads/video/README.md`.
+
 ## Storyboard, cut 3: the birthday surprise (30 fps; scenes cross-dissolve 8 frames)
 
 | # | Seconds | Scene | What moves | Words | Picture |
 |---|---|---|---|---|---|
-| 1 | 0–8.5 | **Tuesday 8:14 pm** | Night, snow. A text thread: typing dots, then each bubble springs in. Customer bubbles dark on the left, ours gold on the right with the cottage as avatar. | "Can you do my house Thursday while she's at work? It's her birthday 🎂" / "Done by 4. We'll be gone before she's home." / "🤫 She has no idea." | none |
-| 2 | 8.5–15 | **The plan** | Three time-stamped beats slide in one after another, earlier ones dimming. The cottage stands dark beside them and flickers on with the last beat. | Thursday 9:02 am · Everyone's gone. / 9:30 am · We're on the roof. / 3:48 pm · Done. Timer set for dusk. | cottage logo |
-| 3 | 15–21.5 | **5:41 pm** | Black. The time. The house opens out of the dark in a soft iris and settles (pull-back, brightening). The line lands at the bottom. No light sweep into this scene: it starts from black on purpose. | She's home. | 34 (or a clip) |
-| 4 | 21.5–26 | **Thursday 5:52 pm** | The thread again, two bubbles. | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
-| 5 | 26–31 | **The ask** | Stone house, slow push-in; big line, the estimate line, the offer pill (while enabled). | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 57 (or a clip) |
-| 6 | 31–35 | **End card** | Unchanged (the owner liked it). | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate | logo |
+| 1 | 0–8.5 | **Tuesday 8:14 pm** | Night; warm bokeh lights behind (Uppbeat clip, dimmed; the owner preferred it to hands on a phone). A text thread: typing dots, then each bubble springs in. Customer bubbles dark on the left, ours gold on the right with the cottage as avatar. | "Can you do my house Thursday while she's at work? It's her birthday 🎂" / "Done by 4. We'll be gone before she's home." / "🤫 She has no idea." | none |
+| 2 | 8.5–15 | **The plan** | Three time-stamped beats, one after another, over falling-snow footage (Uppbeat clip); a thin gold clock on the right sweeps its hands to each beat's time and glows on the last. The dark cottage that switched on here in the first version was cut on 2026-10-13 (owner: a still background between footage was jarring); the owner then asked for the beats one at a time again and something in the right-hand space. | Thursday 9:02 am · Everyone's gone. / 9:30 am · We're on the roof. / 3:48 pm · Done. Timer set for dusk. | snow footage |
+| 3 | 15–26 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s; the sharper city-driving clip was "too jarring"), the time. Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
+| 4 | 26–30.5 | **Thursday 5:52 pm** | The thread again, two bubbles, gold bokeh behind (Uppbeat clip). | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
+| 5 | 30.5–35.5 | **The ask** | Stone house, slow push-in; big line, the estimate line, the offer pill (while enabled). | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 34 (or a clip) |
+| 6 | 35.5–39 | **End card** | Logo flickers on, real falling snow behind it (Uppbeat clip, screen-blended over the navy), phone number large, website, estimate line. Held 4 s. | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate | logo |
 
 Cut 2's scene files (headline, estimate ring, design tool, season cards, map, offer stamp, the
 illustrated street) were deleted in cut 3; git history (commit b485d58) has them.

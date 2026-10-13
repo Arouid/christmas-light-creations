@@ -1,6 +1,6 @@
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame, interpolate } from 'remotion'
 import { TALL_WINDOW, useFmt } from '../lib/format.js'
-import { SceneFade } from '../lib/Stage.jsx'
+import { Graded, SceneFade, SnowOverlay } from '../lib/Stage.jsx'
 import { Clip } from '../lib/Clip.jsx'
 import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
@@ -8,7 +8,8 @@ import { homeTiming } from '../timeline.js'
 
 // She turns onto the street. With footage: the drive clip (headlights, the street) under the
 // time, then the house opens up out of the dark (a soft iris) and settles, "She's home." lands,
-// and her reaction closes the scene. Without footage: black, the time, the reveal, the line.
+// and her reaction closes the scene, with real snow over that last part only (owner: the overlay
+// looked fake over the house). Without footage: black, the time, the reveal, the line.
 export function HomeReveal({ data, dur }) {
   const frame = useCurrentFrame()
   const { w, h, fps, tall, square } = useFmt()
@@ -34,9 +35,10 @@ export function HomeReveal({ data, dur }) {
     <SceneFade dur={dur} fadeInFrames={0}>
       <AbsoluteFill style={{ background: '#02050d' }}>
         <div style={{ position: 'absolute', left: 0, top: 0, width: w, height: boxH, overflow: 'hidden' }}>
+          <Graded look={data.look}>
           {clips?.drive && driveFade > 0 && (
             <div style={{ position: 'absolute', inset: 0, opacity: driveFade }}>
-              <Clip file={clips.drive} brightness={0.85} />
+              <Clip file={clips.drive} start={data.clipStart?.drive || 0} brightness={0.85} />
             </div>
           )}
           {frame >= revealStart - 2 && (photo.clip ? <OffthreadVideo src={staticFile(`clips/${photo.clip}`)} muted style={media} /> : <Img src={staticFile(`photos/${photo.number}.jpg`)} style={media} />)}
@@ -47,8 +49,12 @@ export function HomeReveal({ data, dur }) {
           )}
           {clips?.reaction && frame >= reactionStart && (
             <div style={{ position: 'absolute', inset: 0, opacity: reactionIn }}>
-              <Clip file={clips.reaction} brightness={0.95} />
+              <Clip file={clips.reaction} start={data.clipStart?.reaction || 0} brightness={0.95} />
             </div>
+          )}
+          </Graded>
+          {clips?.reaction && frame >= reactionStart && (
+            <div style={{ position: 'absolute', inset: 0, opacity: reactionIn }}><SnowOverlay data={data} start={3} /></div>
           )}
         </div>
         <div style={{ position: 'absolute', left: tall ? 70 : square ? 72 : 96, top: tall ? 120 : square ? 60 : 72, fontFamily: BODY, fontWeight: 600, fontSize: tall ? 36 : square ? 30 : 34, color: colors.gold, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: fadeIn(frame, 4, 10) * (1 - reactionIn), textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}>{story.homeTime}</div>

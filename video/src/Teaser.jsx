@@ -1,4 +1,5 @@
-import { AbsoluteFill, Audio, Sequence, staticFile, useVideoConfig } from 'remotion'
+import { AbsoluteFill, useVideoConfig } from 'remotion'
+import { LightsOn } from './Sound.jsx'
 import { Intro } from './scenes/Intro.jsx'
 import { FilmLook } from './lib/Stage.jsx'
 import { loadFonts } from './lib/fonts.js'
@@ -14,7 +15,7 @@ export function Teaser(props) {
     <AbsoluteFill style={{ background: props.colors.navy, fontKerning: 'normal' }}>
       <Intro data={props} dur={durationInFrames} holdEnd />
       <FilmLook grain={props.look?.grain ?? 0.07} vignette={props.look?.vignette ?? 0.55} />
-      {sfx.lightsOn ? <Sequence from={on - 2} name="lights on" layout="none"><Audio src={staticFile(`sfx/${sfx.lightsOn}`)} volume={sfx.volume ?? 0.8} /></Sequence> : null}
+      <LightsOn sfx={sfx} at={on} v={sfx.volume ?? 0.8} keyPrefix="lights on" />
     </AbsoluteFill>
   )
 }

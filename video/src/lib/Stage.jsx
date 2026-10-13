@@ -1,10 +1,11 @@
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, interpolate, random, useCurrentFrame } from 'remotion'
 import { TALL_WINDOW, useFmt } from './format.js'
+import { Clip } from './Clip.jsx'
 
 // A photo (or a real clip) behind a scene. Wide and square cuts fill the frame; the tall cut
 // shows the picture in a 4:5 window at the top (rooflines never sliced) fading into navy where
 // the words go. The picture moves slowly (a push-in or a sideways drift with a slight tilt).
-export function Backdrop({ photo, dur, drift = 'in', brightness = 0.55, colors, style, children }) {
+export function Backdrop({ photo, dur, drift = 'in', brightness = 0.55, colors, look, snow, style, children }) {
   const frame = useCurrentFrame()
   const { w, h, tall } = useFmt()
   const t = interpolate(frame, [0, dur], [0, 1], { extrapolateRight: 'clamp' })
@@ -21,11 +22,14 @@ export function Backdrop({ photo, dur, drift = 'in', brightness = 0.55, colors, 
   return (
     <AbsoluteFill style={{ background: colors.navy, ...style }}>
       <div style={{ position: 'absolute', left: 0, top: 0, width: w, height: boxH, overflow: 'hidden' }}>
-        {photo.clip ? (
-          <OffthreadVideo src={staticFile(`clips/${photo.clip}`)} muted style={media} />
-        ) : (
-          <Img src={staticFile(`photos/${photo.number}.jpg`)} style={media} />
-        )}
+        <Graded look={look}>
+          {photo.clip ? (
+            <OffthreadVideo src={staticFile(`clips/${photo.clip}`)} muted style={media} />
+          ) : (
+            <Img src={staticFile(`photos/${photo.number}.jpg`)} style={media} />
+          )}
+        </Graded>
+        {snow ? <SnowOverlay data={snow} start={9} /> : null}
         {tall ? (
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 320, background: `linear-gradient(to bottom, transparent, ${colors.navy})` }} />
         ) : (
@@ -54,7 +58,32 @@ export function TextZone({ align = 'bottom', children, style }) {
   )
 }
 
-// Falling snow.
+// The grade: wraps a photo or clip so every piece of footage shares one look. filter on the
+// media (saturation, contrast), blacks lifted toward navy, gold warmth in the mids.
+export function Graded({ look, children, style }) {
+  const g = look?.grade || {}
+  return (
+    <div style={{ position: 'absolute', inset: 0, ...style }}>
+      <div style={{ position: 'absolute', inset: 0, filter: `saturate(${g.saturate ?? 1}) contrast(${g.contrast ?? 1})` }}>{children}</div>
+      {g.lift > 0 && <div style={{ position: 'absolute', inset: 0, background: '#0a1530', mixBlendMode: 'lighten', opacity: g.lift, pointerEvents: 'none' }} />}
+      {g.warm > 0 && <div style={{ position: 'absolute', inset: 0, background: '#ffcf4d', mixBlendMode: 'soft-light', opacity: g.warm, pointerEvents: 'none' }} />}
+    </div>
+  )
+}
+
+// Real falling snow in front of a scene: a snow-on-black clip, screen-blended (the black goes away).
+export function SnowOverlay({ data, start = 0, opacity }) {
+  const file = data.clips?.snowOverlay
+  const o = opacity ?? data.snowOverlayOpacity ?? 0.6
+  if (!file || o <= 0) return null
+  return (
+    <AbsoluteFill style={{ mixBlendMode: 'screen', opacity: o, pointerEvents: 'none' }}>
+      <Clip file={file} start={start} />
+    </AbsoluteFill>
+  )
+}
+
+// Falling snow (drawn).
 export function Snow({ count = 90, seed = 'snow', opacity = 1 }) {
   const frame = useCurrentFrame()
   const { w, h } = useFmt()

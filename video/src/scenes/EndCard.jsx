@@ -1,6 +1,7 @@
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from 'remotion'
 import { useFmt } from '../lib/format.js'
 import { Snow } from '../lib/Stage.jsx'
+import { Clip } from '../lib/Clip.jsx'
 import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
 
@@ -27,7 +28,11 @@ export function EndCard({ data }) {
   const textY = tall ? logoY + logoH + 80 : square ? logoY + logoH + 40 : h / 2 - 170
   return (
     <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 35%, ${colors.navyLight}, ${colors.navy} 70%)`, opacity: fadeIn(frame, 0, 8) }}>
-      <Snow />
+      {data.clips?.end ? (
+        <AbsoluteFill style={{ mixBlendMode: 'screen', opacity: 0.55 }}><Clip file={data.clips.end} start={data.clipStart?.end || 0} /></AbsoluteFill>
+      ) : (
+        <Snow />
+      )}
       <div style={{ position: 'absolute', left: logoX, top: logoY, width: logoW, height: logoH, opacity: flick, filter: `drop-shadow(0 0 ${30 * glow}px rgba(240,56,238,0.55)) drop-shadow(0 0 ${60 * glow}px rgba(255,207,77,0.35))` }}>
         <Img src={staticFile('logo/clc-cottage-color.svg')} style={{ width: '100%', height: '100%' }} />
       </div>

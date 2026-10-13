@@ -25,11 +25,11 @@ export function totalFrames(props) {
   return last ? last.from + last.dur : 1
 }
 
-// The plan scene: when each beat lands and when the cottage switches on (frames into the scene).
+// The plan scene: when each beat lands (frames into the scene).
 export function planTiming(durFrames, beatCount) {
   const step = Math.floor((durFrames - 30) / beatCount)
   const beats = Array.from({ length: beatCount }, (_, i) => 12 + i * step)
-  return { step, beats, on: beats[beatCount - 1] + 14 }
+  return { step, beats }
 }
 
 // The 5:41 pm scene: where the drive clip ends and the reveal starts (frames into the scene).
@@ -37,5 +37,5 @@ export function homeTiming(props, durFrames) {
   const fps = props.fps || 30
   const drive = props.clips?.drive ? Math.round((props.home?.driveSeconds ?? 2.5) * fps) : 0
   const reaction = props.clips?.reaction ? Math.round((props.home?.reactionSeconds ?? 2.2) * fps) : 0
-  return { driveEnd: drive, revealStart: drive + 18, reactionStart: durFrames - reaction }
+  return { driveEnd: drive, revealStart: drive ? drive + 6 : 18, reactionStart: durFrames - reaction }
 }

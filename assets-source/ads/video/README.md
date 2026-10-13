@@ -20,26 +20,26 @@ The story ad's MP4s are not in git (`.gitignore`: this folder except this README
 | `clc-teaser-5s-16x9.mp4` | 1920×1080, landscape | **the 5-second ad**, silent | YouTube bumper (6 s max), in-stream, TV |
 | `clc-teaser-5s-9x16.mp4` | 1080×1920, vertical | same | Shorts, phone feeds |
 | `clc-teaser-5s-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
-| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 33 s, silent | YouTube in-stream, TV, desktop |
+| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 38 s, with music and sound | YouTube in-stream, TV, desktop |
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | same | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
 
-All H.264, 30 fps, no audio (music off since 2026-10-11: owner, "ditch the music"; the track
-below stays on disk and can be turned back on in `data.js` → `music.file`).
+All H.264, 30 fps. The story ad has music and sound effects (Uppbeat, below); the 5-second ad
+has the lights-on effect only, no music.
 
 The story ad, scene by scene:
 
 | Seconds | Scene | What happens |
 |---|---|---|
-| 0–8.5 | Text thread, Tuesday 8:14 pm | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
-| 8.5–15 | The plan | Three beats: "Thursday 9:02 am · Everyone's gone." "9:30 am · We're on the roof." "3:48 pm · Done. Timer set for dusk." The cottage beside them is dark and switches on with the last beat. |
-| 15–21.5 | 5:41 pm | Black, then the three-gable house (photo 34) opens out of the dark and settles; "She's home." |
-| 21.5–26 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
-| 26–31 | The ask | Over the stone house (57): "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
-| 31–35 | End card | Unchanged: logo flickers on, snow, 281-819-0163, the site, Free 30-minute estimate. |
+| 0–8.5 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
+| 8.5–15 | The plan | Three beats, one after another, over snow footage: "Thursday 9:02 am · Everyone's gone." "9:30 am · We're on the roof." "3:48 pm · Done. Timer set for dusk." A clock on the right sweeps its hands to each time and glows on the last beat. (The dark cottage that used to switch on here was cut.) |
+| 15–26 | 5:41 pm | Her in the red car at night (clip), then the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", then her turning to look out of the window (clip, same shoot) with real falling snow over that part only (the overlay looked fake over the house: owner). |
+| 26–30.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
+| 30.5–35.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
+| 35.5–39 | End card | Logo flickers on, real snow footage behind it, 281-819-0163, the site, Free 30-minute estimate. |
 
 Every word of the story is in `video/src/data.js` → `story` (bubbles with their timing, the three
-beats, the two lines, the ask). Photos: only 34 (the reveal) and 57 (the ask).
+beats, the two lines, the ask). Photos: 32 (the reveal; a 1024×576 file, upscaled) and 34 (the ask).
 
 ## Music, sound effects and footage (Uppbeat, 2026-10-13)
 
@@ -78,7 +78,23 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 
 | File | Slot | Uppbeat title, artist | Licence |
 |---|---|---|---|
-| (none yet) | | | Uppbeat Pro (Solo Professional), downloaded 2026-10-13 |
+| `music/anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav` | `music.file`, from 4.4 s so its hit at 22 s lands on the reveal | "Anticipation And Joy", Giulio Fazio (58 s) | Uppbeat Pro (Solo Professional), downloaded 2026-10-13 |
+| `sfx/notification-bubble-pop-message-epic-stock-media-1-00-00.mp3` | `sfx.pop` | "Notification Bubble Pop Message", Epic Stock Media | same |
+| `sfx/smartphone-typing-message-gfx-sounds-2-2-00-04.mp3` | `sfx.typing` (first second, faded) | "Smartphone Typing Message", GFX Sounds | same |
+| `sfx/fluorescent-tube-light-flicker-bosnow-1-00-47.mp3` | `sfx.lightsOn` (first 1.3 s, faded) | "Fluorescent Tube Light Flicker", Bosnow | same |
+| `sfx/harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3` | `sfx.lightsChime` and `sfx.reveal` | "Harp Chime Alert Magical Bright", Bosnow | same |
+| `sfx/wind-ambience-howling-during-snowstorm-vincentmets-1-00-20.mp3` | `sfx.ambience` (looped, very low) | "Wind Ambience Howling During Snowstorm", Vincentmets | same |
+| `clips/warm-golden-bokeh-background-55540-1080.mp4` | `clips.texting` (behind the first thread; the owner preferred bokeh to the hands-on-phone clip) | "Warm Golden Bokeh Background" (6.5 s, looped) | same |
+| `clips/person-smiling-in-car-at-night-red-light-105845-1080.mp4` | `clips.drive` (from 0.5 s: her in the red car, looking out; owner's pick, same shoot as the reaction clip; the city-driving clip was "too jarring") | "Person Smiling In Car At Night Red Light" (12 s) | same |
+| `clips/falling-snowflakes-on-dark-bokeh-background-114577-1080.mp4` | `clips.plan` (behind the three beats) | "Falling Snowflakes On Dark Bokeh Background" (26 s) | same |
+| `clips/falling-snowflakes-overlay-86734-1080.mp4` | `clips.end` (behind the end card) and `clips.snowOverlay` (in front of her reaction in the car and the closing shot; strength `snowOverlayOpacity`), screen-blended so the black goes away | "Falling Snowflakes Overlay" (56 s) | same |
+| `clips/person-in-car-on-rainy-night-105878-1080-#1.mp4` | `clips.reaction` (from 2.4 s: her turning to look out of the window; owner's pick) | "Person In Car On Rainy Night" (14.7 s) | same |
+| `clips/shimmering-gold-bokeh-lights-54198-1080.mp4` | `clips.snow` (behind the second thread) | "Shimmering Gold Bokeh Lights" (9.6 s, looped) | same |
+| other files in `clips/` and `sfx/welding-arc-…` | not used (downloaded as candidates) | | same |
+
+All footage and photos go through one grade (`look.grade` in `data.js`: saturation 0.8,
+contrast 1.06, blacks lifted toward navy 0.55, gold warmth 0.22) so the five sources read as
+one film; the owner's idea ("hide flaws with some color grading").
 
 Claude cannot generate video or actors itself; it cuts whatever is dropped in.
 

@@ -1,6 +1,6 @@
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from 'remotion'
 import { useFmt } from '../lib/format.js'
-import { SceneFade, Snow } from '../lib/Stage.jsx'
+import { Graded, SceneFade, Snow } from '../lib/Stage.jsx'
 import { Clip } from '../lib/Clip.jsx'
 import { BODY } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
@@ -34,7 +34,7 @@ export function Thread({ data, dur, header, messages, bgClip }) {
     <SceneFade dur={dur}>
       <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 30%, #0b1838 0%, ${colors.navy} 65%)` }}>
         {bgClip ? (
-          <AbsoluteFill style={{ opacity: 0.55 }}><Clip file={bgClip} brightness={0.5} /><div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 50%, transparent 30%, ${colors.navy} 100%)` }} /></AbsoluteFill>
+          <AbsoluteFill style={{ opacity: 0.55 }}><Graded look={data.look}><Clip file={bgClip} start={data.clipStart?.[bgClip] || 0} brightness={0.5} /></Graded><div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 50%, transparent 30%, ${colors.navy} 100%)` }} /></AbsoluteFill>
         ) : (
           <Snow count={70} opacity={0.5} />
         )}

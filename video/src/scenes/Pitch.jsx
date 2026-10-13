@@ -15,7 +15,7 @@ export function Pitch({ data, dur }) {
   const off = fadeIn(frame, 48, 10)
   return (
     <SceneFade dur={dur}>
-      <Backdrop photo={data.photos.pitch} dur={dur} drift="in" brightness={0.55} colors={colors} />
+      <Backdrop photo={data.photos.pitch} dur={dur} drift="in" brightness={0.55} colors={colors} look={data.look} snow={data} />
       <TextZone>
         <div style={{ ...display(type, tall ? 100 : square ? 84 : 112), color: colors.gold, maxWidth: tall ? 900 : 1300, transform: `translateY(${(1 - line) * 70}px)`, opacity: fadeIn(frame, 8, 8), textShadow: '0 4px 30px rgba(0,0,0,0.6)' }}>{story.pitchLine}</div>
         <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 44 : square ? 38 : 46, color: colors.white, marginTop: 24, maxWidth: tall ? 900 : 1100, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)`, textShadow: '0 2px 16px rgba(0,0,0,0.7)' }}>{story.pitchSub}</div>
