@@ -2,13 +2,26 @@
 // scripts/build-areas.mjs. A few real, distinct pages, not one per town:
 // near-identical town pages count as "doorway pages" to Google.
 // No customer counts on purpose (owner's call): confident, not specific.
+//
+// Photos: 3 or 5 per page (the first spans two columns), each with the
+// caption and alt text of its `gallery` entry in content.js, where the owner
+// named every photo's neighborhood (2026-10-13). A page leads with its own
+// local photos; where we have none (Alvin), fillers from nearby keep their
+// true caption and `photosNote` says so. Never caption from a file name.
+import { gallery } from './content.js'
+
+const pics = (...files) => files.map((file) => {
+  const g = gallery.find((p) => p.src.endsWith(`/images/gallery/${file}`))
+  if (!g) throw new Error(`area photo missing from the gallery in content.js: ${file}`)
+  return { file, alt: g.alt, place: g.place }
+})
 
 export const areas = [
   {
     slug: 'pearland',
     name: 'Pearland',
-    towns: ['Pearland', 'Shadow Creek Ranch', 'Silverlake', 'Lakes of Highland Glen', 'Brookside Village'],
-    photos: ['pearland-highland-glen-two-story.jpg', 'pearland-multicolor-led.jpg', 'pearland-highland-glen-dusk.jpg', 'pearland-red-and-white.jpg'],
+    towns: ['Pearland', 'Shadow Creek Ranch', 'Silverlake', 'Lakes of Highland Glen', 'Stonebridge', 'Cobblestone', 'Southwyck', 'Cabot Cove', 'Towne Lake Estates', 'Green Tee', 'Brookside Village'],
+    photos: pics('warm-white-two-story-stone-home.jpg', 'white-stone-two-story-warm-white.jpg', 'two-story-wrapped-trees-arched-door.jpg', 'pearland-multicolor-led.jpg', 'community-entrance-sign.jpg'),
     intro: 'Pearland is home. It’s where Christmas Light Creations started in 2011, and more of our customers live here than anywhere else. Many of them have had us back every season for years.',
     local: [
       'Being close means fast help: a bulb out or a tripped GFCI in Pearland is usually fixed the same day, and service calls never cost extra.',
@@ -19,8 +32,8 @@ export const areas = [
   {
     slug: 'league-city',
     name: 'League City',
-    towns: ['League City', 'Tuscan Lakes', 'South Shore'],
-    photos: ['league-city-commercial-restaurant.jpg', 'league-city-roofline-and-yard.jpg'],
+    towns: ['League City', 'Tuscan Lakes', 'South Shore', 'The Lakefront Preserve', 'Westover Park', 'Victory Lakes'],
+    photos: pics('estate-wrapped-oaks-gazebo.jpg', 'lit-driveway-and-roofline.jpg', 'warm-white-single-story-home.jpg', 'multicolor-windows-and-roofline-dusk.jpg', 'league-city-commercial-restaurant.jpg'),
     intro: 'League City is one of our busiest areas, full of tall two-story homes where a ladder-free weekend sounds pretty good.',
     local: [
       'Taller rooflines are where a professional install shows: every run is measured with a wheel and custom-fit, so there are no extra strands hanging off the roof.',
@@ -32,7 +45,8 @@ export const areas = [
     slug: 'manvel',
     name: 'Manvel',
     towns: ['Manvel', 'Shadow Creek Ranch (west of 288)', 'Iowa Colony', 'Rosharon'],
-    photos: ['iowa-colony-clear-led-gables.jpg', 'green-led-two-story-home.jpg'],
+    photos: pics('iowa-colony-clear-led-gables.jpg', 'white-stone-two-story-warm-white.jpg', 'green-led-two-story-home.jpg'),
+    photosNote: 'Iowa Colony and the Pearland side of Shadow Creek Ranch, minutes from Manvel: the same crew, lights and clips.',
     intro: 'Manvel and the newer neighborhoods west of 288 have grown fast, and so has our customer list there. More Manvel families leave their lights to us every season.',
     local: [
       'New construction often means big, simple rooflines that look sharp with one clean color. Ask about warm white versus multicolor LED at your estimate.',
@@ -43,8 +57,8 @@ export const areas = [
   {
     slug: 'friendswood',
     name: 'Friendswood',
-    towns: ['Friendswood', 'West Ranch', 'Sterling Creek'],
-    photos: ['friendswood-warm-white-ivy-home.jpg', 'friendswood-west-ranch.jpg'],
+    towns: ['Friendswood', 'West Ranch', 'Sterling Creek', 'The Forest of Friendswood'],
+    photos: pics('friendswood-warm-white-ivy-home.jpg', 'friendswood-west-ranch.jpg', 'wrapped-trees-arched-entry.jpg'),
     intro: 'Friendswood’s tree-lined streets are made for Christmas lights. We light homes from West Ranch to Sterling Creek and the established neighborhoods in between.',
     local: [
       'Mature trees are half the show in Friendswood. We can wrap trunks and light trees and walkways along with the roofline.',
@@ -56,7 +70,8 @@ export const areas = [
     slug: 'clear-lake-bay-area',
     name: 'Clear Lake & the Bay Area',
     towns: ['Clear Lake', 'Webster', 'Seabrook', 'Kemah', 'El Lago', 'Pasadena', 'La Porte', 'Deer Park'],
-    photos: ['warm-white-garage-and-windows.jpg', 'community-entrance-sign.jpg'],
+    photos: pics('warm-white-garage-and-windows.jpg', 'pink-and-white-roofline.jpg', 'league-city-roofline-and-yard.jpg'),
+    photosNote: 'Clear Lake City and League City, just down the road: the same crew, lights and clips come to Webster, Seabrook and Kemah.',
     intro: 'From Clear Lake and Webster to Seabrook and Kemah, we light homes all around the bay every season.',
     local: [
       'Bay breezes and salt air are hard on store-bought lights. We install professional-grade bulbs and commercial clips that hold up better near the water.',
@@ -68,7 +83,8 @@ export const areas = [
     slug: 'alvin-galveston-county',
     name: 'Alvin, Santa Fe & Galveston County',
     towns: ['Alvin', 'Santa Fe', 'Texas City', 'La Marque', 'Dickinson', 'Bacliff', 'San Leon', 'Galveston'],
-    photos: ['warm-white-roofline-garden-beds.jpg', 'commercial-building-red-lights.jpg'],
+    photos: pics('twin-gables-under-full-moon.jpg', 'pearland-red-and-white.jpg', 'multicolor-windows-and-roofline-dusk.jpg'),
+    photosNote: 'A few of our installs in Pearland and League City: the same crew, lights and clips come to Alvin, Santa Fe and Galveston County.',
     intro: 'South of Pearland, we light homes from Alvin and Santa Fe down through Texas City, Dickinson, Bacliff, San Leon and Galveston.',
     local: [
       'Farther out doesn’t mean second in line: service calls here are covered just like in Pearland, free, within 48 hours at the most.',

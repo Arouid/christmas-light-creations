@@ -65,7 +65,10 @@ export default function Gallery() {
             className="absolute bottom-6 left-6 rounded-full bg-white/10 p-3 md:bottom-auto md:left-4"><Icon name="left" /></button>
           <button type="button" aria-label="Next photo" onClick={(e) => { e.stopPropagation(); step(1) }}
             className="absolute bottom-6 right-6 rounded-full bg-white/10 p-3 md:bottom-auto md:right-4"><Icon name="right" /></button>
-          <p className="absolute bottom-8 left-1/2 -translate-x-1/2 text-sm text-slate-400">{active + 1} / {gallery.length}</p>
+          <p className="absolute bottom-7 left-1/2 w-[56vw] -translate-x-1/2 text-center text-sm text-slate-200 md:w-auto">
+            {gallery[active].place}
+            <span className="block text-xs text-slate-400">{active + 1} / {gallery.length}</span>
+          </p>
         </div>
       )}
     </Section>
