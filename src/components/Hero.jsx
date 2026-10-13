@@ -4,7 +4,6 @@ import { useToday } from '../lib/prerendered'
 import { bookLine, fetchBooking, seasonBadge } from '../lib/urgency'
 import Availability from './Availability'
 import Icon from './Icon'
-import SignWelcome from './SignWelcome'
 
 export default function Hero() {
   const today = useToday()
@@ -22,7 +21,6 @@ export default function Hero() {
       <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-night-950 to-transparent" />
 
       <div className="mx-auto flex min-h-[88svh] max-w-6xl flex-col justify-end px-4 pb-14 pt-24 md:justify-center md:pb-24">
-        <SignWelcome />
         <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-glow-400/30 bg-night-900/60 px-3 py-1 text-xs font-medium uppercase tracking-wider text-glow-300">
           <span className="twinkle size-2 rounded-full bg-glow-400" /> {seasonBadge(today)}
         </p>
