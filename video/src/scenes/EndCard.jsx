@@ -1,7 +1,9 @@
-import { AbsoluteFill, Img, staticFile, useCurrentFrame } from 'remotion'
+import { AbsoluteFill, useCurrentFrame } from 'remotion'
 import { useFmt } from '../lib/format.js'
 import { Snow, SnowOverlay } from '../lib/Stage.jsx'
 import { Clip } from '../lib/Clip.jsx'
+import { Cottage } from '../lib/Cottage.jsx'
+import { WideCottage } from '../lib/WideCottage.jsx'
 import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
 
@@ -15,17 +17,19 @@ export function EndCard({ data }) {
   const { colors, words, type } = data
   const flick = frame < FLICKER.length * 2 ? FLICKER[Math.floor(frame / 2)] : 1
   const glow = flick * (0.8 + Math.sin(frame / 9) * 0.2)
-  const logoH = tall ? 620 : square ? 360 : 440
-  const logoW = logoH * 0.886
+  const img = data.cottageImage
+  const wide = !tall && !square && data.cottageImageWide ? data.cottageImageWide : ''
+  const logoH = img ? (tall ? 720 : square ? 420 : 520) : tall ? 620 : square ? 360 : 440
+  const logoW = logoH * (img ? 1 : 0.886)
   const phone = pop(frame, fps, 16, { damping: 13 })
   const site = fadeIn(frame, 30, 10)
   const line = fadeIn(frame, 40, 10)
   const phoneSize = tall ? 124 : square ? 106 : 146
   const stack = tall || square
   const logoX = stack ? (w - logoW) / 2 : 150
-  const logoY = tall ? 170 : square ? 70 : (h - logoH) / 2 - 20
+  const logoY = img ? (tall ? 120 : square ? 30 : (h - logoH) / 2 - 10) : tall ? 170 : square ? 70 : (h - logoH) / 2 - 20
   const textX = stack ? 0 : logoX + logoW + 90
-  const textY = tall ? logoY + logoH + 80 : square ? logoY + logoH + 40 : h / 2 - 170
+  const textY = tall ? logoY + logoH + (img ? 10 : 80) : square ? logoY + logoH + (img ? -20 : 40) : h / 2 - 170
   return (
     <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 35%, ${colors.navyLight}, ${colors.navy} 70%)`, opacity: fadeIn(frame, 0, 8) }}>
       {data.clips?.end ? (
@@ -33,10 +37,8 @@ export function EndCard({ data }) {
       ) : (
         <Snow />
       )}
-      <div style={{ position: 'absolute', left: logoX, top: logoY, width: logoW, height: logoH, opacity: flick, filter: `drop-shadow(0 0 ${30 * glow}px rgba(240,56,238,0.55)) drop-shadow(0 0 ${60 * glow}px rgba(255,207,77,0.35))` }}>
-        <Img src={staticFile('logo/clc-cottage-color.svg')} style={{ width: '100%', height: '100%' }} />
-      </div>
-      <div style={{ position: 'absolute', left: textX, top: textY, width: stack ? w : w - textX - 80, display: 'flex', flexDirection: 'column', alignItems: stack ? 'center' : 'flex-start', textAlign: stack ? 'center' : 'left', gap: 18 }}>
+      {wide ? <WideCottage image={wide} on={flick} glow={glow} colors={colors} /> : <Cottage image={img} x={logoX} y={logoY} height={logoH} on={flick} dark={0.22} glow={glow} />}
+      <div style={{ position: 'absolute', left: wide ? 110 : textX, top: wide ? 0 : textY, height: wide ? h : 'auto', justifyContent: wide ? 'center' : 'flex-start', width: stack ? w : wide ? w * 0.5 : w - textX - 80, display: 'flex', flexDirection: 'column', alignItems: stack ? 'center' : 'flex-start', textAlign: stack ? 'center' : 'left', gap: 18 }}>
         <div style={{ ...display(type, phoneSize, { lineHeight: 1, letterSpacing: '0' }), color: colors.gold, transform: `translateY(${(1 - phone) * 80}px)`, opacity: fadeIn(frame, 16, 6), textShadow: `0 0 50px rgba(255,207,77,0.45)` }}>
           {words.phone}
         </div>

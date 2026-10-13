@@ -101,6 +101,24 @@ one film; the owner's idea ("hide flaws with some color grading").
 
 Claude cannot generate video or actors itself; it cuts whatever is dropped in.
 
+## The photoreal cottage (Gemini, 2026-10-13)
+
+The owner had Gemini render the cottage logo photoreal (snow-draped roof, magenta neon trim,
+green chimney, warm door) from a prompt Claude wrote with the logo attached. Two renders live in
+`assets-source/Gemini/` (in git; the owner's own generated images): a square one
+(`…1oiptx….jpg`, 2048²) and a 16:9 one (`…9rw9cv….jpg`, 2752×1536). `prepare-assets` copies
+them to `video/public/gemini/`. Named in `data.js` as `cottageImage` and `cottageImageWide`.
+
+Where they appear: the 5-second ad and the story's end card (16:9 uses the wide render full
+frame with the words on the sky to its left; vertical and square use the square render feathered
+into the navy; the switch-on crossfades from a "lights off" copy that `prepare-assets` makes by
+darkening only the neon, the door, the window and the chimney, so the cottage stays and just its
+lights pop on: owner, 2026-10-13), the YouTube banner
+(`assets-source/ads/youtube-banner-2048x1152.png`: the square render small in the middle so it
+sits in the strip phones and desktops show) and the profile picture
+(`assets-source/ads/youtube-profile-1080.png`). Clear `cottageImage` in `data.js` to go back to the
+vector logo.
+
 ## Open the studio (scrub, change words, see it live)
 
 From the repo root:

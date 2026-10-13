@@ -87,6 +87,77 @@ for (const photo of Object.values(data.photos)) {
   }
 }
 
+// The owner's Gemini renders (assets-source/Gemini/, e.g. the photoreal cottage) → public/gemini/.
+const geminiDir = join(repoRoot, 'assets-source', 'Gemini')
+mkdirSync(join(out, 'gemini'), { recursive: true })
+if (existsSync(geminiDir)) {
+  for (const f of readdirSync(geminiDir)) {
+    const src = join(geminiDir, f)
+    if (statSync(src).isDirectory() || !/\.(jpe?g|png|webp)$/i.test(f)) continue
+    const dst = join(out, 'gemini', f)
+    if (fresh(src, dst)) { copyFileSync(src, dst); console.log('gemini', f) }
+  }
+}
+for (const k of ['cottageImage', 'cottageImageWide']) if (data[k] && !existsSync(join(out, 'gemini', data[k]))) { console.error(`${k} ${data[k]} is missing from assets-source/Gemini/`); process.exitCode = 1 }
+
+// "Lights off" copies of the cottage renders: the neon tubes, the warm door and window and the
+// chimney (saturated pixels, plus bright pixels right next to them) go dark; a wider, softer mask
+// takes the coloured glow off the snow around them; the rest stays. Written as
+// gemini/<name>-off.jpg; the ads crossfade from it to the lit render, so only the lights change.
+for (const k of ['cottageImage', 'cottageImageWide']) {
+  const name = data[k]
+  if (!name) continue
+  const lit = join(out, 'gemini', name)
+  const off = join(out, 'gemini', name.replace(/\.(jpe?g|png|webp)$/i, '') + '-off.jpg')
+  if (!existsSync(lit) || !fresh(lit, off)) continue
+  const { data: rgb, info } = await sharp(lit).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+  const { width, height } = info
+  const n = width * height
+  const sat = new Float32Array(n)
+  const mx = new Uint8Array(n)
+  const core = Buffer.alloc(n)
+  for (let i = 0; i < n; i++) {
+    const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]
+    const max = Math.max(r, g, b), min = Math.min(r, g, b)
+    sat[i] = max ? (max - min) / max : 0
+    mx[i] = max
+    const warm = r > 170 && g > 110 && b < 130 && r - b > 70
+    // the sky and the snow lean blue (blue is the strongest channel, then green); the lights never do
+    const blueish = b >= r && b >= g && g >= r
+    core[i] = !blueish && ((sat[i] > 0.38 && max > 80) || warm) ? 255 : 0
+  }
+  const grow = async (sigma, thr) => (await sharp(core, { raw: { width, height, channels: 1 } }).blur(sigma).threshold(thr).raw().toBuffer({ resolveWithObject: true }))
+  const near = await grow(7, 8) // ~10 px around the saturated parts
+  const wide = await grow(26, 4) // the glow on the snow
+  const nch = near.info.channels, wch = wide.info.channels
+  const lightsRaw = Buffer.alloc(n)
+  for (let i = 0; i < n; i++) {
+    const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]
+    const blueish = b >= r && b >= g && g >= r
+    lightsRaw[i] = near.data[i * nch] > 0 && !blueish && (sat[i] > 0.15 || mx[i] > 200) ? 255 : 0
+  }
+  const { data: lights, info: li } = await sharp(lightsRaw, { raw: { width, height, channels: 1 } }).blur(2).raw().toBuffer({ resolveWithObject: true })
+  const { data: glow, info: gi } = await sharp(wide.data, { raw: { width, height, channels: wch } }).blur(12).raw().toBuffer({ resolveWithObject: true })
+  const lch = li.channels, gch = gi.channels
+  const outRgb = Buffer.alloc(n * 3)
+  for (let i = 0; i < n; i++) {
+    const a = lights[i * lch] / 255
+    const gAlpha = (glow[i * gch] / 255) * 0.7
+    const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]
+    const lum = 0.3 * r + 0.59 * g + 0.11 * b
+    // glow off: pull toward grey and a little darker
+    let rr = r + (lum - r) * gAlpha, gg = g + (lum - g) * gAlpha, bb = b + (lum - b) * gAlpha
+    rr *= 1 - 0.22 * gAlpha; gg *= 1 - 0.22 * gAlpha; bb *= 1 - 0.2 * gAlpha
+    // lights off: dark, nearly grey
+    const dr = lum * 0.17, dg = lum * 0.17, db = lum * 0.21
+    outRgb[i * 3] = Math.round(rr * (1 - a) + dr * a)
+    outRgb[i * 3 + 1] = Math.round(gg * (1 - a) + dg * a)
+    outRgb[i * 3 + 2] = Math.round(bb * (1 - a) + db * a)
+  }
+  await sharp(outRgb, { raw: { width, height, channels: 3 } }).modulate({ brightness: 0.85, saturation: 0.8 }).jpeg({ quality: 90 }).toFile(off)
+  console.log('lights off', name, '->', off)
+}
+
 // Licensed downloads (Uppbeat and the like): footage, sound effects and music from
 // assets-source/ads/{clips,sfx,music}/ are copied into public/{clips,sfx,music}/. Each clip's
 // length is probed and written to src/clips.json so scenes can loop it.

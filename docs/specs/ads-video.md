@@ -56,6 +56,22 @@ lifted toward navy, gold warmth) so the sources read as one film. Files and lice
 Cut 2's scene files (headline, estimate ring, design tool, season cards, map, offer stamp, the
 illustrated street) were deleted in cut 3; git history (commit b485d58) has them.
 
+## The photoreal cottage (2026-10-13)
+
+The owner asked for "a real life rendering of the cottage logo"; Claude has no image generator, so
+it wrote the prompt and the owner generated it in Gemini (square and 16:9 renders in
+`assets-source/Gemini/`). The 5-second ad, the end card, the YouTube banner and the profile picture
+now use it (`cottageImage`, `cottageImageWide` in data.js); the vector logo stays as the fallback.
+The switch-on: `prepare-assets` builds a "lights off" copy of each render (a colour mask finds the
+neon, the warm door and window and the green chimney, excluding anything blue-leaning like the
+sky and snow; those pixels go dark grey, a wider soft mask takes the coloured glow off the snow)
+and the ads crossfade from it to the lit render with the flicker, so the cottage is visible
+throughout and only its lights pop on (owner: "just darken the lights, door, window… and pop
+those lights on").
+The YouTube banner went through three versions the same day: text-heavy ("infomercially"), the
+cottage logo with one line ("isn't gonna vibe with younger audiences"), the house photo, then the
+photoreal cottage small in the phone strip.
+
 ## The 5-second ad (owner's pick from cut 2)
 
 Scene 1 on its own: 2 s of the dark cottage in the snow, the switch-on (flicker, glow, warm
