@@ -6,12 +6,14 @@ functions, the designs, photos, words and documents) is published for the
 sole purpose of hosting christmas-light-creations.com. No licence of any kind
 is granted. You may not copy, modify, redistribute or reuse any part of it.
 
-No AI use. No part of this repository or of the website it builds may be
-used, in whole or in part, for training, fine-tuning, evaluating, retrieving
-from, summarising, answering from or otherwise feeding any machine-learning
-or AI system, by any means, including crawling, scraping, cloning this
-repository or reading it through any API. The website says the same in
-/robots.txt, /ai.txt, /.well-known/tdmrep.json and a "noai" meta tag on every
-page (W3C TDM Reservation Protocol, "tdm-reservation": 1).
+No AI training. No part of this repository or of the website it builds may
+be used, in whole or in part, for training, fine-tuning or evaluating any
+machine-learning or AI system, or collected into any text-and-data-mining
+dataset, by any means, including crawling, scraping, cloning this repository
+or reading it through any API. The website says the same in /robots.txt,
+/ai.txt, /.well-known/tdmrep.json and a "noai" meta tag on every page (W3C
+TDM Reservation Protocol, "tdm-reservation": 1). Search engines and AI
+assistants may read the public pages to answer a person's search about our
+business, with a link back to us.
 
 Questions: info@christmas-light-creations.com

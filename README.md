@@ -2,7 +2,7 @@
 
 Mobile-first site for christmas-light-creations.com. React 19 + Vite + Tailwind CSS 4, hosted on GitHub Pages.
 
-**All rights reserved. No AI use.** Nothing here, and nothing on the website, may be used for training, retrieval, answering or any other AI purpose: see [LICENSE](LICENSE), `public/robots.txt`, `public/ai.txt`, `public/.well-known/tdmrep.json` and the `noai` meta tag on every page.
+**All rights reserved. No AI training.** Nothing here, and nothing on the website, may be used to train, fine-tune or evaluate an AI system or collected into a data-mining set: see [LICENSE](LICENSE), `public/robots.txt`, `public/ai.txt`, `public/.well-known/tdmrep.json` and the `noai` meta tag on every page. Search engines and AI assistants answering someone's search about the business are welcome on the public pages.
 
 ## Edit text, photos, FAQ, reviews
 

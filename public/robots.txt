@@ -7,35 +7,28 @@ Disallow: /proposal/
 Disallow: /account/
 Disallow: /invoice/
 
-# AI crawlers, answer engines and on-demand fetchers: nothing at all, for
-# training, for answering or for "looking" on a user's behalf (owner
-# 2026-10-13). Also /ai.txt and /.well-known/tdmrep.json. Googlebot and
-# Bingbot above stay allowed: they are Search itself.
+# AI training crawlers and data-mining bots: nothing at all (owner
+# 2026-10-13). Also /ai.txt and /.well-known/tdmrep.json.
+# NOT listed on purpose, so people searching for us in an AI assistant find
+# us (owner, same day: "unblock any that might be used for searching our
+# business"): OAI-SearchBot and ChatGPT-User (ChatGPT search), Claude-SearchBot
+# and Claude-User, PerplexityBot and Perplexity-User, Google-Extended (Gemini
+# grounding; Google doesn't separate it from Gemini training), DuckAssistBot,
+# MistralAI-User, Meta-ExternalFetcher, Amazonbot (Alexa), YouBot, PetalBot.
 User-agent: GPTBot
-User-agent: OAI-SearchBot
-User-agent: ChatGPT-User
 User-agent: ClaudeBot
-User-agent: Claude-SearchBot
-User-agent: Claude-User
 User-agent: anthropic-ai
 User-agent: Claude-Web
-User-agent: Google-Extended
 User-agent: Google-CloudVertexBot
 User-agent: GoogleOther
 User-agent: Applebot-Extended
-User-agent: PerplexityBot
-User-agent: Perplexity-User
 User-agent: CCBot
 User-agent: Bytespider
 User-agent: Meta-ExternalAgent
-User-agent: Meta-ExternalFetcher
 User-agent: FacebookBot
-User-agent: Amazonbot
 User-agent: cohere-ai
 User-agent: cohere-training-data-crawler
 User-agent: Diffbot
-User-agent: DuckAssistBot
-User-agent: MistralAI-User
 User-agent: AI2Bot
 User-agent: Ai2Bot-Dolma
 User-agent: omgili
@@ -44,8 +37,6 @@ User-agent: Webzio-Extended
 User-agent: Timpibot
 User-agent: ImagesiftBot
 User-agent: PanguBot
-User-agent: YouBot
-User-agent: PetalBot
 User-agent: Kangaroo Bot
 User-agent: Sidetrade-indexer-bot
 User-agent: iaskspider
