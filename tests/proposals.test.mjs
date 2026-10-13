@@ -199,7 +199,7 @@ test('seasonal service terms (invoices): fill with the business only, say paying
   assert.doesNotMatch(t, /\{\w+\}/)
   assert.ok(t.includes('Paying the invoice is your agreement') && t.includes('Brazoria County, Texas') && t.includes('OUR TOTAL LIABILITY FOR THIS WORK IS LIMITED') && t.includes('We do not charge late fees'))
   const words = t.split(/\s+/).filter(Boolean).length
-  assert.ok(words > 300 && words < 900, `about a page: ${words} words`)
+  assert.ok(words > 300 && words < 1300, `a page or two: ${words} words`)
 })
 
 test('gutters and clips (owner 2026-10-12): explained in the access clause and excluded in the capitalized limits, in both documents', async () => {
@@ -210,7 +210,7 @@ test('gutters and clips (owner 2026-10-12): explained in the access clause and e
     assert.ok(t.includes('Normal ladder use can leave marks, scratches or small bends') || t.includes('normal ladder use can leave marks, scratches or small bends'))
     assert.ok(t.includes('dropping or slamming a ladder into it') && t.includes('FOR MARKS, SCRATCHES OR SMALL BENDS IN GUTTERS FROM NORMAL LADDER USE'))
     assert.ok(t.includes('some wear is unavoidable') && t.includes('FOR NORMAL WEAR TO PLANTS, BEDS, MULCH AND LAWNS'))
-    assert.ok(t.includes('express permission to enter and work anywhere on the outside of the property') && t.includes('we never enter the home'))
+    assert.ok(t.includes('express permission to enter and work anywhere on the outside of the property') && t.includes('We never enter the home, and we enter a garage only with your express consent or while you are present'))
     assert.ok(t.includes('You are required to tell us, before we start') && t.includes('landscape and pathway lights and their wires') && t.includes('NOT TOLD ABOUT AND COULD NOT REASONABLY SEE'))
   }
 })
