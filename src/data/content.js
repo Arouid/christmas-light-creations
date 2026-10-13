@@ -231,7 +231,7 @@ export const faq = [
     group: 'Getting started',
     items: [
       ['What do you do?', 'We design, install, maintain and take down Christmas lights for homes and businesses across Pearland, Manvel, Friendswood, League City, the Bay Area and Galveston County. You never touch a ladder.'],
-      ['How do I get a price?', 'Request a free estimate. We measure your home in about 30 minutes without climbing on the roof, and you don’t need to be home unless we need to get through a gate. In a hurry? Text us a few photos for a rough price. We’ll text or email your estimate, and you can sign it online.'],
+      ['How do I get a price?', 'Request a free estimate. We measure your home in about 30 minutes without climbing on the roof, and you don’t need to be home unless we need to get through a gate. In a hurry? Text us a few photos for a rough price. You get a “Got your request” email right away, then your exact price by text or email, and you sign online. Want to see it first? Draw your lights on a photo of your home with our free designer.'],
       ['How do you price it?', 'Every home is different. We look at how much you want lit, the size and shape of your home, and how tricky it is to reach, then give you one clear price. What’s in your estimate is what you pay.'],
       ['Do you work on tile roofs?', 'No. Clay and other tile roofs are too fragile to work on safely.'],
       ['Do you do businesses?', 'Yes: storefronts, restaurants, neighborhood entrances and more.'],
@@ -241,7 +241,8 @@ export const faq = [
     group: 'Installing',
     items: [
       ['When can you install?', 'Installs start October 15th and fill up fast. Book early: installs done by the end of October get an early install discount.'],
-      ['How long does it take? Do I need to be home?', 'About 2 hours for most homes. You don’t need to be home. Just make sure we can reach your outdoor outlets and get through any gate.'],
+      ['How long does it take? Do I need to be home?', 'About 2 hours for most homes. You don’t need to be home: your account shows your install day once it’s set, and we text the day before. Just make sure we can reach your outdoor outlets and get through any gate. Save your gate code, pets and anything to avoid in the yard on your account page and the crew sees it on the day.'],
+      ['What if it rains on my install day?', 'Rain, lightning and strong wind keep our crew off the roof, so your date may move to the next clear day. When bad weather is coming we email you a heads-up the afternoon before, and we text you if the date moves. You keep your early-install discount.'],
       ['Is there a warranty on the lights?', 'Yes, for life, for as long as you stay a customer: when we install your lights, you’re covered from that install until your next one with us, season after season. Five or more years in, when the Texas sun has finally worn out the plastic housings, we replace everything brand new at no charge. In 15 years we have never charged a cent for it. Decide not to have us install one year, and the coverage ends there. The season guarantee covers everything else: anything goes out, we fix it free, usually the same day.'],
       ['What’s included?', 'Everything: lights, clips, cords, timers, design, installation and all-season service. It’s all measured and cut to fit your home, with no extra strands hanging off the roof.'],
       ['What kind of lights do you use?', 'Commercial-grade LED only: brighter, cheaper to run, and sealed in plastic so they don’t break.'],
@@ -250,8 +251,7 @@ export const faq = [
   {
     group: 'Paying',
     items: [
-      ['How do I pay?', 'A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Pay online by PayPal, Venmo or card from the link we send you, or by Zelle, check or cash.'],
-      ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online.'],
+      ['How do I pay?', 'A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Sign in to your account (no password) and tap Pay: PayPal, Venmo or a card. Zelle, Cash App, check or cash work too. Or spread it with Pay in 3.'],
       ['Do you price-match?', 'We beat it. Show us a legitimate written proposal from another professional Christmas-light company (their own estimate, with their name on it) for the same lights and service, and we’ll beat it by 10%. That’s for real holiday-lighting companies with insurance, not a handyman or a landscaper, and not a number someone quoted over the phone.'],
       ['Is sales tax included?', 'Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls.'],
       ['Can I lease the lights instead of buying them?', 'Yes. With a lease we keep the lights, and every year you choose a brand-new design or keep the one you had. Year one is full price; every year you come back takes another 10% off the original price, up to 50% off. Nothing to store, test or replace.'],
@@ -259,15 +259,25 @@ export const faq = [
     ],
   },
   {
+    group: 'Your account & app',
+    items: [
+      ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to: Sign in with Google, or we email you a one-tap link, no password. You’ll see your agreements, what’s due and what you’ve paid (and pay online), your install and takedown day, your yearly price, and you can report a problem with your lights, save your gate code, pets and HOA dates, choose which emails you get, and search the Help answers.'],
+      ['Is there an app?', 'Yes. On your account page tap Get the app: on Android tap Install; on an iPhone open it in Safari, tap Share, then Add to Home Screen. It opens full-screen, no password, always up to date. Phone notifications of any kind only work from the installed app; without it you get email.'],
+      ['What emails will I get, and can I turn them off?', 'Your estimate and signed agreement, invoices and payment reminders, a text the day before we come, and weather heads-ups when storms, strong wind or a freeze are coming (what usually goes wrong and the one thing that fixes it). Weather heads-ups and tips can be switched off under Email preferences on your account page; agreements, bills, payment reminders and scheduling always come through. If one lands in spam, mark it Not spam so you don’t miss your install day.'],
+      ['Something’s confusing. Who do I ask?', 'Your account page has a Help box with a search: signing in, paying, lights out, trees, dates and weather, boxes, HOA dates, the app. If that doesn’t cover it, call or text 281-819-0163 and a person answers, usually the same day.'],
+    ],
+  },
+  {
     group: 'During the season',
     items: [
-      ['What if something goes out?', 'Call or text and we’ll fix it free, with no limit: burned-out or unglued bulbs, timers, tripped outlets. Usually the same day locally, within 48 hours during the busiest weeks. If we can’t fix it, we replace it at no charge.'],
+      ['What if something goes out?', 'First press RESET on the outdoor outlet your lights plug into (the GFCI, the one with two small buttons): after rain that fixes most of it. Still out? Tap Report a problem on your account page, or call or text, and we fix it free, with no limit: burned-out or unglued bulbs, timers, tripped outlets. Usually the same day locally, within 48 hours during the busiest weeks. If we can’t fix it, we replace it at no charge.'],
+      ['A branch pulled my lights down. Is that covered?', 'No. Branches that touch or hang over your roofline, gutters or walls pull lights down in wind, so please trim them back before we install and keep them trimmed, especially if it has happened before. Re-hanging lights a tree pulled down is a paid service call, scheduled after our booked installs. Everything else that goes out is free.'],
     ],
   },
   {
     group: 'Removal & next year',
     items: [
-      ['When do you take them down?', 'Between January 3rd and 13th. We take everything down, label it and box it up, and you store the boxes until next season.'],
+      ['When do you take them down?', 'Between January 3rd and 13th; we text the day before. Set an empty box or bin out on the porch and we pack your lights into it, labeled, for you to store until next season (for a re-install, set the labeled boxes out the same way). If your HOA wants lights down by a certain date, save it on your account page and we plan around it.'],
       ['Is there a cost for removal?', 'Yes, a set price shown in your estimate, due in January.'],
       ['Do I own the lights?', 'If you buy them, yes: once they’re paid for, they’re yours, and every year after we put them back up for about half the original price. If you lease, we keep them and you get a fresh design any year. Either way, we call in late summer to get you on the schedule.'],
       ['Can you hang lights I already own?', 'No. We only install lights that came from us, so we can guarantee every bulb all season.'],

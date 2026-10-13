@@ -100,7 +100,7 @@
     {
       "group": "Getting started",
       "q": "How do I get a price?",
-      "a": "Request a free estimate. We measure your home in about 30 minutes without climbing on the roof, and you don’t need to be home unless we need to get through a gate. In a hurry? Text us a few photos for a rough price. We’ll text or email your estimate, and you can sign it online."
+      "a": "Request a free estimate. We measure your home in about 30 minutes without climbing on the roof, and you don’t need to be home unless we need to get through a gate. In a hurry? Text us a few photos for a rough price. You get a “Got your request” email right away, then your exact price by text or email, and you sign online. Want to see it first? Draw your lights on a photo of your home with our free designer."
     },
     {
       "group": "Getting started",
@@ -125,7 +125,12 @@
     {
       "group": "Installing",
       "q": "How long does it take? Do I need to be home?",
-      "a": "About 2 hours for most homes. You don’t need to be home. Just make sure we can reach your outdoor outlets and get through any gate."
+      "a": "About 2 hours for most homes. You don’t need to be home: your account shows your install day once it’s set, and we text the day before. Just make sure we can reach your outdoor outlets and get through any gate. Save your gate code, pets and anything to avoid in the yard on your account page and the crew sees it on the day."
+    },
+    {
+      "group": "Installing",
+      "q": "What if it rains on my install day?",
+      "a": "Rain, lightning and strong wind keep our crew off the roof, so your date may move to the next clear day. When bad weather is coming we email you a heads-up the afternoon before, and we text you if the date moves. You keep your early-install discount."
     },
     {
       "group": "Installing",
@@ -145,12 +150,7 @@
     {
       "group": "Paying",
       "q": "How do I pay?",
-      "a": "A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Pay online by PayPal, Venmo or card from the link we send you, or by Zelle, check or cash."
-    },
-    {
-      "group": "Paying",
-      "q": "Can I see my account online?",
-      "a": "Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online."
+      "a": "A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Sign in to your account (no password) and tap Pay: PayPal, Venmo or a card. Zelle, Cash App, check or cash work too. Or spread it with Pay in 3."
     },
     {
       "group": "Paying",
@@ -173,14 +173,39 @@
       "a": "Any new install, bought or leased, paid in three equal payments instead of a deposit and a balance: the first when you sign, then one a month on the 1st or the 15th (you choose when you sign; we email you a payment link that morning). Everything is included, takedown too. No long-term commitment. It isn’t for re-installs of lights you already own. Ask us when you request your estimate."
     },
     {
+      "group": "Your account & app",
+      "q": "Can I see my account online?",
+      "a": "Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to: Sign in with Google, or we email you a one-tap link, no password. You’ll see your agreements, what’s due and what you’ve paid (and pay online), your install and takedown day, your yearly price, and you can report a problem with your lights, save your gate code, pets and HOA dates, choose which emails you get, and search the Help answers."
+    },
+    {
+      "group": "Your account & app",
+      "q": "Is there an app?",
+      "a": "Yes. On your account page tap Get the app: on Android tap Install; on an iPhone open it in Safari, tap Share, then Add to Home Screen. It opens full-screen, no password, always up to date. Phone notifications of any kind only work from the installed app; without it you get email."
+    },
+    {
+      "group": "Your account & app",
+      "q": "What emails will I get, and can I turn them off?",
+      "a": "Your estimate and signed agreement, invoices and payment reminders, a text the day before we come, and weather heads-ups when storms, strong wind or a freeze are coming (what usually goes wrong and the one thing that fixes it). Weather heads-ups and tips can be switched off under Email preferences on your account page; agreements, bills, payment reminders and scheduling always come through. If one lands in spam, mark it Not spam so you don’t miss your install day."
+    },
+    {
+      "group": "Your account & app",
+      "q": "Something’s confusing. Who do I ask?",
+      "a": "Your account page has a Help box with a search: signing in, paying, lights out, trees, dates and weather, boxes, HOA dates, the app. If that doesn’t cover it, call or text 281-819-0163 and a person answers, usually the same day."
+    },
+    {
       "group": "During the season",
       "q": "What if something goes out?",
-      "a": "Call or text and we’ll fix it free, with no limit: burned-out or unglued bulbs, timers, tripped outlets. Usually the same day locally, within 48 hours during the busiest weeks. If we can’t fix it, we replace it at no charge."
+      "a": "First press RESET on the outdoor outlet your lights plug into (the GFCI, the one with two small buttons): after rain that fixes most of it. Still out? Tap Report a problem on your account page, or call or text, and we fix it free, with no limit: burned-out or unglued bulbs, timers, tripped outlets. Usually the same day locally, within 48 hours during the busiest weeks. If we can’t fix it, we replace it at no charge."
+    },
+    {
+      "group": "During the season",
+      "q": "A branch pulled my lights down. Is that covered?",
+      "a": "No. Branches that touch or hang over your roofline, gutters or walls pull lights down in wind, so please trim them back before we install and keep them trimmed, especially if it has happened before. Re-hanging lights a tree pulled down is a paid service call, scheduled after our booked installs. Everything else that goes out is free."
     },
     {
       "group": "Removal & next year",
       "q": "When do you take them down?",
-      "a": "Between January 3rd and 13th. We take everything down, label it and box it up, and you store the boxes until next season."
+      "a": "Between January 3rd and 13th; we text the day before. Set an empty box or bin out on the porch and we pack your lights into it, labeled, for you to store until next season (for a re-install, set the labeled boxes out the same way). If your HOA wants lights down by a certain date, save it on your account page and we plan around it."
     },
     {
       "group": "Removal & next year",
