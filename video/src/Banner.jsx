@@ -1,27 +1,24 @@
 import { AbsoluteFill, Img, staticFile } from 'remotion'
-import { Snow } from './lib/Stage.jsx'
+import { Graded, Snow } from './lib/Stage.jsx'
 import { loadFonts } from './lib/fonts.js'
-import { BODY } from './lib/fonts.js'
 
-// The YouTube channel banner: 2048 × 1152, with everything that matters inside YouTube's safe
-// area (1235 × 338, centred), which is all that shows on a phone. Rendered as a still.
-const SAFE = { w: 1235, h: 338 }
+// The YouTube channel banner: 2048 × 1152, the three-gable house at night under the ad's grade,
+// no text (the owner: the cottage version "isn't gonna vibe with younger audiences"). The roofline
+// sits in the 1235 × 338 strip that a phone shows. Rendered as a still.
 
 export function Banner(props) {
   loadFonts()
-  const { colors } = props
+  const { colors, photos, look } = props
   const W = 2048
   const H = 1152
-  const sy = (H - SAFE.h) / 2
-  const logoH = 250
-  const logoW = logoH * 0.886
+  const photo = photos.pitch
   return (
-    <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 45%, #0b1838 0%, ${colors.navy} 70%)`, fontKerning: 'normal' }}>
-      <Snow count={170} opacity={0.7} />
-      <div style={{ position: 'absolute', left: (W - logoW) / 2, top: sy + 6, width: logoW, height: logoH, filter: 'drop-shadow(0 0 26px rgba(240,56,238,0.5)) drop-shadow(0 0 60px rgba(255,207,77,0.3))' }}>
-        <Img src={staticFile('logo/clc-cottage-color.svg')} style={{ width: '100%', height: '100%' }} />
-      </div>
-      <div style={{ position: 'absolute', left: 0, width: W, top: sy + logoH + 26, textAlign: 'center', fontFamily: BODY, fontWeight: 600, fontSize: 30, letterSpacing: '0.28em', color: colors.goldSoft, opacity: 0.9 }}>PEARLAND, TX  ·  SINCE 2011</div>
+    <AbsoluteFill style={{ background: colors.navy }}>
+      <Graded look={look}>
+        <Img src={staticFile(`photos/${photo.number}.jpg`)} style={{ width: W, height: H, objectFit: 'cover', objectPosition: `${photo.focus[0] * 100}% ${photo.focus[1] * 100}%`, filter: 'brightness(0.92)' }} />
+      </Graded>
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 45%, transparent 50%, rgba(5,11,26,0.75) 100%)` }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 260, background: `linear-gradient(to top, rgba(5,11,26,0.85), transparent)` }} />
     </AbsoluteFill>
   )
 }
