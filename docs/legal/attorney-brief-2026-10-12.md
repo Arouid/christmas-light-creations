@@ -21,7 +21,7 @@ The full current text is in the staff app (default in `src/proposals/terms.js`; 
 | 4 | Service | Free repair/replacement of our lights during the season |
 | 5 | Access | Customer provides access (incl. gate codes) and working outlets; no tile roofs |
 | 6 | Ownership | Paid in full → customer owns the lights; we label and box them; re-install in future seasons is 50% of the original price |
-| 7 | Cancellation | Deposit refunded **in full through October 15**, **half from October 16 to November 1**, **not refundable from November 2** (owner, 2026-10-12). If we can't install by **Dec 1**, the customer may choose a full deposit refund |
+| 7 | Cancellation | Deposit refunded **in full through October 15**, **half from October 16 to November 1**, **not refundable from November 2** (owner, 2026-10-12). If, for reasons on our side, we can't install by **Dec 1**, the customer may choose a full deposit refund; not when the delay is theirs (asked us to wait, turned down two offered dates, no access or outlets), which we may treat as their cancellation |
 | 8 | Liability | We repair damage we cause (told within 7 days). In capitals (conspicuous): not liable for pre-existing conditions, weather/outages/surges, animals, or undisclosed items; except for our negligence or willful misconduct, liability capped at the amount paid; no consequential damages; nothing limits what Texas law says can't be limited |
 | 9 | Unpaid balances | No late fees (owner). After 10 days late we may pause service, decline re-install or remove unpaid lights; collection costs and reasonable attorney's fees as Texas law allows |
 | 10 | Photos and information | Street photos for our portfolio, no name or address, opt-out any time; a pointer to the privacy page |

@@ -182,6 +182,7 @@ test('terms by kind and plan: Pay in 3 swaps the payment and cancellation clause
   assert.ok(p3.includes(PAYIN3_PAYMENT) && p3.includes(PAYIN3_CANCELLATION) && !p3.includes('A deposit of {deposit}'))
   assert.ok(p3.includes('3. Scheduling and weather.') && p3.includes('12. Electronic signature.') && p3.includes('8. Damage, insurance and limits on liability.'))
   assert.ok(p3.includes('If you cancel before your lights are up, nothing more is owed.') && p3.includes('Your first payment is your deposit'))
+  for (const t of [DEFAULT_TERMS, p3]) assert.ok(t.includes('for reasons on our side') && t.includes('turn down two install dates we offer'))
   const lease = defaultTerms({ kind: 'lease', plan: 'payin3' })
   assert.ok(lease.includes(LEASE_OWNERSHIP) && !lease.includes('the lights and materials are yours'))
   const { ADDON_OWNERSHIP } = await import('../src/proposals/terms.js')

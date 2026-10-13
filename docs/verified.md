@@ -474,3 +474,4 @@ What was actually checked working, and how. Newest first.
 - Clause 5 framing (owner, 2026-10-12): tested; check green.
 - Hazards: nests, rotten fascia, animals in the tell-us list and a safety-stop sentence (owner, 2026-10-12); tested; check green.
 - Pay-in-3 cancellation reworded (owner, 2026-10-12): deposit after 3 days, nothing more if cancelled before the lights are up, the full total once up; tested; check green.
+- Dec 1 refund limited to our own delays (owner, 2026-10-12): both clause-7 variants, tested; check green.
