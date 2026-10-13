@@ -28,7 +28,7 @@ export default function Hero() {
           Holiday lights, <span className="text-glow-400 [text-shadow:0_0_28px_rgba(255,207,77,0.55)]">done for you.</span>
         </h1>
         <p className="mt-5 max-w-xl text-lg text-slate-300">
-          Design, installation, service and removal by a family-owned crew serving Pearland, the Bay Area and south Houston since {business.since}.
+          Professional Christmas light installers: design, installation, service and removal by a family-owned company serving Pearland, the Bay Area and south Houston since {business.since}.
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">

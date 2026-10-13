@@ -17,6 +17,10 @@ Where the site shows for the searches that matter, checked by hand so there is s
 
 Owner's own Google search for “Christmas Light Creations” (signed in, Pearland): the knowledge panel is his profile, but the first website result is **christmaslightscreations.com**, a Christmas-lights retailer (“Where Santa Shops For Christmas”) with a near-identical name; christmas-light-creations.com shows below it. Two verified Google Business Profiles exist for the business (TODO #70, merge requested with Google support); the keeper carried the old http website URL. Re-check the brand search after the merge and in a month.
 
+## Copy changes for search (2026-10-13)
+
+Home `<title>` now “Christmas Light Installation in Pearland, TX | Christmas Light Creations”; the hero subhead carries “professional Christmas light installers” and “family-owned company”; FAQ gained “How do I pick a Christmas light installer near Pearland?” and “My permanent Christmas lights failed. Can you replace them?”; `/cost/` answers the cost searches. Searches to add to the next check: “christmas light installers pearland”, “christmas light installation cost pearland”, “permanent christmas lights failed replace”.
+
 ## Next check
 
 Same four searches, same method, add a row. From the push that takes `/cost/` live (2026-10-13, `docs/specs/cost-guide.md`), also "christmas light installation cost pearland" and "how much does christmas light installation cost pearland": the cost guide should start showing for them, and Search Console → Performance → Queries filtered "cost" says when (TODO #72). Worth adding the area searches once Bing has recrawled: "christmas light installation friendswood", "… league city", "… manvel".
