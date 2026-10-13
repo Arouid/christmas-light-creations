@@ -46,7 +46,7 @@ export const areas = [
     name: 'Manvel',
     towns: ['Manvel', 'Shadow Creek Ranch (west of 288)', 'Iowa Colony', 'Rosharon'],
     photos: pics('iowa-colony-clear-led-gables.jpg', 'white-stone-two-story-warm-white.jpg', 'green-led-two-story-home.jpg'),
-    photosNote: 'Iowa Colony and the Pearland side of Shadow Creek Ranch, minutes from Manvel: the same crew, lights and clips.',
+    photosNote: 'Iowa Colony and two Pearland installs just across 288, Shadow Creek Ranch and The Lakes of Highland Glen: the same crew, lights and clips come to Manvel.',
     intro: 'Manvel and the newer neighborhoods west of 288 have grown fast, and so has our customer list there. More Manvel families leave their lights to us every season.',
     local: [
       'New construction often means big, simple rooflines that look sharp with one clean color. Ask about warm white versus multicolor LED at your estimate.',

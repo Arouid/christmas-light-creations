@@ -85,7 +85,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
   <section class="px-4 pb-14">
     <h2 class="sr-only">Our work nearby</h2>
     <ul class="mx-auto grid max-w-6xl grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
-      ${a.photos.map((p, i) => `<li${i === 0 ? ' class="col-span-2 row-span-2"' : ''}><figure class="relative h-full overflow-hidden rounded-xl bg-night-900"><img src="${base}images/gallery/${p.file}" alt="${esc(p.alt)}" loading="${i === 0 ? 'eager' : 'lazy'}" class="aspect-[4/3] h-full w-full object-cover" /><figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night-950/90 to-night-950/0 px-3 pb-2.5 pt-10 text-sm font-medium text-white">${esc(p.place)}</figcaption></figure></li>`).join('\n      ')}
+      ${a.photos.map((p, i) => `<li${i === 0 ? ' class="col-span-2 row-span-2"' : ''}><figure class="relative h-full overflow-hidden rounded-xl bg-night-900"><img src="${base}images/gallery/${p.file}" alt="${esc(p.alt)}" loading="lazy" class="aspect-[4/3] h-full w-full object-cover" /><figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night-950/90 to-night-950/0 px-3 pb-2.5 pt-10 text-sm font-medium text-white">${esc(p.place)}</figcaption></figure></li>`).join('\n      ')}
     </ul>
     ${a.photosNote ? `<p class="mx-auto mt-3 max-w-6xl text-sm text-slate-400">${esc(a.photosNote)}</p>` : ''}
   </section>
