@@ -18,23 +18,54 @@ export const itemId = () => `i${Date.now().toString(36)}${(seq++).toString(36)}`
 
 // Line item: qty × rate. `due` = when it's paid: 'install' or 'removal'.
 // `details` = what the paper form had per line: color, bulb type, hardware, timer.
-export const newItem = (label = '', qty = 1, unit = '', rate = 0, due = 'install', details = '') => ({ id: itemId(), label, qty, unit, rate, due, details })
+// `taxable`: sales tax applies (new lights: yes; takedown of owned lights: no).
+export const newItem = (label = '', qty = 1, unit = '', rate = 0, due = 'install', details = '', taxable = due !== 'removal') => ({ id: itemId(), label, qty, unit, rate, due, details, taxable })
 export const itemCents = (it) => Math.round((Number(it.qty) || 0) * cents(it.rate))
+export const taxableItem = (it) => it.taxable === true
+// The proposal's sales tax rate (p.tax = { ratePct, permit?, mode? }, a snapshot of
+// Settings when it was made); older proposals have none, so nothing changes for them.
+// mode 'added' (default): its own line on top of the prices. 'included' (owner
+// 2026-10-12, "hideable from the customer contract"): the prices already
+// contain it, the contract shows no tax line (just a note), and the amount is
+// backed out for the books.
+export const taxRateOf = (p) => Number(p.tax?.ratePct) || 0
+export const taxIncluded = (p) => taxRateOf(p) > 0 && p.tax?.mode === 'included'
+const pct = (c, rate) => Math.round((c * rate) / 100)
+// The tax inside a tax-inclusive amount: amount − amount ÷ (1 + rate).
+const inside = (c, rate) => Math.round(c - c / (1 + rate / 100))
 
-// Payment schedule: deposit (a % of the install after discount) when signed,
-// the rest of the install when installed, removal items at removal.
+// Payment schedule: deposit (a % of the install after discount, tax included)
+// when signed, the rest of the install when installed, removal items at removal.
 export function totals(p) {
   const items = p.items ?? []
-  const installSub = items.filter((i) => i.due !== 'removal').reduce((t, i) => t + itemCents(i), 0)
-  const removal = items.filter((i) => i.due === 'removal').reduce((t, i) => t + itemCents(i), 0)
-  const discount = Math.round((installSub * (Number(p.discountPct) || 0)) / 100)
+  const installItems = items.filter((i) => i.due !== 'removal')
+  const removalItems = items.filter((i) => i.due === 'removal')
+  const sum = (list) => list.reduce((t, i) => t + itemCents(i), 0)
+  const installSub = sum(installItems)
+  const removal = sum(removalItems)
+  const discountPct = Number(p.discountPct) || 0
+  const discount = pct(installSub, discountPct)
   const install = installSub - discount
-  const deposit = Math.round((install * (Number(p.depositPct) || 0)) / 100)
+  // Sales tax (owner 2026-10-12, docs/specs/receipts.md): on the lines marked
+  // taxable, after the same discount; never on re-installs, takedown of owned
+  // lights or service calls. Same math as functions/proposalMath.js.
+  const taxRate = taxRateOf(p)
+  const included = taxIncluded(p)
+  const taxOn = included ? inside : pct
+  const taxableSub = sum(installItems.filter(taxableItem))
+  const installTax = taxRate ? taxOn(taxableSub - pct(taxableSub, discountPct), taxRate) : 0
+  const removalTax = taxRate ? taxOn(sum(removalItems.filter(taxableItem)), taxRate) : 0
+  const installTotal = install + (included ? 0 : installTax)
+  const dueAtRemoval = removal + (included ? 0 : removalTax)
+  const deposit = pct(installTotal, Number(p.depositPct) || 0)
   // Next season: re-installing the same lights (CLC: 50% of the original
-  // install). New proposals use the undiscounted price (reinstallBasis 'list',
+  // install, before tax). New proposals use the undiscounted price (reinstallBasis 'list',
   // owner 2026-10-09); older ones keep the after-discount math they were signed with.
   const nextYear = Math.round(((p.reinstallBasis === 'list' ? installSub : install) * (p.reinstallPct ?? 50)) / 100)
-  return { installSub, discount, install, removal, total: install + removal, deposit, dueAtInstall: install - deposit, dueAtRemoval: removal, nextYear }
+  return {
+    installSub, discount, install, taxRate, taxIncluded: included, installTax, removalTax, tax: installTax + removalTax, installTotal, removal,
+    total: installTotal + dueAtRemoval, deposit, dueAtInstall: installTotal - deposit, dueAtRemoval, nextYear,
+  }
 }
 
 // The three payments on a proposal (same as functions/proposalMath.js): the
@@ -71,11 +102,13 @@ export function itemsFromDesign({ lines, feet, pricePerFoot, takedownPct = 15, t
   return items
 }
 
-export function newProposal({ customer = {}, items = [], depositPct = 50, discountPct = 0, terms = '', title = 'Christmas lighting proposal', season = '' } = {}) {
+// `tax`: { ratePct, permit? } from Settings (src/lib/salesTax.js taxSnapshot), or null for none.
+export function newProposal({ customer = {}, items = [], depositPct = 50, discountPct = 0, terms = '', title = 'Christmas lighting proposal', season = '', tax = null } = {}) {
   return {
     version: PROPOSAL_VERSION,
     title,
     season,
+    ...(tax ? { tax } : {}),
     customer: { name: customer.name ?? '', email: customer.email ?? '', phone: customer.phone ?? '', address: customer.address ?? '' },
     items,
     discountPct,
@@ -101,12 +134,14 @@ export function termVars(p, business = {}) {
     season: p.season ?? '',
     total: fmt(t.total),
     install: fmt(t.install),
+    tax: fmt(t.tax),
+    taxRate: t.taxRate ? `${t.taxRate}%` : '',
     deposit: fmt(t.deposit),
     depositPct: `${p.depositPct ?? 0}%`,
     dueAtInstall: fmt(t.dueAtInstall),
-    removal: fmt(t.removal),
+    removal: fmt(t.dueAtRemoval),
     // "Free" when takedown is included in the install (owner 2026-10-09).
-    takedownCost: t.removal > 0 ? `${fmt(t.removal)}, due at takedown` : 'Free',
+    takedownCost: t.dueAtRemoval > 0 ? `${fmt(t.dueAtRemoval)}, due at takedown` : 'Free',
     nextYear: fmt(t.nextYear),
   }
 }
@@ -128,6 +163,8 @@ export function canonical(p) {
     // Added 2026-10-09; only present on newer proposals, so older fingerprints don't change.
     ...(p.reinstallBasis ? { reinstallBasis: p.reinstallBasis } : {}),
     ...(p.kind ? { kind: p.kind } : {}),
+    // Sales tax (2026-10-12): the rate, which lines it's on, and the amounts; only on proposals that carry a rate.
+    ...(p.tax ? { tax: [t.taxRate, (p.items ?? []).map((i) => (taxableItem(i) ? 1 : 0)), t.installTax, t.removalTax, t.taxIncluded ? 'included' : 'added'] } : {}),
   })
 }
 

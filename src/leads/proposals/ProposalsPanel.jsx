@@ -5,6 +5,9 @@ import ProposalDocument from '../../proposals/ProposalDocument.jsx'
 import SignaturePad from '../../proposals/SignaturePad.jsx'
 import { PAY_PARTS, PART_LABEL, STATUS_LABEL, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, partAmount, paymentOf, sendProblems, takedownItem, termVars, totals } from '../../proposals/model.js'
 import { DEFAULT_TERMS, FILL_IN } from '../../proposals/terms.js'
+import { taxRateOf } from '../../proposals/model.js'
+import { taxSnapshot } from '../../lib/salesTax'
+import { todayISO } from '../../lib/customers'
 import { COLOR_SETS, STYLES, normalize } from '../../designer/model.js'
 import { designStats } from '../../designer/stats.js'
 import { useDesigns } from '../designs/useDesigns'
@@ -171,6 +174,12 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
                     <li key={i.id} className="grid grid-cols-4 gap-2 rounded-xl bg-white/5 p-2 sm:grid-cols-[1fr_4.5rem_3.5rem_5.5rem_7rem_auto]">
                       <div className="col-span-4 flex gap-2 sm:col-span-1">
                         <input value={i.label} onChange={(e) => setItem(i.id, { label: e.target.value })} placeholder="Description (e.g. Front roofline)" aria-label="Description" className={`${small} min-w-0 flex-1`} />
+                        {/* Sales tax per line: new lights yes, takedown of owned lights no (docs/specs/receipts.md). */}
+                        {taxRateOf(d) > 0 && (
+                          <label className="flex shrink-0 items-center gap-1 text-xs text-slate-400" title="Sales tax on this line">
+                            <input type="checkbox" checked={i.taxable === true} onChange={(e) => setItem(i.id, { taxable: e.target.checked })} className="size-4" /> tax
+                          </label>
+                        )}
                         <button type="button" onClick={() => set({ items: d.items.filter((x) => x.id !== i.id) })} aria-label="Remove item" className="px-2 text-slate-400 sm:hidden">✕</button>
                       </div>
                       <input value={i.qty} inputMode="decimal" onChange={(e) => setItem(i.id, { qty: e.target.value })} aria-label="Quantity" className={`${small} min-w-0`} />
@@ -205,9 +214,21 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
                 <label className="text-sm text-slate-400">Deposit %
                   <input value={d.depositPct ?? 0} inputMode="decimal" onChange={(e) => set({ depositPct: Number(e.target.value) || 0 })} className={`${field} w-24`} />
                 </label>
+                <label className="text-sm text-slate-400" title="Blank = no sales tax. New estimates get the rate from Settings.">Sales tax %
+                  <input value={d.tax?.ratePct ?? ''} inputMode="decimal" placeholder="none" onChange={(e) => set({ tax: e.target.value === '' ? null : { ...(d.tax ?? {}), ratePct: Number(e.target.value) || 0 } })} className={`${field} w-24`} />
+                </label>
+                {/* Owner 2026-10-12: the tax line can be kept off the contract (prices include it; backed out for the books). */}
+                {taxRateOf(d) > 0 && (
+                  <label className="text-sm text-slate-400">On the contract
+                    <select value={d.tax?.mode === 'included' ? 'included' : 'added'} onChange={(e) => set({ tax: { ...d.tax, mode: e.target.value } })} className={`${field} w-44`}>
+                      <option value="added">its own tax line</option>
+                      <option value="included">included in prices</option>
+                    </select>
+                  </label>
+                )}
                 <div className="ml-auto text-right text-sm">
                   <p>Total <strong className="text-lg">{fmt(t.total)}</strong></p>
-                  <p className="text-slate-400">Deposit {fmt(t.deposit)} · at install {fmt(t.dueAtInstall)}{t.dueAtRemoval ? ` · takedown ${fmt(t.dueAtRemoval)}` : ''}</p>
+                  <p className="text-slate-400">{t.tax > 0 ? `Sales tax ${fmt(t.tax)}${t.taxIncluded ? ' (inside the prices)' : ''} · ` : ''}Deposit {fmt(t.deposit)} · at install {fmt(t.dueAtInstall)}{t.dueAtRemoval ? ` · takedown ${fmt(t.dueAtRemoval)}` : ''}</p>
                 </div>
               </div>
 
@@ -314,6 +335,7 @@ export default function ProposalsPanel({ owner }) {
         discountPct: owner.installType === 'Early Install' ? 10 : 0,
         terms,
         season: String(new Date().getFullYear()),
+        tax: taxSnapshot(settings, todayISO()), // sales tax from the start date (⚙ Settings)
       }),
       termsTemplate: terms,
       ...(latest ? { designId: latest.id } : {}),

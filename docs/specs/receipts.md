@@ -1,15 +1,15 @@
 # Receipts and sales tax
 
-> Status: proposed 2026-10-12 from the owner's decisions in his claude.ai chat (`docs/inbox/receipts-and-sales-tax-2026-10-12.md`); **waiting for the owner's OK and his CPA's answers before anything is built.** Not legal or tax advice.
+> Status: Part 2 (the tax line) **built 2026-10-12**; Part 1 (receipts) not started. Owner's answers 2026-10-12: Texas + local (**8.25%**), from **October 15, 2026**, a lease price is all-inclusive (takedown inside the taxed price), service calls never taxed; the permit number goes in ⚙ Settings → Sales tax when it arrives. Not legal or tax advice; the CPA confirms.
 
 ## The owner's decisions
 
 - Collect Texas sales tax on **year-one purchase installs** (the whole charge), **every lease / monthly-plan charge**, and **new lights added** in later years. **No tax on re-installs** of lights the customer already owns.
 - He pays sales tax on lights he buys (Home Depot, Lowe's, wholesalers). He'll use resale certificates where he can and needs records of the tax he couldn't avoid, to claim it as a credit on the sales tax return.
 
-## Part 2 first: the tax line on proposals and invoices
+## Part 2: the tax line on proposals and invoices (built 2026-10-12)
 
-Smaller, and it's what has to be right before tax is collected from a customer.
+How it works: `src/lib/salesTax.js` reads `settings/app.salesTax` ({ ratePct, permit, from }; defaults 8.25%, 2026-10-15). A new estimate made on or after the start date carries `tax: { ratePct, permit? }` and every install line `taxable: true` (takedown lines `false`; staff untick/tick per line); `totals()` in `src/proposals/model.js` and `functions/proposalMath.js` tax the taxable lines after the discount, add it to the install (so the deposit includes it) and to any taxable removal line (a lease). Older proposals have no `tax`, so their math and fingerprints are unchanged; the fingerprint of a taxed one includes the rate, the per-line flags and the amounts. Invoices carry `tax: { ratePct, permit? }` when the editor's **Sales tax** box is ticked (on by default for add-ons, off for the rest); `invoiceCents()` = lines + tax, `invoiceSubtotal()`/`invoiceTax()` split it; emails, the invoice page and `/account/` show the line and the permit. The season's Total box keeps what the customer paid (tax included); the yearly re-install price stays pre-tax. No rules change.
 
 | Piece | Where | What |
 |---|---|---|

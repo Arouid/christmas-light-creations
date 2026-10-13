@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { business } from '../../data/content'
 import { todayISO } from '../../lib/customers'
 import {
-  KINDS, KIND_LABEL, OFFLINE_METHODS, STATE_LABEL, TERMS_LABEL, invoiceCents, invoiceState, line, longDate, money, paidInfo, sendProblems, toCents,
+  KINDS, KIND_LABEL, OFFLINE_METHODS, STATE_LABEL, TERMS_LABEL, invoiceCents, invoiceState, invoiceSubtotal, invoiceTax, line, longDate, money, paidInfo, sendProblems, toCents,
 } from '../../lib/invoices'
+import { INVOICE_TAX_DEFAULT, salesTaxSettings, taxSnapshot } from '../../lib/salesTax'
+import { StaffContext } from '../staffContext'
 import InvoiceDocument from '../../invoices/InvoiceDocument.jsx'
 import AccountGlance from './AccountGlance'
 import { TextButton } from '../Reach'
@@ -16,7 +18,7 @@ const btn = 'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-fu
 const primary = 'min-h-11 rounded-full bg-glow-400 px-5 py-2.5 text-sm font-semibold text-night-950 hover:bg-glow-300 disabled:opacity-40'
 const msDay = (ms) => (Number(ms) ? new Date(Number(ms)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '')
 const tsMs = (t) => (t?.toMillis ? t.toMillis() : t?.seconds != null ? t.seconds * 1000 : t ? Date.parse(t) : NaN)
-const EDITS = ['customer', 'season', 'kind', 'items', 'note', 'terms', 'dueDate']
+const EDITS = ['customer', 'season', 'kind', 'items', 'note', 'terms', 'dueDate', 'tax']
 const seasons = () => { const y = new Date().getFullYear(); return [y + 1, y, y - 1, y - 2].map(String) }
 
 // What went out to the customer, from the server's log on the invoice.
@@ -60,8 +62,10 @@ function MarkPaid({ onSave, onCancel }) {
 // `token` null = new (created on first Save draft / Send).
 export default function InvoiceEditor({ token: startToken, invoice, onClose }) {
   const ctx = useInvoicesContext()
+  const { settings } = useContext(StaffContext)
   const [token, setToken] = useState(startToken)
-  const [d, setD] = useState(invoice)
+  // A new draft starts with the sales tax its kind usually gets (docs/specs/receipts.md); staff can tick it either way.
+  const [d, setD] = useState(() => (invoice.tax === undefined && invoice.status === 'draft' ? { ...invoice, tax: INVOICE_TAX_DEFAULT[invoice.kind] ? taxSnapshot(settings, todayISO()) : null } : invoice))
   const [texts, setTexts] = useState(() => Object.fromEntries((invoice.items ?? []).map((i) => [i.id, i.cents ? (i.cents / 100).toFixed(2) : ''])))
   const [busy, setBusy] = useState(null)
   const [preview, setPreview] = useState(false)
@@ -148,7 +152,7 @@ export default function InvoiceEditor({ token: startToken, invoice, onClose }) {
             </details>
             <fieldset disabled={!editable} className="min-w-0 space-y-4 disabled:opacity-80">
               <div className="grid gap-3 sm:grid-cols-3">
-                <label className="block text-sm text-slate-400">For<select value={d.kind} onChange={(e) => set({ kind: e.target.value })} className={field}>{KINDS.map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</select></label>
+                <label className="block text-sm text-slate-400">For<select value={d.kind} onChange={(e) => set({ kind: e.target.value, tax: INVOICE_TAX_DEFAULT[e.target.value] ? taxSnapshot(settings, today) : null })} className={field}>{KINDS.map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</select></label>
                 <label className="block text-sm text-slate-400">Season<select value={d.season} onChange={(e) => set({ season: e.target.value })} className={field}>{[...new Set([d.season, ...seasons()])].filter(Boolean).map((y) => <option key={y}>{y}</option>)}</select></label>
                 {status === 'draft' ? (
                   <label className="block text-sm text-slate-400">Due
@@ -175,9 +179,15 @@ export default function InvoiceEditor({ token: startToken, invoice, onClose }) {
                 ))}
                 <div className="flex items-center justify-between">
                   <button type="button" onClick={addLine} className={btn}>＋ Add line</button>
-                  <p className="font-semibold tabular-nums">Total {money(total)}</p>
+                  <p className="font-semibold tabular-nums">{invoiceTax(shown) > 0 ? <span className="font-normal text-slate-400">{money(invoiceSubtotal(shown))} + tax {money(invoiceTax(shown))} = </span> : null}Total {money(total)}</p>
                 </div>
                 <p className="text-xs text-slate-400">A discount is a line with a minus amount (e.g. −45).</p>
+                {taxSnapshot(settings, today) && (
+                  <label className="flex items-start gap-2 text-sm">
+                    <input type="checkbox" checked={Boolean(shown.tax)} onChange={(e) => set({ tax: e.target.checked ? taxSnapshot(settings, today) : null })} className="mt-1 size-4" />
+                    <span>Sales tax {salesTaxSettings(settings).ratePct}% <span className="text-slate-400">— new lights and leases (a first-year install, an add-on, a lease payment); never a re-install of lights they own, its takedown, or a service call.</span></span>
+                  </label>
+                )}
               </div>
               <label className="block text-sm text-slate-400">Note to the customer (optional)<textarea rows={2} maxLength={2000} value={d.note ?? ''} onChange={(e) => set({ note: e.target.value })} className={field} /></label>
             </fieldset>

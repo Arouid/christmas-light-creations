@@ -76,7 +76,9 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
             </div>
           ))}
           {t.discount > 0 && <div className={`${row} text-emerald-400 print:text-black`}><span>{p.discountLabel || 'Discount'} ({p.discountPct}% off the install)</span><span className="tabular-nums">−{fmt(t.discount)}</span></div>}
+          {t.tax > 0 && !t.taxIncluded && <div className={row}><span>Sales tax ({t.taxRate}%)</span><span className="tabular-nums">{fmt(t.tax)}</span></div>}
           <div className={`${row} text-lg font-bold`}><span>Total</span><span className="tabular-nums">{fmt(t.total)}</span></div>
+          {t.tax > 0 && t.taxIncluded && <p className="py-2 text-xs text-slate-400 print:text-black">Prices include Texas sales tax.</p>}
         </div>
       </section>
 

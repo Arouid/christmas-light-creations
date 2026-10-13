@@ -12,6 +12,7 @@ const base = {
     { id: 'l3', description: 'Add-on: Arch over the driveway (new this season)', cents: 30000 },
   ],
   note: 'Thank you for being a customer since 2021!',
+  tax: { ratePct: 8.25, permit: '3-00000-0000-0' }, // preview of the tax line and permit (sample only)
 }
 
 export function demoInvoice(kind) {

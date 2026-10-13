@@ -236,3 +236,21 @@ test('editor account panel: suggested lines by kind, and unpaid earlier seasons'
   assert.deepEqual(unpaidSeasons(c, '2026'), [{ season: '2025', part: 'takedown', amount: '$150' }, { season: '2024', part: 'install', amount: '$440' }])
   assert.deepEqual(unpaidSeasons({}, '2026'), [])
 })
+
+// Sales tax (owner 2026-10-12): inv.tax = { ratePct } adds a line on top of the items.
+test('sales tax: total is lines plus tax, rounded to the cent; summary and emails carry it; no tax key = as before', async () => {
+  const { invoiceCents, invoiceSubtotal, invoiceTax, invoiceTaxRate, invoiceSummary, invoiceEmail } = await import('../functions/invoices.js')
+  const inv = { status: 'open', number: 'CLC-2026-0007', kind: 'addon', season: '2026', customer: { name: 'Pat Sample' }, items: [{ id: 'a', description: 'Arch', cents: 30000 }, { id: 'b', description: 'Discount', cents: -1000 }], tax: { ratePct: 8.25 }, dueDate: '2026-11-01', sentAt: 1 }
+  assert.equal(invoiceSubtotal(inv), 29000)
+  assert.equal(invoiceTaxRate(inv), 8.25)
+  assert.equal(invoiceTax(inv), 2393, '8.25% of $290.00 = $23.925 → $23.93')
+  assert.equal(invoiceCents(inv), 31393)
+  const s = invoiceSummary('t', inv, '2026-10-20')
+  assert.equal(s.cents, 31393); assert.equal(s.tax, 2393); assert.equal(s.subtotal, 29000); assert.equal(s.taxRate, 8.25)
+  const mail = invoiceEmail({ inv, link: 'https://x/invoice/?t=t', today: '2026-10-20' })
+  assert.ok(mail.text.includes('Sales tax (8.25%): $23.93') && mail.text.includes('Total: $313.93'))
+  assert.ok(mail.html.includes('Sales tax (8.25%)'))
+  const plain = { ...inv, tax: undefined }
+  assert.equal(invoiceCents(plain), 29000); assert.equal(invoiceTax(plain), 0)
+  assert.equal(invoiceCents({ ...inv, tax: null }), 29000)
+})

@@ -46,7 +46,15 @@ export const toCents = (v) => {
   return Number.isFinite(n) ? Math.round(n * 100) : null
 }
 
-export const invoiceCents = (inv) => (inv?.items ?? []).reduce((t, i) => t + (Number.isInteger(i?.cents) ? i.cents : 0), 0)
+// The lines, before tax.
+export const invoiceSubtotal = (inv) => (inv?.items ?? []).reduce((t, i) => t + (Number.isInteger(i?.cents) ? i.cents : 0), 0)
+// Sales tax (owner 2026-10-12, docs/specs/receipts.md): inv.tax = { ratePct, permit? },
+// a snapshot of Settings ticked by staff in the editor, on year-one installs,
+// leases and add-ons; never on re-installs of owned lights, their takedown or service calls.
+export const invoiceTaxRate = (inv) => Number(inv?.tax?.ratePct) || 0
+export const invoiceTax = (inv) => Math.round((invoiceSubtotal(inv) * invoiceTaxRate(inv)) / 100)
+// What the customer pays: the lines plus the tax.
+export const invoiceCents = (inv) => invoiceSubtotal(inv) + invoiceTax(inv)
 
 // What's wrong with the line items, or null. A negative line (a discount) is
 // fine as long as the total is more than $0.
@@ -188,7 +196,7 @@ export function invoiceSummary(token, inv, today) {
   return {
     token, number: inv.number ?? '', state: invoiceState(inv, today), kind: inv.kind ?? 'other', season: inv.season ?? '',
     customer: { name: inv.customer?.name ?? '', address: inv.customer?.address ?? '' },
-    cents: invoiceCents(inv), dueDate: inv.dueDate ?? '', sentDay: dayOf(inv.sentAt),
+    cents: invoiceCents(inv), subtotal: invoiceSubtotal(inv), tax: invoiceTax(inv), taxRate: invoiceTaxRate(inv), dueDate: inv.dueDate ?? '', sentDay: dayOf(inv.sentAt),
     paid: paid && { method: paid.method, date: paid.date, cents: paid.cents, sandbox: paid.sandbox },
   }
 }
@@ -217,8 +225,9 @@ ${table}${btn}
 </div></div></div>`
 }
 
-const itemRows = (inv) => [...(inv.items ?? []).map((i) => [i.description, money(i.cents)]), ['Total', money(invoiceCents(inv)), true]]
-const itemText = (inv) => [...(inv.items ?? []).map((i) => `  ${i.description}: ${money(i.cents)}`), `  Total: ${money(invoiceCents(inv))}`].join('\n')
+const taxRow = (inv) => (invoiceTax(inv) ? [[`Sales tax (${invoiceTaxRate(inv)}%)`, money(invoiceTax(inv))]] : [])
+const itemRows = (inv) => [...(inv.items ?? []).map((i) => [i.description, money(i.cents)]), ...taxRow(inv), ['Total', money(invoiceCents(inv)), true]]
+const itemText = (inv) => [...(inv.items ?? []).map((i) => `  ${i.description}: ${money(i.cents)}`), ...taxRow(inv).map(([a, b]) => `  ${a}: ${b}`), `  Total: ${money(invoiceCents(inv))}`].join('\n')
 const dueText = (inv, today) => (inv.dueDate && inv.dueDate > today ? `due ${longDate(inv.dueDate)}` : 'due now')
 
 // type: 'invoice' (first time), 'again' (staff pressed Email again), 'reminder'.

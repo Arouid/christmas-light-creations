@@ -1,4 +1,4 @@
-import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, longDate, money, paidInfo } from '../lib/invoices'
+import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, invoiceTax, invoiceTaxRate, longDate, money, paidInfo } from '../lib/invoices'
 import { todayISO } from '../lib/customers'
 
 const STATE_CLASS = { draft: 'bg-white/10', open: 'bg-glow-400/20 text-glow-300', overdue: 'bg-berry-600/30 text-berry-500', paid: 'bg-emerald-500/20 text-emerald-300', void: 'bg-white/10 text-slate-400' }
@@ -57,6 +57,12 @@ export default function InvoiceDocument({ invoice: inv, business = {}, today = t
             </li>
           ))}
         </ul>
+        {invoiceTax(inv) > 0 && (
+          <div className={`${row} border-t border-white/10 print:border-black/20`}>
+            <span>Sales tax ({invoiceTaxRate(inv)}%){inv.tax?.permit && <span className="block text-xs text-slate-400 print:text-black">Texas sales tax permit {inv.tax.permit}</span>}</span>
+            <span className="tabular-nums">{money(invoiceTax(inv))}</span>
+          </div>
+        )}
         <div className={`${row} border-t border-white/20 text-lg font-bold print:border-black/40`}>
           <span>Total</span><span className="tabular-nums">{money(total)}</span>
         </div>

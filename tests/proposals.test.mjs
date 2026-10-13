@@ -97,3 +97,47 @@ test('payments: deposit once signed; balance and takedown only after staff ask; 
   assert.equal(isPayable(p, 'balance'), false, 'not twice')
   assert.equal(isPayable(p, 'takedown'), false)
 })
+
+// Sales tax (owner 2026-10-12, docs/specs/receipts.md).
+test('sales tax: on taxable lines after the discount, inside the deposit; takedown of owned lights untaxed; older proposals unchanged', () => {
+  const items = [newItem('Roofline C9', 100, 'ft', 5), newItem('Takedown', 1, '', 150, 'removal')]
+  assert.equal(items[0].taxable, true)
+  assert.equal(items[1].taxable, false)
+  const p = newProposal({ items, discountPct: 10, depositPct: 50, tax: { ratePct: 8.25 } })
+  const t = totals(p)
+  assert.equal(t.install, 45000)
+  assert.equal(t.installTax, 3713, '8.25% of $450.00 = $37.125 → $37.13')
+  assert.equal(t.removalTax, 0)
+  assert.equal(t.tax, 3713)
+  assert.equal(t.installTotal, 48713)
+  assert.equal(t.deposit, 24357, 'half of the taxed install')
+  assert.equal(t.dueAtInstall, 24356)
+  assert.equal(t.dueAtRemoval, 15000)
+  assert.equal(t.total, 63713)
+  assert.equal(t.nextYear, 25000, 're-install price is before tax')
+  const v = termVars(p, { name: 'CLC' })
+  assert.equal(v.tax, '$37.13'); assert.equal(v.taxRate, '8.25%'); assert.equal(v.total, '$637.13'); assert.equal(v.removal, '$150.00')
+  // A taxable removal line (a lease: takedown inside the taxed price).
+  const lease = newProposal({ items: [newItem('Lease, 2026 season', 1, '', 1000), newItem('Takedown', 1, '', 100, 'removal', '', true)], tax: { ratePct: 8 } })
+  assert.equal(totals(lease).removalTax, 800)
+  assert.equal(totals(lease).dueAtRemoval, 10800)
+  // No rate → nothing, even with taxable lines; and the fingerprint input doesn't mention tax.
+  const old = newProposal({ items, discountPct: 10, depositPct: 50 })
+  const to = totals(old)
+  assert.equal(to.tax, 0); assert.equal(to.deposit, 22500); assert.equal(to.total, 60000)
+  assert.ok(!canonical(old).includes('"tax"'))
+  assert.ok(canonical(p).includes('"tax":[8.25,[1,0],3713,0,"added"]'))
+  assert.notEqual(canonical(p), canonical({ ...p, items: [{ ...items[0], taxable: false }, items[1]] }), 'flipping a line’s tax changes the fingerprint')
+})
+
+test('sales tax included in the prices (owner: hideable on the contract): totals unchanged, the tax backed out for the books, a different fingerprint', () => {
+  const items = [newItem('Roofline C9', 100, 'ft', 5), newItem('Takedown', 1, '', 150, 'removal')]
+  const p = newProposal({ items, discountPct: 10, depositPct: 50, tax: { ratePct: 8.25, mode: 'included' } })
+  const t = totals(p)
+  assert.equal(t.taxIncluded, true)
+  assert.equal(t.installTotal, 45000); assert.equal(t.total, 60000); assert.equal(t.deposit, 22500, 'the customer pays the listed prices')
+  assert.equal(t.installTax, 3430, '$450 contains $34.30 of tax at 8.25% (450 − 450 ÷ 1.0825)')
+  assert.equal(t.tax, 3430)
+  assert.ok(canonical(p).includes('"included"'))
+  assert.notEqual(canonical(p), canonical({ ...p, tax: { ratePct: 8.25 } }))
+})

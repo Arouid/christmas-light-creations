@@ -7,6 +7,7 @@ import HomeBase from './HomeBase'
 import InstallApp from './InstallApp'
 import { InstallTextSettings } from './InstallTexts'
 import { DEFAULT_TERMS, FILL_IN } from '../proposals/terms.js'
+import { salesTaxSettings } from '../lib/salesTax'
 
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100'
 const box = 'space-y-2 rounded-2xl border border-white/10 bg-night-950 p-4'
@@ -107,6 +108,37 @@ function AssistantNotes({ settings, onSave }) {
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={save} disabled={text.trim() === cur.trim()} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950 disabled:opacity-50">Save</button>
         <span className="text-xs text-slate-500">{text.length}/{NOTES_MAX}</span>
+        {msg && <span className="text-sm text-emerald-400">{msg}</span>}
+      </div>
+    </div>
+  )
+}
+
+// Sales tax (settings/app.salesTax, src/lib/salesTax.js, docs/specs/receipts.md):
+// the rate new estimates and invoices carry, the permit number printed on
+// invoices, and the day it starts. Owner 2026-10-12: Texas + local, from Oct 15.
+function SalesTax({ settings, onSave }) {
+  const cur = salesTaxSettings(settings)
+  const [v, setV] = useState({ ratePct: String(cur.ratePct), permit: cur.permit, from: cur.from })
+  const [msg, setMsg] = useState(null)
+  const edit = (patch) => { setV({ ...v, ...patch }); setMsg(null) }
+  async function save() {
+    const next = salesTaxSettings({ salesTax: v })
+    await onSave({ salesTax: next })
+    setV({ ratePct: String(next.ratePct), permit: next.permit, from: next.from })
+    setMsg('Saved ✓ New estimates and invoices from the start date use it.')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">Sales tax</p>
+      <p className="text-sm text-slate-400">Its own line on new estimates and invoices for new lights and leases (a first-year install, an add-on, every lease payment); never on re-installs of lights the customer owns, their takedown, or service calls. Texas + local is 8.25% here; your CPA confirms the rate. 0 switches it off.</p>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <label className="text-sm text-slate-400">Rate %<input value={v.ratePct} inputMode="decimal" onChange={(e) => edit({ ratePct: e.target.value })} className={field} /></label>
+        <label className="text-sm text-slate-400">Permit number<input value={v.permit} maxLength={40} onChange={(e) => edit({ permit: e.target.value })} className={field} placeholder="printed on invoices once set" /></label>
+        <label className="text-sm text-slate-400">From<input type="date" value={v.from} onChange={(e) => edit({ from: e.target.value })} className={field} /></label>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={save} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950">Save</button>
         {msg && <span className="text-sm text-emerald-400">{msg}</span>}
       </div>
     </div>
@@ -283,6 +315,7 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
 
         <BookingStatus settings={settings} onSave={onSave} />
         <AssistantNotes settings={settings} onSave={onSave} />
+        <SalesTax settings={settings} onSave={onSave} />
 
         <InstallAvailability settings={settings} onSave={onSave} />
 

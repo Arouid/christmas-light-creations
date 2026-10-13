@@ -203,6 +203,7 @@ export const faq = [
     items: [
       ['How do I pay?', 'A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Pay online by PayPal, Venmo or card from the link we send you, or by Zelle, check or cash.'],
       ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online.'],
+      ['Is sales tax included?', 'Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls.'],
     ],
   },
   {

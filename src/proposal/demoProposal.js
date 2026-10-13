@@ -8,6 +8,7 @@ export const DEMO_PROPOSAL = {
     discountPct: 10,
     depositPct: 50,
     season: '2026',
+    tax: { ratePct: 8.25 }, // sales tax on the install lines (docs/specs/receipts.md)
   }),
   status: 'sent',
   sentAt: '2026-10-09T15:00:00Z',

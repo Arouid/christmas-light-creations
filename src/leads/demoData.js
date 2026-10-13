@@ -60,11 +60,11 @@ export const demoData = {
   customers: byId(customers),
   // A signed 2026 proposal for Example Family, so What's up can be prefilled from it (docs/specs/job-record.md).
   proposals: byId([
-    { id: 'DEMOsignedExampleFamily2026xx', ownerType: 'customer', ownerId: 'example-family', status: 'signed', version: 2, title: 'Christmas lighting proposal', season: '2026',
+    { id: 'DEMOsignedExampleFamily2026xx', ownerType: 'customer', ownerId: 'example-family', status: 'signed', version: 2, title: 'Christmas lighting proposal', season: '2026', tax: { ratePct: 8.25 },
       customer: { name: 'Example Family', email: 'example.family@example.com', phone: '555-0103', address: '789 Placeholder Dr Manvel, TX 77578' },
       items: [
-        { id: 'i1', label: 'Roofline C9 lights, installed (12" spacing)', qty: 180, unit: 'ft', rate: 2.5, due: 'install', details: 'Warm white, commercial clips, timer' },
-        { id: 'i2', label: 'Wrapped oaks', qty: 2, unit: '', rate: 300, due: 'install', details: 'warm white mini lights' },
+        { id: 'i1', label: 'Roofline C9 lights, installed (12" spacing)', qty: 180, unit: 'ft', rate: 2.5, due: 'install', details: 'Warm white, commercial clips, timer', taxable: true },
+        { id: 'i2', label: 'Wrapped oaks', qty: 2, unit: '', rate: 300, due: 'install', details: 'warm white mini lights', taxable: true },
         { id: 'i3', label: 'Takedown & labeling (15% of install, minimum $150)', qty: 1, unit: '', rate: 157.5, due: 'removal', details: '' },
       ],
       discountPct: 10, discountLabel: 'Early install discount', depositPct: 50, notes: '', timer: '', reinstallPct: 50, reinstallBasis: 'list',
@@ -200,7 +200,7 @@ export const demoData = {
       sentAt: hoursAgo(24 * 9), dueDate: new Date(Date.now() - 9 * 86400000).toLocaleDateString('en-CA'), savedAt: hoursAgo(24 * 9),
       sent: { invoice: { at: Date.now() - 9 * 86400000, to: 'test.homeowner@example.com' }, reminder_7: { at: Date.now() - 2 * 86400000, to: 'test.homeowner@example.com' } },
       viewedAt: hoursAgo(24 * 8) },
-    { id: 'demoInvoicePaid000002', status: 'paid', number: 'CLC-2026-0002', customerId: 'sample-customer', season: '2026', kind: 'addon', terms: 'receipt',
+    { id: 'demoInvoicePaid000002', status: 'paid', number: 'CLC-2026-0002', customerId: 'sample-customer', season: '2026', kind: 'addon', terms: 'receipt', tax: { ratePct: 8.25 },
       customer: { name: 'Sample Customer', email: 'sample@example.com', phone: '555-0101', address: '123 Example St Pearland, TX 77581' },
       items: [{ id: 'l1', description: 'Add-on: Arch over the walkway', cents: 30000 }],
       sentAt: hoursAgo(24 * 3), dueDate: new Date(Date.now() - 3 * 86400000).toLocaleDateString('en-CA'), savedAt: hoursAgo(24 * 3),
