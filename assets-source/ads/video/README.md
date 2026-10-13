@@ -41,11 +41,46 @@ The story ad, scene by scene:
 Every word of the story is in `video/src/data.js` → `story` (bubbles with their timing, the three
 beats, the two lines, the ask). Photos: only 34 (the reveal) and 57 (the ask).
 
-**Real or generated footage.** The reveal and the ask take a clip instead of the photo: put an
-MP4 in `assets-source/ads/clips/` and name it as `clip` on `photos.home` or `photos.pitch` in
-`data.js` (for example a phone clip of a family pulling up to a lit house, or an AI-generated
-one from Veo, Sora or Runway). Claude cannot generate video or actors itself in this setup;
-it can cut whatever clips are dropped in. Keep a clip's licence or prompt in this README.
+## Music, sound effects and footage (Uppbeat, 2026-10-13)
+
+The owner has an Uppbeat Pro subscription (Solo Professional licence: paid advertising allowed
+for a one-person business; published videos stay licensed after cancelling; downloads may not be
+used in new videos after the subscription ends, see docs/decisions.md). Downloads go in three
+folders, all gitignored (licensed files, not redistributable); `prepare-assets` copies them into
+`video/public/` and probes each clip's length into `video/src/clips.json`:
+
+| Folder | What | Named in `data.js` |
+|---|---|---|
+| `assets-source/ads/music/` | the music bed (MP3 or WAV) | `music.file` |
+| `assets-source/ads/sfx/` | sound effects | `sfx.pop`, `sfx.typing`, `sfx.lightsOn`, `sfx.car`, `sfx.reveal`, `sfx.ambience` |
+| `assets-source/ads/clips/` | footage (MP4, 1080p or 4K, landscape) | `clips.texting`, `clips.drive`, `clips.reaction`, `clips.snow`; `photos.home.clip`, `photos.pitch.clip` |
+
+Shopping list (what each slot is for, and what to search):
+
+| Slot | Plays when | Look for | Length |
+|---|---|---|---|
+| `music.file` | under the whole story ad, fades out over the last 2.5 s | warm, emotional, piano or strings, holiday without jingle bells; quiet opening, a swell about 15 s in for the reveal. Uppbeat searches: "emotional christmas piano", "heartwarming holiday", "magical winter" | 35 s or more |
+| `sfx.pop` | each text bubble lands | "message pop", "notification bubble", "sent" | under 1 s |
+| `sfx.typing` | the typing dots (optional) | "keyboard typing phone", "text typing" | about 1 s |
+| `sfx.lightsOn` | the cottage flickers on (plan beat 3, end card, the 5-second ad) | "neon flicker", "light switch buzz", "magical shimmer" | 1–2 s |
+| `sfx.car` | start of the 5:41 pm scene | "car pulls up driveway", "car arriving", "car door close" | 2–4 s |
+| `sfx.reveal` | the house opens out of the dark | "magical chime", "soft sparkle whoosh", "christmas bell swell" | 1–3 s |
+| `sfx.ambience` | low under everything, looped | "winter night wind", "snow ambience", "quiet suburban night" | any |
+| `clips.texting` | behind the first text thread, dimmed | hands holding a phone at night, screen glow, dark room or porch | 5–10 s |
+| `clips.drive` | opens the 5:41 pm scene before the house appears | headlights on a dark residential street, or through the windshield turning onto a street, dusk or night | 4–6 s |
+| `clips.reaction` | closes the 5:41 pm scene | a woman's face lighting up: hands to mouth, happy surprise, happy tears, warm light, night | 3–5 s |
+| `clips.snow` | behind the second thread, dimmed | falling snow at night, or soft bokeh Christmas lights | 5–10 s |
+| `photos.home.clip` | instead of the reveal photo | a house with Christmas lights at night, wide, slow push | 5 s or more |
+
+Any slot left empty keeps the current look (snow night, the photo). When the drive and reaction
+clips are in, add about 4.5 s to `scenes.home` in `data.js` (the scene then runs drive → reveal →
+reaction). Record every file here with its Uppbeat track or clip name and artist:
+
+| File | Slot | Uppbeat title, artist | Licence |
+|---|---|---|---|
+| (none yet) | | | Uppbeat Pro (Solo Professional), downloaded 2026-10-13 |
+
+Claude cannot generate video or actors itself; it cuts whatever is dropped in.
 
 ## Open the studio (scrub, change words, see it live)
 

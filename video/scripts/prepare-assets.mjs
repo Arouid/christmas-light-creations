@@ -3,7 +3,8 @@
 // GPS data leaves the drop folder), the cottage logo SVG and the site's two fonts.
 // Which photos: every `file` named in src/data.js. Safe to run again; skips files already done.
 import { createRequire } from 'node:module'
-import { existsSync, mkdirSync, copyFileSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, copyFileSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -86,20 +87,36 @@ for (const photo of Object.values(data.photos)) {
   }
 }
 
-// Optional real footage (a phone or drone clip of a finished house): any file in
-// assets-source/ads/clips/ is copied to public/clips/ and can be named as `clip` on a photo.
-const clipsDir = join(repoRoot, 'assets-source', 'ads', 'clips')
-if (existsSync(clipsDir)) {
-  mkdirSync(join(out, 'clips'), { recursive: true })
-  for (const f of readdirSync(clipsDir)) {
-    const src = join(clipsDir, f)
-    const dst = join(out, 'clips', f)
-    if (fresh(src, dst)) { copyFileSync(src, dst); console.log('clip', f) }
+// Licensed downloads (Uppbeat and the like): footage, sound effects and music from
+// assets-source/ads/{clips,sfx,music}/ are copied into public/{clips,sfx,music}/. Each clip's
+// length is probed and written to src/clips.json so scenes can loop it.
+const ffprobe = join(videoRoot, 'node_modules', '@remotion', 'compositor-win32-x64-msvc', 'ffprobe.exe')
+const clipsMeta = {}
+for (const kind of ['clips', 'sfx', 'music']) {
+  const srcDir = join(repoRoot, 'assets-source', 'ads', kind)
+  mkdirSync(join(out, kind), { recursive: true })
+  if (!existsSync(srcDir)) continue
+  for (const f of readdirSync(srcDir)) {
+    const src = join(srcDir, f)
+    if (statSync(src).isDirectory()) continue
+    const dst = join(out, kind, f)
+    if (fresh(src, dst)) { copyFileSync(src, dst); console.log(kind, f) }
+    if (kind === 'clips' && existsSync(ffprobe)) {
+      const r = spawnSync(ffprobe, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', dst], { encoding: 'utf8' })
+      const sec = parseFloat(r.stdout)
+      if (sec > 0) clipsMeta[f] = Math.round(sec * 100) / 100
+    }
   }
 }
+writeFileSync(join(videoRoot, 'src', 'clips.json'), JSON.stringify(clipsMeta, null, 2) + '\n')
 
-// The music bed is not in git (public repo; the Pixabay licence forbids redistributing the file).
-if (data.music?.file && !existsSync(join(out, 'music', data.music.file))) {
-  console.error(`music: ${data.music.file} is missing from video/public/music/. Download it again from the URL in assets-source/ads/video/README.md (Music), or set music.file to '' in src/data.js for a silent render.`)
+// Every file named in data.js must exist after the copy.
+const missing = []
+if (data.music?.file && !existsSync(join(out, 'music', data.music.file))) missing.push(`music/${data.music.file}`)
+for (const [k, f] of Object.entries(data.sfx || {})) if (typeof f === 'string' && f && !existsSync(join(out, 'sfx', f))) missing.push(`sfx/${f} (${k})`)
+for (const [k, f] of Object.entries(data.clips || {})) if (f && !existsSync(join(out, 'clips', f))) missing.push(`clips/${f} (${k})`)
+for (const [k, p] of Object.entries(data.photos || {})) if (p.clip && !existsSync(join(out, 'clips', p.clip))) missing.push(`clips/${p.clip} (photos.${k}.clip)`)
+if (missing.length) {
+  console.error('Missing from assets-source/ads/: ' + missing.join(', ') + '. Put the files there (see assets-source/ads/video/README.md) or clear the names in src/data.js.')
   process.exitCode = 1
 }

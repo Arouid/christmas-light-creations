@@ -35,7 +35,7 @@ const data = {
   scenes: {
     thread1: 8.5,
     plan: 6.5,
-    home: 6.5,
+    home: 6.5, // add about 4.5 s when the drive and reaction clips are in
     thread2: 4.5,
     pitch: 5,
     end: 4,
@@ -76,9 +76,24 @@ const data = {
   },
   // Turn off when the October offer ends: the offer line disappears from the closing scene.
   offer: { enabled: true },
-  // Music bed (file in video/public/music/; source and licence in assets-source/ads/video/README.md).
-  // Off (owner, 2026-10-11: "ditch the music"). To turn it on: file: 'carol-of-the-bells-juliush.mp3'.
+  // Music bed: a file in assets-source/ads/music/ (copied to video/public/music/ by prepare-assets).
+  // Source and licence go in assets-source/ads/video/README.md. Empty = silent.
+  // startFrom: seconds into the track; the bed fades out over the last 2.5 s of the video.
   music: { file: '', volume: 0.6, startFrom: 0 },
+  // Sound effects: files in assets-source/ads/sfx/. Empty = none. Each plays at its moment:
+  // pop = a text bubble lands (both sides); typing = the dots start; lightsOn = the cottage flickers
+  // on (plan beat 3, and the 5-second ad); car = start of the 5:41 pm scene; reveal = the house
+  // opens out of the dark; ambience = a soft loop under the whole video (wind, snow, night).
+  sfx: { pop: '', typing: '', lightsOn: '', car: '', reveal: '', ambience: '', volume: 0.8, ambienceVolume: 0.25 },
+  // Footage: files in assets-source/ads/clips/ (MP4, 1080p or 4K). Empty = the scene uses its
+  // graphic or photo instead. texting = hands on a phone at night, behind the first thread;
+  // drive = headlights on a dark street / through the windshield, opens the 5:41 pm scene;
+  // reaction = her face lighting up, closes the 5:41 pm scene; snow = night snow or bokeh lights,
+  // behind the second thread.
+  clips: { texting: '', drive: '', reaction: '', snow: '' },
+  // The 5:41 pm scene: how long the drive clip plays before the house appears, and how long the
+  // reaction clip holds at the end (only when those clips are set).
+  home: { driveSeconds: 2.5, reactionSeconds: 2.2 },
   // Film look: grain strength (0 = off) and vignette strength.
   look: { grain: 0.07, vignette: 0.55 },
 }

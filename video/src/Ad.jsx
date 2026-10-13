@@ -6,12 +6,14 @@ import { Pitch } from './scenes/Pitch.jsx'
 import { EndCard } from './scenes/EndCard.jsx'
 import { FilmLook, LightSweep } from './lib/Stage.jsx'
 import { loadFonts } from './lib/fonts.js'
+import { Sound } from './Sound.jsx'
 import { sceneList, SWEEP } from './timeline.js'
 
 const SCENES = { thread1: Thread1, plan: Plan, home: HomeReveal, thread2: Thread2, pitch: Pitch, end: EndCard }
 
 // The story ad: one Sequence per scene (cross-dissolved, with a light sweep at each change),
-// the film look over everything, and the music bed (when on) fading out at the end.
+// the film look over everything, the sound effects, and the music bed (when on) fading out at
+// the end.
 export function Ad(props) {
   loadFonts()
   const { durationInFrames, fps } = useVideoConfig()
@@ -39,7 +41,8 @@ export function Ad(props) {
         </Sequence>
       ))}
       <FilmLook grain={props.look?.grain ?? 0.07} vignette={props.look?.vignette ?? 0.55} />
-      {music.file ? <Audio src={staticFile(`music/${music.file}`)} startFrom={Math.round((music.startFrom || 0) * fps)} volume={vol} /> : null}
+      <Sound props={props} list={list} />
+      {music.file ? <Audio src={staticFile(`music/${music.file}`)} trimBefore={Math.round((music.startFrom || 0) * fps)} volume={vol} /> : null}
     </AbsoluteFill>
   )
 }

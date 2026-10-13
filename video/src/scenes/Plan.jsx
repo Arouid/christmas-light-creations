@@ -5,6 +5,7 @@ import { Cottage } from '../lib/Cottage.jsx'
 import { flickerOn } from '../lib/flicker.js'
 import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
+import { planTiming } from '../timeline.js'
 
 // The plan, in three beats: a time and a line each, one after another. The cottage stands dark
 // beside them and switches on with the last beat ("timer set for dusk").
@@ -13,9 +14,7 @@ export function Plan({ data, dur }) {
   const { w, h, fps, tall, square } = useFmt()
   const { colors, story, type } = data
   const beats = story.plan
-  const step = Math.floor((dur - 30) / beats.length)
-  const lastAt = 12 + (beats.length - 1) * step
-  const ON = lastAt + 14
+  const { step, beats: at, on: ON } = planTiming(dur, beats.length)
   const on = flickerOn(frame - ON)
   const glow = 0.85 + Math.sin(frame / 8) * 0.15
   const flash = interpolate(frame, [ON, ON + 6, ON + 26], [0, 0.25, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
@@ -33,13 +32,12 @@ export function Plan({ data, dur }) {
         <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at ${((logo.x + logoW / 2) / w) * 100}% ${((logo.y + logoH / 2) / h) * 100}%, rgba(255,224,138,${flash}) 0%, transparent 50%)` }} />
         <div style={{ position: 'absolute', left: text.x, top: text.y, width: text.w, display: 'flex', flexDirection: 'column', gap: tall ? 34 : square ? 24 : 30 }}>
           {beats.map((b, i) => {
-            const at = 12 + i * step
-            const s = pop(frame, fps, at)
+            const s = pop(frame, fps, at[i])
             const isLast = i === beats.length - 1
-            const nextAt = at + step
+            const nextAt = at[i] + step
             const dim = isLast ? 1 : interpolate(frame, [nextAt, nextAt + 10], [1, 0.45], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
             return (
-              <div key={i} style={{ opacity: fadeIn(frame, at, 6) * dim, transform: `translateX(${(1 - s) * -40}px)` }}>
+              <div key={i} style={{ opacity: fadeIn(frame, at[i], 6) * dim, transform: `translateX(${(1 - s) * -40}px)` }}>
                 <div style={{ fontFamily: BODY, fontWeight: 600, fontSize: timeSize, color: colors.gold, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>{b.time}</div>
                 <div style={{ ...display(type, lineSize), color: colors.white }}>{b.line}</div>
               </div>
