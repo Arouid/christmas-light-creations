@@ -454,3 +454,4 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-12 Hero highlights: the designer and Pay in 3
 
 - Owner: "the designer and that should be highlighted". Dev home at 375 px: two cards under the hero buttons, 343 × 82 px each: "🎨 Design your lights free — Draw them on a photo of your own house." → /design/, and "💳 Pay in 3 NEW — Three equal payments. No commitment." → #options; tapping the second scrolls the "Your options" heading into view (168 px from the top, under the sticky header); no horizontal overflow. `npm run check`: 365 tests, build. The old single-line designer link is folded into the first card. Not checked: desktop (two cards side by side), the live page.
+- 2026-10-12, later: owner's pastes: `deploy --only firestore:rules` (compiled, released: `publicSign` now accepts `payDay`) and `deploy --only functions` (27 functions, `payIn3Reminders` created). Site pushed right after.
