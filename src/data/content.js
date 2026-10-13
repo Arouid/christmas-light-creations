@@ -132,6 +132,14 @@ export const lightOptions = [
   { title: 'Pay in 3', tag: 'New this season', body: 'Split a new install, bought or leased, into three equal payments that cover everything: one when you sign, then one a month on the 1st or the 15th, your pick. No long-term commitment.' },
 ]
 
+// Two things to shout about under the hero buttons (owner 2026-10-12: "the
+// designer and Pay in 3 should be highlighted"). href 'design/' is the light
+// designer (prefixed with the site base); '#…' scrolls on the page.
+export const heroHighlights = [
+  { icon: '🎨', title: 'Design your lights free', body: 'Draw them on a photo of your own house.', href: 'design/' },
+  { icon: '💳', title: 'Pay in 3', tag: 'New', body: 'Three equal payments. No commitment.', href: '#options' },
+]
+
 export const testimonials = [
   {
     quote: 'We have been using CLC since 2012 and have had outstanding service. Change and his crew are professional, prompt, and easy to work with.',

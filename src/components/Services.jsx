@@ -52,7 +52,7 @@ export default function Services() {
       </dl>
 
       {/* Buy, lease or pay in 3 (owner's copy, docs/specs/leasing.md). */}
-      <h3 className="mt-8 font-display text-2xl font-extrabold">Your options</h3>
+      <h3 id="options" className="mt-8 scroll-mt-24 font-display text-2xl font-extrabold">Your options</h3>
       <ul className="mt-3 grid gap-4 sm:grid-cols-3">
         {lightOptions.map((o) => (
           <li key={o.title} className="rounded-2xl border border-white/10 bg-night-950/40 p-5">

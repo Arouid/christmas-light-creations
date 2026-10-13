@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { business, designPage, gallery } from '../data/content'
+import { business, gallery, heroHighlights } from '../data/content'
 import { useToday } from '../lib/prerendered'
 import { bookLine, fetchBooking, seasonBadge } from '../lib/urgency'
 import Availability from './Availability'
@@ -41,9 +41,19 @@ export default function Hero() {
             <Icon name="phone" className="size-5" /> {business.phone}
           </a>
         </div>
-        <a href={`${import.meta.env.BASE_URL}design/`} className="mt-4 inline-flex min-h-11 w-fit items-center gap-2 font-semibold text-glow-300 underline-offset-4 hover:underline">
-          ✨ {designPage.heroLink} →
-        </a>
+        {/* The designer and Pay in 3, highlighted (content.js heroHighlights). */}
+        <div className="mt-4 grid max-w-xl gap-2 sm:grid-cols-2">
+          {heroHighlights.map((h) => (
+            <a key={h.title} href={h.href.startsWith('#') ? h.href : `${import.meta.env.BASE_URL}${h.href}`}
+              className="flex min-h-14 items-center gap-3 rounded-2xl border border-glow-400/40 bg-night-900/70 px-4 py-2.5 backdrop-blur hover:border-glow-400 hover:bg-night-900">
+              <span aria-hidden="true" className="text-2xl">{h.icon}</span>
+              <span className="min-w-0 leading-tight">
+                <span className="flex items-center gap-2 font-semibold text-glow-300">{h.title}{h.tag && <span className="rounded-full bg-glow-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-night-950">{h.tag}</span>}</span>
+                <span className="block text-sm text-slate-300">{h.body}</span>
+              </span>
+            </a>
+          ))}
+        </div>
         {/* Two lines tall from the start, so the staff line arriving later doesn't push the page down */}
         <p className="mt-4 min-h-10 text-sm text-slate-300">
           {status && <span className="mr-2 font-semibold text-glow-300">🔥 {status}.</span>}
