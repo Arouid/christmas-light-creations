@@ -11,7 +11,7 @@ We're asking you to review **two agreements**:
 
 ## A. Install agreement (in use now: purchase model)
 
-The full current text is in the staff app (default in `src/proposals/terms.js`). In short:
+The full current text is in the staff app (default in `src/proposals/terms.js`; rewritten 2026-10-12 as a fuller Texas agreement at the owner's request, so please review it as the whole contract). In short:
 
 | # | Clause | Current term |
 |---|---|---|
@@ -22,8 +22,13 @@ The full current text is in the staff app (default in `src/proposals/terms.js`).
 | 5 | Access | Customer provides access (incl. gate codes) and working outlets; no tile roofs |
 | 6 | Ownership | Paid in full → customer owns the lights; we label and box them; re-install in future seasons is 50% of the original price |
 | 7 | Cancellation | Deposit refunded **in full through October 15**, **half from October 16 to November 1**, **not refundable from November 2** (owner, 2026-10-12). If we can't install by **Dec 1**, the customer may choose a full deposit refund |
-| 8 | Liability | We repair damage we cause. Not liable for pre-existing conditions, weather/outages/surges, animals, or undisclosed items. Except for our negligence, liability is capped at the amount paid |
-| 9 | E-signature | Electronic signature is equivalent to handwritten |
+| 8 | Liability | We repair damage we cause (told within 7 days). In capitals (conspicuous): not liable for pre-existing conditions, weather/outages/surges, animals, or undisclosed items; except for our negligence or willful misconduct, liability capped at the amount paid; no consequential damages; nothing limits what Texas law says can't be limited |
+| 9 | Late payment | $25 late fee after 10 days; we may pause service, decline re-install or remove unpaid lights; collection costs and reasonable attorney's fees as Texas law allows |
+| 10 | Photos | Street photos for our portfolio, no name or address, opt-out any time |
+| 11 | General | Texas law, Brazoria County venue, talk then mediation before suit, prevailing-party attorney's fees, severability, written changes only, no assignment by the customer, force majeure (not payments) |
+| 12 | E-signature | Texas UETA / E-SIGN; a copy kept in their online account |
+
+Also in the new draft: clause 1 names the parties and makes the proposal + agreement + signature the whole contract; clause 3 says dates are estimates and a weather move is not a breach; clause 4 is framed as our express warranty with exclusions; clause 5 covers HOA approval, electricity, and no tile roofs / no customer-supplied lights; clause 6 keeps title with us until paid in full (we may remove unpaid lights); clause 7 adds "if Texas law gives you a right to cancel within three business days, nothing here shortens it" and makes the refund the only remedy for a late or cancelled install. A lease swaps clause 6 (lights stay ours, no moving/altering/selling, removal if 30 days late, customer bears loss beyond weather wear); Pay in 3 swaps clauses 2 and 7.
 
 ---
 
@@ -50,7 +55,7 @@ For comparison, our standard **lease** (paid up front) is year one at full price
 
 1. **Deposit refund schedule (A-7).** Full refund through October 15, half through November 1, none from November 2 (installs start October 15). Is that enforceable as liquidated damages, or is the no-refund window a penalty risk? Anything to add for a customer who cancels before we have done any work?
 2. **3-day cancellation.** We measure at the customer's home, then they sign online. Does the Texas home solicitation law (Bus. & Com. Code ch. 601) or the FTC Cooling-Off Rule apply, and do we need a cancellation notice?
-3. **Liability clause (A-8).** Does it need to be conspicuous (bold, or a separate initial) to hold up? How does it interact with the DTPA and the implied warranty of good and workmanlike performance?
+3. **Liability clause (A-8).** It is now in capitals; is that conspicuous enough, or do we need a separate initial? How does it interact with the DTPA and the implied warranty of good and workmanlike performance (we kept an express service warranty and did not try to disclaim the implied one)? Is "the refund is your only remedy for a late or cancelled install" (A-7) enforceable?
 4. **Pay-in-3 as credit.** The lights go up after the second of three payments, so part of the price is paid afterwards. Three installments stays under TILA's "more than four installments" line; does Texas Finance Code ch. 345 (retail installment contracts) still reach it, and what disclosure, if any, do we need?
 5. **Online signup and renewal.** The plan is season by season (no automatic renewal). Anything we still owe the customer for an online, e-signed lease (ROSCA or Texas law on recurring plans), given it doesn't renew by itself?
 6. **Autopay authorization.** Not needed now (no recurring charges); for the record, what would we need if a monthly autopay version comes later?

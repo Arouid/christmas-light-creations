@@ -37,6 +37,7 @@ async function loadDemo() {
 export default function ProposalPage() {
   // No token in the link: nothing to load.
   const [state, setState] = useState(() => (token || demo ? { loading: true } : { missing: true }))
+  const [agreementRead, setAgreementRead] = useState(false) // they opened the folded agreement (needed before signing)
   const store = demo ? null : import('../lib/proposalStore.js')
 
   async function load(markView = true) {
@@ -114,9 +115,9 @@ export default function ProposalPage() {
       {paid.map((part) => (
         <p key={part} className="mx-auto mb-3 max-w-3xl rounded-2xl bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-300 print:hidden">{partLabel(p, part)} paid ✓ {fmt(paymentOf(p, part).amount)}. Thank you!</p>
       ))}
-      <ProposalDocument proposal={p} images={images} business={BIZ} />
+      <ProposalDocument proposal={p} images={images} business={BIZ} agreementOpen={false} onAgreementOpen={() => setAgreementRead(true)} />
       <div className="mx-auto mt-8 max-w-3xl space-y-4">
-        {open && state.intact !== false && <SignPanel expectedName={p.customer?.name ?? ''} payIn3={isPayIn3(p)} onSign={sign} />}
+        {open && state.intact !== false && <SignPanel expectedName={p.customer?.name ?? ''} payIn3={isPayIn3(p)} agreementRead={agreementRead} onSign={sign} />}
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <span className="text-slate-400">Questions? We’re happy to adjust anything.</span>
           {call}

@@ -173,6 +173,8 @@ export function termVars(p, business = {}) {
     payment1: fmt(t.deposit), payment2: fmt(t.dueAtInstall), payment3: fmt(t.dueAtRemoval),
     tax: fmt(t.tax),
     taxRate: t.taxRate ? `${t.taxRate}%` : '',
+    // After "The total is {total}": how sales tax sits in it, or nothing.
+    taxNote: t.tax > 0 ? (t.taxIncluded ? ', which includes Texas sales tax' : `, including ${fmt(t.tax)} of Texas sales tax (${t.taxRate}%)`) : '',
     deposit: fmt(t.deposit),
     depositPct: `${p.depositPct ?? 0}%`,
     dueAtInstall: fmt(t.dueAtInstall),

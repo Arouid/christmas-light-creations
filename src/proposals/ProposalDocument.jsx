@@ -28,7 +28,15 @@ function Paid({ pay }) {
   return <span className="font-semibold text-emerald-400 print:text-black"> · paid ✓{pay.env === 'sandbox' ? ' (test)' : ''}</span>
 }
 
-export default function ProposalDocument({ proposal: p, images = {}, business = {} }) {
+// agreementOpen: show the agreement unfolded (staff preview); otherwise it's
+// folded behind "Read the agreement" so the page isn't a mile long on a phone
+// (owner 2026-10-12), and onAgreementOpen fires the first time it's opened
+// (the signing box waits for that). Print always shows it in full.
+export default function ProposalDocument({ proposal: p, images = {}, business = {}, agreementOpen = true, onAgreementOpen }) {
+  const [showTerms, setShowTerms] = useState(agreementOpen)
+  const termsText = p.termsText ?? p.terms ?? ''
+  const clauses = (termsText.match(/(^|\n\n)\d+\. /g) || []).length
+  const openTerms = () => { setShowTerms((o) => !o); if (!showTerms) onAgreementOpen?.() }
   const t = totals(p)
   const items = p.items ?? []
   const row = 'flex justify-between gap-4 py-1.5'
@@ -120,8 +128,14 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
       {p.notes && <section><h2 className="mb-1 font-semibold">Notes</h2><p className="whitespace-pre-wrap text-slate-300 print:text-black">{p.notes}</p></section>}
 
       <section>
-        <h2 className="mb-2 font-display text-xl font-extrabold">Agreement</h2>
-        <div className="whitespace-pre-wrap rounded-2xl border border-white/10 p-4 text-sm leading-relaxed text-slate-300 print:border-black/20 print:text-black">{p.termsText ?? p.terms}</div>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-xl font-extrabold">Agreement</h2>
+          <button type="button" onClick={openTerms} aria-expanded={showTerms} className="min-h-11 rounded-full border border-glow-400/50 px-4 text-sm font-semibold text-glow-300 hover:bg-white/5 print:hidden">
+            {showTerms ? 'Hide the agreement' : `Read the agreement${clauses ? ` (${clauses} clauses)` : ''}`}
+          </button>
+        </div>
+        {!showTerms && <p className="text-sm text-slate-400 print:hidden">What's included, price and payment, scheduling, service, access, takedown and ownership, cancellation and refunds, liability, and how to sign. Please read it before you sign.</p>}
+        <div className={`${showTerms ? '' : 'hidden'} whitespace-pre-wrap rounded-2xl border border-white/10 p-4 text-sm leading-relaxed text-slate-300 print:block print:border-black/20 print:text-black`}>{termsText}</div>
       </section>
 
       {(p.signature || p.countersign) && (

@@ -5,14 +5,15 @@ import { PAY_DAYS, PAY_DAY_LABEL } from '../../functions/payIn3.js'
 // Typed name + drawn signature + consent to sign electronically.
 // onSign({ name, image, consent: true, payDay? }) — the host saves it.
 // payIn3: also make them pick the day of the month for payments 2 and 3 (owner 2026-10-12: the 1st or the 15th).
-export default function SignPanel({ expectedName = '', payIn3 = false, onSign }) {
+// agreementRead: false until they've opened the folded agreement above; the consent box waits for it.
+export default function SignPanel({ expectedName = '', payIn3 = false, agreementRead = true, onSign }) {
   const [name, setName] = useState(expectedName)
   const [image, setImage] = useState(null)
   const [consent, setConsent] = useState(false)
   const [payDay, setPayDay] = useState(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
-  const ready = name.trim().length >= 2 && image && consent && (!payIn3 || payDay)
+  const ready = name.trim().length >= 2 && image && consent && agreementRead && (!payIn3 || payDay)
 
   async function sign() {
     setBusy(true)
@@ -49,10 +50,11 @@ export default function SignPanel({ expectedName = '', payIn3 = false, onSign })
         <p className="mb-1 text-sm text-slate-300">Your signature</p>
         <SignaturePad onChange={setImage} />
       </div>
-      <label className="flex items-start gap-3 text-sm text-slate-300">
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 size-5 shrink-0" />
+      <label className={`flex items-start gap-3 text-sm ${agreementRead ? 'text-slate-300' : 'text-slate-500'}`}>
+        <input type="checkbox" checked={consent} disabled={!agreementRead} onChange={(e) => setConsent(e.target.checked)} className="mt-1 size-5 shrink-0" />
         <span>I have read this proposal and agreement, I agree to its terms, and I agree to sign electronically. My electronic signature is the legal equivalent of my handwritten signature.</span>
       </label>
+      {!agreementRead && <p className="text-sm text-glow-300">Tap <strong>Read the agreement</strong> above first; the box unlocks once you've opened it.</p>}
       {err && <p className="text-sm text-berry-500" role="alert">{err}</p>}
       <button type="button" onClick={sign} disabled={!ready || busy}
         className="w-full rounded-full bg-glow-400 py-4 font-semibold text-night-950 disabled:opacity-40">

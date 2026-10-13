@@ -25,8 +25,15 @@ test('terms placeholders fill from the proposal', () => {
   const p = base()
   const filled = fillTerms(DEFAULT_TERMS, termVars(p, { name: 'Christmas Light Creations', phone: '281-819-0163' }))
   assert.match(filled, /deposit of \$243\.00 \(50% of the install\)/)
-  assert.match(filled, /at 123 Example St, Pearland, TX for the 2026 season/)
-  assert.doesNotMatch(filled, /\{(total|deposit|address)\}/)
+  assert.match(filled, /property at 123 Example St, Pearland, TX\./)
+  assert.match(filled, /for the 2026 season/)
+  assert.doesNotMatch(filled, /\{\w+\}/, 'every placeholder filled')
+  assert.ok(filled.includes(`The total is ${fmt(totals(p).total)}. A deposit`), 'no tax note without a rate')
+  const taxed = fillTerms(DEFAULT_TERMS, termVars({ ...p, tax: { ratePct: 8.25 } }, { name: 'CLC' }))
+  const tp = { ...p, tax: { ratePct: 8.25 } }
+  assert.ok(taxed.includes(`The total is ${fmt(totals(tp).total)}, including ${fmt(totals(tp).tax)} of Texas sales tax (8.25%).`), taxed.slice(0, 400))
+  const incl = fillTerms(DEFAULT_TERMS, termVars({ ...p, tax: { ratePct: 8.25, mode: 'included' } }, { name: 'CLC' }))
+  assert.ok(incl.includes(`The total is ${fmt(totals(p).total)}, which includes Texas sales tax.`), incl.slice(0, 400))
 })
 
 test('can’t send with missing pieces or unfinished terms', () => {
@@ -172,11 +179,11 @@ test('terms by kind and plan: Pay in 3 swaps the payment and cancellation clause
   assert.equal(defaultTerms(), DEFAULT_TERMS)
   const p3 = defaultTerms({ plan: 'payin3' })
   assert.ok(p3.includes(PAYIN3_PAYMENT) && p3.includes(PAYIN3_CANCELLATION) && !p3.includes('A deposit of {deposit}'))
-  assert.ok(p3.includes('3. Scheduling.') && p3.includes('9. Electronic signature.'))
+  assert.ok(p3.includes('3. Scheduling and weather.') && p3.includes('12. Electronic signature.') && p3.includes('8. Damage, insurance and limits on liability.'))
   const lease = defaultTerms({ kind: 'lease', plan: 'payin3' })
   assert.ok(lease.includes(LEASE_OWNERSHIP) && !lease.includes('the lights and materials are yours'))
   // The owner's own terms keep their other clauses; terms without numbered clauses are left alone.
-  const custom = DEFAULT_TERMS.replace('3. Scheduling. Installs begin October 15.', '3. Scheduling. Installs begin October 20.')
+  const custom = DEFAULT_TERMS.replace('Installs begin October 15', 'Installs begin October 20')
   assert.ok(defaultTerms({ plan: 'payin3' }, custom).includes('October 20') && defaultTerms({ plan: 'payin3' }, custom).includes(PAYIN3_PAYMENT))
   assert.equal(defaultTerms({ plan: 'payin3' }, 'Just a paragraph.'), 'Just a paragraph.')
 })
