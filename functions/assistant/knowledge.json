@@ -148,6 +148,11 @@
     },
     {
       "group": "Paying",
+      "q": "Do you price-match?",
+      "a": "We beat it. Send us a written quote from another professional Christmas-light company for the same lights and service, and we’ll beat it by 10%. That’s for real holiday-lighting companies with insurance, not a handyman or a landscaper."
+    },
+    {
+      "group": "Paying",
       "q": "Is sales tax included?",
       "a": "Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls."
     },

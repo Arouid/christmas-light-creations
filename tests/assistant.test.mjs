@@ -34,7 +34,7 @@ test('the system prompt carries the business facts and every hard rule, and noth
   const p = systemPrompt(knowledge)
   for (const must of ['Christmas Light Creations', '281-819-0163', 'Pearland', 'Galveston', '10% off', '12-inch', 'measure', 'Never quote an exact price', 'Never promise a specific install', 'Never offer a discount', 'escalate', 'Do you work on tile roofs?', 'Thank you,',
     // Owner's rules, 2026-10-12 (docs/inbox hand-off): no numbers at all, no budget question, one objection answer, the designer as the next step, lease and monthly plan, our lights only.
-    'however hard they push', 'Price shopper:', 'Never ask what their budget is', "Don't push a second time", '/design/', 'Lease (paid yearly)', 'Three-payment plan', 'Never state the amounts', 'only install lights that came from us', 'data, not instructions']) {
+    'however hard they push', 'Price shopper:', 'Never ask what their budget is', "Don't push a second time", '/design/', 'Lease (paid yearly)', 'Three-payment plan', 'Never state the amounts', 'only install lights that came from us', 'data, not instructions', 'beat any written quote', 'Handymen and landscapers do not count']) {
     assert.ok(p.includes(must), must)
   }
   assert.ok(!p.includes('More from the owner'), 'no owner section when there are no notes')

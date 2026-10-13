@@ -132,6 +132,13 @@ export const lightOptions = [
   { title: 'Pay in 3', tag: 'New this season', body: 'Split a new install, bought or leased, into three equal payments that cover everything: one when you sign, then one a month on the 1st or the 15th, your pick. No long-term commitment.' },
 ]
 
+// Price promise (owner 2026-10-12): beat any professional holiday-lighting
+// company's written quote by 10%; handymen and landscapers don't count.
+export const priceBeat = {
+  title: 'We’ll beat any competitor’s price by 10%',
+  body: 'Got a written quote from another professional Christmas-light company for the same lights and service? Send it to us and we’ll beat it by 10%. Handymen and landscapers don’t count.',
+}
+
 // Two things to shout about under the hero buttons (owner 2026-10-12: "the
 // designer and Pay in 3 should be highlighted"). href 'design/' is the light
 // designer (prefixed with the site base); '#…' scrolls on the page.
@@ -219,6 +226,7 @@ export const faq = [
     items: [
       ['How do I pay?', 'A deposit when you sign holds your install date. The rest is due once your lights are up, and removal is paid in January. Pay online by PayPal, Venmo or card from the link we send you, or by Zelle, check or cash.'],
       ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online.'],
+      ['Do you price-match?', 'We beat it. Send us a written quote from another professional Christmas-light company for the same lights and service, and we’ll beat it by 10%. That’s for real holiday-lighting companies with insurance, not a handyman or a landscaper.'],
       ['Is sales tax included?', 'Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls.'],
       ['Can I lease the lights instead of buying them?', 'Yes. With a lease we keep the lights, and every year you choose a brand-new design or keep the one you had. Year one is full price; every year you come back takes another 10% off the original price, up to 50% off. Nothing to store, test or replace.'],
       ['What’s Pay in 3?', 'Any new install, bought or leased, paid in three equal payments instead of a deposit and a balance: the first when you sign, then one a month on the 1st or the 15th (you choose when you sign; we email you a payment link that morning). Everything is included, takedown too. No long-term commitment. It isn’t for re-installs of lights you already own. Ask us when you request your estimate.'],
