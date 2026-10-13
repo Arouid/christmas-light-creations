@@ -187,6 +187,7 @@ test('terms by kind and plan: Pay in 3 swaps the payment and cancellation clause
   assert.ok(lease.includes(LEASE_OWNERSHIP) && !lease.includes('the lights and materials are yours'))
   const { ADDON_OWNERSHIP } = await import('../src/proposals/terms.js')
   const addon = defaultTerms({ kind: 'addon' })
+  assert.ok(ADDON_OWNERSHIP.includes('owed whether we take the lights down or you do'))
   assert.ok(addon.includes(ADDON_OWNERSHIP) && addon.includes('2. Price and payment. The total') && !addon.includes('the lights and materials are yours'))
   assert.ok(DEFAULT_TERMS.includes('home or business at {address}') && DEFAULT_TERMS.includes('christmas-light-creations.com/privacy'))
   // The owner's own terms keep their other clauses; terms without numbered clauses are left alone.
@@ -214,6 +215,7 @@ test('gutters and clips (owner 2026-10-12): explained in the access clause and e
     assert.ok(t.includes('some wear is unavoidable') && t.includes('FOR NORMAL WEAR TO PLANTS, BEDS, MULCH AND LAWNS'))
     assert.ok(/part of a normal install, service call and takedown|what a normal install, service call and takedown takes/.test(t))
     assert.ok(t.includes('express permission to enter and work anywhere on the outside of the property') && t.includes('We never enter the home, and we enter a garage only with your express consent or while you are present'))
+    assert.ok(t.includes('its price is owed whether we take the lights down or you do'))
     assert.ok(t.includes('is a courtesy: we may decline it') && /not part of next season/.test(t))
     assert.ok(t.includes('wasp, hornet or bee nests') && t.includes('we may stop and reschedule') && t.includes('pre-approve a $25 treatment charge for each nest we treat'))
     assert.ok(t.includes('You are required to tell us, before we start') && t.includes('landscape and pathway lights and their wires') && t.includes('NOT TOLD ABOUT AND COULD NOT REASONABLY SEE'))

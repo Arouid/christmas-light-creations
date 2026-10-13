@@ -480,3 +480,4 @@ What was actually checked working, and how. Newest first.
 - ＋ Nest treatment ($25) button in the estimate editor; untaxed service line; clause 5 sentence; tested; check green (owner, 2026-10-12).
 - Nest charge pre-approved by signing / paying (owner, 2026-10-12); tested; check green.
 - Courtesies clause (owner, 2026-10-12): clause 1 and the seasonal terms; tested; check green.
+- DIY takedown (owner, 2026-10-12): clause 6 purchase + add-on and the seasonal terms; tested; check green.
