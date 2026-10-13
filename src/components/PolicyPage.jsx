@@ -1,23 +1,10 @@
 import { business } from '../data/content'
 import Icon from './Icon'
+import Rich from './Rich'
 
 // The shell of /privacy/ and /terms/: our name and a call button up top, a
 // dated title, an intro and bulleted sections. Words come from content.js;
-// an item may use **bold** and [links](url).
-const LINK = /\[([^\]]+)\]\(([^)]+)\)/g
-function Links({ text }) {
-  const out = []
-  let last = 0
-  for (const m of text.matchAll(LINK)) {
-    out.push(text.slice(last, m.index), <a key={m.index} href={m[2]} className="underline underline-offset-2 hover:text-glow-300">{m[1]}</a>)
-    last = m.index + m[0].length
-  }
-  out.push(text.slice(last))
-  return out
-}
-function Rich({ text }) {
-  return String(text).split('**').map((part, i) => (i % 2 ? <strong key={i} className="text-slate-100"><Links text={part} /></strong> : <Links key={i} text={part} />))
-}
+// an item may use **bold** and [links](url) (Rich.jsx).
 
 export default function PolicyPage({ title, doc }) {
   return (

@@ -47,9 +47,11 @@ export const nav = [
   { label: 'FAQ', href: '#faq' },
 ]
 
-// Footer: customers' own account (agreements, payments), the privacy policy
-// and the terms of use.
+// Footer: the cost guide, customers' own account (agreements, payments), the
+// privacy policy and the terms of use. Also the area pages' footer
+// (scripts/build-areas.mjs) and the cost guide's own.
 export const footerLinks = [
+  { label: 'What it costs', href: `${base}cost/` },
   { label: 'Customer login', href: `${base}account/` },
   { label: 'Privacy', href: `${base}privacy/` },
   { label: 'Terms of use', href: `${base}terms/` },
@@ -234,7 +236,7 @@ export const faq = [
     items: [
       ['What do you do?', 'We design, install, maintain and take down Christmas lights for homes and businesses across Pearland, Manvel, Friendswood, League City, the Bay Area and Galveston County. You never touch a ladder.'],
       ['How do I get a price?', 'Request a free estimate. We measure your home in about 30 minutes without climbing on the roof, and you don’t need to be home unless we need to get through a gate. In a hurry? Text us a few photos for a rough price. You get a “Got your request” email right away, then your exact price by text or email, and you sign online. Want to see it first? Draw your lights on a photo of your home with our free designer.'],
-      ['How do you price it?', 'Every home is different. We look at how much you want lit, the size and shape of your home, and how tricky it is to reach, then give you one clear price. What’s in your estimate is what you pay.'],
+      ['How do you price it?', `Every home is different. We look at how much you want lit, the size and shape of your home, and how tricky it is to reach, then give you one clear price. What’s in your estimate is what you pay. Curious what moves the number? Read [what Christmas light installation costs in Pearland](${base}cost/).`],
       ['Do you work on tile roofs?', 'No. Clay and other tile roofs are too fragile to work on safely.'],
       ['Do you do businesses?', 'Yes: storefronts, restaurants, neighborhood entrances and more.'],
     ],
@@ -404,6 +406,105 @@ export const termsOfUse = {
       items: ['Email info@christmas-light-creations.com or call 281-819-0163. Texas law applies to these terms. If they change, the date at the top changes too.'],
     },
   ],
+}
+
+// Cost guide (/cost/, docs/specs/cost-guide.md): the page that answers "how
+// much does Christmas light installation cost", the highest-intent local
+// search (no first-page competitor has one, docs/serp-log.md). Owner's rule
+// (2026-10-09, "I don't want to ball and chain myself"): no dollar amounts.
+// So `ranges.rows` is EMPTY, the page says we quote each home, and the test
+// refuses a $ amount anywhere in here while it is. To publish ranges the
+// owner picks them; then rows get { home, price, note } and the table shows.
+// The percentages are the ones already on the home page (10% early-install,
+// about half for a re-install, the lease steps, beat by 10%), nothing new.
+export const costGuide = {
+  title: 'What Christmas light installation costs in Pearland',
+  eyebrow: 'Pricing guide · Pearland, TX',
+  intro: 'Every home we light gets one exact price, measured on its own roofline, so there’s no price list to copy here. Instead, here is what moves that price up or down, what every price includes, and how to get yours, free.',
+  cta: { estimate: 'Get your exact price', call: `Call ${business.phone}` },
+  drivers: {
+    title: 'What sets the price',
+    intro: 'Five things decide most of it. Two homes on the same street can come out quite different once you add them up.',
+    items: [
+      { icon: '📏', title: 'Roofline feet', body: 'The biggest factor. We measure every edge the lights follow: eaves, gables, peaks and the garage. A long single-story roofline can take more feet than a compact two-story one.' },
+      { icon: '🌳', title: 'Trees and extras', body: 'Wrapping a trunk and its branches takes more light and more time than a straight run of roofline, so each tree is priced on its own. Wreaths, lit shrubs, columns, windows and walkway lights add on the same way.' },
+      { icon: '🏠', title: 'Roof pitch and height', body: 'Steep pitches, second stories and spots we can only reach by ladder take longer and more care, so they cost a little more than a low, walkable roof. Clay and other tile roofs we don’t do at all: too fragile to work on safely.' },
+      { icon: '🔁', title: 'Buy or lease', body: 'Buy, and the first year is the full price of the lights and the install; every year after, putting them back up is about half of that. Lease, and we keep the lights: year one is full price too, then 10% off the original price for every year you come back, up to 50% off, with a brand-new design whenever you want one.' },
+      { icon: '📦', title: 'Takedown and storage', body: 'Takedown is a set price, shown in your estimate and paid in January. Between January 3rd and 13th we take everything down, label it and box it. Lights you own stay with you until next season; leased lights come back to us.' },
+    ],
+  },
+  ranges: {
+    title: 'Typical prices',
+    // Shown while rows is empty: honest about why there is no list.
+    empty: 'We don’t publish a price list, and we’d rather say why than hide it: a range wide enough to be true for every home in Pearland wouldn’t tell you much about yours. What you get instead is one exact price for your own home, free, with nothing to pay until you sign.',
+    hurry: `In a hurry? Text a photo of the front of your house to [${business.phone}](${business.smsHref}) and we’ll text back a rough price.`,
+    // Owner-approved ranges go here, e.g. { home: 'Single-story, roofline only', price: '$…–$…', note: 'bought, first year' }.
+    rows: [],
+    rowsIntro: 'What most homes like these come to, before extras. Yours is measured, so it may land outside these.',
+    includedTitle: 'Every price includes',
+    tax: 'Texas sales tax is added as its own line when you buy new lights or lease them. Re-installs of lights you already own and service calls aren’t taxed.',
+  },
+  exact: {
+    title: 'One exact price, within a day',
+    intro: 'No packages, no “starting at”. Here’s how you get your number.',
+    steps: [
+      `[Request a free estimate](${base}#estimate) online, or call or text ${business.phone}. Want to see the look first? [Draw your lights on a photo of your home](${base}design/), free.`,
+      'We measure from the ground with a measuring wheel, about 30 minutes, no roof climbing. You don’t need to be home unless we need to get through a gate.',
+      'You get one exact price by text or email, usually within a day of the measure, and you sign online. What’s in your estimate is what you pay.',
+      'A deposit when you sign holds your install date. The rest is due once your lights are up, and takedown is paid in January.',
+    ],
+  },
+  pay: {
+    title: 'Three ways to pay',
+    intro: 'Pick whichever suits you. Pay in 3 costs nothing extra.',
+  },
+  early: {
+    title: 'Book early and take 10% off',
+    body: 'Installs start October 15th, and October dates go first. An install done by the end of October gets the early-install discount: 10% off. If a storm moves your date, you keep it.',
+  },
+  diy: {
+    title: 'Doing it yourself or hiring it out',
+    intro: 'The honest answer: for a single-story home with a low roof, a sturdy ladder and a free weekend, hanging your own lights is the cheapest way to do it. Here is what each way really costs you.',
+    yourself: {
+      title: 'Doing it yourself',
+      items: [
+        'Store strands, clips, timers and outdoor cords, bought again every year or two: the Texas sun eats the plastic.',
+        'A Saturday on the ladder in October heat, and another in January to take it all down.',
+        'Your own repairs when a strand goes dark the week before Christmas.',
+        'The fall risk, which is real on a second story or a steep pitch.',
+        'The look: store strands come in fixed lengths, so there’s usually a bit dangling off the end or balled up in the gutter.',
+      ],
+    },
+    hired: {
+      title: 'Having us do it',
+      items: [
+        'Commercial-grade LED bulbs, measured and cut to fit your roofline exactly, nothing dangling.',
+        'About two hours of install, and you don’t need to be home.',
+        'Free service calls all season, usually the same day.',
+        'Takedown in January, labeled and boxed for you.',
+        'The lifetime warranty: worn-out lights replaced new, free, for as long as you’re a customer. You never buy strands again.',
+        'More than a cart of store strands the first year; the re-install every year after is about half the original price.',
+      ],
+    },
+    verdict: 'If your roof is high, steep or busy with gables, or you just want it to look custom and stay off the ladder, hiring it out pays for itself the first evening the timer clicks on. If it isn’t, enjoy your Saturday. We mean that.',
+  },
+  faq: {
+    title: 'Price questions, answered',
+    items: [
+      ['How much does Christmas light installation cost in Pearland?', 'It’s priced per home, not per package: the roofline feet, the trees, how high the crew has to reach and whether you buy or lease set it. Request a free estimate and you get one exact price. In a hurry, text us a photo of your house for a rough price first.'],
+      ['Is the estimate free?', 'Yes. We measure from the ground in about 30 minutes, you don’t need to be home unless we need a gate opened, and there’s nothing to pay until you sign.'],
+      ['What’s included in the price?', 'Everything: the lights, clips, cords and timers, the design, the install, and free service calls all season. Takedown is its own set price, shown in your estimate and paid in January.'],
+      ['What does it cost to put the same lights back up next year?', 'If you bought them, about half the original price every year. If you lease, 10% off the original price for every year you come back, up to 50% off.'],
+      ['Can I pay in installments?', 'Yes: Pay in 3. Any new install, bought or leased, in three equal payments: the first when you sign, then one a month on the 1st or the 15th, your pick. Everything is included and there’s no long-term commitment.'],
+      ['Is sales tax included?', 'Texas sales tax is added as its own line when you buy new lights or lease them. Re-installs of lights you already own and service calls aren’t taxed.'],
+      ['Do you price-match?', 'We beat it. Show us a legitimate written proposal from another insured professional Christmas-light company for the same lights and service, and we’ll beat it by 10%. Handymen and landscapers don’t count.'],
+      ['Is there a discount for booking early?', 'Yes. Installs done by the end of October get 10% off. Installs start October 15th, and those dates go first.'],
+    ],
+  },
+  closing: {
+    title: 'Ready for your number?',
+    body: `Request your free estimate, or call ${business.phone} and talk to a person.`,
+  },
 }
 
 // Booking urgency on the home page: real dates only, so it's always true.

@@ -3,15 +3,16 @@
 // Run by `npm run build`.
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { areas } from '../src/data/areas.js'
-import { business, included } from '../src/data/content.js'
+import { business, footerLinks, included } from '../src/data/content.js'
+import { SITE, pagePath, sitemapUrls } from './pages.mjs'
 
-const SITE = 'https://christmas-light-creations.com'
 const base = process.env.BASE_PATH || '/'
 const dist = new URL('../dist/', import.meta.url)
 const today = new Date().toISOString().slice(0, 10)
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-const pagePath = (a) => `christmas-light-installation/${a.slug}/`
+// The same footer links as the home page (content.js hrefs start at '/'; the build's base may not).
+const footer = footerLinks.map((l) => `<a href="${base}${l.href.replace(/^\//, '')}" class="hover:text-glow-300">${esc(l.label)}</a>`).join(' · ')
 
 // Reuse the main page's stylesheet(s) so the area pages match the site.
 const mainHtml = await readFile(new URL('index.html', dist), 'utf8')
@@ -127,7 +128,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 </main>
 <footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-400">
   © ${new Date().getFullYear()} ${esc(business.name)} · ${esc(business.city)} · ${business.phone}
-  · <a href="${base}account/" class="hover:text-glow-300">Customer login</a> · <a href="${base}privacy/" class="hover:text-glow-300">Privacy</a> · <a href="${base}terms/" class="hover:text-glow-300">Terms of use</a>
+  · ${footer}
 </footer>
 </body>
 </html>
@@ -166,7 +167,7 @@ for (const [from, to] of Object.entries(REDIRECTS)) {
 `)
 }
 
-const urls = [`${SITE}/`, `${SITE}/design/`, ...areas.map((a) => `${SITE}/${pagePath(a)}`), `${SITE}/privacy/`, `${SITE}/terms/`]
+const urls = sitemapUrls(areas)
 await writeFile(new URL('sitemap.xml', dist), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod></url>`).join('\n')}
