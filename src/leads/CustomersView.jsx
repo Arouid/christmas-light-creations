@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { BLANK_LABEL } from '../lib/customers'
 import { COLUMNS_KEY, CUSTOMER_COLUMNS, DEFAULT_CUSTOMER_COLUMNS, columnValue, readColumns } from '../lib/customerColumns'
 import DataTable from './DataTable'
+import ExportCsv from './ExportCsv'
 import ViewTab from './ViewTab'
 
 const chip = (on) => `inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-medium ${on ? 'bg-glow-400 text-night-950' : 'bg-white/10 hover:bg-white/15'}`
@@ -87,9 +88,13 @@ function AllCustomers({ customers, season, gates, onOpen, onCreate, adding, onDo
 
   return (
     <>
-      <div className="relative">
-        <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={`Search ${customers.length} customers: name, street, phone…`} className={`${input} ${search ? 'pr-28' : ''}`} />
-        {search && <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-slate-400" aria-live="polite">{shown.length} match{shown.length === 1 ? '' : 'es'}</span>}
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+        <div className="relative min-w-0 flex-1">
+          <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={`Search ${customers.length} customers: name, street, phone…`} className={`${input} ${search ? 'pr-28' : ''}`} />
+          {search && <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-slate-400" aria-live="polite">{shown.length} match{shown.length === 1 ? '' : 'es'}</span>}
+        </div>
+        {/* Exactly the rows listed below (the search narrows it); the saved filters have their own button. */}
+        <ExportCsv customers={shown} season={season} gates={gates} tag={search.trim()} className="min-h-11 shrink-0 self-start rounded-full border border-white/20 px-4 text-sm font-semibold lg:self-auto" />
       </div>
       {adding && <AddCustomer onCreate={onCreate} onDone={(id) => { onDoneAdding(); if (id) onOpen(id) }} />}
       {picking && <div className="hidden lg:block"><ColumnPicker cols={cols} onChange={changeCols} /></div>}

@@ -79,6 +79,7 @@ export const TASKS = [
   ['A customer is confused by their account', 'Send them to **Help** on their account page (signed in or not): a search box over the common answers (signing in, the sign-in email in spam, paying, Pay in 3, lights out, trees, dates and weather, boxes on the porch, HOA dates, cancelling, the app). We don’t run a tech-support line; if Help doesn’t cover it, they call or text and we answer like any message.'],
   ['See who has the app', 'Open the customer (**Accounts** → their name): the login line shows **📱 has the app** with the device and since when, once they have opened the installed app. Phone notifications of any kind only work from the installed app; the account page says so under Get the app.'],
   ['A customer asks “why did my price go up?”','Their account → **💲 Yearly price & add-ons** shows the breakdown. Tick **Customer can see this** so they can see it on their own account too.'],
+  ['Get the customer list into a spreadsheet', 'On **Customers** (All, under the search box; or next to ✉ Email these on a saved filter) or **Season** (installs or takedowns, any area, type or status filter), tap **⬇ Export N to spreadsheet**. You get a .csv of exactly the N people shown: name, phone, email, address, area, neighborhood, gate code, HOA and lights-down-by date, install type, light color, since, original rate, this season’s status, week, day, planned date and scheduling notes, install and takedown billing (rate, discount, total, paid, how, when), What’s up, and the notes. It opens in Excel, Numbers or Google Sheets; on a phone it lands in Downloads or Files (iPhone offers Share). Always the full set of columns, whatever the table shows. It’s a copy: changes made in the spreadsheet don’t come back into the app.'],
 ]
 
 export const SECTIONS = [
@@ -150,6 +151,7 @@ export const SECTIONS = [
       'Typing saves on its own (“Saved ✓”).',
       'Early installs: a suggested early discount appears by the install date; tap to apply.',
       '**📷 Photos** and **🎄 What’s up** on each customer: after-install photos (newest first, by season; Remove only your own, the owner any) and the list of what’s installed with where the lights are stored; What’s up is also a column on the Season and Customers tables.',
+      '**⬇ Export N to spreadsheet** (under the search box, or next to ✉ Email these on a saved filter): the people shown, as a .csv for Excel, Numbers or Google Sheets, with every column.',
     ],
   },
   {
@@ -160,6 +162,7 @@ export const SECTIONS = [
       'Change a status right in the list: everyone sees it within seconds.',
       '**✉ Email these N** sends a template to each person, one email each from info@: check each and tap **Send ✓ Next** (or **Skip**), or **Send the rest** after one confirm, or **⏰ Schedule the rest** for one time (each still gets their own email, one a second from then). People with a blank in the template (e.g. no install rate on file) are skipped and listed; already-sent or already-scheduled people are skipped. At most 300 emails a day from the app, sent and scheduled together.',
       '**＋ Route these N** puts the filtered list on a route.',
+      '**⬇ Export N to spreadsheet** downloads the filtered list as a .csv (clc-season-2026-installs-….csv) for Excel or Google Sheets.',
       '**✨ Plan with Claude (N)** (Installs): Claude proposes an install day for everyone confirmed but not yet scheduled, honoring their wishes, the early-install deadline, each day’s capacity and area grouping. You move or drop people, or type a note in **Tell Claude a change** → **↻ Re-plan** (your note wins, the rest stays, moved people show **Changed**), or **✕** someone out and **Re-plan** to fill their spot; **Apply** writes the dates, then **✉ Email these** sends “You are on the schedule”. Nothing is written until Apply; 20 plans and re-plans a day.',
       '**＋ New filter** (Customers tab, chip row at the top) saves a filter for everyone, e.g. “Needs scheduling”; **Old-site requests** are under Leads; Signs, Emails, Gates and Import are under **More ▾**.',
     ],
@@ -307,7 +310,7 @@ export const SECTIONS = [
 // anything left over shows under "Other".
 export const TASK_GROUPS = [
   ['Getting around', ['Find my way around on a phone', 'My checklist on Home']],
-  ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'A customer wrote from their account (🗨️ Account message)', 'Find anyone fast', 'Text a customer', 'Text customers on install day', 'Sign emails with my name', 'Email a customer', 'Keep notes and share them with Scott', 'Send an email later', 'Let Claude draft the reply', 'Teach the sales assistant', 'Ask Claude a question about the database', 'Get a notification on my phone', 'A customer filled in their property details', 'A customer wants the app on their phone','Ask for a Google review']],
+  ['Customers & messages', ['Before you call, text or email someone', 'A customer texted, called or emailed', 'A customer wrote from their account (🗨️ Account message)', 'Find anyone fast', 'Text a customer', 'Text customers on install day', 'Sign emails with my name', 'Email a customer', 'Keep notes and share them with Scott', 'Send an email later', 'Let Claude draft the reply', 'Teach the sales assistant', 'Ask Claude a question about the database', 'Get a notification on my phone', 'A customer filled in their property details', 'A customer wants the app on their phone','Ask for a Google review', 'Get the customer list into a spreadsheet']],
   ['New requests', ['A new estimate request came in', 'A request says “🎨 sent a design”', 'A customer picked a date on the website']],
   ['Prices & money', ['Send a price / contract', 'Get paid', 'Bill a customer (invoice)', 'Bill everyone for the season', 'They paid cash, check or Zelle', 'Someone has a cheaper quote', 'Offer Pay in 3', 'Sales tax on an estimate or invoice','A customer asks “why did my price go up?”']],
   ['Installs, takedowns & service', ['Plan installs or takedowns', 'Let Claude plan install days', 'A customer’s lights are out', 'A customer reported a problem from their account', 'Add photos of an install', 'Record what’s installed']],
