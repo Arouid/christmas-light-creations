@@ -1299,10 +1299,12 @@ export const draftReply = onCall({ region: REGION, invoker: 'public', secrets: [
   })
 
   const today = centralDay()
+  // The owner's own facts for the assistant (⚙ Settings → What the sales assistant knows).
+  const notes = String((await db.doc('settings/app').get()).data()?.assistantNotes ?? '')
   let result
   try {
     result = await draftFor({
-      apiKey: ANTHROPIC_API_KEY.value(), model: AI_MODEL.value() || MODEL, thread, coll: r.target.coll, today, season: bookingSeason(today), log: logger,
+      apiKey: ANTHROPIC_API_KEY.value(), model: AI_MODEL.value() || MODEL, thread, coll: r.target.coll, today, season: bookingSeason(today), notes, log: logger,
       onKeyRefused: () => reportIncident('other', 'The sales assistant’s Claude API key was refused (ANTHROPIC_API_KEY). Set it again and redeploy draftReply.'),
     })
   } catch (e) {

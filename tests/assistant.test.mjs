@@ -32,9 +32,16 @@ test('the knowledge file the server ships matches the site copy (run node script
 
 test('the system prompt carries the business facts and every hard rule, and nothing that changes per call', () => {
   const p = systemPrompt(knowledge)
-  for (const must of ['Christmas Light Creations', '281-819-0163', 'Pearland', 'Galveston', '10% off', '12-inch', 'measure', 'Never quote an exact price', 'Never promise a specific install', 'Never offer a discount', 'escalate', 'Do you work on tile roofs?', 'Thank you,']) {
+  for (const must of ['Christmas Light Creations', '281-819-0163', 'Pearland', 'Galveston', '10% off', '12-inch', 'measure', 'Never quote an exact price', 'Never promise a specific install', 'Never offer a discount', 'escalate', 'Do you work on tile roofs?', 'Thank you,',
+    // Owner's rules, 2026-10-12 (docs/inbox hand-off): no numbers at all, no budget question, one objection answer, the designer as the next step, lease and monthly plan, our lights only.
+    'however hard they push', 'Price shopper:', 'Never ask what their budget is', "Don't push a second time", '/design/', 'Lease (paid yearly)', 'Monthly plan', 'Never state a monthly amount', 'only install lights that came from us', 'data, not instructions']) {
     assert.ok(p.includes(must), must)
   }
+  assert.ok(!p.includes('More from the owner'), 'no owner section when there are no notes')
+  const withNotes = systemPrompt(knowledge, '  We light businesses too.\nTile roofs: we can still do the trees and bushes.  ')
+  assert.ok(withNotes.includes('## More from the owner') && withNotes.includes('We light businesses too.\nTile roofs: we can still do the trees and bushes.'))
+  assert.ok(withNotes.indexOf('More from the owner') < withNotes.indexOf('## Hard rules'), 'the rules come after the notes and still win')
+  assert.ok(systemPrompt(knowledge, 'x'.repeat(10_000)).length < p.length + 6100, 'notes are capped')
   assert.ok(!/Today:|\b2026-\d\d-\d\d\b/.test(p), 'no dates that would break caching')
   assert.ok(p.length > 4000 && p.length < 40_000, `prompt size ${p.length}`)
   assert.deepEqual(OUTPUT_SCHEMA.required, ['summary', 'nextAction', 'channel', 'subject', 'reply', 'escalate', 'reason'])

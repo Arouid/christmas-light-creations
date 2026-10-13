@@ -85,6 +85,34 @@ function BookingStatus({ settings, onSave }) {
   )
 }
 
+// What the sales assistant knows beyond the website copy
+// (settings/app.assistantNotes): the owner's own facts and answers, read on
+// every ✨ Suggest a reply draft (docs/specs/sales-assistant.md). The prompt's
+// hard rules (no prices, no dates, nothing sent by itself) still win.
+const NOTES_MAX = 6000
+function AssistantNotes({ settings, onSave }) {
+  const cur = settings.assistantNotes ?? ''
+  const [text, setText] = useState(cur)
+  const [msg, setMsg] = useState(null)
+  async function save() {
+    await onSave({ assistantNotes: text.trim().slice(0, NOTES_MAX) })
+    setMsg('Saved ✓ The next draft uses it.')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">What the sales assistant knows</p>
+      <p className="text-sm text-slate-400">Facts and answers for ✨ Suggest a reply beyond what the website says: a new offer, how you answer a common question, what to say about businesses or tile roofs. Plain sentences, one per line. Whatever you write here, it still never gives a price or a date, and nothing is sent without a person.</p>
+      <textarea value={text} rows={8} maxLength={NOTES_MAX} onChange={(e) => { setText(e.target.value); setMsg(null) }} className={field}
+        placeholder={'We light businesses too: storefronts, restaurants and neighborhood entrances.\nA lease gets 10% cheaper every returning year, up to 50% off.'} />
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={save} disabled={text.trim() === cur.trim()} className="rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950 disabled:opacity-50">Save</button>
+        <span className="text-xs text-slate-500">{text.length}/{NOTES_MAX}</span>
+        {msg && <span className="text-sm text-emerald-400">{msg}</span>}
+      </div>
+    </div>
+  )
+}
+
 // "Check availability" on the website (functions/availability.js): how many
 // installs fit in a day, which days we work, and day-by-day changes (helper
 // days, rain, days off). Saved in settings/app.availability.
@@ -254,6 +282,7 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
         <StaffNames settings={settings} onSave={onSave} />
 
         <BookingStatus settings={settings} onSave={onSave} />
+        <AssistantNotes settings={settings} onSave={onSave} />
 
         <InstallAvailability settings={settings} onSave={onSave} />
 

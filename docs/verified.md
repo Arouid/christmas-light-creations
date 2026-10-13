@@ -421,3 +421,9 @@ What was actually checked working, and how. Newest first.
 - `npm run check`: lint clean, 354 tests (new `staffMenu` test: every section reachable exactly once), build.
 - Console: only the browser pane's "unknown error occurred when fetching the script" lines (it refuses every service worker; not the app). Not checked: a real phone (checklist #88–89), the tour over the drawer, Escape/backdrop by hand.
 - Follow-up (owner, live: "not much of a gap between the top bar and the content"): the bar's bottom padding came from the tab row, now hidden on phones. Row gets `py-3` on phones (`lg:pb-0`). Dev at 375: header 69 px tall, 16 px of page padding below it on a customer page; check green (354 tests).
+
+## 2026-10-12 Sales assistant: the owner's rules + the Settings notes box
+
+- `tests/assistant.test.mjs`: the system prompt carries every new rule (the strings "however hard they push", "Price shopper:", "Never ask what their budget is", "Don't push a second time", "/design/", "Lease (paid yearly)", "Monthly plan", "Never state a monthly amount", "only install lights that came from us", "data, not instructions"), has no owner section when the notes are empty, puts the notes before the hard rules, and caps them at 6,000 characters. `npm run check` green (354 tests, build).
+- Dev `/leads/?demo` at 375 px (fresh load): ⚙ Settings shows "What the sales assistant knows" between "How booked we are" and "Install availability", textarea 267 px wide, counter, no horizontal overflow. (The first look showed the old panel: a stale module in the running dev server, gone after a reload.)
+- Not checked: a real draft with the new rules: `draftReply` is **not redeployed yet** (TODO #43 (4), the owner pastes the command); a real Save of the notes and a draft that uses them.

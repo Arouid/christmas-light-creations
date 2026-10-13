@@ -43,7 +43,8 @@ export class DraftError extends Error {
 // One draft. `thread` from threadFor(); `today` "YYYY-MM-DD"; `season` a year.
 // Returns { draft, usage, cost, model }. Throws DraftError for things the
 // staff member should hear about; `onKeyRefused` is called once before that.
-export async function draftFor({ apiKey, model = MODEL, thread, coll, today, season, log, onKeyRefused }) {
+// `notes`: the owner's extra facts (settings/app.assistantNotes), part of the cached system prompt.
+export async function draftFor({ apiKey, model = MODEL, thread, coll, today, season, notes = '', log, onKeyRefused }) {
   const channel = channelFor(thread.messages, thread.record ?? thread.contact)
   const client = new Anthropic({ apiKey, maxRetries: 1, timeout: 60_000 })
   let res
@@ -51,7 +52,7 @@ export async function draftFor({ apiKey, model = MODEL, thread, coll, today, sea
     res = await client.messages.create({
       model: model || MODEL,
       max_tokens: MAX_OUTPUT_TOKENS,
-      system: [{ type: 'text', text: systemPrompt(knowledge), cache_control: { type: 'ephemeral' } }],
+      system: [{ type: 'text', text: systemPrompt(knowledge, notes), cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: userPrompt({ today, season, coll, record: thread.record, messages: thread.messages, channel }) }],
       output_config: { effort: 'medium', format: { type: 'json_schema', schema: OUTPUT_SCHEMA } },
     })
