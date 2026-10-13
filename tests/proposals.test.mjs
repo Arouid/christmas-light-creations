@@ -209,5 +209,6 @@ test('gutters and clips (owner 2026-10-12): explained in the access clause and e
     assert.ok(t.includes('FOR CLOGGED GUTTERS, DOWNSPOUTS OR DRAINAGE OR WATER DAMAGE FROM A CLOG'))
     assert.ok(t.includes('Normal ladder use can leave marks, scratches or small bends') || t.includes('normal ladder use can leave marks, scratches or small bends'))
     assert.ok(t.includes('dropping or slamming a ladder into it') && t.includes('FOR MARKS, SCRATCHES OR SMALL BENDS IN GUTTERS FROM NORMAL LADDER USE'))
+    assert.ok(t.includes('some wear is unavoidable') && t.includes('FOR NORMAL WEAR TO PLANTS, BEDS, MULCH AND LAWNS'))
   }
 })
