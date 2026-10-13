@@ -13,6 +13,10 @@ Where the site shows for the searches that matter, checked by hand so there is s
 - **Bing** `site:` → only old WordPress URLs with old titles (`/signup/`, `/info/`, `/get-an-estimate/`, `/photos/`, `/free-estimates/`, `/faq/`, `/test/`, `/shadow-creek-ranch/`, `/led-or-incandescent/`), the home page under its old title. Bing has not recrawled since the new site went live. Fix: Bing Webmaster Tools + sitemap (TODO #70); IndexNow pings on each deploy would keep it current.
 - **IndexNow pings start with the first push after 2026-10-13** (`docs/specs/indexnow.md`): the deploy job sends the sitemap's URLs to api.indexnow.org, which reaches Bing, Yandex, Naver and Seznam. The next Bing check should show the new titles and the `/christmas-light-installation/…` area pages; if it still shows the old WordPress titles, look at the IndexNow step in the last deploy run (Actions → Deploy to GitHub Pages) and at Webmaster Tools → IndexNow.
 
+## Brand-name search (2026-10-13)
+
+Owner's own Google search for “Christmas Light Creations” (signed in, Pearland): the knowledge panel is his profile, but the first website result is **christmaslightscreations.com**, a Christmas-lights retailer (“Where Santa Shops For Christmas”) with a near-identical name; christmas-light-creations.com shows below it. Two verified Google Business Profiles exist for the business (TODO #70, merge requested with Google support); the keeper carried the old http website URL. Re-check the brand search after the merge and in a month.
+
 ## Next check
 
 Same four searches, same method, add a row. Worth adding the area searches once Bing has recrawled: "christmas light installation friendswood", "… league city", "… manvel".
