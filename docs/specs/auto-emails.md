@@ -58,7 +58,7 @@
 
 ## Settings (⚙ → Automatic emails)
 
-Four switches, all on by default: "Got your request", Weather heads-ups, "Still waiting" reminders, and File sales pitches as spam (`pitchFilter`, `docs/specs/spam-filters.md`). Each function reads `settings/app` when it runs.
+Five switches, all on by default: "Got your request", Weather heads-ups, "Still waiting" reminders, File sales pitches as spam (`pitchFilter`, `docs/specs/spam-filters.md`), and Review request after install (`reviewAsks`, `docs/specs/review-ask.md`: one branded, optional email 2 days after an install is completed, one reminder 4 days later, a ⭐ text-to-send item in 💬 for people who prefer texts). Each function reads `settings/app` when it runs.
 
 ## Tests
 

@@ -47,9 +47,19 @@ const customers = [
     locationBlock: 'Shadow Creek - West side of 288', installType: 'Early Install',
     seasons: { 2026: { installStatus: 'Confirmed - Needs to be Scheduled', firstContact: 'Confirmed', timeframe: 'first week of Nov' } },
   },
+  {
+    // Installed this season and asked for a Google review by the website two days ago
+    // (docs/specs/review-ask.md): they prefer texts, so 💬 holds a "Review text to send".
+    id: 'river-household', fullName: 'River Household', firstName: 'River', lastName: 'Household',
+    phone: '555-0104', email: 'river.household@example.com', address: '12 Demo Ct Friendswood, TX 77546', city: 'Friendswood',
+    locationBlock: 'Friendswood - West side of 528', installType: 'Early Install', contactMethod: 'Text',
+    seasons: { 2026: { installStatus: 'Install Completed', firstContact: 'Confirmed', plannedDate: 'Oct 9', day: 'Friday',
+      install: { rate: '$520.00', total: '$520.00', invoice: 'PP Invoice Sent', paid: 'Yes', paymentType: 'PayPal' },
+      reviewAsk: { seenAt: Date.now() - 4 * 86400000, askedAt: Date.now() - 2 * 86400000, channel: 'email+text', by: 'website' } } },
+  },
 ]
 
-const demoGeo = { 'sample-customer': [29.5605, -95.2650], 'test-homeowner': [29.5075, -95.0949], 'example-family': [29.5450, -95.3770] }
+const demoGeo = { 'sample-customer': [29.5605, -95.2650], 'test-homeowner': [29.5075, -95.0949], 'example-family': [29.5450, -95.3770], 'river-household': [29.5294, -95.2010] }
 customers.forEach((c) => { const g = demoGeo[c.id]; if (g) c.geo = { lat: g[0], lng: g[1], exact: true, address: c.address } })
 
 const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString()
@@ -173,6 +183,8 @@ export const demoData = {
     { id: 'demo-act-13', at: minAgo(45), by: 'website', action: 'service-reported', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: 'Section out' },
     { id: 'demo-act-14', at: minAgo(25), by: 'website', action: 'chat-message', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: 'Great. One more thing: the section by the garage went dark last night. Can the crew look at it while they’re here?' },
     { id: 'demo-act-12', at: minAgo(50), by: 'katiep@example.com', action: 'email-scheduled', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: `Your 2026 Christmas lights · ${whenText(picks[0].at)}` },
+    // The website's review ask (docs/specs/review-ask.md).
+    { id: 'demo-act-15', at: minAgo(2 * 24 * 60), by: 'website', action: 'review-asked', target: { type: 'customer', id: 'river-household', name: 'River Household' }, text: 'email · text queued for a person' },
   ]),
   // Home → Scheduled emails and the top of history (docs/specs/scheduled-email.md).
   scheduledEmails: byId([

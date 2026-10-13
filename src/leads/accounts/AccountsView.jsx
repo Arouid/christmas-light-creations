@@ -26,6 +26,7 @@ import { noAutofill } from '../ui'
 import TextHistory from '../TextHistory'
 import ChatPanel from '../ChatPanel'
 import { Grid } from '../CustomerDetail'
+import ReviewAskBox from '../ReviewAsk'
 import { SEASON } from '../seasonFields'
 
 const KIND = { customer: ['Customer', 'bg-emerald-500/20 text-emerald-300'], lead: ['Website lead', 'bg-glow-400/20 text-glow-300'], past: ['Past request', 'bg-white/10 text-slate-300'] }
@@ -212,6 +213,8 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
         <AddToRoute customers={[c]} className={action} />
         {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}
       </Header>
+      {/* The Google review ask (docs/specs/review-ask.md): where a 💬 "Review text to send" lands. */}
+      <ReviewAskBox customer={c} />
       {/* The account chat (docs/specs/account-chat.md): where a 💬 "Account message" lands. */}
       <Section title="💬 Chat (their account page)"><ChatPanel user={user} customer={c} /></Section>
       <ThisSeason c={c} season={season} onUpdate={onUpdateCustomer} />

@@ -53,14 +53,14 @@ import { staffName } from '../../functions/staffNames.js'
 // ---- Entries ----------------------------------------------------------------------
 
 // Website entries: the customer did it ("Pat Sample signed their proposal").
-const WEBSITE = { rebooked: 'said yes to this season from their account (put my lights back up)', 'details-updated': 'updated their property details from their account', 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights', 'chat-message': 'sent a message from their account', 'spam-filed': 'was filed under Spam / test by the website (a sales pitch)' }
+const WEBSITE = { rebooked: 'said yes to this season from their account (put my lights back up)', 'details-updated': 'updated their property details from their account', 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights', 'chat-message': 'sent a message from their account', 'spam-filed': 'was filed under Spam / test by the website (a sales pitch)', 'review-asked': 'was asked for a Google review by the website', 'review-reminded': 'was reminded about a Google review by the website' }
 const VERB = {
   email: 'emailed', 'chat-reply': 'replied in the account chat to', 'invoice-sent': 'sent an invoice to', 'invoice-again': 'emailed the invoice again to',
   'invoice-paid': 'marked paid the invoice for', 'invoice-void': 'voided the invoice for',
   'proposal-sent': 'sent a proposal to', 'proposal-void': 'voided the proposal for', 'proposal-countersigned': 'countersigned the proposal for',
   'lead-status': 'updated', 'make-customer': 'made a customer of', 'service-logged': 'logged a service call for',
   'service-done': 'finished the service call for', handling: 'is on the message from', takeover: 'took over the message from', text: 'started a text to', call: 'started a call to',
-  'ai-draft': 'sent a Claude-drafted reply to', 'email-scheduled': 'scheduled an email to',
+  'ai-draft': 'sent a Claude-drafted reply to', 'email-scheduled': 'scheduled an email to', reviewed: 'noted a Google review from',
 }
 export const ACTIONS = [...Object.keys(VERB), ...Object.keys(WEBSITE)]
 

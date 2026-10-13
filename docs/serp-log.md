@@ -19,4 +19,4 @@ Owner's own Google search for “Christmas Light Creations” (signed in, Pearla
 
 ## Next check
 
-Same four searches, same method, add a row. From the push that takes `/cost/` live (2026-10-13, `docs/specs/cost-guide.md`), also "christmas light installation cost pearland" and "how much does christmas light installation cost pearland": the cost guide should start showing for them, and Search Console → Performance → Queries filtered "cost" says when (TODO #71). Worth adding the area searches once Bing has recrawled: "christmas light installation friendswood", "… league city", "… manvel".
+Same four searches, same method, add a row. From the push that takes `/cost/` live (2026-10-13, `docs/specs/cost-guide.md`), also "christmas light installation cost pearland" and "how much does christmas light installation cost pearland": the cost guide should start showing for them, and Search Console → Performance → Queries filtered "cost" says when (TODO #72). Worth adding the area searches once Bing has recrawled: "christmas light installation friendswood", "… league city", "… manvel".

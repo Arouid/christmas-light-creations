@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { collected, counters, routesToday, seasonProgress, syncLight } from '../lib/activity'
 import { money } from '../lib/invoices'
 import { todayISO } from '../lib/customers'
+import { reviewStats } from '../lib/reviewAsk'
 import { alertRecipients } from '../../functions/leadEmail.js'
 import { adsSummary, monthKey, spentSummary } from '../lib/spend'
 import { ActivityPanel, AdsPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel, SpendPanel, StatusPanel, WhoPanel, label } from './HomePanels'
@@ -65,6 +66,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
 
   const nums = useMemo(() => counters({ leads, invoices, calls, today }), [leads, invoices, calls, today])
   const progress = useMemo(() => seasonProgress(customers, season), [customers, season])
+  const reviews = useMemo(() => reviewStats(customers, season), [customers, season])
   const cash = useMemo(() => ({ now: collected(customers, season), last: collected(customers, String(Number(season) - 1)) }), [customers, season])
   const day = useMemo(() => routesToday(routes, today), [routes, today])
 
@@ -107,7 +109,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
   }
 
   const panels = {
-    season: <SeasonPanel season={season} progress={progress} money={cash} wall={wall} />,
+    season: <SeasonPanel season={season} progress={progress} money={cash} wall={wall} reviews={reviews} onOpenMessages={onOpenMessages} />,
     activity: <ActivityPanel entries={feed.entries} error={feed.error} loading={feed.loading} ctx={ctx} now={now} wall={wall} />,
     who: <WhoPanel rows={who.rows} error={who.error} now={minute} wall={wall} />,
     scheduled: <ScheduledPanel user={user} names={feed.names} wall={wall} />,
