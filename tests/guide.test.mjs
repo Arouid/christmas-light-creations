@@ -17,7 +17,9 @@ test('arrow chains become numbered steps; plain answers stay as one paragraph', 
 
 test('tour steps are complete and point at real tabs', () => {
   const tabs = new Set(SECTIONS.map((s) => s.tab).filter(Boolean))
-  assert.ok(TOUR.length >= 5 && TOUR.length <= 9)
+  assert.ok(TOUR.length >= 5 && TOUR.length <= 14, 'short enough to finish')
+  assert.ok(TOUR.some((s) => s.title === 'What runs by itself'), 'the automatic things get their own stop (owner 2026-10-12)')
+  for (const must of ['Got your request', '2+ hours', 'weather', 'Pay-in-3', 'Report a problem', 'lifetime warranty']) assert.ok(TOUR.some((s) => s.body.join(' ').includes(must)), must)
   for (const s of TOUR) {
     assert.ok(s.icon && s.title && s.body?.length >= 1, s.title)
     if (s.tab) assert.ok(tabs.has(s.tab), `${s.title}: tab ${s.tab}`)
