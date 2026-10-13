@@ -69,6 +69,8 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 ## Dated reminders
 
+- **Fri 2026-10-16** (scheduled task `friday-google-profile-cleanup`, 9 am): after removing the duplicate Google Business Profile on 2026-10-13, check Maps for a leftover pin (Suggest an edit → Duplicate), the Google Ads location asset points at the kept profile, Sync in Bing Places and delete the leftover listing there, and the kept profile's website (https), category (lighting), description and hours. TODO #70.
+
 | When | What |
 |---|---|
 | ~2026-10-13 | App Check: Firebase console → App Check → APIs → Cloud Firestore / Cloud Functions metrics ~100% verified? Then Claude turns on enforcement (#35) |
