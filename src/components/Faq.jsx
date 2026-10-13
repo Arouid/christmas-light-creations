@@ -1,6 +1,7 @@
 import { faq, giftWrapping } from '../data/content'
 import { useGiftWrapping } from '../lib/giftWrapping'
 import Icon from './Icon'
+import Rich from './Rich'
 import Section from './Section'
 
 export default function Faq() {
@@ -19,7 +20,7 @@ export default function Faq() {
                     {q}
                     <Icon name="chevron" className="size-5 shrink-0 text-glow-400 transition group-open:rotate-180" />
                   </summary>
-                  <p className="pb-5 text-slate-400">{a}</p>
+                  <p className="pb-5 text-slate-400"><Rich text={a} /></p>
                 </details>
               ))}
             </div>

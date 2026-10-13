@@ -28,6 +28,19 @@
       "port": 5174
     },
     {
+      "name": "preview-4190",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--",
+        "--port",
+        "4190",
+        "--strictPort"
+      ],
+      "port": 4190
+    },
+    {
       "name": "video-studio",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
