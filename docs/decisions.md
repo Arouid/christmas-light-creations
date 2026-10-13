@@ -248,3 +248,4 @@
 - 2026-10-12 Nest treatment (owner): we may treat a wasp, hornet or bee nest and reschedule or carry on; the charge is quoted first and the customer's OK by text or email adds it to the bill, or their own pest control handles it; other hazards: stop and reschedule. Clause 5 and the seasonal terms. A fixed amount can replace the quote-first wording if the owner gives one.
 - 2026-10-12 Nest treatment charge is a fixed $25 per nest treated (owner), in the contract and the seasonal terms; the customer may use their own pest control instead.
 - 2026-10-12 Known nests on the estimate (owner): a ＋ Nest treatment ($25) button in the estimate editor adds an untaxed service line approved by the signature (clause 5 says so); nests found later are billed as before.
+- 2026-10-12 Nest charge pre-approval (owner): signing the contract (or paying an invoice) pre-approves $25 per nest treated; no per-nest OK needed.

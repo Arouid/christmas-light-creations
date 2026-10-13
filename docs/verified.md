@@ -478,3 +478,4 @@ What was actually checked working, and how. Newest first.
 - Nest treatment charge, quote-first (owner, 2026-10-12): clause 5 and the seasonal terms, tested; check green.
 - 5 per nest treated (owner, 2026-10-12), both documents, tested; check green.
 - ＋ Nest treatment ($25) button in the estimate editor; untaxed service line; clause 5 sentence; tested; check green (owner, 2026-10-12).
+- Nest charge pre-approved by signing / paying (owner, 2026-10-12); tested; check green.
