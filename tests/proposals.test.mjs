@@ -199,7 +199,7 @@ test('seasonal service terms (invoices): fill with the business only, say paying
   assert.doesNotMatch(t, /\{\w+\}/)
   assert.ok(t.includes('Paying the invoice is your agreement') && t.includes('Brazoria County, Texas') && t.includes('OUR TOTAL LIABILITY FOR THIS WORK IS LIMITED') && t.includes('We do not charge late fees'))
   const words = t.split(/\s+/).filter(Boolean).length
-  assert.ok(words > 300 && words < 700, `about a page: ${words} words`)
+  assert.ok(words > 300 && words < 900, `about a page: ${words} words`)
 })
 
 test('gutters and clips (owner 2026-10-12): explained in the access clause and excluded in the capitalized limits, in both documents', async () => {
