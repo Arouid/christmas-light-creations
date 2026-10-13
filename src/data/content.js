@@ -129,7 +129,7 @@ export const pricingNotes = [
 export const lightOptions = [
   { title: 'Buy', body: 'Own your lights. We put them back up every year for 50% of the original price.' },
   { title: 'Lease', body: 'We keep the lights; pick a new look any year. 10% off for every year you come back, up to 50% off.' },
-  { title: 'Pay in 3', tag: 'New this season', body: 'Split a new install, bought or leased, into three equal payments that cover everything: when you sign, when the lights are up, and in January. No long-term commitment.' },
+  { title: 'Pay in 3', tag: 'New this season', body: 'Split a new install, bought or leased, into three equal payments that cover everything: one when you sign, then one a month on the 1st or the 15th, your pick. No long-term commitment.' },
 ]
 
 export const testimonials = [
@@ -213,7 +213,7 @@ export const faq = [
       ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online.'],
       ['Is sales tax included?', 'Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls.'],
       ['Can I lease the lights instead of buying them?', 'Yes. With a lease we keep the lights, and every year you choose a brand-new design or keep the one you had. Year one is full price; every year you come back takes another 10% off the original price, up to 50% off. Nothing to store, test or replace.'],
-      ['What’s Pay in 3?', 'Any new install, bought or leased, paid in three equal payments instead of a deposit and a balance: when you sign, when your lights are up, and in January. Everything is included, takedown too. No long-term commitment. It isn’t for re-installs of lights you already own. Ask us when you request your estimate.'],
+      ['What’s Pay in 3?', 'Any new install, bought or leased, paid in three equal payments instead of a deposit and a balance: the first when you sign, then one a month on the 1st or the 15th (you choose when you sign; we email you a payment link that morning). Everything is included, takedown too. No long-term commitment. It isn’t for re-installs of lights you already own. Ask us when you request your estimate.'],
     ],
   },
   {

@@ -2,6 +2,7 @@
 // can run them without Firebase or PayPal. Each returns null when fine, or
 // [HttpsError code, message] when the payment must be refused.
 import { PARTS, partCents, paymentOf } from './proposalMath.js'
+import { centralDayOf, payIn3Due } from './payIn3.js'
 
 export const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown' }
 // A Pay-in-3 plan (p.plan 'payin3') uses the same three slots for its three equal payments.
@@ -10,12 +11,16 @@ export const partLabel = (p, part) => (p?.plan === 'payin3' ? PAYIN3_LABEL[part]
 export const customIdFor = (token, part) => (part === 'deposit' ? token : `${token}:${part}`)
 
 // The deposit is payable once signed; the balance and takedown only after
-// staff ask for them (requests.<part> set in the staff app).
-export function payableProblem(p, part) {
+// staff ask for them (requests.<part> set in the staff app) or, on a Pay-in-3
+// plan, from the day they fall due (functions/payIn3.js). `today` is the
+// Central day; without it only staff requests open a payment.
+export function payableProblem(p, part, today = '') {
   if (!PARTS.includes(part)) return ['invalid-argument', 'Unknown payment']
   if (!p) return ['not-found', 'Proposal not found']
   if (!['signed', 'countersigned'].includes(p.status)) return ['failed-precondition', 'Sign the proposal first']
-  if (part !== 'deposit' && p.requests?.[part] !== true) return ['failed-precondition', 'This payment isn’t due yet']
+  const due = p.plan === 'payin3' && part !== 'deposit' ? payIn3Due(centralDayOf(p.signedAt), p.payDay)?.[part] : null
+  const open = part === 'deposit' || p.requests?.[part] === true || (due && today && today >= due)
+  if (!open) return ['failed-precondition', 'This payment isn’t due yet']
   if (paymentOf(p, part)?.status === 'paid') return ['already-exists', `${PART_LABEL[part]} already paid`]
   if (partCents(p, part) <= 0) return ['failed-precondition', 'Nothing due']
   return null

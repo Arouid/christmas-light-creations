@@ -29,7 +29,7 @@ export const DEFAULT_TERMS = `1. The work. {business} will provide and install t
 // TODO #30). A Pay-in-3 plan swaps clauses 2 and 7; a lease swaps clause 6.
 // They replace the numbered paragraph in whatever terms the owner keeps in
 // Settings, so his edits to the other clauses carry over.
-export const PAYIN3_PAYMENT = `2. Price and payment (Pay in 3). The total is {total}, paid in three equal payments: {payment1} when you sign, which holds your install date; {payment2} when installation is complete; and {payment3} in January, when the season ends. By signing you agree to pay the full total in these three payments. We accept PayPal, Zelle, Venmo, Cash App, check or cash.`
+export const PAYIN3_PAYMENT = `2. Price and payment (Pay in 3). The total is {total}, paid in three payments: {payment1} when you sign, which holds your install date; then {payment2} and {payment3} on the day of the month you choose when you sign (the 1st or the 15th), one in each of the two months after you sign. We email you a payment link that morning. By signing you agree to pay the full total in these three payments. We accept PayPal, Zelle, Venmo, Cash App, check or cash.`
 
 export const PAYIN3_CANCELLATION = `7. Cancellation and refunds. Your first payment holds your install date. You may cancel within 3 days of signing for a full refund of it. After those 3 days, the full total for the season is owed in the three payments above, whether or not you cancel. If we have to cancel or reschedule your install (for example, because of weather), we will first offer you a new install date. If we cannot complete your install by December 1, you may choose a full refund of your first payment instead, starting December 1.`
 

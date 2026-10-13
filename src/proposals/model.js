@@ -3,6 +3,8 @@
 //
 // Money is kept in cents internally to avoid rounding drift.
 
+import { centralDayOf, payIn3Due } from '../../functions/payIn3.js'
+
 export const PROPOSAL_VERSION = 2
 export const STATUSES = ['draft', 'sent', 'viewed', 'signed', 'countersigned', 'declined', 'void']
 export const STATUS_LABEL = {
@@ -93,6 +95,10 @@ export const PAYIN3_LABEL = { deposit: 'Payment 1 of 3', balance: 'Payment 2 of 
 export const PAYIN3_WHEN = { deposit: 'when you sign', balance: 'when your lights are up', takedown: 'in January' }
 export const isPayIn3 = (p) => p?.plan === 'payin3'
 export const isLease = (p) => p?.kind === 'lease'
+export { PAY_DAYS, PAY_DAY_LABEL, dueText, payIn3Due } from '../../functions/payIn3.js'
+// Pay in 3: when payment 2 (balance) or 3 (takedown) falls due, once signed with a pay day; else null.
+export const partDue = (p, part) => (isPayIn3(p) && part !== 'deposit' && p.signedAt ? (payIn3Due(centralDayOf(p.signedAt), p.payDay)?.[part] ?? null) : null)
+const todayCentral = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
 export const partLabel = (p, part) => (isPayIn3(p) ? PAYIN3_LABEL[part] : PART_LABEL[part])
 // Three equal payments to the cent; the last one takes the remainder.
 export function thirds(total) {
@@ -104,9 +110,13 @@ export function partAmount(p, part) {
   const t = totals(p)
   return part === 'deposit' ? t.deposit : part === 'balance' ? t.dueAtInstall : t.dueAtRemoval
 }
-export function isPayable(p, part) {
+// Payable: the deposit once signed; the rest once staff ask (requests.<part>)
+// or, on a Pay-in-3 plan, from its due day. Same rule as functions/payments.js.
+export function isPayable(p, part, today = todayCentral()) {
   const signed = p.status === 'signed' || p.status === 'countersigned'
-  return signed && partAmount(p, part) > 0 && paymentOf(p, part)?.status !== 'paid' && (part === 'deposit' || p.requests?.[part] === true)
+  const due = partDue(p, part)
+  const open = part === 'deposit' || p.requests?.[part] === true || (due != null && today >= due)
+  return signed && partAmount(p, part) > 0 && paymentOf(p, part)?.status !== 'paid' && open
 }
 
 // Takedown: a % of the install with a minimum (CLC's form: 15% of

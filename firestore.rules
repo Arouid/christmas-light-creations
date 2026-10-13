@@ -199,7 +199,10 @@ service cloud.firestore {
     function publicSign() {
       let sig = request.resource.data.signature;
       return resource.data.status in ['sent', 'viewed']
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'signature', 'signedAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'signature', 'signedAt', 'payDay'])
+        // Pay in 3 (2026-10-12): the customer picks the 1st or the 15th for payments 2 and 3 when signing.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['payDay'])
+          || (resource.data.get('plan', '') == 'payin3' && request.resource.data.payDay in [1, 15]))
         && request.resource.data.status == 'signed'
         && request.resource.data.signedAt == request.time
         && sig.keys().hasOnly(['name', 'image', 'consent', 'docHash', 'userAgent'])

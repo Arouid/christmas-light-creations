@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { STATUS_LABEL, fmt, itemCents, totals } from './model.js'
+import { STATUS_LABEL, dueText, fmt, itemCents, partDue, totals } from './model.js'
 
 const when = (iso) => (iso ? new Date(iso.seconds ? iso.seconds * 1000 : iso).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '')
 
@@ -89,8 +89,8 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
             // Pay in 3 (owner 2026-10-12): three equal payments on the same three slots.
             <>
               <div className={row}><span>Payment 1 of 3, when you sign<Paid pay={p.deposit} /></span><span className="tabular-nums">{fmt(t.deposit)}</span></div>
-              <div className={row}><span>Payment 2 of 3, when your lights are up<Paid pay={p.payments?.balance} /></span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
-              <div className={row}><span>Payment 3 of 3, in January<Paid pay={p.payments?.takedown} /></span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>
+              <div className={row}><span>Payment 2 of 3, {partDue(p, 'balance') ? dueText(partDue(p, 'balance')) : 'the 1st or 15th of next month (you pick when you sign)'}<Paid pay={p.payments?.balance} /></span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
+              <div className={row}><span>Payment 3 of 3, {partDue(p, 'takedown') ? dueText(partDue(p, 'takedown')) : 'the same day the month after'}<Paid pay={p.payments?.takedown} /></span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>
             </>
           ) : (
             <>

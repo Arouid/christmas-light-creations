@@ -5,7 +5,7 @@ import ProposalDocument from '../../proposals/ProposalDocument.jsx'
 import SignaturePad from '../../proposals/SignaturePad.jsx'
 import { PAY_PARTS, STATUS_LABEL, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, partAmount, paymentOf, sendProblems, takedownItem, termVars, totals } from '../../proposals/model.js'
 import { DEFAULT_TERMS, FILL_IN, defaultTerms } from '../../proposals/terms.js'
-import { KINDS, PLANS, isPayIn3, partLabel, taxRateOf } from '../../proposals/model.js'
+import { KINDS, PLANS, dueText, isPayIn3, partDue, partLabel, taxRateOf } from '../../proposals/model.js'
 import { taxSnapshot } from '../../lib/salesTax'
 import { todayISO } from '../../lib/customers'
 import { COLOR_SETS, STYLES, normalize } from '../../designer/model.js'
@@ -74,10 +74,10 @@ function Payments({ p, first, link, onAsk }) {
           return (
             <li key={part} className="space-y-2 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span>{partLabel(p, part)} · <span className="tabular-nums">{amount}</span></span>
+                <span>{partLabel(p, part)} · <span className="tabular-nums">{amount}</span>{partDue(p, part) && <span className="text-sm text-slate-400"> · due {dueText(partDue(p, part))}</span>}</span>
                 {pay?.status === 'paid'
                   ? <span className="text-sm font-semibold text-emerald-300">paid ✓{pay.env === 'sandbox' ? ' (test)' : ''}</span>
-                  : <span className="text-sm text-slate-400">{asked ? 'Pay button is on their page' : 'Not asked yet'}</span>}
+                  : <span className="text-sm text-slate-400">{asked ? 'Pay button is on their page' : partDue(p, part) ? 'Opens on the due day (email that morning)' : isPayIn3(p) && part !== 'deposit' ? 'They pick the 1st or 15th when they sign' : 'Not asked yet'}</span>}
               </div>
               {part !== 'deposit' && pay?.status !== 'paid' && (
                 <div className="flex flex-wrap gap-2">
@@ -264,7 +264,7 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
               </div>
               {d.kind === 'addon' && <p className="text-xs text-slate-400">When signed, it’s added to their yearly price: +{d.reinstallPct ?? 50}% of the undiscounted install from next season.</p>}
               {d.kind === 'lease' && <p className="text-xs text-slate-400">We keep the lights; takedown is inside the price (no takedown line). Next season is 10% off for coming back, up to 50% off.</p>}
-              {d.plan === 'payin3' && <p className="text-xs text-slate-400">Three equal payments of everything (install and takedown): when they sign, when the lights are up, in January; tax inside each. Not for re-installs; current customers only if they ask or say they can’t afford it this year.</p>}
+              {d.plan === 'payin3' && <p className="text-xs text-slate-400">Three equal payments of everything (install and takedown), tax inside each: the first when they sign, then one a month on the 1st or the 15th (they pick when they sign); the Pay button opens that day and they get an email that morning. Not for re-installs; current customers only if they ask or say they can’t afford it this year.</p>}
               <label className="block text-sm text-slate-400">Notes for the customer (optional)
                 <textarea value={d.notes ?? ''} onChange={(e) => set({ notes: e.target.value })} rows={2} className={field} />
               </label>

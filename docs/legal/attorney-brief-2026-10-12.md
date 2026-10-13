@@ -35,7 +35,7 @@ Not written yet. Proposed terms:
 |---|---|
 | What it is | A **payment plan** on any new install, bought (agreement A) or leased: three equal payments covering everything (install, service, removal). Never on a re-install of lights the customer owns. For a lease we own the lights |
 | Design | The customer may choose a new design each year or keep the previous one |
-| Payment | **Three equal payments** per season: when the customer signs, when the lights are up, and in January (the same three payment points as the purchase agreement). No autopay, no card on file; each payment by the same online link, Zelle, check or cash |
+| Payment | **Three equal payments** per season: the first when the customer signs; the second and third on the day of the month they choose when signing (the **1st or the 15th**), one in each of the next two months. We email a payment link that morning; no autopay, no card on file for now (a PayPal subscription version is planned behind a switch and stays **off until you have reviewed it**) |
 | Term | **No initial term**: season by season. We call in late summer to book the next season; nothing renews by itself |
 | Price changes | Year-one price from the quote. A returning-customer discount is undecided |
 | Moving | The plan can move to a new address in our service area, or be **assigned to the home's buyer if the buyer agrees**. Payments already made are not refunded |

@@ -60,10 +60,11 @@ export default function ProposalPage() {
     return () => clearTimeout(t)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function sign(sig) {
+  async function sign({ payDay, ...sig }) {
     const signature = { ...sig, docHash: state.p.docHash, userAgent: navigator.userAgent.slice(0, 200) }
-    if (demo) { setState((s) => ({ ...s, p: { ...s.p, status: 'signed', signature, signedAt: new Date().toISOString() } })); return }
-    await (await store).signProposal(token, signature)
+    const extra = payDay ? { payDay } : {} // Pay in 3: the customer's day of the month for payments 2 and 3
+    if (demo) { setState((s) => ({ ...s, p: { ...s.p, ...extra, status: 'signed', signature, signedAt: new Date().toISOString() } })); return }
+    await (await store).signProposal(token, signature, extra)
     await load(false)
   }
 
@@ -115,7 +116,7 @@ export default function ProposalPage() {
       ))}
       <ProposalDocument proposal={p} images={images} business={BIZ} />
       <div className="mx-auto mt-8 max-w-3xl space-y-4">
-        {open && state.intact !== false && <SignPanel expectedName={p.customer?.name ?? ''} onSign={sign} />}
+        {open && state.intact !== false && <SignPanel expectedName={p.customer?.name ?? ''} payIn3={isPayIn3(p)} onSign={sign} />}
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <span className="text-slate-400">Questions? We’re happy to adjust anything.</span>
           {call}

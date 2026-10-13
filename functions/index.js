@@ -64,6 +64,7 @@ import { claudeIncrement, monthKey, paypalFeeCents, paypalIncrement } from './us
 import { adsQuery, adsSpend, billingQuery, googleSpend as googleSpendOf, isMissingTable, previousMonth, termsQuery, topTerms } from './googleBilling.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { captureProblem, customIdFor, lockProblem, orderProblem, partLabel, payableProblem, validOrderId } from './payments.js'
+import { centralDayOf, dueText, payIn3Due, payIn3Reminder } from './payIn3.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
 import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
@@ -154,6 +155,7 @@ export const googleSpend = onSchedule({ schedule: '20 */6 * * *', timeZone: 'Ame
 const PAYPAL_CLIENT_ID = defineString('PAYPAL_CLIENT_ID')
 const PAYPAL_ENV = defineString('PAYPAL_ENV', { default: 'sandbox' })
 const FROM = 'info@christmas-light-creations.com'
+const PHONE = '281-819-0163'
 const SITE = 'https://christmas-light-creations.com'
 // App Check (reCAPTCHA): refuse calls that don't come from our pages. Turn on
 // only after the site has sent App Check tokens for a few days (Firebase
@@ -238,7 +240,7 @@ async function payableProposal(token, part = 'deposit') {
   if (!PARTS.includes(part)) throw new HttpsError('invalid-argument', 'Unknown payment')
   const ref = getFirestore().doc(`proposals/${token}`)
   const p = (await ref.get()).data()
-  const problem = payableProblem(p, part)
+  const problem = payableProblem(p, part, centralDay())
   if (problem) throw new HttpsError(...problem)
   return { ref, p, amount: partCents(p, part) }
 }
@@ -291,7 +293,7 @@ export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', s
   const lockPath = `paymentLocks.${part}`
   await db.runTransaction(async (tx) => {
     const p = (await tx.get(ref)).data()
-    const problem = payableProblem(p, part) ?? lockProblem(p?.paymentLocks?.[part], orderId, Date.now())
+    const problem = payableProblem(p, part, centralDay()) ?? lockProblem(p?.paymentLocks?.[part], orderId, Date.now())
     if (problem) throw new HttpsError(...problem)
     tx.update(ref, { [lockPath]: { orderId, at: Date.now() } })
   })
@@ -629,6 +631,58 @@ export const invoiceReminders = onSchedule({ schedule: '0 9 * * *', timeZone: 'A
   logger.info('invoiceReminders', { open: snap.size, sent })
 })
 
+// Pay in 3 (functions/payIn3.js, docs/specs/pay-in-3.md): the morning a
+// payment falls due (the customer's 1st or 15th) and a week later if still
+// unpaid, email them the Pay link; staff see nothing unless the email fails.
+// Auto-draft through a PayPal subscription waits for the attorney (switch
+// planned in Settings; off).
+export const payIn3Reminders = onSchedule({ schedule: '5 9 * * *', timeZone: 'America/Chicago', region: REGION, secrets: [SMTP_PASSWORD] }, async () => {
+  const snap = await getFirestore().collection('proposals').where('plan', '==', 'payin3').get()
+  const today = centralDay()
+  let sent = 0
+  for (const d of snap.docs) {
+    const p = d.data()
+    if (!['signed', 'countersigned'].includes(p.status)) continue
+    const dues = payIn3Due(centralDayOf(p.signedAt), p.payDay)
+    if (!dues) continue
+    for (const part of ['balance', 'takedown']) {
+      if (paymentOf(p, part)?.status === 'paid' || partCents(p, part) <= 0) continue
+      const kind = payIn3Reminder(dues[part], today)
+      if (!kind) continue
+      const to = String(p.customer?.email ?? '').trim()
+      try {
+        await once(d.ref, p, 'reminders', `${part}_${kind}`, async () => {
+          if (!emailOk(to)) return { skipped: 'no email' }
+          const label = partLabel(p, part)
+          const amount = `$${dollars(partCents(p, part))}`
+          const first = String(p.customer?.name ?? '').trim().split(/\s+/)[0] || 'there'
+          const link = `${SITE}/proposal/?t=${d.id}`
+          const when = kind === 'due' ? 'is due today' : `was due ${dueText(dues[part])} and is still open`
+          await mailer().sendMail({
+            from: `"Christmas Light Creations" <${FROM}>`, to, replyTo: FROM,
+            subject: `${label} ${kind === 'due' ? 'is due today' : 'is a week past due'}: Christmas Light Creations`,
+            text: `Hi ${first},
+
+${label} for your Christmas lights, ${amount}, ${when}. Pay online here (PayPal, Venmo or a card):
+${link}
+
+Zelle, check or cash work too: just reply or call ${PHONE}.
+
+Thank you!
+Christmas Light Creations
+${PHONE}`,
+          })
+          sent++
+          return { to }
+        })
+      } catch (e) {
+        await reportIncident('email', `A Pay-in-3 reminder to ${p.customer?.name ?? 'a customer'} (${to}) didn't go out: ${e.message}. Text them the link: ${SITE}/proposal/?t=${d.id}`, { proposal: d.id })
+      }
+    }
+  }
+  logger.info('payIn3Reminders', { proposals: snap.size, sent })
+})
+
 // ---- Customer accounts (/account/) ------------------------------------------
 
 // emailKeys: lowercase emails on each proposal and customer, written only by
@@ -748,7 +802,7 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   await recordLogin(db, email, req.auth.token).catch((e) => logger.warn('recordLogin', e))
   const tokens = await proposalTokensFor(email)
   const docs = tokens.length ? await db.getAll(...tokens.map((t) => db.doc(`proposals/${t}`)), { fieldMask: ['status', 'title', 'season', 'customer', 'items', 'discountPct', 'depositPct', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt'] }) : []
-  const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data())).sort(byNewest)
+  const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data(), centralDay())).sort(byNewest)
   // Yearly price breakdown from their customer record, once staff allow it.
   const ids = await customersFor(email)
   const recs = ids.length ? await db.getAll(...ids.map((id) => db.doc(`customers/${id}`)), { fieldMask: ['fullName', 'address', 'since', 'originalRate', 'addOns', 'priceShown', 'seasons'] }) : []

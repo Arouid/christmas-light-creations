@@ -30,7 +30,8 @@ export async function markViewed(token) {
 }
 
 // signature: { name, image (PNG data URL), consent: true, docHash, userAgent }
-export async function signProposal(token, signature) {
+// extra: { payDay } on a Pay-in-3 proposal (the rules allow only that, 1 or 15).
+export async function signProposal(token, signature, extra = {}) {
   const f = await fs()
-  await f.updateDoc(f.doc(f.db, 'proposals', token), { status: 'signed', signature, signedAt: f.serverTimestamp() })
+  await f.updateDoc(f.doc(f.db, 'proposals', token), { ...extra, status: 'signed', signature, signedAt: f.serverTimestamp() })
 }

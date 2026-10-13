@@ -5,6 +5,7 @@
 // verified sign-in email (any letter case). Later, PayPal subscriptions can
 // hang off the same email key.
 import { PARTS, partCents, paymentOf } from './proposalMath.js'
+import { centralDayOf, payIn3Due } from './payIn3.js'
 
 export const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 export const normEmail = (e) => String(e ?? '').trim().toLowerCase()
@@ -24,21 +25,24 @@ export function shownInAccount(p) {
 const iso = (t) => (t?.toDate ? t.toDate().toISOString() : typeof t === 'string' ? t : null)
 
 // What the account page needs about one proposal. Same payable rule as the
-// payment functions: deposit once signed, balance/takedown once staff ask.
-export function accountSummary(token, p) {
+// payment functions: deposit once signed, balance/takedown once staff ask or,
+// on a Pay-in-3 plan, from the day they fall due (`today` = the Central day).
+export function accountSummary(token, p, today = '') {
   const signed = p.status === 'signed' || p.status === 'countersigned'
+  const dues = p.plan === 'payin3' ? payIn3Due(centralDayOf(p.signedAt), p.payDay) : null
   const parts = PARTS.map((part) => {
     const amount = partCents(p, part)
     const pay = paymentOf(p, part)
+    const due = part === 'deposit' ? null : (dues?.[part] ?? null)
     let state = 'later'
     if (pay?.status === 'paid') state = 'paid'
     else if (amount <= 0) state = part === 'takedown' ? 'free' : 'none'
-    else if (signed && (part === 'deposit' || p.requests?.[part] === true)) state = 'due'
-    return { part, amount, state, paid: pay?.status === 'paid' ? pay.amount : 0, paidAt: iso(pay?.paidAt), sandbox: pay?.env === 'sandbox' }
+    else if (signed && (part === 'deposit' || p.requests?.[part] === true || (due && today && today >= due))) state = 'due'
+    return { part, amount, state, due, paid: pay?.status === 'paid' ? pay.amount : 0, paidAt: iso(pay?.paidAt), sandbox: pay?.env === 'sandbox' }
   })
   return {
     token, status: p.status, title: p.title ?? 'Christmas lighting', season: p.season ?? '',
-    kind: p.kind ?? null, plan: p.plan ?? null, // the page names the three payments by the plan (Pay in 3)
+    kind: p.kind ?? null, plan: p.plan ?? null, payDay: p.payDay ?? null, // the page names the three payments by the plan (Pay in 3)
     customer: { name: p.customer?.name ?? '', address: p.customer?.address ?? '', phone: p.customer?.phone ?? '' },
     sentAt: iso(p.sentAt), signedAt: iso(p.signedAt), parts,
   }

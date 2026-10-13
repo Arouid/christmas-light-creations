@@ -9,7 +9,7 @@ An estimate now has a **kind** and a **plan**, set in the staff editor:
 | | Choices | What changes |
 |---|---|---|
 | Kind (`p.kind`) | *Purchase* (none; the lights become theirs) · *Add-on* (`addon`) · *Lease* (`lease`, we keep the lights) | Next-season line and terms clause 6: purchase/add-on = 50% re-install; lease = 10% off for coming back (up to 50% off), takedown inside the price (no takedown line) |
-| Plan (`p.plan`) | *Deposit · install balance · takedown* (none) · *Pay in 3* (`payin3`) | Pay in 3 = the whole total (install + takedown, tax inside) in three equal payments to the cent (the last takes the odd cent), on the same three payment slots: deposit → Payment 1 of 3 (when they sign), balance → Payment 2 of 3 (when the lights are up), takedown → Payment 3 of 3 (in January). Terms clauses 2 and 7 swap to the Pay-in-3 wording |
+| Plan (`p.plan`) | *Deposit · install balance · takedown* (none) · *Pay in 3* (`payin3`) | Pay in 3 = the whole total (install + takedown, tax inside) in three equal payments to the cent (the last takes the odd cent), on the same three payment slots: deposit → Payment 1 of 3 (when they sign), balance → Payment 2 of 3, takedown → Payment 3 of 3, **one a month on the day the customer picks when signing (`p.payDay`, 1 or 15), in the two months after the signing month** (`functions/payIn3.js`: `payIn3Due`). Terms clauses 2 and 7 swap to the Pay-in-3 wording |
 
 Nothing changes shape in the database or on the server's PayPal path: `partCents(p, part)` (functions/proposalMath.js) and `totals()` (src/proposals/model.js) return the thirds, the labels come from `partLabel(p, part)` (model.js and functions/payments.js), and `accountSummary` carries `kind` and `plan` so `/account/` names the payments. Fingerprints: `canonical()` includes `plan` (and `kind`) only when set, so older proposals are untouched.
 
@@ -21,6 +21,13 @@ Nothing changes shape in the database or on the server's PayPal path: `partCents
 - Server emails and PayPal descriptions: "Payment 2 of 3 paid: …".
 - Preview: `/proposal/?demo=payin3`.
 
+## Dates, Pay buttons and reminders
+
+- The customer picks the 1st or the 15th on the signing screen (required; `firestore.rules` `publicSign` lets `payDay` in [1, 15] be written with the signature on a `payin3` proposal). The contract rows then read "Payment 2 of 3, November 15".
+- Payments 2 and 3 become payable on their day (page `isPayable`, server `payableProblem`, account `accountSummary`, all with the Central day) or earlier if staff **Ask** for them.
+- `payIn3Reminders` (9:05 am Central, daily) emails the customer the Pay link the morning a payment is due and again a week later if still unpaid (`reminders.<part>_due` / `_late` on the proposal, written once).
+- **Auto-draft** (a 3-month PayPal subscription: payment 1 at signing, 2 and 3 pulled on the chosen day): decided 2026-10-12 to build behind a Settings switch that stays **off until the attorney has reviewed the autopay authorization**; until then the app requests each payment as above. Not built yet.
+
 ## Rules for staff (also in the guide and the sales assistant)
 
 New installs only, bought or leased; never a re-install. New customers: offer it when up-front cost is the hesitation. Current customers: only if they ask about payment options or say they can't afford it this year.
@@ -28,7 +35,6 @@ New installs only, bought or leased; never a re-install. New customers: offer it
 ## Not done
 
 - A Pay-in-3 *invoice* (an add-on billed by invoice in thirds): invoices stay one payment.
-- Reminders for payments 2 and 3: staff ask for them from the Payments box as for the balance and takedown today.
 - Settings terms for leases/Pay in 3 separately from the purchase terms: the clause swap covers it.
 
 ## Tests

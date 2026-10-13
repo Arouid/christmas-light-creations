@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { business } from '../data/content'
 import DepositPanel from '../proposal/DepositPanel.jsx'
-import { STATUS_LABEL, fmt, isPayIn3, partLabel } from '../proposals/model.js'
+import { STATUS_LABEL, dueText, fmt, isPayIn3, partLabel } from '../proposals/model.js'
 import Icon from '../components/Icon'
 import RecaptchaNote from '../components/RecaptchaNote'
 import { REINSTALL_PCT, yearlyPrice } from '../lib/addOns'
@@ -456,7 +456,7 @@ function ProposalCard({ p, reload }) {
             <tr key={x.part} className="border-t border-white/10">
               <td className="py-2">{partLabel(p, x.part)}</td>
               <td className={`py-2 text-right tabular-nums ${x.state === 'free' ? 'font-semibold text-emerald-300' : ''}`}>{x.state === 'free' ? 'Free' : fmt(x.state === 'paid' ? x.paid : x.amount)}</td>
-              <td className={`py-2 text-right ${STATE_CLASS[x.state]}`}>{STATE_TEXT[x.state]}{x.state === 'paid' && x.sandbox ? ' (test)' : ''}</td>
+              <td className={`py-2 text-right ${STATE_CLASS[x.state]}`}>{x.state === 'later' && x.due ? `Due ${dueText(x.due)}` : STATE_TEXT[x.state]}{x.state === 'paid' && x.sandbox ? ' (test)' : ''}</td>
             </tr>
           ))}
           <tr className="border-t border-white/20 font-semibold"><td className="py-2">Total</td><td className="py-2 text-right tabular-nums">{fmt(total)}</td><td /></tr>
