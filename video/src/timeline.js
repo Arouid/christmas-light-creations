@@ -36,6 +36,9 @@ export function planTiming(durFrames, beatCount) {
 export function homeTiming(props, durFrames) {
   const fps = props.fps || 30
   const drive = props.clips?.drive ? Math.round((props.home?.driveSeconds ?? 2.5) * fps) : 0
+  const door = props.clips?.door ? Math.round((props.home?.doorSeconds ?? 1.7) * fps) : 0
+  const slam = props.clips?.door ? drive + Math.round((props.home?.doorSlamAt ?? 1.0) * fps) : drive - 10
   const reaction = props.clips?.reaction ? Math.round((props.home?.reactionSeconds ?? 2.2) * fps) : 0
-  return { driveEnd: drive, revealStart: drive ? drive + 6 : 18, reactionStart: durFrames - reaction }
+  const doorEnd = drive + door
+  return { driveEnd: drive, doorEnd, slamAt: slam, revealStart: doorEnd ? doorEnd + 6 : 18, reactionStart: durFrames - reaction }
 }

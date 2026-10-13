@@ -20,7 +20,7 @@ The story ad's MP4s are not in git (`.gitignore`: this folder except this README
 | `clc-teaser-5s-16x9.mp4` | 1920×1080, landscape | **the 5-second ad**, silent | YouTube bumper (6 s max), in-stream, TV |
 | `clc-teaser-5s-9x16.mp4` | 1080×1920, vertical | same | Shorts, phone feeds |
 | `clc-teaser-5s-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
-| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 38 s, with music and sound | YouTube in-stream, TV, desktop |
+| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 39 s, with music and sound | YouTube in-stream, TV, desktop |
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | same | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
 
@@ -33,10 +33,10 @@ The story ad, scene by scene:
 |---|---|---|
 | 0–8.5 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
 | 8.5–15 | The plan | Three beats, one after another, over snow footage: "Thursday 9:02 am · Everyone's gone." "9:30 am · We're on the roof." "3:48 pm · Done. Timer set for dusk." The photoreal cottage stands on the right with its lights off and pops them on with the last beat (click + harp). Without a cottage image, a clock sweeps to each time instead. |
-| 15–26 | 5:41 pm | Her in the red car at night (clip), then the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", then her turning to look out of the window (clip, same shoot) with real falling snow over that part only (the overlay looked fake over the house: owner). |
-| 26–30.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
-| 30.5–35.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
-| 35.5–39 | End card | The photoreal cottage already lit (it popped on in the plan scene; `endCardLit`), real snow, 281-819-0163, the site, Free 30-minute estimate. |
+| 15–27 | 5:41 pm | Her in the red car at night (clip), she closes the car door (clip, same shoot, with the slam), then the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", then her face lit by warm light (clip) with real falling snow over that part only. Ambience beds under the footage when set: inside the car until the door, outside at night from the house on (`sfx.carInterior`, `sfx.nightOutside`). |
+| 27–31.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
+| 31.5–36.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
+| 36.5–40 | End card | The photoreal cottage already lit (it popped on in the plan scene; `endCardLit`), real snow, 281-819-0163, the site, Free 30-minute estimate. |
 
 Every word of the story is in `video/src/data.js` → `story` (bubbles with their timing, the three
 beats, the two lines, the ask). Photos: 32 (the reveal; a 1024×576 file, upscaled) and 34 (the ask).
@@ -84,6 +84,8 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 | `sfx/switch-turned-on-epic-stock-media-1-00-00.wav` | `sfx.lightsOn` (the click as the cottage comes on) | "Switch Turned On", Epic Stock Media | same |
 | `sfx/alert-magic-chime-pluck-albert-behar-harp-chime-pluck-1-0m06s.wav` | `sfx.lightsChime` (the harp pluck right after the click; owner's pick) | "Alert Magic Chime Pluck", Albert Behar | same |
 | `sfx/fantasy-game-whoosh-harp-sweep-bosnow-harp-impact-big-upbeat-1-0m03s.wav` | not used (tried as the sweep after the click) | "Fantasy Game Whoosh Harp Sweep", Bosnow | same |
+| `sfx/car-door-slammed-shut-fascinatedsound-1-00-01.wav` | `sfx.car` (synced to the door clip: `home.doorSlamAt`) | "Car Door Slammed Shut", Fascinatedsound | same |
+| `sfx/light-switch-button-soft-betacut-1-00-00.wav` | not used yet (a softer switch, an alternative to the click) | "Light Switch Button Soft", Betacut | same |
 | `sfx/harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3` | `sfx.reveal` (as the house appears) | "Harp Chime Alert Magical Bright", Bosnow | same |
 | `sfx/fluorescent-tube-light-flicker-bosnow-1-00-47.mp3` | not used (about 20 dB quieter than the rest: inaudible as the switch-on) | "Fluorescent Tube Light Flicker", Bosnow | same |
 | `sfx/wind-ambience-howling-during-snowstorm-vincentmets-1-00-20.mp3` | `sfx.ambience` (looped, very low) | "Wind Ambience Howling During Snowstorm", Vincentmets | same |
@@ -91,7 +93,9 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 | `clips/person-smiling-in-car-at-night-red-light-105845-1080.mp4` | `clips.drive` (from 0.5 s: her in the red car, looking out; owner's pick, same shoot as the reaction clip; the city-driving clip was "too jarring") | "Person Smiling In Car At Night Red Light" (12 s) | same |
 | `clips/falling-snowflakes-on-dark-bokeh-background-114577-1080.mp4` | `clips.plan` (behind the three beats) | "Falling Snowflakes On Dark Bokeh Background" (26 s) | same |
 | `clips/falling-snowflakes-overlay-86734-1080.mp4` | `clips.end` (behind the end card) and `clips.snowOverlay` (in front of her reaction in the car and the closing shot; strength `snowOverlayOpacity`), screen-blended so the black goes away | "Falling Snowflakes Overlay" (56 s) | same |
-| `clips/person-in-car-on-rainy-night-105878-1080-#1.mp4` | `clips.reaction` (from 2.4 s: her turning to look out of the window; owner's pick) | "Person In Car On Rainy Night" (14.7 s) | same |
+| `clips/person-closes-car-door-at-night-105855-1080.mp4` | `clips.door` (from 0.3 s, 1.7 s: she closes the car door; the slam lands 1 s in) | "Person Closes Car Door At Night" (14.8 s) | same |
+| `clips/person-smiling-in-warm-ambient-light-95610-1080.mp4` | `clips.reaction` (from 0.5 s: her face lit by the lights, outside the car) | "Person Smiling In Warm Ambient Light" (7.4 s) | same |
+| `clips/person-in-car-on-rainy-night-105878-1080-#1.mp4` | not used now (was the reaction, inside the car, before the door shot went in) | "Person In Car On Rainy Night" (14.7 s) | same |
 | `clips/shimmering-gold-bokeh-lights-54198-1080.mp4` | `clips.snow` (behind the second thread) | "Shimmering Gold Bokeh Lights" (9.6 s, looped) | same |
 | other files in `clips/` and `sfx/welding-arc-…` | not used (downloaded as candidates) | | same |
 
@@ -182,7 +186,7 @@ file into `video/public/music/`, set `music.file` in `data.js`, render, and reco
 | "Little Swallow (Carol Of The Bells) – Ukrainian New Years Song" by JuliusH, 1:04, instrumental | https://pixabay.com/music/special-occasions-little-swallow-carol-of-the-bells-ukrainian-new-years-song-5821/ (downloaded 2026-10-11 to `video/public/music/carol-of-the-bells-juliush.mp3`, not in git) | Pixabay Content License: free for commercial use, no attribution required, not for resale as-is. Picked over the other Carol of the Bells tracks because its page shows no "Content ID Registered" badge (those can trigger YouTube copyright claims on an ad). The melody itself (Leontovych, 1914) is public domain. |
 
 In the full ad the effects sit under the music at a fraction of their level (`adMix` in `data.js`:
-pops at 45 %, the switch-on at 50 %, no typing, no reveal chime, no wind; owner 2026-10-13: "the
+pops at 45 %, the switch-on at 50 %, the car door at 90 %, no typing, no reveal chime, no wind; owner 2026-10-13: "the
 sound efx fit poorly for the full ad"). The 5-second ad has no music and uses the full levels.
 
 ## Licence

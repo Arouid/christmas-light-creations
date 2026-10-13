@@ -44,7 +44,7 @@ const data = {
   scenes: {
     thread1: 8.5,
     plan: 6.5,
-    home: 11, // drive 2.5 s → reveal → reaction 2.2 s (6.5 without the clips)
+    home: 12, // drive 2.5 s → door 1.7 s → reveal → reaction 2.2 s (6.5 without the clips)
     thread2: 4.5,
     pitch: 5,
     end: 4,
@@ -93,22 +93,27 @@ const data = {
   // Sound effects: files in assets-source/ads/sfx/. Empty = none. Each plays at its moment:
   // pop = a text bubble lands (both sides); typing = the dots start; lightsOn = the cottage flickers
   // on (plan beat 3, end card, the 5-second ad); lightsChime = a second layer as the glow settles;
-  // car = start of the 5:41 pm scene; reveal = the house opens out of the dark; ambience = a soft
+  // car = a car door, just before the house appears (she gets out); reveal = the house opens out of the dark; ambience = a soft
   // loop under the whole video (wind, snow, night).
   sfx: {
     pop: 'notification-bubble-pop-message-epic-stock-media-1-00-00.mp3',
     typing: 'smartphone-typing-message-gfx-sounds-2-2-00-04.mp3',
     lightsOn: 'switch-turned-on-epic-stock-media-1-00-00.wav', // the click as the cottage comes on (the flicker file was ~20 dB too quiet)
     lightsChime: 'alert-magic-chime-pluck-albert-behar-harp-chime-pluck-1-0m06s.wav', // the lights coming alive, right after the click (owner's pick over the whoosh sweep)
-    car: '',
+    car: 'car-door-slammed-shut-fascinatedsound-1-00-01.wav', // she gets out, just before the house appears
     reveal: 'harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3',
     ambience: 'wind-ambience-howling-during-snowstorm-vincentmets-1-00-20.mp3',
+    // Beds under the real footage so it sounds like a place: inside the car (her driving, her
+    // reaction) and outside at night (the house appearing, the closing house). Looped, faded.
+    carInterior: '',
+    nightOutside: '',
+    bedVolume: 0.35,
     volume: 0.8,
     ambienceVolume: 0.12,
   },
   // How loud each effect is in the full ad, under the music, as a share of its level above (0 = off).
   // The 5-second ad has no music and uses the levels above as they are.
-  adMix: { pop: 0.45, typing: 0, lightsOn: 0.5, reveal: 0, ambience: 0 },
+  adMix: { pop: 0.45, typing: 0, lightsOn: 0.5, car: 0.9, reveal: 0, ambience: 0, beds: 1 },
   // Footage: files in assets-source/ads/clips/ (MP4, 1080p or 4K). Empty = the scene uses its
   // graphic or photo instead. texting = hands on a phone at night, behind the first thread;
   // drive = headlights on a dark street / through the windshield, opens the 5:41 pm scene;
@@ -118,7 +123,8 @@ const data = {
   clips: {
     texting: 'warm-golden-bokeh-background-55540-1080.mp4', // owner 2026-10-13: bokeh lights rather than the hands on a phone
     drive: 'person-smiling-in-car-at-night-red-light-105845-1080.mp4', // owner's pick 2026-10-13: same shoot as the reaction clip
-    reaction: 'person-in-car-on-rainy-night-105878-1080-#1.mp4', // her, in the car, turning to look out (owner's pick)
+    door: 'person-closes-car-door-at-night-105855-1080.mp4', // she closes the car door (same shoot), with the slam
+    reaction: 'person-smiling-in-warm-ambient-light-95610-1080.mp4', // her face lit by the lights, outside the car now
     snow: 'shimmering-gold-bokeh-lights-54198-1080.mp4',
     plan: 'falling-snowflakes-on-dark-bokeh-background-114577-1080.mp4', // behind the plan beats (owner: no still background between footage)
     end: 'falling-snowflakes-overlay-86734-1080.mp4', // real snow behind the end card (black blended away)
@@ -129,10 +135,12 @@ const data = {
   snowOverlayOpacity: 0.6,
   snowFrontOpacity: 0.35,
   // Seconds to skip at the start of a clip (so the best stretch plays).
-  clipStart: { reaction: 2.4, drive: 0.5 },
-  // The 5:41 pm scene: how long the drive clip plays before the house appears, and how long the
-  // reaction clip holds at the end (only when those clips are set).
-  home: { driveSeconds: 2.5, reactionSeconds: 2.2 },
+  clipStart: { reaction: 0.5, drive: 0.5, door: 0.3 },
+  // The 5:41 pm scene: how long the drive clip plays, then the door clip, before the house appears,
+  // and how long the reaction clip holds at the end (only when those clips are set).
+  // doorSeconds: how long the door clip plays after the drive; doorSlamAt: seconds into it when
+  // the door shuts (the slam sound lands there).
+  home: { driveSeconds: 2.5, doorSeconds: 1.7, doorSlamAt: 1.0, reactionSeconds: 2.2 },
   // Film look: grain strength (0 = off), vignette strength, and the grade over every clip and
   // photo so footage from different shoots feels like one film: saturate/contrast (CSS filter),
   // lift = how far blacks rise toward navy (0–1), warm = gold in the mids and highlights (0–1).

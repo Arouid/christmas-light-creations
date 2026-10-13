@@ -6,8 +6,8 @@ import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
 import { homeTiming } from '../timeline.js'
 
-// She turns onto the street. With footage: the drive clip (headlights, the street) under the
-// time, then the house opens up out of the dark (a soft iris) and settles, "She's home." lands,
+// She turns onto the street. With footage: her in the car under the time, the car door closing
+// (with the slam), then the house opens up out of the dark (a soft iris) and settles, "She's home." lands,
 // and her reaction closes the scene, with real snow over that last part only (owner: the overlay
 // looked fake over the house). Without footage: black, the time, the reveal, the line.
 export function HomeReveal({ data, dur }) {
@@ -16,14 +16,18 @@ export function HomeReveal({ data, dur }) {
   const { colors, story, photos, type, clips } = data
   const photo = photos.home
   const boxH = tall ? TALL_WINDOW : h
-  const { driveEnd, revealStart, reactionStart } = homeTiming(data, dur)
+  const { driveEnd, doorEnd, revealStart, reactionStart } = homeTiming(data, dur)
   const iris = interpolate(frame, [revealStart, revealStart + 62], [0, 150], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: (t) => 1 - Math.pow(1 - t, 2) })
   const mask = `radial-gradient(ellipse at 50% 45%, black ${iris}%, transparent ${iris + 28}%)`
   const scale = interpolate(frame, [revealStart, dur], [1.16, 1.02], { extrapolateLeft: 'clamp' })
   const bright = interpolate(frame, [revealStart, revealStart + 72], [0.55, 0.92], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
   const lineAt = revealStart + 70
   const line = pop(frame, fps, lineAt, { damping: 14 })
-  const driveFade = driveEnd ? interpolate(frame, [driveEnd - 10, driveEnd + 8], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 0
+  const driveFade = driveEnd ? interpolate(frame, [driveEnd - 6, driveEnd + 4], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 0
+  const doorFade = clips?.door && doorEnd > driveEnd ? Math.min(
+    interpolate(frame, [driveEnd - 4, driveEnd + 4], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+    interpolate(frame, [doorEnd - 8, doorEnd + 6], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+  ) : 0
   const reactionIn = clips?.reaction ? fadeIn(frame, reactionStart, 10) : 0
   const media = {
     width: '100%', height: '100%', objectFit: 'cover',
@@ -39,6 +43,11 @@ export function HomeReveal({ data, dur }) {
           {clips?.drive && driveFade > 0 && (
             <div style={{ position: 'absolute', inset: 0, opacity: driveFade }}>
               <Clip file={clips.drive} start={data.clipStart?.drive || 0} brightness={0.85} />
+            </div>
+          )}
+          {clips?.door && doorFade > 0 && (
+            <div style={{ position: 'absolute', inset: 0, opacity: doorFade }}>
+              <Clip file={clips.door} start={data.clipStart?.door || 0} brightness={0.85} />
             </div>
           )}
           {frame >= revealStart - 2 && (photo.clip ? <OffthreadVideo src={staticFile(`clips/${photo.clip}`)} muted style={media} /> : <Img src={staticFile(`photos/${photo.number}.jpg`)} style={media} />)}

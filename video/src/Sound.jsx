@@ -15,6 +15,17 @@ function Hit({ file, at, volume, name, frames, fadeOut = 0 }) {
   )
 }
 
+// A looped ambience bed for a stretch of the video, faded in and out.
+function Bed({ file, from, frames, volume, name, fade = 10 }) {
+  if (!file || frames <= 0) return null
+  const vol = (f) => volume * Math.min(1, f / fade, (frames - f) / fade)
+  return (
+    <Sequence from={from} durationInFrames={frames} name={name} layout="none">
+      <Audio src={staticFile(`sfx/${file}`)} volume={vol} loop />
+    </Sequence>
+  )
+}
+
 // The cottage switching on: the switch click, then the sweep of the lights coming alive.
 function LightsOn({ sfx, at, v, keyPrefix, scale = 1 }) {
   return (
@@ -33,7 +44,6 @@ export function Sound({ props, list }) {
   const base = sfx.volume ?? 0.8
   const mix = props.adMix || {}
   const lv = (key) => base * (mix[key] ?? 1)
-  const v = base
   const hits = []
   for (const { key, from, dur } of list) {
     if (key === 'thread1' || key === 'thread2') {
@@ -49,9 +59,15 @@ export function Sound({ props, list }) {
       if (lv('lightsOn') > 0) hits.push(<LightsOn key="lightsOn-plan" sfx={sfx} at={from + on} v={lv('lightsOn')} keyPrefix="plan: lights on" />)
     }
     if (key === 'home') {
-      const { revealStart } = homeTiming(props, dur)
-      hits.push(<Hit key="car" file={sfx.car} at={from} volume={v * 0.8} name="car" />)
+      const { doorEnd, slamAt, revealStart } = homeTiming(props, dur)
+      const bed = (sfx.bedVolume ?? 0.35) * (mix.beds ?? 1)
+      if (doorEnd > 0) hits.push(<Bed key="bed-car" file={sfx.carInterior} from={from} frames={doorEnd + 6} volume={bed} name="bed: inside the car" />)
+      hits.push(<Bed key="bed-night" file={sfx.nightOutside} from={from + revealStart - 8} frames={dur - revealStart + 8} volume={bed} name="bed: outside at night" />)
+      if (lv('car') > 0 && slamAt > 0) hits.push(<Hit key="car" file={sfx.car} at={from + slamAt} volume={lv('car')} name="car door" />)
       if (lv('reveal') > 0) hits.push(<Hit key="reveal" file={sfx.reveal} at={from + revealStart} volume={lv('reveal')} name="reveal" />)
+    }
+    if (key === 'pitch') {
+      hits.push(<Bed key="bed-night-2" file={sfx.nightOutside} from={from} frames={dur} volume={(sfx.bedVolume ?? 0.35) * (mix.beds ?? 1) * 0.8} name="bed: outside, the closing house" />)
     }
     if (key === 'end' && !(props.cottageImage && props.endCardLit)) {
       if (lv('lightsOn') > 0) hits.push(<LightsOn key="lightsOn-end" sfx={sfx} at={from + 4} v={lv('lightsOn')} keyPrefix="end card" scale={0.6} />)
