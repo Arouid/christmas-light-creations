@@ -481,3 +481,4 @@ What was actually checked working, and how. Newest first.
 - Nest charge pre-approved by signing / paying (owner, 2026-10-12); tested; check green.
 - Courtesies clause (owner, 2026-10-12): clause 1 and the seasonal terms; tested; check green.
 - DIY takedown (owner, 2026-10-12): clause 6 purchase + add-on and the seasonal terms; tested; check green.
+- Rescheduling / late takedown wording (owner, 2026-10-12): clauses 3 and 6 incl. lease and add-on, seasonal terms; tested; check green.
