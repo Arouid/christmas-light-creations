@@ -3,7 +3,7 @@ import { business } from '../data/content'
 import ProposalDocument from '../proposals/ProposalDocument.jsx'
 import SignPanel from '../proposals/SignPanel.jsx'
 import DepositPanel from './DepositPanel.jsx'
-import { PART_LABEL, PAY_PARTS, docHash, fmt, isPayable, partAmount, paymentOf } from '../proposals/model.js'
+import { PAY_PARTS, docHash, fmt, isPayIn3, isPayable, partAmount, partLabel, paymentOf } from '../proposals/model.js'
 import Icon from '../components/Icon'
 import RecaptchaNote from '../components/RecaptchaNote'
 
@@ -11,6 +11,11 @@ import RecaptchaNote from '../components/RecaptchaNote'
 // Dev preview with sample data: /proposal/?demo
 const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown' }
 const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down and labeling and boxing them for you to keep.' }
+// Pay in 3 (owner 2026-10-12): the same three slots, named as payments 1, 2 and 3.
+const PAYIN3_TITLE = { deposit: 'Payment 1 of 3', balance: 'Payment 2 of 3', takedown: 'Payment 3 of 3' }
+const PAYIN3_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'Your lights are down for the season. Thank you!' }
+const payTitle = (p, part) => (isPayIn3(p) ? PAYIN3_TITLE : PAY_TITLE)[part]
+const payNote = (p, part) => (isPayIn3(p) ? PAYIN3_NOTE : PAY_NOTE)[part]
 
 const q = new URLSearchParams(window.location.search)
 const token = q.get('t') ?? ''
@@ -19,12 +24,14 @@ const demo = import.meta.env.DEV && q.has('demo')
 const BIZ = { name: business.name, phone: business.phone, email: 'info@christmas-light-creations.com', logo: business.logo }
 
 async function loadDemo() {
-  const { DEMO_PROPOSAL } = await import('./demoProposal.js')
-  // ?demo=balance: signed, deposit paid, install balance asked for.
-  const later = q.get('demo') === 'balance'
+  const { DEMO_PROPOSAL, DEMO_PAYIN3 } = await import('./demoProposal.js')
+  const which = q.get('demo')
+  // ?demo=payin3: a lease paid in three equal payments. ?demo=balance: signed, deposit paid, install balance asked for.
+  const base = which === 'payin3' ? DEMO_PAYIN3 : DEMO_PROPOSAL
+  const later = which === 'balance'
     ? { status: 'countersigned', deposit: { status: 'paid', amount: 74925, env: 'sandbox' }, requests: { balance: true } }
     : {}
-  return { p: { ...DEMO_PROPOSAL, ...later, docHash: await docHash(DEMO_PROPOSAL) }, images: {} }
+  return { p: { ...base, ...later, docHash: await docHash(base) }, images: {} }
 }
 
 export default function ProposalPage() {
@@ -93,18 +100,18 @@ export default function ProposalPage() {
       {signed && (
         <div className="mx-auto mb-6 max-w-3xl space-y-3 rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-5 print:hidden">
           <p className="font-display text-2xl font-extrabold text-emerald-300">Signed ✓ Thank you!</p>
-          <p className="text-slate-300">{depositDue ? 'Pay your deposit below to hold your install date. ' : ''}We’ll contact you to confirm your install date{p.status === 'countersigned' ? '' : ' and countersign your agreement'}. Keep a copy for your records:</p>
+          <p className="text-slate-300">{depositDue ? `${isPayIn3(p) ? 'Make your first payment' : 'Pay your deposit'} below to hold your install date. ` : ''}We’ll contact you to confirm your install date{p.status === 'countersigned' ? '' : ' and countersign your agreement'}. Keep a copy for your records:</p>
           <button type="button" onClick={() => window.print()} className="rounded-full bg-white px-5 py-3 font-semibold text-night-950">Save or print a copy (PDF)</button>
           <p className="text-sm text-slate-400">All your agreements and payments in one place: <a href={`${import.meta.env.BASE_URL}account/`} className="underline">your account</a> (sign in with your email).</p>
         </div>
       )}
       {due.map((part) => (
         <div key={part} className="mx-auto mb-6 max-w-3xl">
-          <DepositPanel token={token} part={part} title={PAY_TITLE[part]} note={PAY_NOTE[part]} amountLabel={fmt(partAmount(p, part))} onPaid={() => load(false)} />
+          <DepositPanel token={token} part={part} title={payTitle(p, part)} note={payNote(p, part)} amountLabel={fmt(partAmount(p, part))} onPaid={() => load(false)} />
         </div>
       ))}
       {paid.map((part) => (
-        <p key={part} className="mx-auto mb-3 max-w-3xl rounded-2xl bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-300 print:hidden">{PART_LABEL[part]} paid ✓ {fmt(paymentOf(p, part).amount)}. Thank you!</p>
+        <p key={part} className="mx-auto mb-3 max-w-3xl rounded-2xl bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-300 print:hidden">{partLabel(p, part)} paid ✓ {fmt(paymentOf(p, part).amount)}. Thank you!</p>
       ))}
       <ProposalDocument proposal={p} images={images} business={BIZ} />
       <div className="mx-auto mt-8 max-w-3xl space-y-4">

@@ -63,7 +63,7 @@ import { captureOrder, createOrder, getOrder } from './paypal.js'
 import { claudeIncrement, monthKey, paypalFeeCents, paypalIncrement } from './usage.js'
 import { adsQuery, adsSpend, billingQuery, googleSpend as googleSpendOf, isMissingTable, previousMonth, termsQuery, topTerms } from './googleBilling.js'
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
-import { PART_LABEL, captureProblem, customIdFor, lockProblem, orderProblem, payableProblem, validOrderId } from './payments.js'
+import { captureProblem, customIdFor, lockProblem, orderProblem, partLabel, payableProblem, validOrderId } from './payments.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
 import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
@@ -256,12 +256,12 @@ export const createDepositOrder = onCall({ region: REGION, invoker: 'public', se
       token: req.data.token,
       customId: customIdFor(req.data.token, part),
       amount: dollars(amount),
-      description: `${PART_LABEL[part]}: ${p.title ?? 'Christmas lighting'} for ${p.customer?.address ?? ''}`,
+      description: `${partLabel(p, part)}: ${p.title ?? 'Christmas lighting'} for ${p.customer?.address ?? ''}`,
     })
     return { orderId: order.id }
   } catch (e) {
     // Unhandled errors reach the page only as "internal"; pass PayPal's reason on.
-    await reportIncident('paypal', `${p.customer?.name ?? 'A customer'} tried to start their ${PART_LABEL[part].toLowerCase()} payment and PayPal refused: ${e.message}`, { token: req.data.token, part })
+    await reportIncident('paypal', `${p.customer?.name ?? 'A customer'} tried to start their ${partLabel(p, part).toLowerCase()} payment and PayPal refused: ${e.message}`, { token: req.data.token, part })
     throw new HttpsError('unavailable', e.message)
   }
 })
@@ -271,18 +271,18 @@ export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', s
   const part = req.data?.part ?? 'deposit'
   const orderId = String(req.data?.orderId ?? '')
   if (!validOrderId(orderId)) throw new HttpsError('invalid-argument', 'Bad payment reference')
-  const { ref, amount } = await payableProposal(token, part)
+  const { ref, p, amount } = await payableProposal(token, part)
   const customId = customIdFor(token, part)
   const cfg = paypalCfg()
 
   // 1. Look at the order first: a wrong one is refused before any money moves.
   const order = await getOrder(cfg, orderId).catch(async (e) => {
-    await reportIncident('paypal', `Couldn't check a ${PART_LABEL[part].toLowerCase()} payment with PayPal (nothing charged): ${e.message}`, { token, part, orderId })
+    await reportIncident('paypal', `Couldn't check a ${partLabel(p, part).toLowerCase()} payment with PayPal (nothing charged): ${e.message}`, { token, part, orderId })
     throw new HttpsError('unavailable', 'PayPal didn’t answer. Please try again.')
   })
   const wrong = orderProblem(order, { customId, amount })
   if (wrong) {
-    await reportIncident('payment', `A ${PART_LABEL[part].toLowerCase()} payment was refused before charging because the PayPal order didn't match (nothing charged).`, { token, part, orderId, ...wrong, amount })
+    await reportIncident('payment', `A ${partLabel(p, part).toLowerCase()} payment was refused before charging because the PayPal order didn't match (nothing charged).`, { token, part, orderId, ...wrong, amount })
     throw new HttpsError('failed-precondition', 'This payment doesn’t match what’s due. Nothing was charged. Please refresh and try again, or call us.')
   }
 
@@ -303,14 +303,14 @@ export const captureDepositOrder = onCall({ region: REGION, invoker: 'public', s
     result = await captureOrder(cfg, orderId)
   } catch (e) {
     await unlock()
-    await reportIncident('payment', `PayPal couldn't complete a ${PART_LABEL[part].toLowerCase()} payment (the customer was told to try again): ${e.message}`, { token, part, orderId })
+    await reportIncident('payment', `PayPal couldn't complete a ${partLabel(p, part).toLowerCase()} payment (the customer was told to try again): ${e.message}`, { token, part, orderId })
     throw new HttpsError('unavailable', 'PayPal couldn’t complete the payment. Please try again, or call us.')
   }
   const capture = result.purchase_units?.[0]?.payments?.captures?.[0]
   const mismatch = captureProblem(result, { customId, amount })
   if (mismatch) {
     await unlock()
-    await reportIncident('payment', `IMPORTANT: PayPal took a ${PART_LABEL[part].toLowerCase()} payment but it didn't match what's due, so it wasn't recorded. Check PayPal order ${orderId}, then refund it or record it by hand.`, { token, part, orderId, status: result.status, ...mismatch, amount })
+    await reportIncident('payment', `IMPORTANT: PayPal took a ${partLabel(p, part).toLowerCase()} payment but it didn't match what's due, so it wasn't recorded. Check PayPal order ${orderId}, then refund it or record it by hand.`, { token, part, orderId, status: result.status, ...mismatch, amount })
     throw new HttpsError('failed-precondition', 'Payment could not be confirmed. Please call us.')
   }
 
@@ -377,9 +377,9 @@ async function proposalChangeEmails(event) {
     const was = paymentOf(before, part)
     const now = paymentOf(after, part)
     if (was?.status === 'paid' || now?.status !== 'paid') continue
-    await logWebsite('proposal-paid', proposalTarget(after, name), `${PART_LABEL[part]} · ${dollars(now.amount)}${now.env === 'sandbox' ? ' (test)' : ''}`)
+    await logWebsite('proposal-paid', proposalTarget(after, name), `${partLabel(after, part)} · ${dollars(now.amount)}${now.env === 'sandbox' ? ' (test)' : ''}`)
     if (!staff.length) continue
-    await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `${PART_LABEL[part]} paid: ${name} ($${dollars(now.amount)})`, text: `${name} paid the $${dollars(now.amount)} ${PART_LABEL[part].toLowerCase()} by PayPal${now.env === 'sandbox' ? ' (TEST payment, sandbox)' : ''}.\nPayPal order ${now.orderId}.\n\nCustomer view: ${link}` })
+    await mail.sendMail({ from: `"CLC Website" <${FROM}>`, to: staff, subject: `${partLabel(after, part)} paid: ${name} ($${dollars(now.amount)})`, text: `${name} paid the $${dollars(now.amount)} ${partLabel(after, part).toLowerCase()} by PayPal${now.env === 'sandbox' ? ' (TEST payment, sandbox)' : ''}.\nPayPal order ${now.orderId}.\n\nCustomer view: ${link}` })
   }
 }
 

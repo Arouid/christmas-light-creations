@@ -3,9 +3,9 @@ import { business } from '../../data/content'
 import { gmailUrl } from '../../lib/messages'
 import ProposalDocument from '../../proposals/ProposalDocument.jsx'
 import SignaturePad from '../../proposals/SignaturePad.jsx'
-import { PAY_PARTS, PART_LABEL, STATUS_LABEL, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, partAmount, paymentOf, sendProblems, takedownItem, termVars, totals } from '../../proposals/model.js'
-import { DEFAULT_TERMS, FILL_IN } from '../../proposals/terms.js'
-import { taxRateOf } from '../../proposals/model.js'
+import { PAY_PARTS, STATUS_LABEL, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, partAmount, paymentOf, sendProblems, takedownItem, termVars, totals } from '../../proposals/model.js'
+import { DEFAULT_TERMS, FILL_IN, defaultTerms } from '../../proposals/terms.js'
+import { KINDS, PLANS, isPayIn3, partLabel, taxRateOf } from '../../proposals/model.js'
 import { taxSnapshot } from '../../lib/salesTax'
 import { todayISO } from '../../lib/customers'
 import { COLOR_SETS, STYLES, normalize } from '../../designer/model.js'
@@ -47,29 +47,34 @@ function paidSummary(x) {
   const paid = due.filter((part) => paymentOf(x, part)?.status === 'paid')
   if (!paid.length) return ''
   const test = paid.some((part) => paymentOf(x, part).env === 'sandbox') ? ' (test)' : ''
-  return paid.length === due.length ? ` · paid in full${test}` : ` · ${paid.map((part) => PART_LABEL[part].toLowerCase()).join(', ')} paid${test}`
+  return paid.length === due.length ? ` · paid in full${test}` : ` · ${paid.map((part) => partLabel(x, part).toLowerCase()).join(', ')} paid${test}`
 }
 
-// Deposit, install balance and takedown on a signed proposal. The balance and
-// takedown show a Pay button on the customer's page once staff ask for them.
+// Deposit, install balance and takedown on a signed proposal (or payments 1,
+// 2 and 3 of a Pay-in-3 plan). The balance and takedown show a Pay button on
+// the customer's page once staff ask for them.
 const ASK_TEXT = {
   balance: (first, amount, link) => `Hi ${first}, your Christmas lights are up! Thank you for choosing ${business.name}. You can pay the install balance of ${amount} here: ${link}`,
   takedown: (first, amount, link) => `Hi ${first}, your lights are down, labeled and boxed for you to keep. You can pay ${amount} for takedown here: ${link}`,
 }
+const PAYIN3_ASK = {
+  balance: (first, amount, link) => `Hi ${first}, your Christmas lights are up! Thank you for choosing ${business.name}. Payment 2 of 3 (${amount}) is due now: ${link}`,
+  takedown: (first, amount, link) => `Hi ${first}, your lights are down for the season. Thank you! Payment 3 of 3 (${amount}) is due now: ${link}`,
+}
 function Payments({ p, first, link, onAsk }) {
   return (
     <div className="space-y-2 rounded-2xl border border-white/10 p-4">
-      <p className="font-semibold">Payments</p>
+      <p className="font-semibold">Payments{isPayIn3(p) ? ' (Pay in 3)' : ''}</p>
       <ul className="divide-y divide-white/5">
         {PAY_PARTS.filter((part) => partAmount(p, part) > 0).map((part) => {
           const pay = paymentOf(p, part)
           const asked = part === 'deposit' || p.requests?.[part] === true
           const amount = fmt(partAmount(p, part))
-          const message = ASK_TEXT[part]?.(first, amount, link)
+          const message = (isPayIn3(p) ? PAYIN3_ASK : ASK_TEXT)[part]?.(first, amount, link)
           return (
             <li key={part} className="space-y-2 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span>{PART_LABEL[part]} · <span className="tabular-nums">{amount}</span></span>
+                <span>{partLabel(p, part)} · <span className="tabular-nums">{amount}</span></span>
                 {pay?.status === 'paid'
                   ? <span className="text-sm font-semibold text-emerald-300">paid ✓{pay.env === 'sandbox' ? ' (test)' : ''}</span>
                   : <span className="text-sm text-slate-400">{asked ? 'Pay button is on their page' : 'Not asked yet'}</span>}
@@ -79,10 +84,10 @@ function Payments({ p, first, link, onAsk }) {
                   {asked
                     ? <>
                         <TextButton phone={p.customer?.phone} message={message} label="Text it" className={btn} />
-                        {p.customer?.email && <a href={gmailUrl({ to: p.customer.email, subject: `${PART_LABEL[part]}: ${business.name}`, body: message })} target="_blank" rel="noreferrer" className={btn}>Email it</a>}
+                        {p.customer?.email && <a href={gmailUrl({ to: p.customer.email, subject: `${partLabel(p, part)}: ${business.name}`, body: message })} target="_blank" rel="noreferrer" className={btn}>Email it</a>}
                         <button type="button" onClick={() => onAsk(part, false)} className={`${btn} text-slate-400`}>Take back</button>
                       </>
-                    : <button type="button" onClick={() => onAsk(part, true)} className={btn}>Ask for {part === 'balance' ? 'install balance' : 'takedown payment'}</button>}
+                    : <button type="button" onClick={() => onAsk(part, true)} className={btn}>Ask for {isPayIn3(p) ? partLabel(p, part).toLowerCase() : part === 'balance' ? 'install balance' : 'takedown payment'}</button>}
                 </div>
               )}
             </li>
@@ -105,6 +110,12 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
   const t = totals(d)
   const set = (patch) => setD((x) => ({ ...x, ...patch }))
   const setItem = (id, patch) => set({ items: d.items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })
+  // Kind and plan also pick the terms' payment, ownership and cancellation clauses (src/proposals/terms.js).
+  const reKind = (kind, plan) => {
+    const base = settings.proposalTerms && !settings.proposalTerms.includes(FILL_IN) ? settings.proposalTerms : DEFAULT_TERMS
+    const terms = defaultTerms({ kind, plan }, base)
+    set({ kind, plan, terms, termsTemplate: terms })
+  }
   const termsTemplate = d.termsTemplate ?? d.terms ?? ''
   const filled = { ...d, termsText: fillTerms(termsTemplate, termVars(d, BIZ)) }
   const problems = sendProblems({ ...d, terms: termsTemplate })
@@ -198,7 +209,7 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
                   <button type="button" onClick={() => set({ items: [...d.items, newItem('', 1, '', 0)] })} className={btn}>＋ Add item</button>
                   {/* Takedown from the current install lines (replaces an existing takedown line).
                       Hidden when Settings has takedown at 0% / $0 (takedown included in the install). */}
-                  {((settings.takedownPct ?? 15) > 0 || (settings.takedownMin ?? 150) > 0) && <button type="button" onClick={() => {
+                  {d.kind !== 'lease' && ((settings.takedownPct ?? 15) > 0 || (settings.takedownMin ?? 150) > 0) && <button type="button" onClick={() => {
                     const install = d.items.filter((i) => i.due !== 'removal')
                     const sub = install.reduce((tt, i) => tt + itemCents(i), 0)
                     set({ items: [...install, ...d.items.filter((i) => i.due === 'removal' && !/^Takedown/.test(i.label)), takedownItem(sub, settings.takedownPct ?? 15, settings.takedownMin ?? 150)] })
@@ -211,9 +222,11 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
                   <input value={d.discountPct ?? 0} inputMode="decimal" onChange={(e) => set({ discountPct: Number(e.target.value) || 0, discountLabel: Number(e.target.value) ? (d.discountLabel || 'Early install discount') : '' })} className={`${field} w-28`} />
                 </label>
                 {owner.installType === 'Early Install' && !d.discountPct && <button type="button" onClick={() => set({ discountPct: 10, discountLabel: 'Early install discount' })} className={btn}>Early install 10%</button>}
-                <label className="text-sm text-slate-400">Deposit %
-                  <input value={d.depositPct ?? 0} inputMode="decimal" onChange={(e) => set({ depositPct: Number(e.target.value) || 0 })} className={`${field} w-24`} />
-                </label>
+                {d.plan !== 'payin3' && (
+                  <label className="text-sm text-slate-400">Deposit %
+                    <input value={d.depositPct ?? 0} inputMode="decimal" onChange={(e) => set({ depositPct: Number(e.target.value) || 0 })} className={`${field} w-24`} />
+                  </label>
+                )}
                 <label className="text-sm text-slate-400" title="Blank = no sales tax. New estimates get the rate from Settings.">Sales tax %
                   <input value={d.tax?.ratePct ?? ''} inputMode="decimal" placeholder="none" onChange={(e) => set({ tax: e.target.value === '' ? null : { ...(d.tax ?? {}), ratePct: Number(e.target.value) || 0 } })} className={`${field} w-24`} />
                 </label>
@@ -228,19 +241,30 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
                 )}
                 <div className="ml-auto text-right text-sm">
                   <p>Total <strong className="text-lg">{fmt(t.total)}</strong></p>
-                  <p className="text-slate-400">{t.tax > 0 ? `Sales tax ${fmt(t.tax)}${t.taxIncluded ? ' (inside the prices)' : ''} · ` : ''}Deposit {fmt(t.deposit)} · at install {fmt(t.dueAtInstall)}{t.dueAtRemoval ? ` · takedown ${fmt(t.dueAtRemoval)}` : ''}</p>
+                  <p className="text-slate-400">{t.tax > 0 ? `Sales tax ${fmt(t.tax)}${t.taxIncluded ? ' (inside the prices)' : ''} · ` : ''}{t.payIn3 ? `Pay in 3: ${fmt(t.deposit)} · ${fmt(t.dueAtInstall)} · ${fmt(t.dueAtRemoval)}` : `Deposit ${fmt(t.deposit)} · at install ${fmt(t.dueAtInstall)}${t.dueAtRemoval ? ` · takedown ${fmt(t.dueAtRemoval)}` : ''}`}</p>
                 </div>
               </div>
 
               <label className="block text-sm text-slate-400">Timer schedule (optional)
                 <input value={d.timer ?? ''} onChange={(e) => set({ timer: e.target.value })} placeholder="e.g. On 5:30 PM, off 11:30 PM" className={field} />
               </label>
-              {owner.type === 'customer' && (
-                <label className="flex min-h-11 items-center gap-3 text-sm">
-                  <input type="checkbox" className="size-5" checked={d.kind === 'addon'} onChange={(e) => set({ kind: e.target.checked ? 'addon' : null })} />
-                  <span>Add-on to their existing lights <span className="text-slate-400">(when signed, it’s added to their yearly price: +{d.reinstallPct ?? 50}% of the undiscounted install from next season)</span></span>
+              {/* Kind and payment plan (owner 2026-10-12): Pay in 3 for any new install, never a re-install;
+                  current customers only when they ask or mention cost. Changing either swaps the matching terms clauses. */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-sm text-slate-400">Kind
+                  <select value={d.kind ?? ''} onChange={(e) => reKind(e.target.value || null, d.plan ?? null)} className={field}>
+                    {KINDS.filter(([k]) => k !== 'addon' || owner.type === 'customer').map(([k, label]) => <option key={k ?? ''} value={k ?? ''}>{label}</option>)}
+                  </select>
                 </label>
-              )}
+                <label className="text-sm text-slate-400">Payment plan
+                  <select value={d.plan ?? ''} onChange={(e) => reKind(d.kind ?? null, e.target.value || null)} className={field}>
+                    {PLANS.map(([k, label]) => <option key={k ?? ''} value={k ?? ''}>{label}</option>)}
+                  </select>
+                </label>
+              </div>
+              {d.kind === 'addon' && <p className="text-xs text-slate-400">When signed, it’s added to their yearly price: +{d.reinstallPct ?? 50}% of the undiscounted install from next season.</p>}
+              {d.kind === 'lease' && <p className="text-xs text-slate-400">We keep the lights; takedown is inside the price (no takedown line). Next season is 10% off for coming back, up to 50% off.</p>}
+              {d.plan === 'payin3' && <p className="text-xs text-slate-400">Three equal payments of everything (install and takedown): when they sign, when the lights are up, in January; tax inside each. Not for re-installs; current customers only if they ask or say they can’t afford it this year.</p>}
               <label className="block text-sm text-slate-400">Notes for the customer (optional)
                 <textarea value={d.notes ?? ''} onChange={(e) => set({ notes: e.target.value })} rows={2} className={field} />
               </label>

@@ -4,6 +4,9 @@
 import { PARTS, partCents, paymentOf } from './proposalMath.js'
 
 export const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown' }
+// A Pay-in-3 plan (p.plan 'payin3') uses the same three slots for its three equal payments.
+export const PAYIN3_LABEL = { deposit: 'Payment 1 of 3', balance: 'Payment 2 of 3', takedown: 'Payment 3 of 3' }
+export const partLabel = (p, part) => (p?.plan === 'payin3' ? PAYIN3_LABEL[part] : PART_LABEL[part])
 export const customIdFor = (token, part) => (part === 'deposit' ? token : `${token}:${part}`)
 
 // The deposit is payable once signed; the balance and takedown only after

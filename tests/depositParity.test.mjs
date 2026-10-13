@@ -13,6 +13,9 @@ test('server deposit matches the proposal page for several proposals', () => {
     newProposal({ items: [newItem('Roofline', 100, 'ft', 5), newItem('Takedown', 1, '', 150, 'removal')], discountPct: 10, depositPct: 50, tax: { ratePct: 8.25 } }),
     newProposal({ items: [newItem('Lease', 1, '', 1000), newItem('Takedown', 1, '', 100, 'removal', '', true)], depositPct: 33, tax: { ratePct: 8 } }),
     newProposal({ items: [newItem('Roofline', 100, 'ft', 5), newItem('Takedown', 1, '', 150, 'removal')], discountPct: 10, depositPct: 50, tax: { ratePct: 8.25, mode: 'included' } }),
+    // Pay in 3 (2026-10-12): thirds of everything, on a purchase and on a lease.
+    { ...newProposal({ items: [newItem('Roofline', 100, 'ft', 5), newItem('Takedown', 1, '', 150, 'removal')], discountPct: 10, tax: { ratePct: 8.25 } }), plan: 'payin3' },
+    { ...newProposal({ items: [newItem('Lease', 1, '', 1000.01)], tax: { ratePct: 8.25, mode: 'included' } }), kind: 'lease', plan: 'payin3' },
   ]
   for (const p of cases) {
     const t = totals(p)

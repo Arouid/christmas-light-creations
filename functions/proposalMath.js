@@ -26,16 +26,25 @@ function parts(p) {
   return { installTotal: install + installTax, removalTotal: removal + removalTax }
 }
 
+// Pay in 3 (p.plan 'payin3'): three equal payments to the cent, the last takes the remainder.
+const thirds = (total) => { const a = Math.floor(total / 3); return [a, a, total - 2 * a] }
+
 export function depositCents(p) {
-  return pct(parts(p).installTotal, Number(p.depositPct) || 0)
+  const { installTotal, removalTotal } = parts(p)
+  if (p.plan === 'payin3') return thirds(installTotal + removalTotal)[0]
+  return pct(installTotal, Number(p.depositPct) || 0)
 }
 
 // The three payments on a proposal: deposit at signing, the rest of the
-// install when it's done, takedown at removal.
+// install when it's done, takedown at removal (or payments 1, 2 and 3 of a Pay-in-3 plan).
 export const PARTS = ['deposit', 'balance', 'takedown']
 
 export function partCents(p, part) {
   const { installTotal, removalTotal } = parts(p)
+  if (p.plan === 'payin3') {
+    const [a, b, c] = thirds(installTotal + removalTotal)
+    return part === 'deposit' ? a : part === 'balance' ? b : part === 'takedown' ? c : 0
+  }
   if (part === 'deposit') return depositCents(p)
   if (part === 'balance') return installTotal - depositCents(p)
   if (part === 'takedown') return removalTotal

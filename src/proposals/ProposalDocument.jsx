@@ -85,21 +85,34 @@ export default function ProposalDocument({ proposal: p, images = {}, business = 
       <section>
         <h2 className="mb-2 font-display text-xl font-extrabold">Payment schedule</h2>
         <div className="divide-y divide-white/10 rounded-2xl border border-white/10 px-4 print:border-black/20">
-          {t.deposit > 0 && (
-            <div className={row}>
-              <span>Deposit when you sign ({p.depositPct}% of the install)<Paid pay={p.deposit} /></span>
-              <span className="tabular-nums">{fmt(t.deposit)}</span>
-            </div>
+          {t.payIn3 ? (
+            // Pay in 3 (owner 2026-10-12): three equal payments on the same three slots.
+            <>
+              <div className={row}><span>Payment 1 of 3, when you sign<Paid pay={p.deposit} /></span><span className="tabular-nums">{fmt(t.deposit)}</span></div>
+              <div className={row}><span>Payment 2 of 3, when your lights are up<Paid pay={p.payments?.balance} /></span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
+              <div className={row}><span>Payment 3 of 3, in January<Paid pay={p.payments?.takedown} /></span><span className="tabular-nums">{fmt(t.dueAtRemoval)}</span></div>
+            </>
+          ) : (
+            <>
+              {t.deposit > 0 && (
+                <div className={row}>
+                  <span>Deposit when you sign ({p.depositPct}% of the install)<Paid pay={p.deposit} /></span>
+                  <span className="tabular-nums">{fmt(t.deposit)}</span>
+                </div>
+              )}
+              <div className={row}><span>When installation is complete<Paid pay={p.payments?.balance} /></span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
+              {/* $0 takedown (included in the install) shows as Free, never hidden (owner). */}
+              <div className={row}><span>At takedown in January{t.dueAtRemoval > 0 && <Paid pay={p.payments?.takedown} />}</span><span className="tabular-nums">{t.dueAtRemoval > 0 ? fmt(t.dueAtRemoval) : 'Free'}</span></div>
+            </>
           )}
-          <div className={row}><span>When installation is complete<Paid pay={p.payments?.balance} /></span><span className="tabular-nums">{fmt(t.dueAtInstall)}</span></div>
-          {/* $0 takedown (included in the install) shows as Free, never hidden (owner). */}
-          <div className={row}><span>At takedown in January{t.dueAtRemoval > 0 && <Paid pay={p.payments?.takedown} />}</span><span className="tabular-nums">{t.dueAtRemoval > 0 ? fmt(t.dueAtRemoval) : 'Free'}</span></div>
         </div>
       </section>
 
       <section className="grid gap-2 text-sm sm:grid-cols-2">
         {p.timer && <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Timer: </span>{p.timer}</p>}
-        {p.kind === 'addon'
+        {p.kind === 'lease'
+          ? <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Next season: </span>{fmt(t.nextYear)} (10% off for coming back, another 10% off each season, up to 50% off). The lights stay with us; pick a new design any year.</p>
+          : p.kind === 'addon'
           ? <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Your yearly price from next season: </span>goes up by {fmt(t.nextYear)} ({p.reinstallPct ?? 50}% of this add-on{p.reinstallBasis === 'list' ? ', before discount' : ''})</p>
           : <p className="rounded-xl bg-white/5 px-4 py-2 print:bg-transparent"><span className="text-slate-400 print:text-black">Next season re-install: </span>{fmt(t.nextYear)} ({p.reinstallPct ?? 50}% of this install{p.reinstallBasis === 'list' ? ', before discount' : ''})</p>}
       </section>

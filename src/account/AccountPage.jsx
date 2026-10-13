@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { business } from '../data/content'
 import DepositPanel from '../proposal/DepositPanel.jsx'
-import { PART_LABEL, STATUS_LABEL, fmt } from '../proposals/model.js'
+import { STATUS_LABEL, fmt, isPayIn3, partLabel } from '../proposals/model.js'
 import Icon from '../components/Icon'
 import RecaptchaNote from '../components/RecaptchaNote'
 import { REINSTALL_PCT, yearlyPrice } from '../lib/addOns'
@@ -21,6 +21,11 @@ const lib = demo ? null : import('../lib/account.js')
 
 const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown' }
 const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down and labeling and boxing them for you to keep.' }
+// Pay in 3 (owner 2026-10-12): the same three slots, named as payments 1, 2 and 3.
+const PAYIN3_TITLE = { deposit: 'Payment 1 of 3', balance: 'Payment 2 of 3', takedown: 'Payment 3 of 3' }
+const PAYIN3_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'Your lights are down for the season. Thank you!' }
+const payTitle = (p, part) => (isPayIn3(p) ? PAYIN3_TITLE : PAY_TITLE)[part]
+const payNote = (p, part) => (isPayIn3(p) ? PAYIN3_NOTE : PAY_NOTE)[part]
 const STATE_TEXT = { paid: 'Paid', due: 'Due now', later: 'Not due yet', none: '—', free: '' }
 const STATE_CLASS = { paid: 'text-emerald-300', due: 'text-glow-300 font-semibold', later: 'text-slate-400', none: 'text-slate-400', free: '' }
 const proposalLink = (token) => `${import.meta.env.BASE_URL}proposal/?t=${token}`
@@ -449,7 +454,7 @@ function ProposalCard({ p, reload }) {
         <tbody>
           {rows.map((x) => (
             <tr key={x.part} className="border-t border-white/10">
-              <td className="py-2">{PART_LABEL[x.part]}</td>
+              <td className="py-2">{partLabel(p, x.part)}</td>
               <td className={`py-2 text-right tabular-nums ${x.state === 'free' ? 'font-semibold text-emerald-300' : ''}`}>{x.state === 'free' ? 'Free' : fmt(x.state === 'paid' ? x.paid : x.amount)}</td>
               <td className={`py-2 text-right ${STATE_CLASS[x.state]}`}>{STATE_TEXT[x.state]}{x.state === 'paid' && x.sandbox ? ' (test)' : ''}</td>
             </tr>
@@ -462,7 +467,7 @@ function ProposalCard({ p, reload }) {
         {unsigned ? 'Review and sign' : 'View or print your agreement'}
       </a>
       {due.map((x) => (
-        <DepositPanel key={x.part} token={p.token} part={x.part} title={PAY_TITLE[x.part]} note={PAY_NOTE[x.part]} amountLabel={fmt(x.amount)} onPaid={reload} />
+        <DepositPanel key={x.part} token={p.token} part={x.part} title={payTitle(p, x.part)} note={payNote(p, x.part)} amountLabel={fmt(x.amount)} onPaid={reload} />
       ))}
     </section>
   )

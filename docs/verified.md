@@ -438,3 +438,9 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-12 Leasing + Pay in 3 on the site
 
 - Owner "copy ok" (the wording in `docs/specs/leasing.md`). Dev home page at 375 px: "Your options" with Buy / Lease / Pay in 3 (New this season tag) as stacked cards, 343 px wide, no horizontal overflow; the FAQ has "Can I lease the lights instead of buying them?", "What's Pay in 3?", the reworded "Do I own the lights?" and "Can you hang lights I already own?". `npm run check`: 360 tests, build; assistant knowledge rebuilt. Not checked: the live page after deploy, desktop three-across (grid as the stats above it).
+
+## 2026-10-12 Pay in 3 + lease estimates; deposit refund schedule
+
+- Tests (362 green, build): thirds to the cent ($1,000.00 → 333.33 / 333.33 / 333.34), the three payments add up to the taxed total, a purchase paid in 3 still re-installs at 50% while a lease shows 10% off next season, labels Payment 1/2/3 of 3 by plan, {payment1..3} placeholders, the fingerprint carries `plan` only when set; server `partCents` equals the page for a purchase and a lease in thirds (parity); the terms swap clauses 2 and 7 for Pay in 3 and clause 6 for a lease inside the owner's own terms and leave un-numbered terms alone.
+- Dev `/proposal/?demo=payin3` at 375 px: $1,163.25 total (tax $88.65 inside), Payment 1/2/3 of 3 at $387.75 each, the lease next-season line, "2. Price and payment (Pay in 3)" and "6. Takedown and the lights (lease)" in the agreement, no "Deposit when you sign" wording, no overflow.
+- Not checked by hand: the editor's Kind / Payment plan selects, the Payments box labels, the account page with a Pay-in-3 proposal, a real PayPal third (checklist #93–94). The functions (proposalMath, payments labels, account summary, assistant prompt) are **not deployed yet**: the owner pastes the deploy; the site push waits for it.

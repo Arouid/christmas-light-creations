@@ -22,13 +22,13 @@ Today: *Removal · Set price* / *Re-install · 50%* / *Service calls · $0*. Pro
 
 - **Buy** — Own your lights. We put them back up every year for 50% of the original price.
 - **Lease** — We keep the lights; pick a new look any year. 10% off for every year you come back, up to 50% off.
-- **Pay in 3** (new this season) — Split your lease into three equal payments: when you sign, when the lights are up, and in January. No long-term commitment.
+- **Pay in 3** (new this season) — Split a new install, bought or leased, into three equal payments that cover everything: when you sign, when the lights are up, and in January. No long-term commitment.
 
 ### 2. FAQ (`faq` in `src/data/content.js`)
 
 **Paying**
 - *Can I lease the lights instead of buying them?* — Yes. With a lease we keep the lights, and every year you choose a brand-new design or keep the one you had. Year one is full price; every year you come back takes another 10% off the original price, up to 50% off. Nothing to store, test or replace.
-- *What's Pay in 3?* — A lease paid in three equal payments instead of one up front: when you sign, when your lights are up, and in January, with removal included. No long-term commitment: it's season by season. We go over the details with you on your quote.
+- *What's Pay in 3?* — Any new install, bought or leased, paid in three equal payments instead of a deposit and a balance: when you sign, when your lights are up, and in January. Everything is included, takedown too. No long-term commitment. It isn't for re-installs of lights you already own. Ask us when you request your estimate.
 
 **Removal & next year**
 - *Do I own the lights?* (reworded) — If you buy them, yes: once they're paid for, they're yours, and every year after we put them back up for about half the original price. If you lease, we keep them and you get a fresh design any year. Either way, we call in late summer to get you on the schedule.

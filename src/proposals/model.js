@@ -56,24 +56,49 @@ export function totals(p) {
   const installTax = taxRate ? taxOn(taxableSub - pct(taxableSub, discountPct), taxRate) : 0
   const removalTax = taxRate ? taxOn(sum(removalItems.filter(taxableItem)), taxRate) : 0
   const installTotal = install + (included ? 0 : installTax)
-  const dueAtRemoval = removal + (included ? 0 : removalTax)
-  const deposit = pct(installTotal, Number(p.depositPct) || 0)
-  // Next season: re-installing the same lights (CLC: 50% of the original
-  // install, before tax). New proposals use the undiscounted price (reinstallBasis 'list',
-  // owner 2026-10-09); older ones keep the after-discount math they were signed with.
-  const nextYear = Math.round(((p.reinstallBasis === 'list' ? installSub : install) * (p.reinstallPct ?? 50)) / 100)
-  return {
-    installSub, discount, install, taxRate, taxIncluded: included, installTax, removalTax, tax: installTax + removalTax, installTotal, removal,
-    total: installTotal + dueAtRemoval, deposit, dueAtInstall: installTotal - deposit, dueAtRemoval, nextYear,
+  const removalTotal = removal + (included ? 0 : removalTax)
+  const total = installTotal + removalTotal
+  // Next season. Purchase: re-installing the same lights (CLC: 50% of the
+  // original install, before tax); new proposals use the undiscounted price
+  // (reinstallBasis 'list', owner 2026-10-09), older ones keep the
+  // after-discount math they were signed with. Lease: 10% off for coming back.
+  const nextYear = p.kind === 'lease'
+    ? Math.round((installSub + removal) * 0.9)
+    : Math.round(((p.reinstallBasis === 'list' ? installSub : install) * (p.reinstallPct ?? 50)) / 100)
+  const base = { installSub, discount, install, taxRate, taxIncluded: included, installTax, removalTax, tax: installTax + removalTax, installTotal, removal, total, nextYear }
+  if (p.plan === 'payin3') {
+    // Pay in 3: the whole season's price in three equal payments, tax inside each.
+    const [deposit, dueAtInstall, dueAtRemoval] = thirds(total)
+    return { ...base, deposit, dueAtInstall, dueAtRemoval, payIn3: true }
   }
+  const deposit = pct(installTotal, Number(p.depositPct) || 0)
+  return { ...base, deposit, dueAtInstall: installTotal - deposit, dueAtRemoval: removalTotal, payIn3: false }
 }
 
 // The three payments on a proposal (same as functions/proposalMath.js): the
 // deposit at signing, the rest of the install when it's done, and takedown /
 // labeling at removal (no storage: customers keep their lights). Balance and takedown are payable once staff ask
 // (requests.<part>); payments are recorded only by the server.
+// Kinds (p.kind): none = purchase (the lights become theirs); 'addon' = added
+// to existing lights; 'lease' (2026-10-12) = we keep the lights, 10% off a year
+// for coming back. Plans (p.plan): none = deposit / install balance / takedown;
+// 'payin3' (owner 2026-10-12: "everyone gets Pay in 3 if they want it, except
+// re-installs") = the same three slots carry three equal payments: when they
+// sign, when the lights are up, in January.
+export const KINDS = [[null, 'Purchase (the lights become theirs)'], ['addon', 'Add-on to their existing lights'], ['lease', 'Lease (we keep the lights)']]
+export const PLANS = [[null, 'Deposit · install balance · takedown'], ['payin3', 'Pay in 3 (three equal payments)']]
 export const PAY_PARTS = ['deposit', 'balance', 'takedown']
 export const PART_LABEL = { deposit: 'Deposit', balance: 'Install balance', takedown: 'Takedown' }
+export const PAYIN3_LABEL = { deposit: 'Payment 1 of 3', balance: 'Payment 2 of 3', takedown: 'Payment 3 of 3' }
+export const PAYIN3_WHEN = { deposit: 'when you sign', balance: 'when your lights are up', takedown: 'in January' }
+export const isPayIn3 = (p) => p?.plan === 'payin3'
+export const isLease = (p) => p?.kind === 'lease'
+export const partLabel = (p, part) => (isPayIn3(p) ? PAYIN3_LABEL[part] : PART_LABEL[part])
+// Three equal payments to the cent; the last one takes the remainder.
+export function thirds(total) {
+  const a = Math.floor(total / 3)
+  return [a, a, total - 2 * a]
+}
 export const paymentOf = (p, part) => (part === 'deposit' ? p.deposit : p.payments?.[part])
 export function partAmount(p, part) {
   const t = totals(p)
@@ -134,6 +159,8 @@ export function termVars(p, business = {}) {
     season: p.season ?? '',
     total: fmt(t.total),
     install: fmt(t.install),
+    // Pay in 3: the three equal payments (the purchase placeholders below still fill, unused by its terms).
+    payment1: fmt(t.deposit), payment2: fmt(t.dueAtInstall), payment3: fmt(t.dueAtRemoval),
     tax: fmt(t.tax),
     taxRate: t.taxRate ? `${t.taxRate}%` : '',
     deposit: fmt(t.deposit),
@@ -163,6 +190,7 @@ export function canonical(p) {
     // Added 2026-10-09; only present on newer proposals, so older fingerprints don't change.
     ...(p.reinstallBasis ? { reinstallBasis: p.reinstallBasis } : {}),
     ...(p.kind ? { kind: p.kind } : {}),
+    ...(p.plan ? { plan: p.plan } : {}),
     // Sales tax (2026-10-12): the rate, which lines it's on, and the amounts; only on proposals that carry a rate.
     ...(p.tax ? { tax: [t.taxRate, (p.items ?? []).map((i) => (taxableItem(i) ? 1 : 0)), t.installTax, t.removalTax, t.taxIncluded ? 'included' : 'added'] } : {}),
   })

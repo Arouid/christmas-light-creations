@@ -38,6 +38,7 @@ export function accountSummary(token, p) {
   })
   return {
     token, status: p.status, title: p.title ?? 'Christmas lighting', season: p.season ?? '',
+    kind: p.kind ?? null, plan: p.plan ?? null, // the page names the three payments by the plan (Pay in 3)
     customer: { name: p.customer?.name ?? '', address: p.customer?.address ?? '', phone: p.customer?.phone ?? '' },
     sentAt: iso(p.sentAt), signedAt: iso(p.signedAt), parts,
   }

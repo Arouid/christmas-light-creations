@@ -141,3 +141,42 @@ test('sales tax included in the prices (owner: hideable on the contract): totals
   assert.ok(canonical(p).includes('"included"'))
   assert.notEqual(canonical(p), canonical({ ...p, tax: { ratePct: 8.25 } }))
 })
+
+// Pay in 3 and leases (owner 2026-10-12, docs/specs/pay-in-3.md).
+test('pay in 3: three equal payments of everything, tax inside, the last takes the odd cent; a lease is 10% off next season', async () => {
+  const { KINDS, PLANS, isPayIn3, partLabel, thirds } = await import('../src/proposals/model.js')
+  assert.deepEqual(thirds(100000), [33333, 33333, 33334])
+  assert.deepEqual(thirds(1000), [333, 333, 334])
+  const items = [newItem('Roofline C9', 100, 'ft', 5), newItem('Takedown', 1, '', 150, 'removal')]
+  const p = newProposal({ items, discountPct: 10, depositPct: 50, tax: { ratePct: 8.25 } })
+  const plain = totals(p)
+  const t = totals({ ...p, plan: 'payin3' })
+  assert.equal(t.payIn3, true)
+  assert.equal(t.total, plain.total, 'the same money, split differently')
+  assert.equal(t.deposit + t.dueAtInstall + t.dueAtRemoval, t.total)
+  assert.deepEqual([t.deposit, t.dueAtInstall, t.dueAtRemoval], thirds(plain.total))
+  assert.equal(t.nextYear, plain.nextYear, 'a purchase paid in 3 still re-installs at 50%')
+  const lease = totals({ ...p, kind: 'lease', plan: 'payin3', items: [items[0]] })
+  assert.equal(lease.nextYear, 45000, '10% off the $500 list price next season')
+  assert.equal(partLabel({ plan: 'payin3' }, 'takedown'), 'Payment 3 of 3')
+  assert.equal(partLabel({}, 'takedown'), 'Takedown')
+  assert.ok(isPayIn3({ plan: 'payin3' }) && !isPayIn3({ kind: 'lease' }))
+  assert.ok(KINDS.some(([k]) => k === 'lease') && PLANS.some(([k]) => k === 'payin3'))
+  const v = termVars({ ...p, plan: 'payin3' }, { name: 'CLC' })
+  assert.equal(v.payment1, fmt(t.deposit)); assert.equal(v.payment3, fmt(t.dueAtRemoval))
+  assert.ok(canonical({ ...p, plan: 'payin3' }).includes('"plan":"payin3"') && !canonical(p).includes('plan'))
+})
+
+test('terms by kind and plan: Pay in 3 swaps the payment and cancellation clauses, a lease the ownership clause, the rest untouched', async () => {
+  const { LEASE_OWNERSHIP, PAYIN3_CANCELLATION, PAYIN3_PAYMENT, defaultTerms } = await import('../src/proposals/terms.js')
+  assert.equal(defaultTerms(), DEFAULT_TERMS)
+  const p3 = defaultTerms({ plan: 'payin3' })
+  assert.ok(p3.includes(PAYIN3_PAYMENT) && p3.includes(PAYIN3_CANCELLATION) && !p3.includes('A deposit of {deposit}'))
+  assert.ok(p3.includes('3. Scheduling.') && p3.includes('9. Electronic signature.'))
+  const lease = defaultTerms({ kind: 'lease', plan: 'payin3' })
+  assert.ok(lease.includes(LEASE_OWNERSHIP) && !lease.includes('the lights and materials are yours'))
+  // The owner's own terms keep their other clauses; terms without numbered clauses are left alone.
+  const custom = DEFAULT_TERMS.replace('3. Scheduling. Installs begin October 15.', '3. Scheduling. Installs begin October 20.')
+  assert.ok(defaultTerms({ plan: 'payin3' }, custom).includes('October 20') && defaultTerms({ plan: 'payin3' }, custom).includes(PAYIN3_PAYMENT))
+  assert.equal(defaultTerms({ plan: 'payin3' }, 'Just a paragraph.'), 'Just a paragraph.')
+})
