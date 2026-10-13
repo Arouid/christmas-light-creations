@@ -30,6 +30,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Keep `docs/TODO.md` current: add new open items, remove finished ones.
 - Tailwind buttons: never add a second `bg-…` to a shared class string (`${btn} bg-glow-400`); the first one can win and the button shows the wrong color. Keep a shape-only class and add exactly one background per button.
 - Log what was actually checked in `docs/verified.md` (dated); keep unverified items in `docs/test-checklist.md`; record decisions in `docs/decisions.md`.
+- Search positions go in `docs/serp-log.md` (same four searches, same method, one row per check) so the next "vs last month" has a baseline.
 
 ## Site rules
 
