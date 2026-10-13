@@ -13,7 +13,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 6 | **Test Text button** end to end (copy number → Send new message → paste → send) | First real test after the number moved |
 | 7 | **Review campaign** to last year's customers | Season tab → ✉ Email these → Review request, or ★ Review texts |
 | 9 | Watch for **Google support's reply** on merging the duplicate Business Profile | Don't edit/remove either listing until then |
-| 11 | **Gift wrapping** answers | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/` |
+| 11 | **Gift wrapping** answers (price, how gifts get to you, dates, supplies, who wraps, businesses) | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/`. The section is built and off (item E): the answers go into `giftWrapping` in `src/data/content.js` before you turn it on |
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
 | 17 | **Reply to the Oct 7 old-site request** (its email to you failed): itemized quote for an insurance claim | Past requests tab (shown first, red note) |
@@ -58,7 +58,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | K | **Home / mission control** (live 2026-10-10, `docs/specs/dashboard.md`): (1) names: Scott M., Lacie M. and Katie P. are known by their email (others or changes: ⚙ Settings → Staff names); (2) test with a second staff member: one emails a test customer from the app → it shows on the other's Home; tap **I've got it** on a message → the other sees "… is on it"  (I've got it / Take it over confirmed 2026-10-10) | Test checklist #56, #58 |
 | L | **Speed on phones** (done and live 2026-10-11: fonts self-hosted, /design/ picture, contrast, prerendered home + /design/, React after first paint; live Lighthouse mobile home 93 / design 95 / area 100, accessibility 100). Left: home LCP reads 2.9 s on the office PC's headless Chrome only (artifact; 2.1 s with real throttling); if Google's own Search Console / PageSpeed field data ever flags it, the next lever is a smaller hero photo (WebP ~70 KB vs 103 KB) |  2026-10-10/11 |
 | C | Google Ads: keywords, negatives, 3 ads, settings | |
-| E | Gift wrapping section + "What do you need?" on the estimate form | After #11 |
+| E | **Gift wrapping** section + "What do you need?" on the estimate form: built 2026-10-13, **off** (owner: "not ready to take it live yet"). To turn on: staff app → ⚙ Settings → 🎁 Gift wrapping → tick (website follows within 5 minutes; `settings/app.giftWrapping`). Before that: (1) owner pastes the new `firestore.rules` (the lead's `service` field), (2) deploy `booking`, (3) put the answers from #11 and the photos into `giftWrapping` in `src/data/content.js`, (4) tell the sales assistant (⚙ Settings → What the sales assistant knows, or add it to its knowledge). Spec: `docs/specs/gift-wrapping.md` | After #11 |
 | G | ~~Auto-reply email to website estimate requests~~ built 2026-10-12 without AI ("Got your request", `functions/ack.js`); a Claude-written version stays Phase 2 of `docs/specs/sales-assistant.md` (Claude writes it, footer, kill switch); after #43 and ~50 reviewed drafts |
 | J | Subscriptions (PayPal Subscriptions, enabled on the Live app) on the account page | Account is keyed by verified email; spec first |
 

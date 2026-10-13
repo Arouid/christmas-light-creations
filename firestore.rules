@@ -24,9 +24,11 @@ service cloud.firestore {
     }
 
     match /leads/{leadId} {
+      // service = "What do you need?" (gift wrapping, docs/specs/gift-wrapping.md): one of three,
+      // absent while that is switched off. `service` is a keyword here, hence data['service'].
       allow create: if request.resource.data.keys().hasOnly([
             'firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip',
-            'contactMethod', 'message', 'source', 'status', 'notes', 'createdAt', 'designId'])
+            'contactMethod', 'message', 'source', 'status', 'notes', 'createdAt', 'designId', 'service'])
         && filledStr(request.resource.data.firstName, 80)
         && filledStr(request.resource.data.lastName, 80)
         && filledStr(request.resource.data.email, 200)
@@ -39,6 +41,7 @@ service cloud.firestore {
         && filledStr(request.resource.data.message, 3000)
         && (!('source' in request.resource.data) || shortStr(request.resource.data.source, 60))
         && (!('designId' in request.resource.data) || filledStr(request.resource.data.designId, 60))
+        && (!('service' in request.resource.data) || request.resource.data['service'] in ['Christmas lights', 'Gift wrapping', 'Both'])
         && request.resource.data.status == 'new'
         && request.resource.data.notes == ''
         && request.resource.data.createdAt == request.time;

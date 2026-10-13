@@ -170,6 +170,8 @@ describe('leads: public estimate form', () => {
     'client-chosen time': { createdAt: new Date(0) },
     'customerId link': { customerId: 'someone' },
     'source too long': { source: 's'.repeat(61) },
+    'unknown service': { service: 'Cookies' },
+    'empty service': { service: '' },
   }
   for (const [name, over] of Object.entries(bad)) {
     test(`refused: ${name}`, async () => { await assertFails(setDoc(doc(as.anon(), 'leads', 'bad'), lead(over))) })
@@ -177,6 +179,12 @@ describe('leads: public estimate form', () => {
   test('the public cannot overwrite an existing lead', async () => {
     await assertFails(setDoc(doc(as.anon(), 'leads', 'x1'), lead()))
   })
+  // "What do you need?" (docs/specs/gift-wrapping.md): one of three, or absent while the switch is off.
+  for (const service of ['Christmas lights', 'Gift wrapping', 'Both']) {
+    test(`service "${service}" is accepted`, async () => {
+      await assertSucceeds(setDoc(doc(as.anon(), 'leads', `service-${service}`), lead({ service })))
+    })
+  }
 })
 
 describe('proposals: customer link (token = document id)', () => {

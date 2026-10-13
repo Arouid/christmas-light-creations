@@ -35,3 +35,17 @@ test('a request with a design from the website says so (subject and a Design row
   assert.match(m.html, /They designed their lights on the website/)
   assert.doesNotMatch(leadEmail({ firstName: 'Pat', message: 'Hi' }).text, /Design:/)
 })
+
+test('a request that asks for gift wrapping says so (🎁 in the subject, a Needs row); lights only says nothing', () => {
+  const both = leadEmail({ ...lead, service: 'Both' })
+  assert.equal(both.subject, 'New estimate 🎁: Pat Sample, Pearland (Road sign (Broadway 288))')
+  assert.match(both.text, /Needs: Lights \+ gift wrapping/)
+  assert.match(both.html, /Lights \+ gift wrapping/)
+  const only = leadEmail({ ...lead, service: 'Gift wrapping', designId: 'abc' })
+  assert.match(only.subject, /^New estimate 🎨 🎁: /)
+  assert.match(only.text, /Needs: Gift wrapping \(no lights\)/)
+  for (const plain of [leadEmail(lead), leadEmail({ ...lead, service: 'Christmas lights' })]) {
+    assert.doesNotMatch(plain.subject, /🎁/)
+    assert.doesNotMatch(plain.text, /Needs:/)
+  }
+})

@@ -15,6 +15,7 @@
 
 - `newLeadAlert` (on a new `leads` doc) alerts staff first (push + email), then `acknowledgeRequest`: if the lead has a valid email and `settings/app.ackRequests` isn't `false`, and no other lead with the same email has `ackSentAt` within 24 h (double taps), send `ackEmail(lead, { designAttached })`.
 - Fixed words, no AI: what happens next (we look at photos/design or measure; one exact price, none by phone; say yes online), the free designer link (unless they sent a design), Buy/Lease/Pay in 3 at the same price, the early-install discount, the phone.
+- Gift wrapping (`docs/specs/gift-wrapping.md`, only once the owner switches it on): a lead with `service: 'Gift wrapping'` gets its own next steps (we get back to you, one clear price, the hand-off; no measuring, no designer); `'Both'` gets the lights email plus one "You also asked about gift wrapping" line.
 - Filed in the lead's history as an email from the app (`historyEntry` with `sentBy: 'website'`, template `request-ack`), with our own Message-ID so the sync skips the Sent copy. The lead gets `ackSentAt`.
 - A failure reports an `email` incident; it never blocks the staff alert.
 - Was TODO item G ("auto-reply email to website estimate requests", planned as Phase 2 of the sales assistant with Claude writing it). Done without AI; the AI version stays a later option.

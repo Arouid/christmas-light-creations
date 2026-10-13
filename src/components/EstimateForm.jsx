@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { HEARD_FROM, business, designPage, urgency } from '../data/content'
+import { HEARD_FROM, business, designPage, giftWrapping, urgency } from '../data/content'
 import { firebaseReady, getFirebaseApp, submitLead } from '../lib/firebase'
+import { SERVICES, useGiftWrapping } from '../lib/giftWrapping'
 import { useSign, useTakenOver } from '../lib/prerendered'
 import { signSource } from '../lib/sign'
 import Icon from './Icon'
@@ -17,6 +18,9 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
   const sign = useSign()
   const takenOver = useTakenOver()
   const [attach, setAttach] = useState(true)
+  // "What do you need?" (docs/specs/gift-wrapping.md): only while gift wrapping is switched on.
+  const gift = useGiftWrapping()
+  const [service, setService] = useState(SERVICES[0])
   const message = useRef(null)
   const first = useRef(null)
 
@@ -79,6 +83,21 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
             </label>
           </div>
         )}
+        {gift && (
+          <fieldset className="sm:col-span-2">
+            <legend className={label}>{giftWrapping.form.legend}</legend>
+            <div className="mt-2 flex gap-2">
+              {SERVICES.map((s) => (
+                <label key={s} className="flex-1 cursor-pointer">
+                  <input type="radio" name="service" value={s} checked={service === s} onChange={() => setService(s)} className="peer sr-only" />
+                  <span className="flex h-full min-h-11 items-center justify-center rounded-xl border border-white/15 px-1 py-2.5 text-center text-sm font-medium leading-tight peer-checked:border-glow-400 peer-checked:bg-glow-400/10 peer-checked:text-glow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-glow-400">
+                    {s}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
         <label className={label}>First name *<input ref={first} required name="firstName" maxLength={80} autoComplete="given-name" className={field} /></label>
         <label className={label}>Last name *<input required name="lastName" maxLength={80} autoComplete="family-name" className={field} /></label>
         <label className={label}>Email *<input required type="email" name="email" maxLength={200} autoComplete="email" className={field} /></label>
@@ -110,7 +129,8 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
           </select>
         </label>
         <label className={`${label} sm:col-span-2`}>How can we help? *
-          <textarea ref={message} required name="message" rows={4} maxLength={3000} className={field} placeholder="Roofline, trees, walkways, colors…" defaultValue={defaultMessage} />
+          <textarea ref={message} required name="message" rows={4} maxLength={3000} className={field} defaultValue={defaultMessage}
+            placeholder={gift && service === 'Gift wrapping' ? giftWrapping.form.placeholder : 'Roofline, trees, walkways, colors…'} />
         </label>
 
         <div className="sm:col-span-2">

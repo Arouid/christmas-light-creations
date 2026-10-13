@@ -8,9 +8,11 @@ import { createElement } from 'react'
 import { renderToString } from 'react-dom/server'
 import { createServer } from 'vite'
 
+// absent: what the built HTML must never carry (gift wrapping is drawn only
+// after the page asks the server whether it is switched on, lib/giftWrapping.js).
 const PAGES = [
-  { html: 'index.html', module: '/src/App.jsx', expect: 'Holiday lights' },
-  { html: 'design/index.html', module: '/src/design/DesignPage.jsx', expect: 'sample-design.webp' },
+  { html: 'index.html', module: '/src/App.jsx', expect: 'Holiday lights', absent: 'ift wrapping' },
+  { html: 'design/index.html', module: '/src/design/DesignPage.jsx', expect: 'sample-design.webp', absent: 'ift wrapping' },
 ]
 const EMPTY = '<div id="root"></div>'
 const dist = new URL('../dist/', import.meta.url)
@@ -23,6 +25,7 @@ try {
     const { default: Page } = await vite.ssrLoadModule(p.module)
     const body = renderToString(createElement(BuildDay, { value: day }, createElement(Page)))
     if (!body.includes(p.expect)) throw new Error(`${p.html}: prerendered page is missing "${p.expect}"`)
+    if (p.absent && body.includes(p.absent)) throw new Error(`${p.html}: prerendered page must not carry "${p.absent}" (it is behind a switch)`)
     const file = new URL(p.html, dist)
     const html = await readFile(file, 'utf8')
     if (!html.includes(EMPTY)) throw new Error(`${p.html}: no empty ${EMPTY}`)

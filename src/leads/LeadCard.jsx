@@ -9,6 +9,7 @@ import StreetViewPhoto from './StreetViewPhoto'
 import DesignsPanel from './designs/DesignsPanel'
 import ProposalsPanel from './proposals/ProposalsPanel'
 import { TextButton } from './Reach'
+import { serviceLabel } from '../lib/giftWrapping'
 import { textMessages } from '../lib/messages'
 
 const statusColor = {
@@ -83,7 +84,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
         className="flex w-full items-start justify-between gap-3 p-4 text-left">
         <div className="min-w-0">
           <p className="truncate font-semibold">{lead.firstName} {lead.lastName}</p>
-          <p className="mt-0.5 truncate text-sm text-slate-400">{lead.city || 'No city'} · {when(lead.createdAt)}{lead.designId && <span className="text-glow-300"> · 🎨 sent a design</span>}</p>
+          <p className="mt-0.5 truncate text-sm text-slate-400">{lead.city || 'No city'} · {when(lead.createdAt)}{lead.designId && <span className="text-glow-300"> · 🎨 sent a design</span>}{serviceLabel(lead) && <span className="text-glow-300"> · {serviceLabel(lead)}</span>}</p>
         </div>
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${statusColor[lead.status]}`}>
           {STATUS_LABELS[lead.status]}
@@ -98,6 +99,8 @@ export default function LeadCard({ lead, onUpdate, onDelete, onMakeCustomer, onO
           <p className="text-sm text-slate-400">
             Prefers: <span className="font-medium text-slate-200">{lead.contactMethod}</span>
             {lead.source && <> · Heard from: <span className="font-medium text-slate-200">{lead.source}</span></>}
+            {/* "What do you need?" (gift wrapping, docs/specs/gift-wrapping.md); older requests have none. */}
+            {lead.service && <> · Needs: <span className="font-medium text-slate-200">{lead.service}</span></>}
           </p>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {phoneDigits && <a className={action} href={`tel:${phoneDigits}`}><Icon name="phone" className="size-4" /> Call</a>}

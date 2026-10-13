@@ -6,6 +6,8 @@
 // iPhone Safari doesn't block it as a third-party site. Needs
 // https://christmas-light-creations.com/__/auth/handler in the OAuth client's
 // authorized redirect URIs (Google Cloud → Credentials → Web client).
+import { leadService } from '../../functions/giftWrapping.js'
+
 const SITE_HOST = 'christmas-light-creations.com'
 const AUTH_ON_SITE = true
 const onSite = typeof window !== 'undefined' && window.location.hostname === SITE_HOST
@@ -63,7 +65,10 @@ export function getFirebaseApp() {
 }
 
 // Fields a customer may send; must match the create rule in firestore.rules.
-const LEAD_FIELDS = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip', 'contactMethod', 'message', 'source']
+// `service` ("What do you need?", docs/specs/gift-wrapping.md) is only on the
+// form while gift wrapping is switched on, and is dropped unless it is one
+// of the three choices.
+const LEAD_FIELDS = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zip', 'contactMethod', 'message', 'source', 'service']
 
 // attachment (optional, /design/): { design, photo, image } from the public
 // designer (docs/specs/public-designer.md). It's saved first (leadDesigns) and
@@ -75,6 +80,9 @@ export async function submitLead(formData, attachment = null) {
   ])
   const db = getFirestore(fbApp)
   const lead = Object.fromEntries(LEAD_FIELDS.map((k) => [k, String(formData.get(k) ?? '').trim()]))
+  const service = leadService(lead.service)
+  if (service) lead.service = service
+  else delete lead.service
   let designId = null
   if (attachment) {
     try {
