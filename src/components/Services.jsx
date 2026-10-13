@@ -1,4 +1,4 @@
-import { customerPerks, highlights, included, lightOptions, priceBeat, serviceCalls, pricingNotes } from '../data/content'
+import { customerPerks, highlights, included, lifetimeWarranty, lightOptions, priceBeat, serviceCalls, pricingNotes } from '../data/content'
 import Icon from './Icon'
 import Section from './Section'
 
@@ -51,11 +51,17 @@ export default function Services() {
         ))}
       </dl>
 
-      {/* The price promise (owner 2026-10-12). */}
-      <p className="mt-4 rounded-2xl border border-glow-400/40 bg-glow-400/10 px-5 py-4 text-sm text-slate-200">
-        <strong className="font-display text-lg text-glow-300">{priceBeat.title}</strong>
-        <span className="mt-1 block">{priceBeat.body}</span>
-      </p>
+      {/* The lifetime warranty and the price promise (owner 2026-10-12). */}
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <p id="warranty" className="scroll-mt-24 rounded-2xl border border-pine-500/50 bg-pine-500/10 px-5 py-4 text-sm text-slate-200">
+          <strong className="font-display text-lg text-glow-300">🛡️ {lifetimeWarranty.title}</strong>
+          <span className="mt-1 block">{lifetimeWarranty.body}</span>
+        </p>
+        <p className="rounded-2xl border border-glow-400/40 bg-glow-400/10 px-5 py-4 text-sm text-slate-200">
+          <strong className="font-display text-lg text-glow-300">{priceBeat.title}</strong>
+          <span className="mt-1 block">{priceBeat.body}</span>
+        </p>
+      </div>
 
       {/* Buy, lease or pay in 3 (owner's copy, docs/specs/leasing.md). */}
       <h3 id="options" className="mt-8 scroll-mt-24 font-display text-2xl font-extrabold">Your options</h3>

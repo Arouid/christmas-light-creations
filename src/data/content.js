@@ -141,6 +141,7 @@ export const customerPerks = {
   title: 'Everything in one place: your account and app',
   intro: 'Every customer gets an account (no password) and a phone app, so you never have to wonder where things stand.',
   items: [
+    ['🛡️', 'Lifetime warranty', 'Lights worn out by the Texas sun are replaced brand new, free, for as long as you’re a customer.'],
     ['🧾', 'Agreements and bills online', 'Sign online, see what’s paid and what’s due, and pay with PayPal, Venmo or a card in two taps.'],
     ['💳', 'Buy, lease or pay in 3', 'Pick the way that suits you, at the same price. Three equal payments, nothing extra.'],
     ['🎄', 'Your dates, your crew', 'Your install and takedown day on your account, a text the day before, and photos of the install.'],
@@ -148,8 +149,13 @@ export const customerPerks = {
     ['⛈', 'Weather heads-ups', 'Storm, wind or freeze coming? We email ahead with what to check and what we do if your date has to move.'],
     ['🏡', 'Tell us once', 'Gate code, pets, sprinklers, your HOA’s dates: save them on your account and every visit goes smoothly.'],
     ['📱', 'The app on your phone', 'Add it to your home screen: opens full-screen, no password, always up to date.'],
-    ['❓', 'Help that’s there at 11 pm', 'A search box with plain answers for the common questions, right on your account page.'],
   ],
+}
+
+// The lifetime warranty, highlighted (owner 2026-10-12: "our customers deserve it").
+export const lifetimeWarranty = {
+  title: 'Lifetime warranty',
+  body: 'For as long as you’re a customer, anything we supplied that wears out is replaced brand new, free. When the Texas sun has finally destroyed the plastic housings, five or more years in, you get all-new lights. In 15 years we have never charged a cent for it.',
 }
 
 export const priceBeat = {
@@ -163,6 +169,7 @@ export const priceBeat = {
 export const heroHighlights = [
   { icon: '🎨', title: 'Design your lights free', body: 'Draw them on a photo of your own house.', href: 'design/' },
   { icon: '💳', title: 'Pay in 3', tag: 'New', body: 'Three equal payments. No commitment.', href: '#options' },
+  { icon: '🛡️', title: 'Lifetime warranty', body: 'Worn-out lights replaced new, free, while you’re a customer.', href: '#warranty' },
 ]
 
 export const testimonials = [

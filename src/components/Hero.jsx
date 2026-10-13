@@ -41,8 +41,8 @@ export default function Hero() {
             <Icon name="phone" className="size-5" /> {business.phone}
           </a>
         </div>
-        {/* The designer and Pay in 3, highlighted (content.js heroHighlights). */}
-        <div className="mt-4 grid max-w-xl gap-2 sm:grid-cols-2">
+        {/* The designer, Pay in 3 and the lifetime warranty, highlighted (content.js heroHighlights). */}
+        <div className="mt-4 grid max-w-2xl gap-2 sm:grid-cols-3">
           {heroHighlights.map((h) => (
             <a key={h.title} href={h.href.startsWith('#') ? h.href : `${import.meta.env.BASE_URL}${h.href}`}
               className="flex min-h-14 items-center gap-3 rounded-2xl border border-glow-400/40 bg-night-900/70 px-4 py-2.5 backdrop-blur hover:border-glow-400 hover:bg-night-900">
