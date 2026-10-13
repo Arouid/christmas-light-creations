@@ -11,8 +11,8 @@ export const demoLeads = [
   {
     id: 'demo-2', firstName: 'Test', lastName: 'Lead', email: 'test@example.com', phone: '555-0102',
     address: '456 Sample Ln', city: 'Friendswood', zip: '77546', contactMethod: 'Phone',
-    message: 'Want the front and the walkway done before Thanksgiving.',
-    status: 'called', notes: 'Left voicemail, try again Thursday.', createdAt: daysAgo(2), source: 'Road sign',
+    message: 'Want the front and the walkway done before Thanksgiving. And about 20 gifts wrapped, if you do that.',
+    status: 'called', notes: 'Left voicemail, try again Thursday.', createdAt: daysAgo(2), source: 'Road sign', service: 'Both',
   },
   {
     id: 'demo-3', firstName: 'Example', lastName: 'Homeowner', email: 'example@example.com', phone: '',

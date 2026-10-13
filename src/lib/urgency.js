@@ -49,14 +49,20 @@ export function freshStatus(status, now = Date.now()) {
 }
 
 // Booking info from our server, without loading Firebase (functions/index.js
-// `booking`): the staff's line (if fresh) and the next open install days.
+// `booking`): the staff's line (if fresh), the next open install days and
+// the gift-wrapping switch (lib/giftWrapping.js). Pure parse, tested.
 export const BOOKING_URL = 'https://us-south1-clc-leads-site.cloudfunctions.net/booking'
+export const parseBooking = (j = {}, now = Date.now()) => ({
+  status: freshStatus(j.status, now),
+  openDays: Array.isArray(j.openDays) ? j.openDays : [],
+  giftWrapping: j.giftWrapping === true,
+})
 let pending
 export function fetchBooking() {
   pending ??= fetch(BOOKING_URL)
     .then((res) => (res.ok ? res.json() : {}))
-    .then((j) => ({ status: freshStatus(j.status), openDays: Array.isArray(j.openDays) ? j.openDays : [] }))
-    .catch(() => { pending = undefined; return { status: '', openDays: null } })
+    .then((j) => parseBooking(j))
+    .catch(() => { pending = undefined; return { status: '', openDays: null, giftWrapping: false } })
   return pending
 }
 

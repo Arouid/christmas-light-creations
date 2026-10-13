@@ -69,6 +69,7 @@ import { detailsChanged, detailsRequest, detailsSummary } from './propertyDetail
 import { brandText, textFooter } from './brand.js'
 import { TREE_NOTICE, TREE_TITLE } from './notices.js'
 import { ACK_TEMPLATE, ackAddress, ackEmail, ackOn, ackedRecently } from './ack.js'
+import { giftWrappingOn } from './giftWrapping.js'
 import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
 import { NWS_POINTS_URL, NWS_USER_AGENT, WATCH_SCHEDULE, badDays, lightsHeadsUp, lightsUp, noticesOn, pruneSent, routeHeadsUp, sentKey, staffWeather, tipsOk, weatherLine } from './weather.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
@@ -1730,7 +1731,9 @@ export const cleanupLeadDesigns = onSchedule({ schedule: '15 3 * * *', timeZone:
 // booked we are" line (⚙ Settings, hidden by the page after 14 days without an
 // update) and the next real open install days (functions/availability.js).
 // Only dates leave the server, never customer details. The open days are
-// worked out at most every 10 minutes (serverState/availability).
+// worked out at most every 10 minutes (serverState/availability). Also the
+// gift-wrapping switch (functions/giftWrapping.js): the page shows that
+// section only when this says so.
 export const booking = onRequest({ region: REGION, invoker: 'public', maxInstances: 3, cors: [SITE, 'http://localhost:5173'] }, async (req, res) => {
   if (req.method !== 'GET') { res.status(405).end(); return }
   const db = getFirestore()
@@ -1751,7 +1754,7 @@ export const booking = onRequest({ region: REGION, invoker: 'public', maxInstanc
     await cacheRef.set({ today, at: Date.now(), days })
   }
   res.set('Cache-Control', 'public, max-age=300')
-  res.json({ status: { text: String(s.text ?? '').slice(0, 120), updatedAt: s.updatedAt ?? null }, openDays: days })
+  res.json({ status: { text: String(s.text ?? '').slice(0, 120), updatedAt: s.updatedAt ?? null }, openDays: days, giftWrapping: giftWrappingOn(settings) })
 })
 // ---- Plan with Claude (docs/specs/schedule-assistant.md) ---------------------
 // Staff only. The browser says which customers and which days; the server

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { business, nav } from '../data/content'
+import { business, nav as mainNav } from '../data/content'
 import { useFocusOnOpen } from '../lib/focus'
+import { navLinks, useGiftWrapping } from '../lib/giftWrapping'
 import { useToday } from '../lib/prerendered'
 import { topBar } from '../lib/urgency'
 import Icon from './Icon'
@@ -11,6 +12,8 @@ export default function Header() {
   const menu = useRef(null)
   useFocusOnOpen(menu, open)
   const bar = topBar(useToday())
+  // The Gift wrapping link only while the owner has it switched on (lib/giftWrapping.js).
+  const nav = navLinks(mainNav, useGiftWrapping())
 
   // The bottom bar (MobileCta) hides while the menu is open.
   useEffect(() => {

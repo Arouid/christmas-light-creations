@@ -53,6 +53,18 @@ test('"Got your request": who gets it, what it says, and the double-tap guard', 
   assert.equal(ACK_TEMPLATE, 'request-ack')
 })
 
+test('"Got your request" for gift wrapping (docs/specs/gift-wrapping.md): its own next steps alone, one extra line with lights', () => {
+  const only = ackEmail({ firstName: 'Pat', address: '123 Main St', service: 'Gift wrapping' })
+  assert.equal(only.subject, 'Got your request: your gift wrapping price is on its way')
+  for (const must of ['Hi Pat', 'gift wrapping request', 'how many gifts', 'one clear price', 'wrapped and ready to give', '281-819-0163', SPAM_LINE]) assert.ok(only.text.includes(must), must)
+  for (const never of ['measure', '/design/', 'pay in 3', '123 Main St']) assert.ok(!only.text.includes(never), `no "${never}"`)
+  assert.ok(!only.html.includes('Design your lights (free)') && only.html.includes(LOGO_URL))
+  const both = ackEmail({ firstName: 'Pat', address: '123 Main St', service: 'Both' })
+  assert.ok(both.subject.includes('Christmas lights estimate') && both.text.includes('123 Main St') && both.text.includes('/design/'))
+  assert.ok(both.text.includes('You also asked about gift wrapping'))
+  for (const plain of [ackEmail({ firstName: 'Pat' }), ackEmail({ firstName: 'Pat', service: 'Christmas lights' })]) assert.ok(!plain.text.includes('gift wrapping'))
+})
+
 test('still waiting: what counts, the 2-hour wait, claims, and the 4-hour repeat', () => {
   const now = Date.parse('2026-10-20T15:00:00Z')
   const iso = (hoursAgo) => new Date(now - hoursAgo * H).toISOString()

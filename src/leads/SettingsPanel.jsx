@@ -7,6 +7,7 @@ import HomeBase from './HomeBase'
 import InstallApp from './InstallApp'
 import { InstallTextSettings } from './InstallTexts'
 import { DEFAULT_TERMS, FILL_IN } from '../proposals/terms.js'
+import { giftWrappingOn } from '../lib/giftWrapping'
 import { salesTaxSettings } from '../lib/salesTax'
 
 const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-3 py-2.5 text-base text-slate-100'
@@ -82,6 +83,32 @@ function BookingStatus({ settings, onSave }) {
         {cur.text && <button type="button" onClick={() => save('')} className="rounded-full bg-white/10 px-5 py-2 text-sm font-semibold">Remove from website</button>}
         {msg && <span className="text-sm text-emerald-400">{msg}</span>}
       </div>
+    </div>
+  )
+}
+
+// Gift wrapping on the website (docs/specs/gift-wrapping.md): built, off
+// until the owner says go (2026-10-13). settings/app.giftWrapping is read by
+// the `booking` function with the availability; the page draws the section
+// only when it says so, so the built HTML never carries it.
+function GiftWrapping({ settings, onSave }) {
+  const [msg, setMsg] = useState(null)
+  const on = giftWrappingOn(settings)
+  async function toggle(next) {
+    await onSave({ giftWrapping: next })
+    setMsg(next ? 'Saved ✓ It shows on the website within 5 minutes.' : 'Saved ✓ Gone from the website within 5 minutes.')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">🎁 Gift wrapping</p>
+      <p className="text-sm text-slate-400">
+        Off: nothing about gift wrapping shows anywhere on the website. On: the home page gets a Gift wrapping section (with its menu link and FAQ answers) and the estimate form asks “What do you need?” (Christmas lights / Gift wrapping / Both); a request that asks for it shows 🎁 on the lead and in the alert email, and its “Got your request” email talks about wrapping.
+      </p>
+      <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+        <input type="checkbox" checked={on} onChange={(e) => toggle(e.target.checked)} className="size-5 accent-glow-400" />
+        <span className="font-semibold text-slate-100">Show gift wrapping on the website</span>
+      </label>
+      {msg && <span className="text-sm text-emerald-400">{msg}</span>}
     </div>
   )
 }
@@ -343,6 +370,7 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
         <StaffNames settings={settings} onSave={onSave} />
 
         <BookingStatus settings={settings} onSave={onSave} />
+        <GiftWrapping settings={settings} onSave={onSave} />
         <AssistantNotes settings={settings} onSave={onSave} />
         <SalesTax settings={settings} onSave={onSave} />
 

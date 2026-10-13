@@ -1,12 +1,15 @@
-import { faq } from '../data/content'
+import { faq, giftWrapping } from '../data/content'
+import { useGiftWrapping } from '../lib/giftWrapping'
 import Icon from './Icon'
 import Section from './Section'
 
 export default function Faq() {
+  // The gift-wrapping answers only while the owner has it switched on (lib/giftWrapping.js).
+  const groups = useGiftWrapping() ? [...faq, giftWrapping.faq] : faq
   return (
     <Section id="faq" eyebrow="FAQ" title="Questions, answered.">
       <div className="grid gap-10 md:grid-cols-2">
-        {faq.map((g) => (
+        {groups.map((g) => (
           <div key={g.group}>
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">{g.group}</h3>
             <div className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-night-900">

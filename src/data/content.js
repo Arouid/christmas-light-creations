@@ -447,3 +447,44 @@ export const designPage = {
   attach: 'Send my design with the request',
   message: 'I designed my lights on your website (attached).',
 }
+
+// Gift wrapping (docs/specs/gift-wrapping.md): the owner's second service,
+// shown on the website only while ⚙ Settings → Gift wrapping is on
+// (settings/app.giftWrapping; off until the owner says go, 2026-10-13).
+// Kept out of `nav` and `faq` on purpose: those are drawn into the built
+// HTML and read by the sales assistant, and neither may mention it while
+// it is off. The owner's answers (pricing, drop-off, dates, supplies) still
+// aren't in: the words below promise nothing specific, and `details` is
+// where those answers go once given.
+export const giftWrapping = {
+  nav: { label: 'Gift wrapping', href: '#gift-wrapping', after: '#gallery' },
+  eyebrow: 'New this season',
+  title: 'Gift wrapping, done beautifully.',
+  intro: 'The same family that lights your home can wrap your gifts: crisp corners, real ribbon, bows that stay put. Hand us the pile and get back presents ready to go under the tree.',
+  // Photos (the owner's: plaid, navy snowflake, red polka-dot bows) go here once processed with
+  // scripts/process-photos.mjs: { src: `${base}images/gift-wrap/….jpg`, alt: '…' }. Shown only when filled.
+  photos: [],
+  steps: [
+    ['Tell us what you have', 'Roughly how many gifts, what sizes, and when you need them back. Ask in the estimate form, or text us a photo of the pile.'],
+    ['We send you a price', 'One clear price for the lot before you commit. Tell us a color or a theme and we choose paper, ribbon and bows to match.'],
+    ['Hand them over, get them back wrapped', 'We arrange the hand-off with you, then your gifts come back wrapped and ready to give.'],
+  ],
+  // Fill in from the owner's answers (price by size, drop-off days, the last day before Christmas, your own paper). Shown only when filled.
+  details: [],
+  cta: 'Ask about gift wrapping',
+  // An extra FAQ group, shown with the others while the switch is on.
+  faq: {
+    group: 'Gift wrapping',
+    items: [
+      ['Do you really wrap gifts?', 'Yes. Christmas lights by day, gift wrapping by night: the same family, the same season, and we love doing both. Crisp corners, real ribbon, bows that stay put.'],
+      ['How much does gift wrapping cost?', 'It depends on how many gifts you have and their sizes. Tell us roughly what you have and we send you one clear price for the lot, before you commit.'],
+      ['How do my gifts get to you?', 'We arrange it with you when we send your price: drop them off with us, or we collect them when we’re at your home for your lights.'],
+      ['Can I get lights and gift wrapping together?', 'Yes. Pick “Both” on the estimate form and we price them together. Lights customers get first dibs on wrapping dates.'],
+    ],
+  },
+  // "What do you need?" on the estimate form (the three choices are SERVICES in functions/giftWrapping.js).
+  form: {
+    legend: 'What do you need? *',
+    placeholder: 'How many gifts, roughly what sizes, colors you like, when you need them…',
+  },
+}
