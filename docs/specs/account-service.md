@@ -121,3 +121,9 @@ Owner: "we should have things like that on their account page too so they can se
 - **Help** (`#help`, `src/data/help.js`): 16 answers with a search box, shown signed in and on the sign-in screen (owner: self-help instead of tech support).
 - **Trees and your lights** under Your lights (`functions/notices.js`), told plainly as the owner asked.
 - **Who has the app**: `loadAccount()` sends the device name when the page runs standalone; `myAccount` keeps `customerLogins/{email}.app`; staff see "📱 has the app (…)" on the login line. The Get the app box says phone notifications of any kind only work from the installed app.
+
+## Yes, put my lights back up (2026-10-13)
+
+- Shown under Your lights while `scheduleText` says `none` (no status, Not Confirmed): week chips (`WEEKS` in `functions/rebook.js`), an optional 300-character note, one button.
+- `rebookMe` callable: verified email → every customer record under it; a season entry that is empty or Not Confirmed becomes `Confirmed - Needs to be Scheduled` with `firstContact: 'Confirmed'`, `timeframe` = the week, `customerNote` = the note, `rebookedAt`; already Confirmed/Scheduled/Completed/Off Scheduler → `{ already }` and nothing written. Then `logWebsite('rebooked')`, a push to staff phones and an email to the alert list.
+- The Re-install invite template points at the button. Demo: `/account/?demo=rebook`.

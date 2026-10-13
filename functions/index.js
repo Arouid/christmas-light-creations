@@ -70,6 +70,7 @@ import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { captureProblem, customIdFor, lockProblem, orderProblem, partLabel, payableProblem, validOrderId } from './payments.js'
 import { centralDayOf, dueText, payIn3Due, payIn3Reminder } from './payIn3.js'
 import { detailsChanged, detailsRequest, detailsSummary } from './propertyDetails.js'
+import { rebookEmail, rebookPatch, rebookPush, rebookRequest } from './rebook.js'
 import { brandText, textFooter } from './brand.js'
 import { fromHeader, staffName, staffNamesMap } from './staffNames.js'
 import { TREE_NOTICE, TREE_TITLE } from './notices.js'
@@ -748,6 +749,45 @@ export const updateMyDetails = onCall({ region: REGION, invoker: 'public', cors:
   if (changed.length) await logWebsite('details-updated', { type: 'customer', id: ids[0], name }, changed.join(', '))
   logger.info('updateMyDetails', { changed: changed.length })
   return { saved: true, changed }
+})
+
+// "Yes, put my lights back up" on /account/ (functions/rebook.js, owner
+// 2026-10-13): marks this season Confirmed on the customer's records, keeps
+// the week they'd like and a note, alerts staff, shows in Recent activity.
+export const rebookMe = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  const email = normEmail(req.auth?.token?.email)
+  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const r = rebookRequest(req.data)
+  if (r.error) throw new HttpsError(...r.error)
+  const db = getFirestore()
+  const ids = await customersFor(email)
+  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll book you.')
+  const now = new Date()
+  const season = String(now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1)
+  let customer = null
+  let already = null
+  let changed = 0
+  for (const id of ids) {
+    const ref = db.doc(`customers/${id}`)
+    const c = (await ref.get()).data() ?? {}
+    customer ??= { id, ...c }
+    const result = rebookPatch(c.seasons?.[season], r, now)
+    if (result.already) { already ??= result.already; continue }
+    const patch = Object.fromEntries(Object.entries(result.patch).map(([k, v]) => [`seasons.${season}.${k}`, v]))
+    await ref.update({ ...patch, updatedAt: FieldValue.serverTimestamp(), updatedBy: `customer:${email}` })
+    changed++
+  }
+  if (!changed) { logger.info('rebookMe: already on the list'); return { already: already || 'on the list' } }
+  await logWebsite('rebooked', { type: 'customer', id: customer.id, name: customer.fullName }, [r.week, r.note].filter(Boolean).join(' · '))
+  await alertStaff(rebookPush(customer, customer.id, r))
+  const to = await staffEmails()
+  if (to.length) {
+    try {
+      await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, ...rebookEmail(customer, customer.id, r, season) })
+    } catch (e) { await reportIncident('email', `${customer.fullName || 'A customer'} tapped "put my lights back up", but the staff email didn't go out: ${e.message}`) }
+  }
+  logger.info('rebookMe', { season, changed })
+  return { booked: true, season }
 })
 
 // ---- Customer accounts (/account/) ------------------------------------------

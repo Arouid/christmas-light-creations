@@ -14,6 +14,7 @@ import { NOTE_MAX, REPORT_ISSUES, scheduleText, shortDate } from '../../function
 import { TEXT_MAX as CHAT_MAX } from '../../functions/chat.js'
 import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
 import { searchHelp } from '../data/help.js'
+import { WEEKS } from '../../functions/rebook.js'
 
 // The customer's own account: /account/ (sign in with Google or an emailed
 // link, no password). Lists every proposal sent to their email, what's paid and what's
@@ -65,7 +66,9 @@ export default function AccountPage() {
   async function load() {
     if (demo) {
       const { DEMO_ACCOUNT } = await import('./demoAccount.js')
-      setView({ name: 'account', data: DEMO_ACCOUNT })
+      // ?demo=rebook: a returning customer who isn't on this season's list yet.
+      const rebook = q.get('demo') === 'rebook' ? { ...DEMO_ACCOUNT, schedule: { ...DEMO_ACCOUNT.schedule, installStatus: '', day: '', plannedDate: '', weekOf: '' } } : DEMO_ACCOUNT
+      setView({ name: 'account', data: rebook })
       return
     }
     setView((v) => (v.name === 'account' ? v : { name: 'loading' }))
@@ -233,7 +236,7 @@ function Account({ data, reload, logOut }) {
         <p className="text-sm text-slate-400">Signed in as {data.email}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
       {data.details && <DetailsNudge details={data.details} />}
-      <Lights schedule={data.schedule} service={data.service} />
+      <Lights schedule={data.schedule} service={data.service} reload={reload} />
       {data.chat && <Chat chat={data.chat} reload={reload} />}
       {data.details && <Details details={data.details} onSaved={reload} />}
       {data.details && <EmailPrefs details={data.details} onSaved={reload} />}
@@ -263,7 +266,7 @@ function Account({ data, reload, logOut }) {
 // Your lights this season (docs/specs/account-service.md): the schedule line
 // from the season fields staff fill in, and Report a problem, which becomes a
 // service call on the Service tab (through the server, never from here).
-function Lights({ schedule, service }) {
+function Lights({ schedule, service, reload }) {
   const sched = scheduleText(schedule)
   if (!sched && !service) return null
   return (
@@ -276,7 +279,7 @@ function Lights({ schedule, service }) {
           <span className="text-slate-400">Takedown:</span> <strong>{sched.takedown}</strong>
         </p>
       )}
-      {sched?.none && <p className="text-slate-300">You’re not on this season’s schedule yet. Want your lights back up? Call or text us and we’ll book you.</p>}
+      {sched?.none && <Rebook onDone={reload} />}
       {service && <ReportProblem service={service} />}
       {/* Told plainly, not only in the agreement (owner 2026-10-12). */}
       <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300"><strong className="text-glow-300">{TREE_TITLE}: </strong>{TREE_NOTICE}</p>
@@ -727,5 +730,42 @@ function Help() {
         </ul>
       ) : <p className="text-sm text-slate-300">Nothing matches that. Call or text {business.phone} and a person will help.</p>}
     </section>
+  )
+}
+
+// "Yes, put my lights back up" (functions/rebook.js, owner 2026-10-13): one
+// tap instead of a call. Shown only while they aren't on this season's list.
+function Rebook({ onDone }) {
+  const [week, setWeek] = useState('')
+  const [note, setNote] = useState('')
+  const [state, setState] = useState(null) // null | 'sending' | 'done' | 'already' | { error }
+  async function go() {
+    setState('sending')
+    try {
+      const r = demo ? { booked: true } : await (await lib).rebookMe(week, note)
+      setState(r?.booked ? 'done' : 'already')
+      if (!demo) onDone?.()
+    } catch (err) {
+      setState({ error: err?.message || 'That didn’t go through. Call or text us and we’ll book you.' })
+    }
+  }
+  if (state === 'done') return <p className="rounded-2xl bg-pine-500/15 px-4 py-3 text-pine-500"><strong>You’re on the list ✓</strong> We’ll text you your install date as the schedule fills in.</p>
+  if (state === 'already') return <p className="rounded-2xl bg-pine-500/15 px-4 py-3 text-pine-500">You’re already on this season’s list. We’ll text you your date.</p>
+  return (
+    <div className="space-y-3 rounded-2xl border border-glow-400/40 bg-glow-400/10 p-4">
+      <p className="text-slate-200"><strong className="text-glow-300">Want your lights back up this season?</strong> One tap and you’re on the list; no call needed.</p>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Which week suits you?">
+        {WEEKS.map((w) => (
+          <button key={w} type="button" onClick={() => setWeek(week === w ? '' : w)} aria-pressed={week === w}
+            className={`min-h-11 rounded-full border px-4 text-sm font-medium ${week === w ? 'border-glow-400 bg-glow-400/20 text-glow-300' : 'border-white/15 text-slate-200'}`}>{w}</button>
+        ))}
+      </div>
+      <input value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder="Anything changed? New color, more lights, a gate code… (optional)"
+        className="block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100" />
+      {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+      <button type="button" onClick={go} disabled={state === 'sending'} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-50`}>
+        {state === 'sending' ? 'One moment…' : 'Yes, put my lights back up'}
+      </button>
+    </div>
   )
 }

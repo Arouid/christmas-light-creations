@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import SignaturePad from './SignaturePad.jsx'
 import { PAY_DAYS, PAY_DAY_LABEL } from '../../functions/payIn3.js'
+import { signatureFromName } from '../lib/typedSignature.js'
 
 // Typed name + drawn signature + consent to sign electronically.
 // onSign({ name, image, consent: true, payDay? }) — the host saves it.
@@ -13,6 +14,13 @@ export default function SignPanel({ expectedName = '', payIn3 = false, agreement
   const [payDay, setPayDay] = useState(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
+  // Draw on the pad, or type the name (owner 2026-10-13: easier on a computer); both become the same PNG.
+  const [mode, setMode] = useState('draw')
+  const [typed, setTyped] = useState('')
+  const switchMode = () => {
+    if (mode === 'draw') { const t = typed || name; setTyped(t); setImage(signatureFromName(t)); setMode('type') }
+    else { setImage(null); setMode('draw') }
+  }
   const ready = name.trim().length >= 2 && image && consent && agreementRead && (!payIn3 || payDay)
 
   async function sign() {
@@ -47,8 +55,18 @@ export default function SignPanel({ expectedName = '', payIn3 = false, agreement
         </fieldset>
       )}
       <div>
-        <p className="mb-1 text-sm text-slate-300">Your signature</p>
-        <SignaturePad onChange={setImage} />
+        <div className="mb-1 flex items-center justify-between gap-3">
+          <p className="text-sm text-slate-300">Your signature</p>
+          <button type="button" onClick={switchMode} className="min-h-9 text-sm font-semibold text-glow-300 underline">{mode === 'draw' ? 'Type it instead' : 'Draw it instead'}</button>
+        </div>
+        {mode === 'draw' ? <SignaturePad onChange={setImage} /> : (
+          <div>
+            <input value={typed} onChange={(e) => { setTyped(e.target.value); setImage(signatureFromName(e.target.value)) }} placeholder="Type your full name" aria-label="Type your name as your signature"
+              className="block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100" />
+            {image && <img src={image} alt="Your typed signature" className="mt-2 h-20 w-auto rounded-xl bg-white" />}
+            <p className="mt-1 text-xs text-slate-400">Typing your name here is your signature, the same as drawing it.</p>
+          </div>
+        )}
       </div>
       <label className={`flex items-start gap-3 text-sm ${agreementRead ? 'text-slate-300' : 'text-slate-500'}`}>
         <input type="checkbox" checked={consent} disabled={!agreementRead} onChange={(e) => setConsent(e.target.checked)} className="mt-1 size-5 shrink-0" />

@@ -4,6 +4,7 @@ import { firebaseReady, getFirebaseApp, submitLead } from '../lib/firebase'
 import { SERVICES, useGiftWrapping } from '../lib/giftWrapping'
 import { useSign, useTakenOver } from '../lib/prerendered'
 import { signSource } from '../lib/sign'
+import { LIT_OPTIONS, composeMessage, needsPhone } from '../lib/estimateForm'
 import Icon from './Icon'
 import RecaptchaNote from './RecaptchaNote'
 
@@ -21,6 +22,10 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
   // "What do you need?" (docs/specs/gift-wrapping.md): only while gift wrapping is switched on.
   const gift = useGiftWrapping()
   const [service, setService] = useState(SERVICES[0])
+  // "What would you like lit?" chips + an optional note fold into the lead's message (src/lib/estimateForm.js).
+  const [picks, setPicks] = useState([])
+  const [phoneErr, setPhoneErr] = useState(false)
+  const togglePick = (o) => setPicks((p) => (p.includes(o) ? p.filter((x) => x !== o) : [...p, o]))
   const message = useRef(null)
   const first = useRef(null)
 
@@ -46,6 +51,8 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
     const data = new FormData(e.currentTarget)
     // Hidden field only bots fill in: pretend success, save nothing.
     if (data.get('website')) return setStatus('sent')
+    if (needsPhone(data.get('contactMethod'), data.get('phone'))) { setPhoneErr(true); return }
+    data.set('message', composeMessage(picks, data.get('message'), { gift: gift && service === 'Gift wrapping' }))
     setStatus('sending')
     try {
       await submitLead(data, design && attach ? await design.get() : null)
@@ -74,6 +81,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
       {/* Load Firebase (and the anti-spam check) once someone starts filling in the form. */}
       <form onSubmit={onSubmit} onFocus={() => { if (firebaseReady) getFirebaseApp().catch(() => {}) }} className="grid gap-5 sm:grid-cols-2">
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
+        <p className="text-sm text-slate-400 sm:col-span-2">Takes about a minute. You get one exact price within a day; we don’t quote over the phone.</p>
         {design && (
           <div className="flex items-center gap-3 rounded-2xl border border-glow-400/30 bg-glow-400/5 p-3 sm:col-span-2">
             <img src={design.preview} alt="Your light design" className="h-16 w-24 shrink-0 rounded-lg object-cover" />
@@ -101,7 +109,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
         <label className={label}>First name *<input ref={first} required name="firstName" maxLength={80} autoComplete="given-name" className={field} /></label>
         <label className={label}>Last name *<input required name="lastName" maxLength={80} autoComplete="family-name" className={field} /></label>
         <label className={label}>Email *<input required type="email" name="email" maxLength={200} autoComplete="email" className={field} /></label>
-        <label className={label}>Phone<input type="tel" name="phone" maxLength={40} autoComplete="tel" className={field} /></label>
+        <label className={label}>Phone<input type="tel" name="phone" maxLength={40} autoComplete="tel" className={field} onInput={() => setPhoneErr(false)} /></label>
         <label className={`${label} sm:col-span-2`}>Street address *
           <input required name="address" maxLength={200} autoComplete="street-address" className={field} placeholder="We can’t estimate without it" />
         </label>
@@ -119,6 +127,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
               </label>
             ))}
           </div>
+          {phoneErr && <p className="mt-2 text-sm text-berry-500" role="alert">Add your phone number so we can call or text you, or pick Email.</p>}
         </fieldset>
         <label className={`${label} sm:col-span-2`}>How did you hear about us?
           {/* key: a sign code known only after the page is taken over still preselects "Road sign" */}
@@ -128,9 +137,22 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
             {HEARD_FROM.filter((h) => !(sign && h === 'Road sign')).map((h) => <option key={h}>{h}</option>)}
           </select>
         </label>
-        <label className={`${label} sm:col-span-2`}>How can we help? *
-          <textarea ref={message} required name="message" rows={4} maxLength={3000} className={field} defaultValue={defaultMessage}
-            placeholder={gift && service === 'Gift wrapping' ? giftWrapping.form.placeholder : 'Roofline, trees, walkways, colors…'} />
+        {!(gift && service === 'Gift wrapping') && (
+          <fieldset className="sm:col-span-2">
+            <legend className={label}>What would you like lit? <span className="font-normal text-slate-500">(tap any, optional)</span></legend>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {LIT_OPTIONS.map((o) => (
+                <button key={o} type="button" onClick={() => togglePick(o)} aria-pressed={picks.includes(o)}
+                  className={`min-h-11 rounded-full border px-4 text-sm font-medium ${picks.includes(o) ? 'border-glow-400 bg-glow-400/15 text-glow-300' : 'border-white/15 text-slate-200 hover:border-white/30'}`}>
+                  {picks.includes(o) ? '✓ ' : ''}{o}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+        <label className={`${label} sm:col-span-2`}>Anything else? <span className="font-normal text-slate-500">(optional)</span>
+          <textarea ref={message} name="message" rows={3} maxLength={3000} className={field} defaultValue={defaultMessage}
+            placeholder={gift && service === 'Gift wrapping' ? giftWrapping.form.placeholder : 'Colors you like, a date you need, a gate code…'} />
         </label>
 
         <div className="sm:col-span-2">
@@ -145,6 +167,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
               Call {business.phone} for your estimate
             </a>
           )}
+          <p className="mt-3 text-center text-sm text-slate-400">Rather not type? <a href={business.smsWith('Hi! I’d like a free estimate for my home at: ')} className="font-semibold text-glow-300 underline">Text a photo of your house to {business.phone}</a>.</p>
           <RecaptchaNote className="mt-3" />
           {status === 'error' && (
             <p className="mt-3 text-center text-sm text-berry-500" role="alert">

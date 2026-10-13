@@ -65,3 +65,6 @@ export const updateMyDetails = (details) => callDeposit('updateMyDetails', detai
 // Chat with us (docs/specs/account-chat.md): the server saves it on their
 // thread and tells staff; answers { chat } as myAccount returns it.
 export const sendAccountMessage = (text) => callDeposit('sendAccountMessage', { text })
+
+// "Yes, put my lights back up": this season goes to Confirmed on their record (functions/rebook.js).
+export const rebookMe = (week, note) => callDeposit('rebookMe', { week, note })

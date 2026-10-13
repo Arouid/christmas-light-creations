@@ -117,7 +117,7 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
     id: 'reinstall', group: 'Booking', label: 'Re-install invite',
     when: 'Late summer/fall, to returning customers.',
     subject: 'Your {season} Christmas lights',
-    body: `Hi {first},\n\nIt's {business}! We're booking {season} installs now and would love to light up your home again. Reply to this email (or text {businessPhone}) with "yes" and any timing preferences, and we'll get you on the schedule.\n\nInstalls done by October 31st get 10% off, and early spots book up fast.${sign}`,
+    body: `Hi {first},\n\nIt's {business}! We're booking {season} installs now and would love to light up your home again. Fastest: open your account and tap "Yes, put my lights back up" ({website}/account/), or reply to this email (or text {businessPhone}) with "yes" and any timing preferences, and we'll get you on the schedule.\n\nInstalls done by October 31st get 10% off, and early spots book up fast.${sign}`,
   },
   {
     id: 'schedule', group: 'Booking', label: 'Pick your install date',
