@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { TOUR } from './guide'
 import Rich from './Rich'
 import { markTourDone } from './tourState'
+import { installHint } from './installHint'
+import { standalone } from '../components/useInstall'
 
 // First-login tour: a few cards on what staff use most. Shown once per
 // phone/computer (tourState.js), and any time from the guide's "Take the tour".
@@ -14,6 +16,8 @@ export default function Tour({ onClose, name = '' }) {
   const step = TOUR[i]
   const first = String(name).trim().split(' ')[0]
   const title = i === 0 && first ? `Welcome, ${first}!` : step.title
+  // The welcome card's install line is written for the device in hand (installHint.js).
+  const body = i === 0 ? [...step.body.slice(0, -1), installHint({ ua: navigator.userAgent, standalone: standalone() })] : step.body
   const last = i === TOUR.length - 1
   const finish = () => { markTourDone(); onClose() }
   const go = (tab) => { finish(); window.location.assign(`#${tab}`) }
@@ -52,7 +56,7 @@ export default function Tour({ onClose, name = '' }) {
           <p className="text-4xl" aria-hidden="true">{step.icon}</p>
           <h2 className="font-display text-2xl font-extrabold">{title}</h2>
           {i === 0 && first && <p className="text-sm font-semibold uppercase tracking-[0.2em] text-glow-300/80">{step.title}</p>}
-          {step.body.map((line) => <p key={line} className="text-base leading-relaxed text-slate-300"><Rich text={line} /></p>)}
+          {body.map((line) => <p key={line} className="text-base leading-relaxed text-slate-300"><Rich text={line} /></p>)}
         </div>
         <div className="flex items-center gap-1.5" aria-hidden="true">
           {TOUR.map((s, n) => <span key={s.title} className={`h-1.5 rounded-full ${n === i ? 'w-6 bg-glow-400' : 'w-1.5 bg-white/20'}`} />)}
