@@ -413,7 +413,7 @@ function InvoiceCard({ i, reload }) {
       </div>
       <p className="flex justify-between gap-3 font-semibold"><span>{late ? `Was due ${longDate(i.dueDate)}` : i.dueDate > i.sentDay ? `Due ${longDate(i.dueDate)}` : 'Due on receipt'}</span><span className="tabular-nums">{fmt(i.cents)}</span></p>
       <a href={invoiceLink(i.token)} className={`${btn} bg-white text-night-950`}>View or print the invoice</a>
-      <DepositPanel token={i.token} of="invoice" title={`Pay invoice ${i.number}`} note={late ? 'Past due.' : 'Thank you!'} amountLabel={fmt(i.cents)} onPaid={reload} />
+      <DepositPanel token={i.token} of="invoice" title={`Pay invoice ${i.number}`} note={`${late ? 'Past due.' : 'Thank you!'} By paying you agree to the seasonal service terms on your invoice.`} amountLabel={fmt(i.cents)} onPaid={reload} />
     </section>
   )
 }

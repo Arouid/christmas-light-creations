@@ -242,7 +242,7 @@ export function invoiceEmail({ inv, link, today, type = 'invoice', day = 0 }) {
   const opening = late
     ? `Hi ${first}, just a friendly reminder: invoice ${inv.number} for ${total} was due ${longDate(inv.dueDate)}${day ? ` (${day} days ago)` : ''}. If you’ve already paid, thank you, and please ignore this.`
     : `Hi ${first}, here’s your invoice from ${BIZ}. Thank you for letting us light up your home!`
-  const payLine = 'Pay online with PayPal, Venmo or a card. You can also save or print it from the same page.'
+  const payLine = 'Pay online with PayPal, Venmo or a card. You can also save or print it from the same page. By paying you agree to our seasonal service terms, shown on your invoice page.'
   const note = inv.note ? `\n\n${inv.note}` : ''
   const text = `${opening}\n\nInvoice ${inv.number} · ${what}\n${itemText(inv)}\n${late ? '' : `Due: ${inv.dueDate && inv.dueDate > today ? longDate(inv.dueDate) : 'on receipt'}\n`}${note}\n\nView and pay: ${link}\n${payLine}\n\nQuestions? Call or text ${PHONE}.\n\nThank you,\n${BIZ}`
   const html = branded({

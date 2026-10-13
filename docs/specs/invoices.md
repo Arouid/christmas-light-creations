@@ -109,6 +109,10 @@ Returning customers are billed every season (re-install, takedown, add-ons, serv
 
 Server functions (us-south1): `createInvoiceOrder` / `captureInvoiceOrder` (callables, public, PayPal custom_id `inv:<token>`), `invoiceChanged` (trigger: number + email on send, email again, paid → season fill + emails), `invoiceReminders` (daily schedule), `myAccount` also returns the customer's invoices.
 
+## Seasonal service terms (2026-10-12)
+
+Returning customers' re-installs, takedowns, add-ons and service calls are billed by invoice and never signed, so the invoice carries its own one-page terms (`SEASONAL_TERMS` in `src/proposals/terms.js`: what's covered, your lights, scheduling, service, access, payment with no late fees, liability limits in capitals, Texas law and Brazoria County). The invoice page shows them folded behind **Read the terms** (print shows them in full), the Pay panel on the invoice page and on `/account/` says "By paying you agree to the seasonal service terms", and the invoice emails say the same. Paying is the agreement. The attorney reviews these with the main contract (TODO #30).
+
 ## Links
 
 - Payments and the security rules they follow: `functions/payments.js`, `docs/decisions.md` (2026-10-09 security follow-ups)

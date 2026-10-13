@@ -91,7 +91,7 @@ export default function InvoicePage() {
         )}
         {(s === 'open' || s === 'overdue') && (
           <DepositPanel token={token} of="invoice" title={`Pay invoice ${inv.number}`} amountLabel={money(invoiceCents(inv))}
-            note={s === 'overdue' ? 'Past due.' : inv.dueDate > today ? `Due ${longDate(inv.dueDate)}.` : 'Due on receipt.'} onPaid={() => load(false)} />
+            note={`${s === 'overdue' ? 'Past due.' : inv.dueDate > today ? `Due ${longDate(inv.dueDate)}.` : 'Due on receipt.'} By paying you agree to the seasonal service terms on this invoice.`} onPaid={() => load(false)} />
         )}
         <div className="flex flex-wrap gap-3">
           <button type="button" onClick={() => window.print()} className={`${btn} bg-white text-night-950`}>Save or print (PDF)</button>

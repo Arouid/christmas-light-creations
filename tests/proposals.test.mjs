@@ -192,3 +192,12 @@ test('terms by kind and plan: Pay in 3 swaps the payment and cancellation clause
   assert.ok(defaultTerms({ plan: 'payin3' }, custom).includes('October 20') && defaultTerms({ plan: 'payin3' }, custom).includes(PAYIN3_PAYMENT))
   assert.equal(defaultTerms({ plan: 'payin3' }, 'Just a paragraph.'), 'Just a paragraph.')
 })
+
+test('seasonal service terms (invoices): fill with the business only, say paying is agreeing, Texas and the limits in capitals, no late fees', async () => {
+  const { SEASONAL_TERMS } = await import('../src/proposals/terms.js')
+  const t = fillTerms(SEASONAL_TERMS, { business: 'Christmas Light Creations', businessPhone: '281-819-0163' })
+  assert.doesNotMatch(t, /\{\w+\}/)
+  assert.ok(t.includes('Paying the invoice is your agreement') && t.includes('Brazoria County, Texas') && t.includes('OUR TOTAL LIABILITY FOR THIS WORK IS LIMITED') && t.includes('We do not charge late fees'))
+  const words = t.split(/\s+/).filter(Boolean).length
+  assert.ok(words > 300 && words < 700, `about a page: ${words} words`)
+})

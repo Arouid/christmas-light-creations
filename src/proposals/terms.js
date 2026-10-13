@@ -57,7 +57,29 @@ export const ADDON_OWNERSHIP = `6. Takedown and ownership (add-on). These lights
 
 export const LEASE_OWNERSHIP = `6. Takedown and the lights (lease). Takedown starts January 3 and is finished by January 13; you do not need to be home. The lights and materials stay ours: we store, test and maintain them between seasons, and each season you choose a brand-new design or keep this one. You agree not to move, alter, sell or lend them, and to let us take them down at the end of the season or if a payment is more than 30 days late; you are responsible for loss or damage to them while they are at your home beyond normal weather wear. Each season you come back takes another 10% off this season's price ({nextYear} next season), up to 50% off, subject to our then-current terms.`
 
-const clauseRe = (n) => new RegExp(`(^|\\n\\n)${n}\\. [^]*?(?=\\n\\n\\d+\\. |$)`)
+// Seasonal service terms for work billed by invoice (re-installs, takedowns,
+// add-ons, service calls): returning customers never sign anything, so paying
+// the invoice is the agreement (owner 2026-10-12). Shown folded on the invoice
+// page; the emails say so. Only {business} and {businessPhone} fill in.
+export const SEASONAL_TERMS = `Seasonal service terms
+
+1. What this covers. These terms apply to the work on this invoice from {business} ("we", "us") for you, the customer, at the property on the invoice: putting up lights you already own, taking them down, adding lights, or a service call. Paying the invoice is your agreement to them. If you signed an agreement with us for these lights, that agreement still applies, and these terms fill in anything it does not cover.
+
+2. Your lights. Lights you bought from us are yours. We put them back up for the re-install price on the invoice and take them down in January (from the 3rd, finished by the 13th), labeled and binned for you to keep. We only install lights that came from us, and we do not install on clay, slate or other tile roofs. Lights added this season are charged in full now and add to your yearly re-install price from next season.
+
+3. Scheduling and weather. Installs begin October 15 and are scheduled area by area; we confirm your date, and you do not need to be home. Rain, wind, lightning, ice or unsafe roof conditions can move a date, and we give you the next available one. Dates are estimates, not guarantees.
+
+4. Service during the season. If our lights, cords, clips or timers stop working, call or text {businessPhone} and we repair or replace them at no charge, usually the same day locally and within 48 hours in the busiest weeks. Damage caused by you, guests, contractors, pets, animals, vehicles, vandalism, storms, flooding, power outages or surges, or by your home's electrical system is not covered; we fix those at our usual rates if you ask.
+
+5. Access and electricity. Please give us access on install and takedown days (gate codes, HOA or gate arrangements) and working, weather-safe outdoor outlets, and tell us about sprinkler heads, buried lines, fragile plants, loose shingles or pets. You cover the electricity the lights use and any HOA or landlord approval.
+
+6. Payment. The invoice is due as shown. We do not charge late fees. If a balance is more than 10 days late, we may pause service calls, decline next season's re-install, or take down lights that have not been paid for, and you agree to pay our reasonable collection costs, including reasonable attorney's fees, as Texas law allows. Texas sales tax, where it applies, is shown on the invoice.
+
+7. Damage and limits on liability. We carry general liability insurance; if we damage your property doing this work, we repair it or pay for the repair (tell us within 7 days of noticing). WE ARE NOT RESPONSIBLE FOR CONDITIONS THAT EXISTED BEFORE OUR WORK, FOR DAMAGE CAUSED BY WEATHER, POWER OUTAGES OR SURGES, ANIMALS OR OTHER EVENTS BEYOND OUR CONTROL, OR FOR ITEMS WE WERE NOT TOLD ABOUT. EXCEPT FOR OUR NEGLIGENCE OR WILLFUL MISCONDUCT, OUR TOTAL LIABILITY FOR THIS WORK IS LIMITED TO THE AMOUNT YOU PAID US FOR IT, WITH NO INDIRECT OR CONSEQUENTIAL DAMAGES. Nothing here limits what Texas law says cannot be limited.
+
+8. General. Texas law applies, and any dispute goes to the courts of Brazoria County, Texas, after we have tried to talk it through; the winning party in a lawsuit may recover its reasonable attorney's fees. We may photograph the finished lighting from the street for our portfolio, without your name or address; tell us if you would rather we did not. We handle your details as described at christmas-light-creations.com/privacy.`
+
+const clauseRe = (n) =>new RegExp(`(^|\\n\\n)${n}\\. [^]*?(?=\\n\\n\\d+\\. |$)`)
 const swapClause = (text, n, clause) => (clauseRe(n).test(text) ? text.replace(clauseRe(n), (m, lead) => `${lead}${clause}`) : text)
 
 // The terms for a proposal's kind and plan, built on `base` (the owner's

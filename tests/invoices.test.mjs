@@ -254,3 +254,10 @@ test('sales tax: total is lines plus tax, rounded to the cent; summary and email
   assert.equal(invoiceCents(plain), 29000); assert.equal(invoiceTax(plain), 0)
   assert.equal(invoiceCents({ ...inv, tax: null }), 29000)
 })
+
+test('invoice emails say that paying is agreeing to the seasonal service terms', async () => {
+  const { invoiceEmail } = await import('../functions/invoices.js')
+  const inv = { status: 'open', number: 'CLC-2026-0009', kind: 'install', season: '2026', customer: { name: 'Pat Sample' }, items: [{ id: 'a', description: 'Re-install', cents: 45000 }], dueDate: '2026-11-01', sentAt: 1 }
+  const mail = invoiceEmail({ inv, link: 'https://x/invoice/?t=t', today: '2026-10-20' })
+  assert.ok(mail.text.includes('seasonal service terms') && mail.html.includes('seasonal service terms'))
+})

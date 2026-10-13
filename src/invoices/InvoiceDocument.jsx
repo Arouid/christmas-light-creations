@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { KIND_SHORT, STATE_LABEL, invoiceCents, invoiceState, invoiceTax, invoiceTaxRate, longDate, money, paidInfo } from '../lib/invoices'
+import { fillTerms } from '../proposals/model.js'
+import { SEASONAL_TERMS } from '../proposals/terms.js'
 import { todayISO } from '../lib/customers'
 
 const STATE_CLASS = { draft: 'bg-white/10', open: 'bg-glow-400/20 text-glow-300', overdue: 'bg-berry-600/30 text-berry-500', paid: 'bg-emerald-500/20 text-emerald-300', void: 'bg-white/10 text-slate-400' }
@@ -9,6 +12,7 @@ const dayOfTs = (t) => {
 
 // The invoice as the customer reads and prints it. Presentational only.
 export default function InvoiceDocument({ invoice: inv, business = {}, today = todayISO() }) {
+  const [showTerms, setShowTerms] = useState(false)
   const state = invoiceState(inv, today)
   const total = invoiceCents(inv)
   const paid = paidInfo(inv)
@@ -79,6 +83,22 @@ export default function InvoiceDocument({ invoice: inv, business = {}, today = t
       </section>
 
       {inv.note && <p className="whitespace-pre-wrap rounded-2xl bg-white/5 p-4 text-slate-300 print:bg-transparent print:p-0 print:text-black">{inv.note}</p>}
+
+      {/* Seasonal service terms (src/proposals/terms.js): re-installs and takedowns are billed
+          without a signed agreement, so paying the invoice is the agreement (owner 2026-10-12).
+          Folded so the invoice stays short on a phone; print shows them in full. */}
+      <section>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-semibold">Seasonal service terms</h2>
+          <button type="button" onClick={() => setShowTerms((o) => !o)} aria-expanded={showTerms} className="min-h-11 rounded-full border border-glow-400/50 px-4 text-sm font-semibold text-glow-300 hover:bg-white/5 print:hidden">
+            {showTerms ? 'Hide the terms' : 'Read the terms'}
+          </button>
+        </div>
+        <p className="mt-1 text-sm text-slate-400 print:hidden">Paying this invoice is your agreement to them: your lights, scheduling, service, access, payment and liability.</p>
+        <div className={`${showTerms ? '' : 'hidden'} mt-2 whitespace-pre-wrap rounded-2xl border border-white/10 p-4 text-sm leading-relaxed text-slate-300 print:block print:border-black/20 print:text-black`}>
+          {fillTerms(SEASONAL_TERMS, { business: business.name ?? 'Christmas Light Creations', businessPhone: business.phone ?? '281-819-0163' })}
+        </div>
+      </section>
 
       <footer className="border-t border-white/10 pt-4 text-sm text-slate-400 print:border-black/20 print:text-black">
         Thank you for choosing {business.name}! Questions about this invoice? Call or text{' '}
