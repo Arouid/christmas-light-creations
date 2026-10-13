@@ -169,3 +169,30 @@ test('reminder list: install and takedown stops to do, how each can be reached',
   // Not optimized: "during the day" for everyone.
   assert.deepEqual(reminderRows({ ...route, legsKey: 'stale' }, rows, customers).map((r) => r.when), ['during the day', 'during the day', 'during the day'])
 })
+
+// Boxes on the porch (owner 2026-10-12): re-installs and takedowns get the line, a first-year install doesn't.
+test('set your boxes out: returning re-install and every takedown, never a first-year install; texts stay under one segment', async () => {
+  const { boxLine, isReturning } = await import('../src/lib/installTexts.js')
+  const route = { day: '2026-11-12', startTime: '08:00', stops: [] }
+  const returning = { firstName: 'Pat', seasons: { 2025: { installStatus: 'Install Completed' }, 2026: {} } }
+  const first = { firstName: 'Sam', seasons: { 2026: {} } }
+  assert.ok(isReturning(returning, 2026) && !isReturning(first, 2026) && isReturning({ since: '2021' }, 2026))
+  assert.match(boxLine('install', returning, 2026), /boxes of lights out on the porch/)
+  assert.match(boxLine('install', returning, 2026, true), /labeled boxes of lights out on the porch by the morning/)
+  assert.equal(boxLine('install', first, 2026), '')
+  assert.match(boxLine('takedown', first, 2026), /empty box out on the porch/)
+  const re = stopText('reminder', { stop: { kind: 'install', customerId: 'r' }, route, customer: returning, season: 2026 })
+  assert.ok(re.includes('boxes of lights out on the porch') && re.includes('Questions?') && re.length <= MAX_TEXT, `${re.length}: ${re}`)
+  const fr = stopText('reminder', { stop: { kind: 'install', customerId: 'f' }, route, customer: first, season: 2026 })
+  assert.ok(!fr.includes('box') && fr.includes('home. Questions?'))
+  const td = stopText('reminder', { stop: { kind: 'takedown', customerId: 'f' }, route, customer: first, season: 2026 })
+  assert.ok(td.includes('empty box out on the porch') && td.length <= MAX_TEXT, `${td.length}`)
+  // The emails: a bullet on a re-install, nothing (and no stray blank line) on a first-year install.
+  const inst = STOCK_TEMPLATES.find((t) => t.id === 'install-reminder').body
+  const x = (c) => stopExtras({ kind: 'install' }, route, false, c, 2026)
+  assert.ok(fillTemplate(inst, returning, 2026, x(returning)).includes('- Set your labeled boxes of lights out on the porch'))
+  assert.ok(!fillTemplate(inst, first, 2026, x(first)).includes('box') && !fillTemplate(inst, first, 2026, x(first)).includes('\n\n\n'))
+  const take = STOCK_TEMPLATES.find((t) => t.id === 'takedown-reminder').body
+  assert.ok(fillTemplate(take, first, 2026, stopExtras({ kind: 'takedown' }, route, false, first, 2026)).includes('Please set your empty box out on the porch.'))
+  assert.ok(fillTemplate(inst, returning, 2026, x(returning)).includes('reply if your gate code has changed'))
+})

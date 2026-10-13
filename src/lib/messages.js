@@ -48,7 +48,10 @@ export const PLACEHOLDERS = [
   ['visitDay', 'Visit day (from the route)', (c, y, x) => x?.visitDay],
   ['job', 'Install / takedown (from the route)', (c, y, x) => x?.job],
   ['eta', 'Minutes away (from the route)', (c, y, x) => x?.eta],
-].map(([key, label, get]) => ({ key, label, get }))
+  // "Set your boxes out" for a re-install or takedown stop; blank for a first-year install (they get a box).
+  ['boxes', 'Set your box(es) out (re-install / takedown, from the route)', (c, y, x) => x?.boxes, true],
+  ['boxesEmail', 'Same, as an email bullet line', (c, y, x) => x?.boxesEmail, true],
+].map(([key, label, get, optional = false]) => ({ key, label, get, optional })) // optional: blank is fine, never "missing"
 
 // extra: values a route stop fills in ({ when, visitDay, job, eta }).
 export function fillTemplate(text, customer, season, extra = {}) {
@@ -60,7 +63,7 @@ export function fillTemplate(text, customer, season, extra = {}) {
 
 // Placeholders a customer has no value for (to warn before sending).
 export function missingPlaceholders(text, customer, season, extra = {}) {
-  return PLACEHOLDERS.filter((p) => text.includes(`{${p.key}}`) && !p.get(customer, season, extra)).map((p) => p.label)
+  return PLACEHOLDERS.filter((p) => !p.optional && text.includes(`{${p.key}}`) && !p.get(customer, season, extra)).map((p) => p.label)
 }
 
 // "(281) 555-0101" -> "+12815550101" (US numbers).

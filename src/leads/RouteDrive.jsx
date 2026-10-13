@@ -59,12 +59,19 @@ function StopCard({ s, n, current, customer, route, onStop, onCustomer }) {
           <StopTextButtons texts={texts} stop={s} className="mt-2 flex flex-wrap gap-2" />
           <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
             <label className="text-slate-400">Gate code
-              <input defaultValue={s.gate ?? ''} onBlur={(e) => e.target.value !== (s.gate ?? '') && saveContact('gate', e.target.value.trim())} className={field} placeholder="none" />
+              <input defaultValue={s.gate || customer?.gateCode || ''} onBlur={(e) => e.target.value !== (s.gate ?? '') && saveContact('gate', e.target.value.trim())} className={field} placeholder="none" />
             </label>
             <label className="text-slate-400">Phone
               <input defaultValue={s.phone ?? ''} inputMode="tel" onBlur={(e) => e.target.value !== (s.phone ?? '') && saveContact('phone', e.target.value.trim())} className={field} />
             </label>
           </div>
+          {/* What the customer told us to avoid, and pets (their account page or Edit details), always in front of the crew (owner 2026-10-12). */}
+          {(customer?.hazards || customer?.pets) && (
+            <p className="mt-3 rounded-xl bg-berry-600/15 px-3 py-2 text-sm text-slate-200">
+              <span className="font-semibold text-berry-500">Heads-up: </span>
+              {[customer.hazards && `avoid ${customer.hazards}`, customer.pets && `pets: ${customer.pets}`].filter(Boolean).join(' · ')}
+            </p>
+          )}
           {customer?.notes && <p className="mt-3 rounded-xl bg-white/5 px-3 py-2 text-sm text-slate-300"><span className="text-slate-400">Customer notes: </span>{customer.notes}</p>}
           <label className="mt-3 block text-sm text-slate-400">Notes for this stop
             <textarea defaultValue={s.notes ?? ''} rows={2} onBlur={(e) => e.target.value !== (s.notes ?? '') && onStop({ notes: e.target.value })} className={field} placeholder="Breaker in garage, dog in back…" />

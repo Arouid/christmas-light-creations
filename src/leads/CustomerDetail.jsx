@@ -30,6 +30,8 @@ const GROUPS = [
   ]],
   ['Property', [
     ['address', 'Address'], ['city', 'City'], ['neighborhood', 'Neighborhood'], ['gateCode', 'Gate code'],
+    // HOA (owner 2026-10-12): the contract makes customers tell us a lights-down-by date; keep it where the crew plans takedowns.
+    ['hoa', 'HOA (name, rules)'], ['lightsDownBy', 'HOA: lights down by'], ['hazards', 'Things to avoid in the yard'], ['pets', 'Pets'],
     ['locationBlock', 'Location block'], ['installType', 'Install type', { options: INSTALL_TYPES }],
   ]],
   ['Lights', [

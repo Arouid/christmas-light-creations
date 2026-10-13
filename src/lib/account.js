@@ -57,3 +57,5 @@ export const loadAccount = () => callDeposit('myAccount', {})
 // Report a problem with their lights (docs/specs/account-service.md): the
 // server logs the service call and alerts staff; the browser never writes it.
 export const reportProblem = (problem, note) => callDeposit('reportProblem', { problem, note })
+// "Your property details": gate code, HOA, lights-down-by, things to avoid, pets (functions/propertyDetails.js).
+export const updateMyDetails = (details) => callDeposit('updateMyDetails', details)

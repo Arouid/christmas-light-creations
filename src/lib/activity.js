@@ -79,7 +79,7 @@ export function staffName(email, names = {}) {
 // ---- Entries ----------------------------------------------------------------------
 
 // Website entries: the customer did it ("Pat Sample signed their proposal").
-const WEBSITE = { 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights' }
+const WEBSITE = { 'details-updated': 'updated their property details from their account', 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights' }
 const VERB = {
   email: 'emailed', 'invoice-sent': 'sent an invoice to', 'invoice-again': 'emailed the invoice again to',
   'invoice-paid': 'marked paid the invoice for', 'invoice-void': 'voided the invoice for',

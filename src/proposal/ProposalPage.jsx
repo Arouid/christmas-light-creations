@@ -104,7 +104,7 @@ export default function ProposalPage() {
           <p className="font-display text-2xl font-extrabold text-emerald-300">Signed ✓ Thank you!</p>
           <p className="text-slate-300">{depositDue ? `${isPayIn3(p) ? 'Make your first payment' : 'Pay your deposit'} below to hold your install date. ` : ''}We’ll contact you to confirm your install date{p.status === 'countersigned' ? '' : ' and countersign your agreement'}. Keep a copy for your records:</p>
           <button type="button" onClick={() => window.print()} className="rounded-full bg-white px-5 py-3 font-semibold text-night-950">Save or print a copy (PDF)</button>
-          <p className="text-sm text-slate-400">All your agreements and payments in one place: <a href={`${import.meta.env.BASE_URL}account/`} className="underline">your account</a> (sign in with your email).</p>
+          <p className="text-sm text-slate-400">All your agreements and payments in one place: <a href={`${import.meta.env.BASE_URL}account/`} className="underline">your account</a> (sign in with your email). While you're there, add your gate code, anything in the yard we should avoid, and pets, so the crew is ready on the day.</p>
         </div>
       )}
       {due.map((part) => (

@@ -8,6 +8,8 @@ const customers = [
     id: 'sample-customer', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer',
     phone: '555-0101', email: 'sample@example.com', address: '123 Example St Pearland, TX 77581', city: 'Pearland',
     neighborhood: 'Example Lakes', gateCode: '1234', locationBlock: 'Pearland - East side of 35', installType: 'Early Install',
+    // Filled in by the customer on /account/ (docs/specs/account-service.md): the crew's Heads-up line on the route.
+    hoa: 'Example Lakes HOA', lightsDownBy: 'Jan 15', hazards: 'Sprinkler heads along the front bed; landscape lights by the walkway', pets: 'One dog, friendly',
     lightColor: 'Warm white', takedownNotes: 'Left side windows: 2 zip ties.\nRight side: 3 zip ties.',
     since: '2016', normalPaymentMethod: 'PayPal', priceNotes: 'Added 8 windows in 2023.', originalRate: '$680.00',
     installHistory: 'Original install 2016 $680\n2023: 8 windows $240; 2025 small arch by the walkway',

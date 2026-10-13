@@ -175,6 +175,7 @@ export function customerRow(id, c = {}, season, messages = []) {
     status: clip(s.installStatus, 60) || undefined,
     timeframe: clip(s.timeframe, 120) || undefined,
     notes: clip(s.schedulingNotes, 400) || undefined,
+    lightsDownBy: clip(c.lightsDownBy, 40) || undefined, // HOA deadline (customer record); matters for takedown plans
     messages: wishesFrom(messages, season),
   }
   if (!row.messages.length) delete row.messages
@@ -227,6 +228,7 @@ export function scheduleSystemPrompt() {
     '4. Group by area: people in the same block or neighborhood on the same day, and nearby blocks on adjacent days, so the crew drives less.',
     '5. Earlier is better than later when nothing else decides it; fill the days in order and leave the last days for late confirmations.',
     '6. A customer with no address or an address outside the area still gets a day if they asked for one; mention the gap in the reason.',
+    '7. When planning takedowns, anyone with a lightsDownBy date (their HOA deadline) must be placed before that date; if that is impossible, put them first and say so in the reason.',
     '',
     'Every customer in the input appears exactly once, in assignments or in unplaced. Use the ids and days exactly as given. Reasons are one short line in plain words for the office, never for the customer. The explanation is one paragraph: how you filled the days, which days are full, and who to call.',
     '',

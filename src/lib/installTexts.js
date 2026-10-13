@@ -15,13 +15,13 @@ export const OPT_OUT = 'Reply STOP to opt out of texts.'
 // The stock wording; the owner edits them in ⚙ Settings → Install-day texts
 // (settings/app.textTemplates, a blank one falls back to stock).
 export const STOCK_TEXTS = {
-  reminder: `Hi {first}, {business} here. We're coming tomorrow ({visitDay}) {when} for your {job}. Please leave side gates unlocked and keep dogs inside; nobody needs to be home. Questions? Call or text {businessPhone}. ${OPT_OUT}`,
+  reminder: `Hi {first}, {business} here. We're coming tomorrow ({visitDay}) {when} for your {job}. Please leave side gates unlocked and keep dogs inside; nobody needs to be home. {boxes}Questions? Call or text {businessPhone}. ${OPT_OUT}`,
   onway: `Hi {first}, {business} here. We're on our way to you now, {eta}. Please keep dogs inside while we work. ${OPT_OUT}`,
   done: `Hi {first}, your lights are up! Take a look tonight: they're on a timer and come on by themselves. Anything off, call or text {businessPhone}. Thank you! {business}. ${OPT_OUT}`,
   doneTakedown: `Hi {first}, your lights are down, labeled and binned for next year. Thank you for another season! Anything we missed, call or text {businessPhone}. {business}. ${OPT_OUT}`,
 }
 export const TEXT_LABELS = [
-  ['reminder', 'Day-before reminder', 'From the route’s edit screen, for people with no email (the others get the email template).'],
+  ['reminder', 'Day-before reminder', 'From the route’s edit screen, for people with no email (the others get the email template). {boxes} becomes "set your boxes out" on re-installs and takedowns, nothing on a first-year install.'],
   ['onway', 'On our way', 'Tapped by the crew on the stop. {eta} is the drive time of that leg.'],
   ['done', 'All done (install)', 'Offered right after ✓ Done on an install stop.'],
   ['doneTakedown', 'All done (takedown)', 'Offered right after ✓ Done on a takedown stop.'],
@@ -75,14 +75,32 @@ export const routeTimed = (route) => {
   return stops.length > 0 && stops.some((s) => s.driveMin != null) && route.legsKey === legsKey(stops)
 }
 
-// The placeholders a stop fills: { when, visitDay, job, eta }. `stop` is a
-// timeline() row (with eta); timed = routeTimed(route).
-export function stopExtras(stop, route, timed = routeTimed(route)) {
+// "Set your boxes out" (owner 2026-10-12): returning customers set their
+// labeled boxes out for a re-install; everyone sets the empty box out for a
+// takedown; a first-year install gets a box from us, so nothing. A customer
+// with any earlier season on file is returning.
+export const isReturning = (customer, season) =>
+  Object.keys(customer?.seasons ?? {}).some((y) => Number(y) < Number(season)) || (Number(customer?.since) > 0 && Number(customer.since) < Number(season))
+// Short for a text (the reminder must stay one SMS segment), long for an email.
+export function boxLine(kind, customer, season, long = false) {
+  if (kind === 'takedown') return long ? 'Set your empty storage box or bin out on the porch so we can pack your lights into it' : 'Please set your empty box out on the porch.'
+  if (kind === 'install' && isReturning(customer, season)) return long ? 'Set your labeled boxes of lights out on the porch by the morning so we can reach them, and reply if your gate code has changed' : 'Set your boxes of lights out on the porch, please.'
+  return ''
+}
+
+// The placeholders a stop fills: { when, visitDay, job, eta, boxes, boxesEmail }.
+// `stop` is a timeline() row (with eta); timed = routeTimed(route); customer
+// and season decide the box line.
+export function stopExtras(stop, route, timed = routeTimed(route), customer = null, season = null) {
+  const box = boxLine(stop?.kind, customer, season)
+  const boxLong = boxLine(stop?.kind, customer, season, true)
   return {
     when: timed ? windowText(stop?.eta) : 'during the day',
     visitDay: visitDayText(route?.day),
     job: jobWord(stop?.kind),
     eta: timed ? etaText(stop?.driveMin) : etaText(0),
+    boxes: box ? `${box} ` : '',
+    boxesEmail: boxLong ? `- ${boxLong}\n` : '',
   }
 }
 
@@ -122,7 +140,7 @@ export const templateId = (kind, step) => `${kind === 'takedown' ? 'takedown' : 
 // The text for one stop and step ('reminder' | 'onway' | 'done'), filled in.
 export function stopText(step, { stop, route, customer, season, templates = STOCK_TEXTS, timed }) {
   const key = step === 'done' && stop?.kind === 'takedown' ? 'doneTakedown' : step
-  return fillTemplate(templates[key] ?? STOCK_TEXTS[key], customer ?? {}, season, stopExtras(stop, route, timed))
+  return fillTemplate(templates[key] ?? STOCK_TEXTS[key], customer ?? {}, season, stopExtras(stop, route, timed, customer, season))
 }
 
 // The Text & email history entry a tap writes (staff create; rules unchanged).

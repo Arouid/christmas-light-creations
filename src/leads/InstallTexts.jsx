@@ -90,7 +90,7 @@ export function ReminderBox({ route, rows, customers, onSave }) {
     const emails = emailRows.map((r) => {
       const id = reminderTemplate(r.stop.kind)
       const t = emailTemplates.find((x) => x.id === id) ?? { subject: '', body: '' }
-      const extra = stopExtras(r.stop, route, timed)
+      const extra = stopExtras(r.stop, route, timed, r.customer, season)
       return {
         to: r.email, subject: fillTemplate(t.subject, r.customer, season, extra), text: fillTemplate(t.body, r.customer, season, extra), template: id,
         target: { customerId: r.customer.id }, name: r.customer.fullName, mark: { season: String(season), field: 'emailsSent' },

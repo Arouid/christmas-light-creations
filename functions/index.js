@@ -65,6 +65,7 @@ import { adsQuery, adsSpend, billingQuery, googleSpend as googleSpendOf, isMissi
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { captureProblem, customIdFor, lockProblem, orderProblem, partLabel, payableProblem, validOrderId } from './payments.js'
 import { centralDayOf, dueText, payIn3Due, payIn3Reminder } from './payIn3.js'
+import { detailsChanged, detailsRequest, detailsSummary } from './propertyDetails.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
 import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
@@ -683,6 +684,34 @@ ${PHONE}`,
   logger.info('payIn3Reminders', { proposals: snap.size, sent })
 })
 
+// "Your property details" on /account/ (functions/propertyDetails.js, owner
+// 2026-10-12): the customer fills in their gate code, HOA and its deadline,
+// things to avoid in the yard and pets; written onto every customer record
+// under their email, shown to staff under Edit details and in Recent activity.
+export const updateMyDetails = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  const email = normEmail(req.auth?.token?.email)
+  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const r = detailsRequest(req.data)
+  if (r.error) throw new HttpsError(...r.error)
+  const db = getFirestore()
+  const ids = await customersFor(email)
+  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll take care of it.')
+  let changed = []
+  let name = ''
+  for (const id of ids) {
+    const ref = db.doc(`customers/${id}`)
+    const before = (await ref.get()).data() ?? {}
+    name = name || before.fullName || ''
+    const diff = detailsChanged(before, r.details)
+    if (!diff.length) continue
+    changed = [...new Set([...changed, ...diff])]
+    await ref.update({ ...r.details, updatedAt: FieldValue.serverTimestamp(), updatedBy: `customer:${email}` })
+  }
+  if (changed.length) await logWebsite('details-updated', { type: 'customer', id: ids[0], name }, changed.join(', '))
+  logger.info('updateMyDetails', { changed: changed.length })
+  return { saved: true, changed }
+})
+
 // ---- Customer accounts (/account/) ------------------------------------------
 
 // emailKeys: lowercase emails on each proposal and customer, written only by
@@ -816,7 +845,9 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   // This season's schedule and any open service call (docs/specs/account-service.md).
   const schedule = rec ? scheduleFor(rec.seasons, season) : null
   const service = ids.length ? { days: SERVICE_DAYS, open: await openCallFor(db, ids) } : null
-  return { email, proposals, invoices, price, schedule, service, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+  // Property details the customer may fill in themselves (functions/propertyDetails.js).
+  const details = rec ? detailsSummary(rec) : null
+  return { email, proposals, invoices, price, schedule, service, details, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
 })
 
 // The newest Open / Scheduled service call on any of these customer records,

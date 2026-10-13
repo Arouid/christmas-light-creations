@@ -8,6 +8,7 @@ export const DEMO_ACCOUNT = {
   // Your schedule + Report a problem (docs/specs/account-service.md).
   schedule: { season: '2026', installStatus: 'Install Scheduled', day: 'Thursday', plannedDate: 'Nov 13', weekOf: 'Nov 9-15', timeframe: '', takedownStatus: '' },
   service: { days: 2, open: null },
+  details: { gateCode: '#1234', hoa: 'Example Lakes HOA', lightsDownBy: 'Jan 15', hazards: 'Sprinkler heads along the front bed; landscape lights by the walkway', pets: 'One dog, friendly' },
   price: { originalRate: '$900.00', since: '2021', addOns: [{ season: '2023', what: 'Arch over the driveway', price: 300 }, { season: '2024', what: 'Front tree wrap', price: 240 }],
     history: [
       { season: '2025', install: { amount: 64800, state: 'paid', by: 'PayPal', date: '11/26/2025' }, takedown: { amount: 15000, state: 'paid', by: 'PayPal', date: '1/12/2026' } },

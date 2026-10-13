@@ -104,3 +104,13 @@ Activity: `{ by: 'website', action: 'service-reported', target: { type: 'custome
 
 - Customer accounts and the account page: `docs/specs/customers.md`, `docs/specs/add-ons.md`, `docs/specs/customer-app.md`
 - Staff alerts (💬 and push): `docs/specs/staff-alerts.md`; Recent activity: `docs/specs/dashboard.md`
+
+
+## Your property details (2026-10-12)
+
+Owner: "we should have things like that on their account page too so they can self fill that information in themselves" and "that information should be auto generated in the route information for the installers (not necessarily the HOA stuff, but everything else)".
+
+- `/account/` → **Your property details**: gate code, HOA (name, rules), the date the HOA wants lights down by, things in the yard to avoid (sprinklers, landscape-light wires, pet-fence wire, cameras, fragile plants), pets. Saved through the `updateMyDetails` callable (`functions/propertyDetails.js` checks: text only, trimmed, capped; blanks clear), written onto every customer record under the verified email with `updatedBy: customer:<email>`, and logged in Recent activity as "updated their property details from their account" with the fields that changed. `myAccount` returns the current values (`details`). No rules change (server writes).
+- Staff: the same five fields under **Edit details** → Contact (`CustomerDetail.jsx`); the route's installer view (`RouteDrive.jsx`) shows a red **Heads-up** line with the things to avoid and pets on each stop, and the gate code box falls back to the record's gate code; the schedule assistant gets `lightsDownBy` and a rule to place those takedowns before the date.
+- Privacy page: the customer paragraph names these details and that customers can edit them.
+- Boxes on the porch: the day-before reminder text and emails tell returning customers to set their labeled boxes out (re-install) and everyone to set the empty box out (takedown); a first-year install gets no box line (`boxLine` in `src/lib/installTexts.js`).

@@ -484,3 +484,8 @@ What was actually checked working, and how. Newest first.
 - Rescheduling / late takedown wording (owner, 2026-10-12): clauses 3 and 6 incl. lease and add-on, seasonal terms; tested; check green.
 - Boxes on the porch (owner, 2026-10-12): clause 6 and the seasonal terms; tested; the seasonal-terms word bound is now a 3,000-word sanity limit; check green.
 - HOA deadline duty (owner, 2026-10-12): clause 5 and the seasonal terms; tested; check green.
+
+## 2026-10-12 Property details on the account, Heads-up on the route, box reminders, HOA fields, gate-code rule
+
+- Tests (372 green, build): `tests/propertyDetails.test.mjs` (fields, trimming, caps, blanks clear, junk refused, change list), `tests/installTexts.test.mjs` (box line on a returning re-install and every takedown, never a first-year install; the reminder text stays under one SMS segment; the install email gets a bullet with "reply if your gate code has changed", the takedown email a sentence, no stray blank line); the box placeholders are optional so they never show as "missing"; the terms carry the gate-code rule.
+- Dev `/account/?demo` at 375 px: "Your property details" with five fields prefilled from the sample, Save disabled until a change, "Saved ✓" after; no overflow. The first-sign-in nudge hides when any detail is filled (the sample is filled), so it wasn't seen on screen; the "Signed ✓" box on the proposal page carries the same ask. Not checked: the route's Heads-up line in the browser (the sample customer now has hazards/pets), a real save (needs the functions deploy, TODO #60), Recent activity's "updated their property details".

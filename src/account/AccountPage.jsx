@@ -205,7 +205,9 @@ function Account({ data, reload, logOut }) {
         {me?.address && <p className="text-slate-300">{me.address}</p>}
         <p className="text-sm text-slate-400">Signed in as {data.email}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
+      {data.details && <DetailsNudge details={data.details} />}
       <Lights schedule={data.schedule} service={data.service} />
+      {data.details && <Details details={data.details} onSaved={reload} />}
       {data.price && <YearlyPrice price={data.price} />}
       {!list.length && !data.customer && !invoices.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
       {(list.length > 0 || invoices.length > 0) && (
@@ -245,6 +247,71 @@ function Lights({ schedule, service }) {
       {sched?.none && <p className="text-slate-300">You’re not on this season’s schedule yet. Want your lights back up? Call or text us and we’ll book you.</p>}
       {service && <ReportProblem service={service} />}
     </section>
+  )
+}
+
+// Your property details (docs/specs/account-service.md, owner 2026-10-12): the
+// things the agreement asks customers to tell us, filled in by them and saved
+// through the server (updateMyDetails) onto their record; the crew sees them
+// on the route.
+const DETAIL_INPUTS = [
+  ['gateCode', 'Gate code', 'input', 'e.g. #1234'],
+  ['hoa', 'HOA (name, any rules about lights)', 'input', 'e.g. Shadow Creek Ranch HOA'],
+  ['lightsDownBy', 'Date your HOA wants lights down by (if any)', 'input', 'e.g. Jan 10'],
+  ['hazards', 'Things in the yard we should avoid', 'textarea', 'Sprinkler heads, landscape lights and their wires, pet-fence wire, cameras, fragile plants…'],
+  ['pets', 'Pets', 'input', 'e.g. two dogs, friendly; keep the gate shut'],
+]
+// First sign-in nudge (owner 2026-10-12): most customers get their account
+// before the crew comes, so ask once for the details while they're here.
+// Goes away once anything is filled in, or when dismissed on this device.
+const NUDGE_KEY = 'clcDetailsNudgeOff'
+function DetailsNudge({ details }) {
+  const [off, setOff] = useState(() => { try { return localStorage.getItem(NUDGE_KEY) === '1' } catch { return false } })
+  const empty = DETAIL_INPUTS.every(([k]) => !String(details?.[k] ?? '').trim())
+  if (!empty || off) return null
+  const dismiss = () => { setOff(true); try { localStorage.setItem(NUDGE_KEY, '1') } catch { /* fine */ } }
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-glow-400/50 bg-glow-400/10 px-4 py-3">
+      <p className="min-w-0 flex-1 text-sm text-slate-200"><strong className="text-glow-300">Two minutes before we come:</strong> add your gate code, anything in the yard we should avoid, and pets, so the crew is ready.</p>
+      <a href="#property-details" className={`${btn} bg-glow-400 px-4 py-2 text-night-950`}>Fill it in</a>
+      <button type="button" onClick={dismiss} aria-label="Not now" className="min-h-11 px-2 text-slate-400">✕</button>
+    </div>
+  )
+}
+
+function Details({ details, onSaved }) {
+  const [v, setV] = useState(details)
+  const [state, setState] = useState(null) // null | 'saving' | 'saved' | { error }
+  const changed = DETAIL_INPUTS.some(([k]) => (v[k] ?? '') !== (details[k] ?? ''))
+  async function save(e) {
+    e.preventDefault()
+    setState('saving')
+    try {
+      if (!demo) await (await lib).updateMyDetails(v)
+      setState('saved')
+      onSaved?.()
+    } catch (err) {
+      setState({ error: err?.message || 'That didn’t save. Please try again, or call us.' })
+    }
+  }
+  const field = 'mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100'
+  return (
+    <form id="property-details" onSubmit={save} className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h2 className="font-display text-xl font-extrabold">Your property details</h2>
+      <p className="text-sm text-slate-300">Helps our crew do a clean job: they see this on the day. Change it any time.</p>
+      {DETAIL_INPUTS.map(([k, label, kind, placeholder]) => (
+        <label key={k} className="block text-sm text-slate-300">{label}
+          {kind === 'textarea'
+            ? <textarea value={v[k] ?? ''} rows={3} maxLength={600} onChange={(e) => { setV({ ...v, [k]: e.target.value }); setState(null) }} placeholder={placeholder} className={field} />
+            : <input value={v[k] ?? ''} maxLength={160} onChange={(e) => { setV({ ...v, [k]: e.target.value }); setState(null) }} placeholder={placeholder} className={field} />}
+        </label>
+      ))}
+      {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="submit" disabled={!changed || state === 'saving'} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-50`}>{state === 'saving' ? 'Saving…' : 'Save'}</button>
+        {state === 'saved' && <span className="text-sm text-emerald-300">Saved ✓ Thank you.</span>}
+      </div>
+    </form>
   )
 }
 
