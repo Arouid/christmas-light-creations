@@ -61,7 +61,7 @@ export default function Header() {
       </div>
 
       {open && (
-        <nav id="mobile-nav" ref={menu} className="h-[calc(100svh-4rem)] overflow-y-auto border-t border-white/10 bg-night-950 px-4 pb-6 pt-2 md:hidden" aria-label="Mobile">
+        <nav id="mobile-nav" ref={menu} className="flex h-[calc(100svh-4rem)] flex-col overflow-y-auto border-t border-white/10 bg-night-950 px-4 pb-6 pt-2 md:hidden" aria-label="Mobile">
           {nav.map((n) => (
             <a key={n.href} href={n.href} onClick={() => setOpen(false)}
               className="block border-b border-white/5 py-4 text-lg font-medium">{n.label}</a>
@@ -82,6 +82,11 @@ export default function Header() {
             className="mt-3 block rounded-full bg-glow-400 py-3.5 text-center font-semibold text-night-950">
             Get a free estimate
           </a>
+          {/* The 2012 sign fills the rest of the panel (owner 2026-10-12). Decorative. */}
+          <div className="mt-auto flex flex-col items-center gap-3 pt-8 text-center">
+            <img src={`${import.meta.env.BASE_URL}images/clc-sign.svg`} alt="" width="403" height="508" className="h-44 w-auto" />
+            <p className="text-sm text-slate-400">From your friends in Pearland · since {business.since}</p>
+          </div>
         </nav>
       )}
     </header>
