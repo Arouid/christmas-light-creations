@@ -45,36 +45,10 @@ export function whoByPhone(dir, phone) {
   return dir.get(k) ?? { type: 'phone', id: k, name: prettyPhone(k) }
 }
 
-// The team (owner, 2026-10-10), shown as first name + last initial: how each
-// email starts -> their name, so the app shows names with no setup (no full
-// addresses here: the repo is public). Also the suggestions in ⚙ Settings → Staff names.
-const STAFF_PREFIXES = [['exatrum', 'Scott M.'], ['katiep', 'Katie P.'], ['lacie', 'Lacie M.']]
-export const STAFF_NAMES = STAFF_PREFIXES.map(([, n]) => n)
-const cap = (w) => (w ? w[0].toUpperCase() + w.slice(1) : '')
-
-// Email -> name: ⚙ Settings → Staff names ([{ email, name }], shared) first,
-// then a `name` on the staff list doc (Firebase console).
-export function staffNamesMap(staffDocs = [], settingNames = []) {
-  const out = {}
-  for (const s of staffDocs ?? []) if (s?.id && s.name) out[s.id.toLowerCase()] = s.name
-  for (const s of settingNames ?? []) if (s?.email && String(s.name ?? '').trim()) out[String(s.email).toLowerCase()] = String(s.name).trim()
-  return out
-}
-
-// Staff email -> "First L.": ⚙ Settings / the staff list's `name` if set, the
-// team above, else from the address ("pat.helper@…" -> "Pat H.", "pat@…" -> "Pat").
-export function staffName(email, names = {}) {
-  if (!email) return 'Someone'
-  if (email === 'website') return 'Website'
-  const set = names[String(email).toLowerCase()]
-  if (set) return set
-  const local = String(email).split('@')[0].toLowerCase()
-  const known = STAFF_PREFIXES.find(([p]) => local.startsWith(p))
-  if (known) return known[1]
-  const parts = local.split(/[._-]+/).filter(Boolean)
-  if (!parts.length) return email
-  return parts.length > 1 ? `${cap(parts[0])} ${parts.at(-1)[0].toUpperCase()}.` : cap(parts[0])
-}
+// Who's who (names from the address, ⚙ Settings → Staff names): shared with
+// the server in functions/staffNames.js, which signs outgoing email.
+export { STAFF_NAMES, staffName, staffNamesMap } from '../../functions/staffNames.js'
+import { staffName } from '../../functions/staffNames.js'
 
 // ---- Entries ----------------------------------------------------------------------
 

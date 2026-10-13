@@ -98,6 +98,10 @@ The sync (`messageSync`) skips an outgoing email whose `mailId` or `mailPrint` i
 
 **`serverState/staffEmail`** (server only): `{ day: 'YYYY-MM-DD' (Central), count, last: { <staff email>: ms } }`.
 
+## Signed by the sender (2026-10-13)
+
+`functions/staffNames.js` (shared with the app through `src/lib/activity.js`) turns the sender's email into "Katie P." (⚙ Settings → Staff names, the staff doc's `name`, or the address) and `fromHeader` makes the From header `"Katie at Christmas Light Creations" <info@…>`; `sendStaffEmail`, `sendScheduledEmails` (the scheduler's name) and the chat's `replyToCustomer` use it. The stock sign-off in `src/lib/emailTemplates.js` ends with `{me}` (the sender's first name; `src/lib/messages.js` drops the line when it is blank). Automatic emails keep the business name.
+
 ## Links
 
 - Templates: `src/lib/emailTemplates.js`, placeholders `src/lib/messages.js`

@@ -5,7 +5,8 @@
 
 import { TREE_SHORT } from '../../functions/notices.js'
 
-const sign = '\n\nThank you,\n{business}\n{businessPhone}'
+// {me} is the sender's first name (blank, and its line dropped, when unknown).
+const sign = '\n\nThank you,\n{me}\n{business}\n{businessPhone}'
 
 export const TEMPLATE_GROUPS = ['General', 'Estimates', 'Booking', 'Install', 'Service', 'Takedown', 'Thank you', 'Our templates']
 

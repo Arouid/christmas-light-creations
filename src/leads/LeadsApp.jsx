@@ -1,3 +1,4 @@
+import { setSender } from '../lib/messages'
 import { useCallback, useEffect, useState } from 'react'
 import { business } from '../data/content'
 import { ALL_TABS, BEFORE, LABEL, MORE } from '../lib/staffMenu'
@@ -126,6 +127,8 @@ export default function LeadsApp() {
   }, [])
 
   useEffect(() => { setIconBadge(alerts.count) }, [alerts.count])
+  // {me} in email templates: the signed-in person's name (owner 2026-10-13).
+  useEffect(() => { setSender(user && !demo ? staffName(user.email, feed.names) : (demo ? 'Demo' : '')) }, [user, feed.names, demo])
   // Recent activity: who's signed in and who's who, for the action loggers.
   useEffect(() => { setActivityContext(user, customersApi.customers, leads, pastApi.requests) }, [user, customersApi.customers, leads, pastApi.requests])
   // "Started a call": any Call (tel:) link tapped anywhere in the app.

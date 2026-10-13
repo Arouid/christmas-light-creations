@@ -53,14 +53,25 @@ export const PLACEHOLDERS = [
   ['boxesEmail', 'Same, as an email bullet line', (c, y, x) => x?.boxesEmail, true],
   ['gateAsk', 'Gate code ask (none on file / changed?, from the route)', (c, y, x) => x?.gateAsk, true],
   ['gateAskEmail', 'Same, as an email bullet line', (c, y, x) => x?.gateAskEmail, true],
+  // Who is sending (owner 2026-10-13): the signed-in person's first name, from Staff names; blank when unknown.
+  ['me', 'Your first name (the sign-off)', (c, y, x) => x?.me ?? sender, true],
 ].map(([key, label, get, optional = false]) => ({ key, label, get, optional })) // optional: blank is fine, never "missing"
 
-// extra: values a route stop fills in ({ when, visitDay, job, eta }).
+// The signed-in person's first name for {me}; the app sets it once it knows who is here.
+let sender = ''
+export const setSender = (name) => { sender = String(name ?? '').trim().split(/\s+/)[0] || '' }
+
+// extra: values a route stop fills in ({ when, visitDay, job, eta }), or { me }.
+// A line that holds only an optional placeholder with nothing to say is
+// dropped, so a blank {me} doesn't leave a hole in the sign-off.
 export function fillTemplate(text, customer, season, extra = {}) {
-  return PLACEHOLDERS.reduce(
-    (out, p) => out.replaceAll(`{${p.key}}`, String(p.get(customer, season, extra) ?? '')),
-    text,
-  )
+  const value = (p) => String(p.get(customer, season, extra) ?? '')
+  const kept = String(text ?? '').split('\n').filter((line) => {
+    const only = line.trim().match(/^\{(\w+)\}$/)
+    const p = only && PLACEHOLDERS.find((x) => x.key === only[1])
+    return !(p?.optional && !value(p))
+  }).join('\n')
+  return PLACEHOLDERS.reduce((out, p) => out.replaceAll(`{${p.key}}`, value(p)), kept)
 }
 
 // Placeholders a customer has no value for (to warn before sending).

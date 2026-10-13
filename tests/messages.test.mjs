@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { e164, voiceUrl, gmailUrl, textMessages, PLACEHOLDERS } from '../src/lib/messages.js'
+import { e164, voiceUrl, gmailUrl, textMessages, PLACEHOLDERS, setSender } from '../src/lib/messages.js'
 import { STOCK_TEMPLATES, TEMPLATE_GROUPS, mergeTemplates } from '../src/lib/emailTemplates.js'
 
 test('phone numbers become +1 format for Google Voice', () => {
@@ -55,4 +55,16 @@ test('placeholders fill per customer; first name falls back to "there"', () => {
 test('missing values are reported so nobody gets an email with a blank in it', () => {
   assert.deepEqual(missingPlaceholders('Hi {first}, gate {gate}, date {date}', { firstName: 'Pat' }, '2026'), ['Gate code', 'Planned date'])
   assert.deepEqual(missingPlaceholders('Hi {first}', {}, '2026'), [])
+})
+
+test('{me}: the sender signs the email; unknown sender leaves no hole (owner 2026-10-13)', () => {
+  const c = { firstName: 'Pat' }
+  setSender('Katie P.')
+  assert.equal(fillTemplate('Hi {first},\n\nThank you,\n{me}\n{business}', c, 2026), 'Hi Pat,\n\nThank you,\nKatie\nChristmas Light Creations')
+  setSender('')
+  assert.equal(fillTemplate('Hi {first},\n\nThank you,\n{me}\n{business}', c, 2026), 'Hi Pat,\n\nThank you,\nChristmas Light Creations', 'the blank line is dropped')
+  assert.equal(fillTemplate('Signed, {me}.', c, 2026, { me: 'Lacie' }), 'Signed, Lacie.', 'extra.me wins')
+  assert.ok(PLACEHOLDERS.find((p) => p.key === 'me').optional)
+  const done = STOCK_TEMPLATES.find((t) => t.id === 'install-done')
+  assert.ok(done.body.endsWith('Thank you,\n{me}\n{business}\n{businessPhone}'), 'the stock sign-off carries the sender')
 })

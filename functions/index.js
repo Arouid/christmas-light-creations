@@ -71,6 +71,7 @@ import { captureProblem, customIdFor, lockProblem, orderProblem, partLabel, paya
 import { centralDayOf, dueText, payIn3Due, payIn3Reminder } from './payIn3.js'
 import { detailsChanged, detailsRequest, detailsSummary } from './propertyDetails.js'
 import { brandText, textFooter } from './brand.js'
+import { fromHeader, staffName, staffNamesMap } from './staffNames.js'
 import { TREE_NOTICE, TREE_TITLE } from './notices.js'
 import { ACK_TEMPLATE, ackAddress, ackEmail, ackOn, ackedRecently } from './ack.js'
 import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
@@ -1016,7 +1017,7 @@ export const replyToCustomer = onCall({ region: REGION, invoker: 'public', secre
     return { ok: true, emailed: false, note: 'Saved. No email on file: they’ll see it when they open their account.' }
   }
   try {
-    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to, replyTo: FROM, ...replyEmail({ text: r.text }) })
+    await mailer().sendMail({ from: await senderFrom(db, staff), to, replyTo: FROM, ...replyEmail({ text: r.text }) })
   } catch (e) {
     await reportIncident('email', `A chat reply to ${customer.fullName || 'a customer'} (by ${staff}) is saved on their account, but the email telling them didn’t go out: ${e.message}`)
     return { ok: true, emailed: false, note: 'Saved on their account, but the email didn’t go out (Gmail didn’t take it). Text them to look, or try again in a minute.' }
@@ -1259,6 +1260,20 @@ async function confirmSeen(db, entries) {
 // 300 a day and one a second per staff member (serverState/staffEmail: no
 // client rule matches it). Logs and problem reports carry no customer
 // address or message text.
+// "Katie at Christmas Light Creations" <info@…>: the From header for an email a
+// staff member sends (owner 2026-10-13). Names from ⚙ Settings → Staff names
+// or the staff list doc; unknown -> the business alone. Never throws.
+async function senderFrom(db, staffEmail) {
+  try {
+    const [settings, doc] = await Promise.all([db.doc('settings/app').get(), db.doc(`staff/${staffEmail}`).get()])
+    const names = staffNamesMap([{ id: staffEmail, name: doc.data()?.name }], settings.data()?.staffNames)
+    return fromHeader(staffName(staffEmail, names), FROM)
+  } catch (e) {
+    logger.warn('senderFrom', e.message)
+    return fromHeader('', FROM)
+  }
+}
+
 async function isStaffToken(token) {
   if (token?.email_verified !== true || token.firebase?.sign_in_provider !== 'google.com' || !token.email) return false
   return (await getFirestore().doc(`staff/${normEmail(token.email)}`).get()).exists
@@ -1287,7 +1302,7 @@ export const sendStaffEmail = onCall({ region: REGION, invoker: 'public', secret
   // Our own Message-ID, so the history entry gets the id the sync would give the Sent copy.
   const messageId = `<${randomUUID()}@christmas-light-creations.com>`
   try {
-    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, html: brandText({ text: r.text }), messageId })
+    await mailer().sendMail({ from: await senderFrom(db, staff), to: r.to, replyTo: FROM, subject: r.subject, text: r.text, html: brandText({ text: r.text }), messageId })
   } catch (e) {
     await reportIncident('email', `An email from the staff app to ${name} (sent by ${staff}) didn't go out: ${e.message}`)
     throw new HttpsError('unavailable', 'The email didn’t go out (Gmail didn’t take it). Try again in a minute, or use Open in Gmail.')
@@ -1412,7 +1427,7 @@ async function sendScheduled(db, id) {
 
   const r = claim.req
   try {
-    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to: r.to, replyTo: FROM, subject: r.subject, text: r.text, html: brandText({ text: r.text }), messageId })
+    await mailer().sendMail({ from: await senderFrom(db, doc.by), to: r.to, replyTo: FROM, subject: r.subject, text: r.text, html: brandText({ text: r.text }), messageId })
   } catch (e) {
     // Left as "sending" if this write fails too: the stuck check reports it in 15 minutes.
     await ref.update({ status: 'failed', open: true, error: GMAIL_ERROR, failedAt: FieldValue.serverTimestamp() }).catch((e2) => logger.error('scheduled email: marking failed failed', e2.message))
