@@ -201,3 +201,11 @@ test('seasonal service terms (invoices): fill with the business only, say paying
   const words = t.split(/\s+/).filter(Boolean).length
   assert.ok(words > 300 && words < 700, `about a page: ${words} words`)
 })
+
+test('gutters and clips (owner 2026-10-12): explained in the access clause and excluded in the capitalized limits, in both documents', async () => {
+  const { SEASONAL_TERMS } = await import('../src/proposals/terms.js')
+  for (const t of [DEFAULT_TERMS, SEASONAL_TERMS]) {
+    assert.ok(t.includes('Clips can end up in a gutter for many reasons') && t.includes('not responsible for clogged gutters, downspouts or drainage'))
+    assert.ok(t.includes('FOR CLOGGED GUTTERS, DOWNSPOUTS OR DRAINAGE OR WATER DAMAGE FROM A CLOG'))
+  }
+})
