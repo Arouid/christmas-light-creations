@@ -12,6 +12,13 @@ export default function Header() {
   useFocusOnOpen(menu, open)
   const bar = topBar(useToday())
 
+  // The bottom bar (MobileCta) hides while the menu is open.
+  useEffect(() => {
+    if (open) document.body.dataset.menu = 'open'
+    else delete document.body.dataset.menu
+    return () => { delete document.body.dataset.menu }
+  }, [open])
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
     onScroll()
@@ -23,7 +30,7 @@ export default function Header() {
     <header className={`fixed inset-x-0 top-0 z-40 transition-colors ${scrolled || open ? 'bg-night-950/90 backdrop-blur border-b border-white/10' : 'bg-transparent'}`}>
       {/* The offer bar (content.js urgency.topBar): only while at the top of the page. */}
       {!scrolled && !open && (
-        <a href={bar.href} className="flex min-h-11 items-center justify-center bg-glow-400 px-4 py-2 text-center text-xs font-semibold leading-tight text-night-950 sm:text-sm">
+        <a href={bar.href} className="flex min-h-11 items-center justify-center border-b border-glow-400/40 bg-night-900 px-4 py-2 text-center text-xs font-semibold leading-tight text-glow-300 sm:text-sm">
           {bar.text}
         </a>
       )}
@@ -54,7 +61,7 @@ export default function Header() {
       </div>
 
       {open && (
-        <nav id="mobile-nav" ref={menu} className="border-t border-white/10 px-4 pb-6 pt-2 md:hidden" aria-label="Mobile">
+        <nav id="mobile-nav" ref={menu} className="h-[calc(100svh-4rem)] overflow-y-auto border-t border-white/10 bg-night-950 px-4 pb-6 pt-2 md:hidden" aria-label="Mobile">
           {nav.map((n) => (
             <a key={n.href} href={n.href} onClick={() => setOpen(false)}
               className="block border-b border-white/5 py-4 text-lg font-medium">{n.label}</a>
