@@ -66,8 +66,20 @@ export default function Header() {
             <a key={n.href} href={n.href} onClick={() => setOpen(false)}
               className="block border-b border-white/5 py-4 text-lg font-medium">{n.label}</a>
           ))}
+          {/* What customers have (owner 2026-10-12): the account, and the phone one tap from the open menu. */}
+          <a href={`${import.meta.env.BASE_URL}account/`} className="flex items-center gap-3 border-b border-white/5 py-4 text-lg font-medium">
+            <Icon name="user" className="size-5 text-glow-300" /><span>Your account <span className="block text-sm font-normal text-slate-400">Sign in, pay, your install day</span></span>
+          </a>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <a href={business.phoneHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 py-3 font-semibold">
+              <Icon name="phone" className="size-5" /> Call
+            </a>
+            <a href={business.smsWith('')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 py-3 font-semibold">
+              <Icon name="chat" className="size-5" /> Text us
+            </a>
+          </div>
           <a href="#estimate" onClick={() => setOpen(false)}
-            className="mt-6 block rounded-full bg-glow-400 py-3.5 text-center font-semibold text-night-950">
+            className="mt-3 block rounded-full bg-glow-400 py-3.5 text-center font-semibold text-night-950">
             Get a free estimate
           </a>
         </nav>
