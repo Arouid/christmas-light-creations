@@ -14,8 +14,8 @@ The owner's rule for the FAQ (2026-10-09, "I don't want to ball and chain myself
 
 - `costGuide.ranges.rows` is **empty** and the page says, honestly, why there is no price list, offers one exact price free, and a rough price by text from a photo.
 - `tests/costGuide.test.mjs` refuses any `$` amount anywhere in `costGuide` while `rows` is empty.
-- To publish ranges the owner picks them; then `rows` gets `{ home, price, note }` entries and the table shows (the test then only checks each row names a home and a `$` price).
-- The percentages on the page are the ones already on the home page (10% early-install, about half for a re-install, the lease steps, beat by 10%). Nothing new was promised. "Usually within a day of the measure" for the exact price is the one line to confirm with the owner.
+- Asked 2026-10-13, the owner answered: **"No ranges, keep the wording as is."** So the page stays this way. Should that ever change, `rows` gets `{ home, price, note }` entries and the table shows (the test then only checks each row names a home and a `$` price).
+- The percentages on the page are the ones already on the home page (10% early-install, about half for a re-install, the lease steps, beat by 10%). Nothing new was promised. "Usually within a day of the measure" for the exact price was kept by the same answer.
 
 ## Where it is linked
 
@@ -38,7 +38,7 @@ A `FAQPage` JSON-LD block with the page's eight questions (`faqSchema` in `src/l
 | Date | Decision | Why |
 |---|---|---|
 | 2026-10-13 | Prerendered like the home page, not a plain policy page | It exists to rank: Google and phones must read it without JavaScript |
-| 2026-10-13 | Ranges stay empty until the owner picks them; the test enforces it | Owner's "no ball and chain" rule; publishing numbers is their call |
+| 2026-10-13 | No typical ranges on the page; the test enforces it | Owner's "no ball and chain" rule; asked that day, the owner said "No ranges, keep the wording as is" |
 | 2026-10-13 | Reuses `included`, `lightOptions`, `priceBeat`, `lifetimeWarranty` from the home page | Two pages with two versions of the same promise would drift |
 | 2026-10-13 | The FAQ pricing answer links the guide; FAQ answers gained **bold** and [links] | One click from the question people actually open |
 

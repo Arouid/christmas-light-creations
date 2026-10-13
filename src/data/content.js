@@ -413,8 +413,9 @@ export const termsOfUse = {
 // search (no first-page competitor has one, docs/serp-log.md). Owner's rule
 // (2026-10-09, "I don't want to ball and chain myself"): no dollar amounts.
 // So `ranges.rows` is EMPTY, the page says we quote each home, and the test
-// refuses a $ amount anywhere in here while it is. To publish ranges the
-// owner picks them; then rows get { home, price, note } and the table shows.
+// refuses a $ amount anywhere in here while it is. Asked 2026-10-13, the
+// owner said "No ranges, keep the wording as is"; should that change, rows
+// get { home, price, note } and the table shows.
 // The percentages are the ones already on the home page (10% early-install,
 // about half for a re-install, the lease steps, beat by 10%), nothing new.
 export const costGuide = {
