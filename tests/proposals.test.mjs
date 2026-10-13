@@ -214,7 +214,7 @@ test('gutters and clips (owner 2026-10-12): explained in the access clause and e
     assert.ok(t.includes('some wear is unavoidable') && t.includes('FOR NORMAL WEAR TO PLANTS, BEDS, MULCH AND LAWNS'))
     assert.ok(/part of a normal install, service call and takedown|what a normal install, service call and takedown takes/.test(t))
     assert.ok(t.includes('express permission to enter and work anywhere on the outside of the property') && t.includes('We never enter the home, and we enter a garage only with your express consent or while you are present'))
-    assert.ok(t.includes('wasp, hornet or bee nests') && t.includes('we may stop and reschedule') && t.includes('we tell you the treatment charge first'))
+    assert.ok(t.includes('wasp, hornet or bee nests') && t.includes('we may stop and reschedule') && t.includes('$25 treatment charge to your bill for each nest we treat'))
     assert.ok(t.includes('You are required to tell us, before we start') && t.includes('landscape and pathway lights and their wires') && t.includes('NOT TOLD ABOUT AND COULD NOT REASONABLY SEE'))
   }
 })
