@@ -79,6 +79,7 @@ import { pitchFilterOn, pitchReason } from './pitch.js'
 import { giftWrappingOn } from './giftWrapping.js'
 import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
 import { NWS_POINTS_URL, NWS_USER_AGENT, WATCH_SCHEDULE, badDays, lightsHeadsUp, lightsUp, noticesOn, pruneSent, routeHeadsUp, sentKey, staffWeather, tipsOk, weatherLine } from './weather.js'
+import { ASK_SCHEDULE, DONE_STATUS, askEmail, replied, reminderEmail, reviewAsksOn, reviewPlan, seasonOf } from './reviewAsk.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
 import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
@@ -1866,6 +1867,87 @@ export const weatherWatch = onSchedule({ schedule: WATCH_SCHEDULE, timeZone: 'Am
   }
   await stateRef.set({ sent, checkedAt: now, days: days.map(weatherLine), staffKey })
   logger.info('weatherWatch', { bad: days.length, routeStops: routeStops.length, toldRoute, told, skipped })
+})
+
+// ---- Google review request (functions/reviewAsk.js, docs/specs/review-ask.md) ----
+// 4:00 pm Central. This season's customers marked Install Completed: the
+// first sight starts a clock (seasons.<y>.reviewAsk.seenAt); two days later
+// one ask by email (branded, optional) and, for people who prefer texts, a
+// "Review text to send" item for a person (the server never texts); four
+// days after an email ask one reminder, unless they wrote back or staff
+// tapped They reviewed. Never with an open service call, never to anyone who
+// turned optional emails off, never more than one ask + one reminder. Off in
+// ⚙ Settings → Automatic emails (settings/app.reviewAsks false). Logs carry counts.
+export const reviewAsks = onSchedule({ schedule: ASK_SCHEDULE, timeZone: 'America/Chicago', region: REGION, secrets: [SMTP_PASSWORD], timeoutSeconds: 540, retryCount: 0 }, async () => {
+  const db = getFirestore()
+  const settings = (await db.doc('settings/app').get()).data() ?? {}
+  if (!reviewAsksOn(settings)) return
+  const now = Date.now()
+  const season = seasonOf(centralDay())
+  const [up, calls] = await Promise.all([
+    db.collection('customers').where(`seasons.${season}.installStatus`, '==', DONE_STATUS).get(),
+    db.collection('serviceCalls').where('status', 'in', ['Open', 'Scheduled']).select('customerId').get(),
+  ])
+  const customers = up.docs.map((d) => ({ id: d.id, ...d.data() }))
+  const openCalls = new Set(calls.docs.map((d) => d.data().customerId).filter(Boolean))
+  const plan = reviewPlan(customers, { season, now, openCalls })
+  const field = (k) => `seasons.${season}.reviewAsk.${k}`
+  const stamp = { updatedAt: FieldValue.serverTimestamp(), updatedBy: 'website' }
+  const from = `"Christmas Light Creations" <${FROM}>`
+
+  // 1. First sight: start the clock.
+  for (let i = 0; i < plan.seen.length; i += 400) {
+    const batch = db.batch()
+    for (const id of plan.seen.slice(i, i + 400)) batch.update(db.doc(`customers/${id}`), { [field('seenAt')]: now, [field('by')]: 'website', ...stamp })
+    await batch.commit()
+  }
+
+  // 2. The ask: the email, and/or the queued text (just the record; 💬 reads it).
+  let asked = 0
+  let queued = 0
+  let failed = 0
+  for (const a of plan.ask) {
+    if (a.email) {
+      try {
+        await mailer().sendMail({ from, to: a.email, replyTo: FROM, ...askEmail({ name: a.customer.fullName }) })
+      } catch (e) {
+        failed++
+        logger.warn('review ask email failed', e.message)
+        continue // tomorrow again; nothing recorded
+      }
+    }
+    await db.doc(`customers/${a.id}`).update({ [field('askedAt')]: now, [field('channel')]: a.channel, [field('by')]: 'website', ...stamp })
+    if (a.email) asked++
+    if (a.channel.includes('text')) queued++
+    await logWebsite('review-asked', { type: 'customer', id: a.id, name: a.customer.fullName }, a.channel === 'email+text' ? 'email · text queued for a person' : a.channel === 'text' ? 'text queued for a person' : 'email')
+  }
+
+  // 3. The one reminder, unless they wrote back since the ask.
+  let reminded = 0
+  let answered = 0
+  for (const r of plan.remind) {
+    const [msgs, conv] = await Promise.all([
+      db.collection('messages').where('customerId', '==', r.id).select('direction', 'at', 'syncedAt').get(),
+      db.doc(`conversations/${r.id}`).get(),
+    ])
+    if (replied({ messages: msgs.docs.map((d) => d.data()), conversation: conv.data() ?? null, askedAt: r.askedAt })) {
+      answered++
+      await db.doc(`customers/${r.id}`).update({ [field('remindedAt')]: now, [field('replied')]: true, ...stamp }) // closed: no reminder, ever
+      continue
+    }
+    try {
+      await mailer().sendMail({ from, to: r.email, replyTo: FROM, ...reminderEmail({ name: r.customer.fullName }) })
+    } catch (e) {
+      failed++
+      logger.warn('review reminder email failed', e.message)
+      continue
+    }
+    await db.doc(`customers/${r.id}`).update({ [field('remindedAt')]: now, ...stamp })
+    reminded++
+    await logWebsite('review-reminded', { type: 'customer', id: r.id, name: r.customer.fullName }, 'email')
+  }
+  if (failed && !asked && !reminded) await reportIncident('email', `The Google review request emails didn't go out (${failed} failed, none sent). They will be tried again tomorrow at 4 pm.`)
+  logger.info('reviewAsks', { season, installed: customers.length, seen: plan.seen.length, asked, queued, reminded, answered, failed, skipped: plan.skipped })
 })
 
 // 3:15 am Central: delete uploads older than 30 days (owner, 2026-10-10).

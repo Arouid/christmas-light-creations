@@ -15,6 +15,9 @@ export const FROM_ADDRESS = 'info@christmas-light-creations.com'
 export const SITE_URL = 'https://christmas-light-creations.com'
 export const LOGO_URL = `${SITE_URL}/images/clc-logo-wide.png`
 export const ACCOUNT_URL = `${SITE_URL}/account/`
+// The Google review page (one place: the site copy, the staff templates and
+// the automatic review ask all import it; docs/specs/review-ask.md).
+export const REVIEW_URL = 'https://g.page/r/CWKRhzePqUvIEAI/review'
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]))
 

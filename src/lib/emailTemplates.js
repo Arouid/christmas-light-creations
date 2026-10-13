@@ -4,6 +4,7 @@
 // `emailTemplates` and replace the stock one with the same id.
 
 import { TREE_SHORT } from '../../functions/notices.js'
+import { REVIEW_LINE } from '../../functions/reviewAsk.js'
 
 // {me} is the sender's first name (blank, and its line dropped, when unknown).
 const sign = '\n\nThank you,\n{me}{myTitle}\n{business}\n{businessPhone}'
@@ -197,9 +198,10 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
   },
   {
     id: 'review', group: 'Thank you', label: 'Review request',
-    when: 'After a happy install or service call.',
+    // The same sentence the website sends by itself 2 days after an install (docs/specs/review-ask.md): everyone is asked the same way, nothing offered.
+    when: 'After an install or a service call (the website asks by itself 2 days after each install; this is for asking by hand).',
     subject: 'Thank you from {business}',
-    body: `Hi {first},\n\nThank you for choosing {business}! If you have a minute, a Google review really helps our small family business:\n{reviewLink}\n\nMerry Christmas,\n{business}`,
+    body: `Hi {first},\n\nThank you for choosing {business}! ${REVIEW_LINE}\n{reviewLink}\n\nMerry Christmas,\n{business}`,
   },
   {
     id: 'thanks-season', group: 'Thank you', label: 'Thanks for the season',

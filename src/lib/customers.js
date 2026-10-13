@@ -14,6 +14,9 @@ export const INVOICE_STATUSES = [
 ]
 export const PAID = ['', 'Yes', 'No', 'No Takedown Cost']
 export const PAYMENT_TYPES = ['', 'PayPal', 'Square', 'Zelle', 'Check', 'Venmo', 'Cash', 'CashApp']
+// How they asked to be reached (the estimate form's choice, kept on the
+// customer): the review ask queues a text for people who prefer texts (docs/specs/review-ask.md).
+export const CONTACT_METHODS = ['', 'Phone', 'Text', 'Email']
 
 export const BLANK_LABEL = {
   installStatus: 'Not contacted',
@@ -77,6 +80,7 @@ export function leadToCustomer(lead, season) {
     lastName: lead.lastName,
     email: lead.email,
     phone: lead.phone,
+    contactMethod: CONTACT_METHODS.includes(lead.contactMethod) ? lead.contactMethod : undefined,
     bouncedEmails: lead.bouncedEmails, // an email to them bounced (docs/specs/email-bounces.md)
     address: [lead.address, cityLine].filter(Boolean).join(', '),
     city: lead.city,

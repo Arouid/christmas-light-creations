@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { INSTALL_TYPES, gateFor, getPath, todayISO } from '../lib/customers'
+import { CONTACT_METHODS, INSTALL_TYPES, gateFor, getPath } from '../lib/customers'
 import { BILLING, SEASON } from './seasonFields'
-import { textMessages } from '../lib/messages'
 import ComposeEmail from './ComposeEmail'
+import ReviewAskBox from './ReviewAsk'
 import AddToRoute from './AddToRoute'
 import BounceNote from './BounceNote'
 import Icon from '../components/Icon'
@@ -26,6 +26,8 @@ const GROUPS = [
   ['Contact', [
     ['fullName', 'Full name'], ['firstName', 'First name'], ['lastName', 'Last name'],
     ['phone', 'Phone', { inputMode: 'tel' }], ['email', 'Email', { inputMode: 'email' }],
+    // From their estimate request; the review ask queues a text for people who prefer texts (docs/specs/review-ask.md).
+    ['contactMethod', 'Prefers (call, text or email)', { options: CONTACT_METHODS, blankLabel: 'Not said' }],
     // Replied STOP to a text: install-day texts hold off (docs/specs/install-texts.md).
     ['textOptOut', 'Opted out of texts (replied STOP)', { options: ['', 'Yes'], blankLabel: 'No' }],
   ]],
@@ -97,11 +99,6 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
   const gate = gateFor(customer, gates)
   const myCalls = calls.filter((c) => c.customerId === customer.id)
   const neighborhoods = gates.map((g) => g.neighborhood).filter(Boolean)
-  // Most recent season whose install is done: the moment to ask for a review.
-  const reviewSeason = Object.keys(customer.seasons ?? {}).sort().reverse()
-    .find((y) => customer.seasons[y]?.installStatus === 'Install Completed')
-  const asked = reviewSeason && customer.seasons[reviewSeason].reviewAsked
-  const markAsked = () => onUpdate(customer.id, `seasons.${reviewSeason}.reviewAsked`, todayISO())
   const phone = customer.phone?.replace(/[^\d+]/g, '')
   const seasons = Object.keys(customer.seasons ?? {}).concat(season).filter((y, i, a) => a.indexOf(y) === i).sort().reverse()
 
@@ -139,18 +136,8 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
         )}
         {customer.address && <StreetViewPhoto address={customer.address} />}
 
-        {reviewSeason && (
-          <div className="rounded-xl border border-glow-400/30 bg-glow-400/5 p-3">
-            <p className="text-sm text-slate-300">
-              ★ {reviewSeason} install completed. Ask for a Google review
-              {asked && <span className="text-slate-400"> (asked {asked})</span>}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <TextButton phone={customer.phone} className={action} label="Text review link" message={textMessages.review(customer)} onSent={markAsked} />
-              <ComposeEmail person={customer} season={reviewSeason} target={{ customerId: customer.id }} start="review" label="Email review link" className={action} onSent={markAsked} mark={{ season: reviewSeason, field: 'reviewAsked' }} />
-            </div>
-          </div>
-        )}
+        {/* The Google review ask (docs/specs/review-ask.md): the website asks by itself; this box says where it stands. */}
+        <ReviewAskBox customer={customer} />
 
         <Section title={`📷 Photos${photoList(customer.photos).length ? ` (${photoList(customer.photos).length})` : ''}`}>
           <PhotosPanel customer={customer} season={season} />

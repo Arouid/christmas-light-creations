@@ -1,6 +1,8 @@
 // All site copy lives here so text can be edited without touching layout code.
 // (Years and dates on prerendered pages come from useToday in lib/prerendered.js.)
 
+import { REVIEW_URL } from '../../functions/brand.js'
+
 // Vite sets BASE_URL ('/' or the github.io sub-path); plain Node (tests) has none.
 const base = import.meta.env?.BASE_URL ?? '/'
 
@@ -16,8 +18,9 @@ export const business = {
   city: 'Pearland, TX',
   since: 2011,
   homesServed: '250+',
-  // Google review link for the main Business Profile (listing without a store code).
-  reviewLink: 'https://g.page/r/CWKRhzePqUvIEAI/review',
+  // Google review link for the main Business Profile (listing without a store
+  // code); one place for the site, the staff templates and the server (docs/specs/review-ask.md).
+  reviewLink: REVIEW_URL,
   // The neon cottage from the 2012 site (assets-source/2012-backdrop); square, transparent.
   logo: `${base}images/clc-cottage.png`, // square cottage: documents, app icons, small spots
   logoWide: `${base}images/clc-logo-wide.png`, // cottage + name (owner's pick 2026-10-11): site header and footer
