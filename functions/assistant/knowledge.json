@@ -147,6 +147,11 @@
       "a": "Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to (no password). You’ll see your agreements, what’s due and what you’ve paid, and you can pay online."
     },
     {
+      "group": "Paying",
+      "q": "Is sales tax included?",
+      "a": "Texas sales tax is added as its own line when you buy new lights or lease them: a first-year install, an add-on, every lease payment. Re-installs of lights you already own aren’t taxed, and neither are service calls."
+    },
+    {
       "group": "During the season",
       "q": "What if something goes out?",
       "a": "Call or text and we’ll fix it free, with no limit: burned-out or unglued bulbs, timers, tripped outlets. Usually the same day locally, within 48 hours during the busiest weeks. If we can’t fix it, we replace it at no charge."
