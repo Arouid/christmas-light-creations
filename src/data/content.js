@@ -47,10 +47,12 @@ export const nav = [
   { label: 'FAQ', href: '#faq' },
 ]
 
-// Footer: customers' own account (agreements, payments) and the privacy policy.
+// Footer: customers' own account (agreements, payments), the privacy policy
+// and the terms of use.
 export const footerLinks = [
   { label: 'Customer login', href: `${base}account/` },
   { label: 'Privacy', href: `${base}privacy/` },
+  { label: 'Terms of use', href: `${base}terms/` },
 ]
 
 // Must match the service areas on the Google Business Profile (max 20 there).
@@ -357,6 +359,48 @@ export const privacy = {
     {
       title: 'Questions',
       items: ['Email info@christmas-light-creations.com or call 281-819-0163. If this policy changes, the date at the top changes too.'],
+    },
+  ],
+}
+
+// Terms of use (/terms/, same shell as the privacy page). Plain words, under
+// 400 of them: what's ours, what the designer is for, estimates aren't offers.
+// Not the installation agreement (that's src/proposals/terms.js, signed with
+// the proposal). Owner to review (and the attorney along with the contract).
+export const termsOfUse = {
+  updated: 'October 13, 2026',
+  intro: 'These are the terms for using this website and our free light designer. They aren’t your installation agreement: that’s the written proposal you sign, which has its own terms.',
+  sections: [
+    {
+      title: 'What’s ours',
+      items: [
+        'This website, the light designer, the sample house, the pictures the designer makes, and our photos, logo and words are **© Christmas Light Creations**, Pearland, Texas. All rights reserved.',
+        'Pictures you save or send from the designer carry our logo and web address. Keep them, show them around, post them: just leave the mark on.',
+      ],
+    },
+    {
+      title: 'What the designer is for',
+      items: [
+        'The designer is free so you can try looks on your own home and ask us for an estimate. Use it for your home (or someone’s you’re treating) and keep the pictures for personal use.',
+        'Please don’t copy, download, scrape or reverse-engineer the designer, its code, the sample house or the site’s words and photos; sell or republish them; use them in advertising; or use any of it to build or train a competing tool or service. Automated visits (bots, scrapers) aren’t allowed, apart from search engines indexing our public pages.',
+        `A photo you upload stays yours. You confirm you have the right to use it, and by sending it with an estimate request you let us use it to prepare your estimate and proposal. Our [privacy page](${base}privacy/) says how long we keep it.`,
+      ],
+    },
+    {
+      title: 'Estimates and prices',
+      items: [
+        'Nothing on this website or in the designer is a price or an offer. An estimate request is just a request: we’re not booked until we send you a written price and you accept it. The designer shows a look, not a measurement, and the installed lights may sit a little differently on your home.',
+      ],
+    },
+    {
+      title: 'The site as it is',
+      items: [
+        'We keep the site and the designer working as well as we can, but we provide them as they are: they may change or go away without notice, and we aren’t responsible for a problem caused by using them, as far as Texas law allows.',
+      ],
+    },
+    {
+      title: 'Questions',
+      items: ['Email info@christmas-light-creations.com or call 281-819-0163. Texas law applies to these terms. If they change, the date at the top changes too.'],
     },
   ],
 }

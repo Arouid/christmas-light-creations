@@ -22,7 +22,7 @@ const colorName = (list) => Object.entries(COLOR_SETS).find(([, v]) => v.join() 
 // simple: the public website's version (homeowners): no measuring, history,
 // feet, bulb counts or prices anywhere. saveLabel: the Save button's text
 // (saveLabelShort on phones, so the header row fits).
-export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', onSave, onClose, onSatelliteMeasure, saveLabelShort, simple = false, saveLabel = 'Save' }) {
+export default function Designer({ photo, design: initial, defaults = {}, title = 'Light design', brand = '', stamp, onSave, onClose, onSatelliteMeasure, saveLabelShort, simple = false, saveLabel = 'Save' }) {
   const canvas = useRef(null)
   const box = useRef(null) // the viewport the photo is zoomed/panned inside
   // Keyboard focus moves into the dialog as it opens and back out as it closes.
@@ -406,7 +406,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
     c.height = design.photo.height
     const ctx = c.getContext('2d')
     renderDesign(ctx, design, img)
-    if (brand) {
+    if (stamp) await stamp(ctx, c.width, c.height) // the caller's own mark (the public designer's logo, design/photo.js)
+    else if (brand) {
       const s = Math.max(14, c.width / 55)
       ctx.font = `600 ${s}px sans-serif`
       ctx.textAlign = 'right'

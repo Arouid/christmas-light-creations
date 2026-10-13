@@ -40,6 +40,16 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 - **Someone writes to the database directly** (skipping the page): the server re-encodes the pictures and rebuilds the design; a fake picture or nonsense design is deleted, and the lead's box says it isn't available.
 - **After 30 days**: the lead keeps `designId`; its box says the upload was deleted and points to saved copies.
 
+## Watermark and terms (2026-10-13)
+
+The owner asked (2026-10-12) what stops a competitor from lifting the designer and the site's ideas. The cheap steps, all live on this page:
+
+- **Every picture that leaves the page carries our mark**: the wide logo on a dark see-through plate in the bottom-right corner, with `christmas-light-creations.com/design` under it, sized with the picture (logo 24% of the width, text 19 px on a 1280-px photo, 14 px on a portrait one). It's drawn into the exported bitmap only (`watermark` in `src/lib/publicDesign.js`, pure, tested with a fake canvas; called by `finishedPicture` and by the designer's ⬇ Save through its `stamp` prop, both in `src/design/photo.js`), so the thumbnail on the form, the picture staff see on the lead, and anything a visitor downloads or screenshots say where it came from. The editor on screen stays clean; the staff designer keeps its text-only brand line. If the logo can't load, the mark is text only.
+- **Terms of use at `/terms/`** (words `termsOfUse` in content.js, shell `PolicyPage.jsx` shared with `/privacy/`): the site, the designer, its pictures and copy are ©; the designer is for getting an estimate from us and for personal use; no copying, scraping, reselling or building a competing tool from it; an estimate request isn't an offer until we send a price; links to the privacy page. Under 400 words, dated, and plainly not the installation agreement. Indexable (in the sitemap), linked next to Privacy in every footer (home, designer, area pages) and from the © line under the designer.
+- **© lines**: "© {year} Christmas Light Creations · Terms of use" under the designer's picture; the home page footer's © line links to `/terms/`.
+
+What this does: copying now looks like what it is, and a lawyer has something to point at. What it doesn't: stop a determined copy (the page is public JavaScript). The one step only the owner can take: register the name and the cottage logo as trademarks (USPTO), so the mark on every picture is a registered one.
+
 ## Decisions
 
 | Date | Decision | Why |
@@ -54,6 +64,8 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 | 2026-10-10 | Server check on arrival (`leadDesignCreated`): sharp re-encodes photo and picture (metadata dropped, ≤ 1280 px, never larger than what arrived), `cleanDesign` keeps known fields only (styles/colors/decorations lists tested against the designer's); failures deleted | Owner asked whether uploads are sanitized; the page's own redraw can be skipped by writing to the database directly |
 | 2026-10-10 | The page opens on a ready-made picture of the sample (`public/images/design/sample-design.webp`, drawn by the designer's own code in headless Chrome: `node scripts/sample-design.mjs`); the designer and drawing code load only when the visitor opens it, uploads a photo or changes the sample; the untouched sample's picture for staff is drawn when the request is sent | Drawing at load cost phones ~0.6 s of blocked time (Lighthouse); rerun the script after changing the sample, the house or `render.js` |
 | 2026-10-10 | Uploads deleted 30 days after arrival (`cleanupLeadDesigns`, daily 3:15 am Central); staff-saved copies (designs/designFiles) stay | Owner: "only keep those pictures around temporarily", 30 days |
+| 2026-10-13 | Every picture the page exports or attaches gets the logo + address mark, drawn into the bitmap only (editor clean, staff designer unchanged) | Owner (2026-10-12): stop competitors stealing the designer; a screenshot then advertises us |
+| 2026-10-13 | `/terms/` terms of use on the privacy page's shell; © line under the designer; the footer © links to it | Same ask: cheap legal footing now, attorney later with the contract |
 
 ## Acceptance criteria
 
@@ -63,6 +75,8 @@ A page **christmas-light-creations.com/design/** ("Design your Christmas lights,
 4. [test] Server cleaning: design rebuilt from known fields (unknown styles/colors/decorations and off-photo points dropped, scale and price emptied, nonsense refused); only JPEG data URLs decoded; 30-day expiry. → `tests/leadDesigns.test.mjs`
 5. [agent] The same sharp pipeline strips EXIF/GPS from a test JPEG, caps it at 1280 px, and refuses a non-image. → checked 2026-10-10 (verified.md)
 6. [human] Live: owner designs on a photo of a test house, sends the request → the lead shows the design picture in Leads; Open in designer opens it for the lead. Known-good control: a request without a design still arrives normally. Observer: owner.
+7. [test] The mark: laid out inside the bottom-right corner, scales with the picture, text only without a logo; `finishedPicture` draws the photo, then the logo and the address over it. → `tests/publicDesign.test.mjs`
+8. [human] /design/ at 375 px: the picture on screen has no mark; after a change, the "Your design is attached" thumbnail shows the logo and address bottom-right; ⬇ Save in the designer downloads a marked JPEG; the © line under the picture opens /terms/, which reads in full with its privacy link working. Observer: agent, browser pane (download: owner on a phone).
 
 ## Contract
 

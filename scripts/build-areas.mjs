@@ -126,7 +126,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 </main>
 <footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-400">
   © ${new Date().getFullYear()} ${esc(business.name)} · ${esc(business.city)} · ${business.phone}
-  · <a href="${base}account/" class="hover:text-glow-300">Customer login</a> · <a href="${base}privacy/" class="hover:text-glow-300">Privacy</a>
+  · <a href="${base}account/" class="hover:text-glow-300">Customer login</a> · <a href="${base}privacy/" class="hover:text-glow-300">Privacy</a> · <a href="${base}terms/" class="hover:text-glow-300">Terms of use</a>
 </footer>
 </body>
 </html>
@@ -165,7 +165,7 @@ for (const [from, to] of Object.entries(REDIRECTS)) {
 `)
 }
 
-const urls = [`${SITE}/`, `${SITE}/design/`, ...areas.map((a) => `${SITE}/${pagePath(a)}`), `${SITE}/privacy/`]
+const urls = [`${SITE}/`, `${SITE}/design/`, ...areas.map((a) => `${SITE}/${pagePath(a)}`), `${SITE}/privacy/`, `${SITE}/terms/`]
 await writeFile(new URL('sitemap.xml', dist), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod></url>`).join('\n')}

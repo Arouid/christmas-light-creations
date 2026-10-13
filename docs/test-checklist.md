@@ -113,3 +113,6 @@
 | 105 | Proposal page (`/proposal/?demo`) and the signed-agreement email | A gold "Trees and your lights" callout sits above "Read the agreement"; the email carries the same paragraph; clause 4 of the agreement has the tree exclusion. | Not checked |
 | 106 | Open an unpaid invoice link | A gold "Pay from your account · Sign in to pay" box above the pay panel; the invoice email's pay line names the account page first. | Not checked |
 | 107 | Home page, below "Your options" at 375 px | "Everything in one place: your account and app" with 8 cards, no horizontal scroll. | Not checked |
+| 108 | /design/ at 375 px: open the designer, change something, close | The picture on screen has no logo; the "Your design is attached" thumbnail shows the wide logo and christmas-light-creations.com/design bottom-right; the © line under the picture opens /terms/. | Done 2026-10-13 in dev (see verified log); recheck live |
+| 109 | Designer → ⬇ Save picture (a phone) | The downloaded JPEG carries the logo and the address in the bottom-right corner. | Not checked |
+| 110 | /terms/ at 375 px, and the footers | Reads in full, dated October 13, 2026, "privacy page" link works, no horizontal scroll; "Terms of use" sits next to Privacy in the home, designer and area-page footers, and the home footer's © line opens it. | Done 2026-10-13 in dev (see verified log); recheck live |
