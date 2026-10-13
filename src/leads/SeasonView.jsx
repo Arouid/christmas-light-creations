@@ -4,6 +4,7 @@ import { matchesView, statusKey } from '../lib/views'
 import { suggestDiscount } from '../lib/discounts'
 import BulkEmail from './BulkEmail'
 import AddToRoute from './AddToRoute'
+import ExportCsv from './ExportCsv'
 import BulkInvoices from './invoices/BulkInvoices'
 import { useDiscountSchedule } from './discountContext'
 import SeasonResults from './SeasonResults'
@@ -92,6 +93,7 @@ export default function SeasonView({ customers, season, gates, onOpen, onUpdate 
           <BulkEmail rows={shown} season={season} onUpdate={onUpdate} />
           <AddToRoute customers={shown} defaultKind={mode === 'takedown' ? 'takedown' : 'install'} label={`＋ Route these ${shown.length}`}
             className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold" />
+          <ExportCsv customers={shown} season={season} gates={gates} kind="season" mode={mode} />
           <BulkInvoices customers={shown} season={season} mode={mode} className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold" />
         </div>
       </div>
