@@ -81,8 +81,11 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 | `music/anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav` | `music.file`, from 4.4 s so its hit at 22 s lands on the reveal | "Anticipation And Joy", Giulio Fazio (58 s) | Uppbeat Pro (Solo Professional), downloaded 2026-10-13 |
 | `sfx/notification-bubble-pop-message-epic-stock-media-1-00-00.mp3` | `sfx.pop` | "Notification Bubble Pop Message", Epic Stock Media | same |
 | `sfx/smartphone-typing-message-gfx-sounds-2-2-00-04.mp3` | `sfx.typing` (first second, faded) | "Smartphone Typing Message", GFX Sounds | same |
-| `sfx/fluorescent-tube-light-flicker-bosnow-1-00-47.mp3` | `sfx.lightsOn` (first 1.3 s, faded) | "Fluorescent Tube Light Flicker", Bosnow | same |
-| `sfx/harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3` | `sfx.lightsChime` and `sfx.reveal` | "Harp Chime Alert Magical Bright", Bosnow | same |
+| `sfx/switch-turned-on-epic-stock-media-1-00-00.wav` | `sfx.lightsOn` (the click as the cottage comes on) | "Switch Turned On", Epic Stock Media | same |
+| `sfx/alert-magic-chime-pluck-albert-behar-harp-chime-pluck-1-0m06s.wav` | `sfx.lightsChime` (the harp pluck right after the click; owner's pick) | "Alert Magic Chime Pluck", Albert Behar | same |
+| `sfx/fantasy-game-whoosh-harp-sweep-bosnow-harp-impact-big-upbeat-1-0m03s.wav` | not used (tried as the sweep after the click) | "Fantasy Game Whoosh Harp Sweep", Bosnow | same |
+| `sfx/harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3` | `sfx.reveal` (as the house appears) | "Harp Chime Alert Magical Bright", Bosnow | same |
+| `sfx/fluorescent-tube-light-flicker-bosnow-1-00-47.mp3` | not used (about 20 dB quieter than the rest: inaudible as the switch-on) | "Fluorescent Tube Light Flicker", Bosnow | same |
 | `sfx/wind-ambience-howling-during-snowstorm-vincentmets-1-00-20.mp3` | `sfx.ambience` (looped, very low) | "Wind Ambience Howling During Snowstorm", Vincentmets | same |
 | `clips/warm-golden-bokeh-background-55540-1080.mp4` | `clips.texting` (behind the first thread; the owner preferred bokeh to the hands-on-phone clip) | "Warm Golden Bokeh Background" (6.5 s, looped) | same |
 | `clips/person-smiling-in-car-at-night-red-light-105845-1080.mp4` | `clips.drive` (from 0.5 s: her in the red car, looking out; owner's pick, same shoot as the reaction clip; the city-driving clip was "too jarring") | "Person Smiling In Car At Night Red Light" (12 s) | same |

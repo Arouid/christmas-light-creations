@@ -68,7 +68,8 @@ const data = {
   },
   words: {
     brand: 'Christmas Light Creations',
-    brandSub: 'Pearland, TX · since 2011',
+    brandSub: 'Christmas lights, installed · Pearland, TX',
+    brandSite: 'christmas-light-creations.com',
     offerLine: '10% off installs done by October 31',
     phone: '281-819-0163',
     site: 'christmas-light-creations.com',
@@ -88,8 +89,8 @@ const data = {
   sfx: {
     pop: 'notification-bubble-pop-message-epic-stock-media-1-00-00.mp3',
     typing: 'smartphone-typing-message-gfx-sounds-2-2-00-04.mp3',
-    lightsOn: 'fluorescent-tube-light-flicker-bosnow-1-00-47.mp3', // first 1.3 s, faded out
-    lightsChime: 'harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3', // as the glow settles
+    lightsOn: 'switch-turned-on-epic-stock-media-1-00-00.wav', // the click as the cottage comes on (the flicker file was ~20 dB too quiet)
+    lightsChime: 'alert-magic-chime-pluck-albert-behar-harp-chime-pluck-1-0m06s.wav', // the lights coming alive, right after the click (owner's pick over the whoosh sweep)
     car: '',
     reveal: 'harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3',
     ambience: 'wind-ambience-howling-during-snowstorm-vincentmets-1-00-20.mp3',

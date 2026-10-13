@@ -36,7 +36,7 @@ phone number and the website close it and stay on screen 4 s.
 
 Music "Anticipation And Joy" (Giulio Fazio) from 4.4 s in, so its hit at 22 s lands on the
 reveal; fades out over the last 2.5 s. Effects: a pop as each bubble lands, typing under the dots,
-a flicker + harp chime as the cottage comes on (plan, end card, the 5-second ad), the chime again
+a switch click + harp pluck as the cottage comes on (end card, the 5-second ad; the first flicker file was ~20 dB too quiet: owner "can't hear it switch on"), the chime again
 as the house appears, a very low wind loop under everything. Footage in four slots (texting,
 drive, reaction, bokeh), all under one grade (`look.grade`: saturation 0.8, contrast 1.06, blacks
 lifted toward navy, gold warmth) so the sources read as one film. Files and licences in

@@ -15,13 +15,12 @@ function Hit({ file, at, volume, name, frames, fadeOut = 0 }) {
   )
 }
 
-// The cottage switching on: the flicker (a short window of the buzz, faded out) and a chime as
-// the glow settles.
+// The cottage switching on: the switch click, then the sweep of the lights coming alive.
 function LightsOn({ sfx, at, v, keyPrefix, scale = 1 }) {
   return (
     <>
-      <Hit key={`${keyPrefix}-flicker`} file={sfx.lightsOn} at={at - 2} volume={v * 0.7 * scale} frames={40} fadeOut={16} name={`${keyPrefix}: flicker`} />
-      <Hit key={`${keyPrefix}-chime`} file={sfx.lightsChime} at={at + 8} volume={v * 0.8 * scale} name={`${keyPrefix}: chime`} />
+      <Hit key={`${keyPrefix}-click`} file={sfx.lightsOn} at={at - 1} volume={v * scale} name={`${keyPrefix}: switch`} />
+      <Hit key={`${keyPrefix}-sweep`} file={sfx.lightsChime} at={at + 2} volume={v * 0.85 * scale} name={`${keyPrefix}: sweep`} />
     </>
   )
 }
