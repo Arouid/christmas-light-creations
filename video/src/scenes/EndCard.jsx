@@ -15,7 +15,7 @@ export function EndCard({ data }) {
   const frame = useCurrentFrame()
   const { w, h, fps, tall, square } = useFmt()
   const { colors, words, type } = data
-  const flick = frame < FLICKER.length * 2 ? FLICKER[Math.floor(frame / 2)] : 1
+  const flick = data.cottageImage && data.endCardLit ? 1 : frame < FLICKER.length * 2 ? FLICKER[Math.floor(frame / 2)] : 1
   const glow = flick * (0.8 + Math.sin(frame / 9) * 0.2)
   const img = data.cottageImage
   const wide = !tall && !square && data.cottageImageWide ? data.cottageImageWide : ''

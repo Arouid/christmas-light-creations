@@ -1,6 +1,6 @@
 import { Audio, Sequence, staticFile } from 'remotion'
 import { TYPING } from './scenes/Thread.jsx'
-import { homeTiming } from './timeline.js'
+import { homeTiming, planTiming } from './timeline.js'
 
 // Sound effects for the story ad, placed at the moments the scenes draw: a pop when a bubble
 // lands, the typing dots, the cottage flickering on, the car at 5:41 pm, the reveal, and a soft
@@ -41,12 +41,16 @@ export function Sound({ props, list }) {
         hits.push(<Hit key={`${key}-pop-${i}`} file={sfx.pop} at={land} volume={v} name={`pop ${key} ${i + 1}`} />)
       })
     }
+    if (key === 'plan' && props.cottageImage) {
+      const { on } = planTiming(dur, props.story.plan.length)
+      hits.push(<LightsOn key="lightsOn-plan" sfx={sfx} at={from + on} v={v} keyPrefix="plan: lights on" />)
+    }
     if (key === 'home') {
       const { revealStart } = homeTiming(props, dur)
       hits.push(<Hit key="car" file={sfx.car} at={from} volume={v * 0.8} name="car" />)
       hits.push(<Hit key="reveal" file={sfx.reveal} at={from + revealStart} volume={v} name="reveal" />)
     }
-    if (key === 'end') {
+    if (key === 'end' && !(props.cottageImage && props.endCardLit)) {
       hits.push(<LightsOn key="lightsOn-end" sfx={sfx} at={from + 4} v={v} keyPrefix="end card" scale={0.6} />)
     }
   }

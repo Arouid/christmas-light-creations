@@ -2,12 +2,15 @@ import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion'
 import { useFmt } from '../lib/format.js'
 import { Graded, SceneFade, Snow } from '../lib/Stage.jsx'
 import { Clip } from '../lib/Clip.jsx'
+import { Cottage } from '../lib/Cottage.jsx'
+import { flickerOn } from '../lib/flicker.js'
 import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
 import { planTiming } from '../timeline.js'
 
-// The plan: three time-stamped beats, one after another, over the snow footage. A clock beside
-// them sweeps its hands to each beat's time and glows on the last one ("timer set for dusk").
+// The plan: three time-stamped beats, one after another, over the snow footage. The photoreal
+// cottage stands beside them with its lights off and pops them on with the last beat ("timer set
+// for dusk"). Without a cottage image, a clock sweeps its hands to each beat's time instead.
 const parseTime = (t) => {
   const m = /(\d{1,2}):(\d{2})\s*(am|pm)?/i.exec(t)
   if (!m) return null
@@ -45,13 +48,19 @@ export function Plan({ data, dur }) {
   const { w, h, fps, tall, square } = useFmt()
   const { colors, story, type } = data
   const beats = story.plan
-  const { step, beats: at } = planTiming(dur, beats.length)
+  const { step, beats: at, on: ON } = planTiming(dur, beats.length)
+  const img = data.cottageImage
   const timeSize = tall ? 34 : square ? 28 : 32
   const lineSize = tall ? 84 : square ? 62 : 76
-  const r = tall ? 230 : square ? 170 : 230
-  const clock = tall ? { cx: w / 2, cy: 330 + r } : square ? { cx: w - 72 - r, cy: 90 + r } : { cx: w - 170 - r, cy: h / 2 }
-  const text = tall ? { x: 80, y: 330 + r * 2 + 120, w: w - 160 } : square ? { x: 72, y: 500, w: w - 144 } : { x: 150, y: h / 2 - 190, w: w - r * 2 - 500 }
-  // Clock hands: sweep forward from the previous beat's time to this beat's, with a spring.
+  // The cottage (or the clock) on the right in 16:9, on top in the other shapes.
+  const side = img ? (tall ? 640 : square ? 460 : 640) : (tall ? 460 : square ? 340 : 460)
+  const box = tall ? { x: (w - side) / 2, y: 250 } : square ? { x: w - side - 40, y: 40 } : { x: w - side - 150, y: (h - side) / 2 }
+  const text = tall ? { x: 80, y: 250 + side + 110, w: w - 160 } : square ? { x: 72, y: 500, w: w - 144 } : { x: 150, y: h / 2 - 190, w: w - side - 420 }
+  // Cottage: lights off until the last beat, then the flicker and a brief warm flash.
+  const on = flickerOn(frame - ON)
+  const glow = 0.85 + Math.sin(frame / 8) * 0.15
+  const flash = interpolate(frame, [ON, ON + 6, ON + 26], [0, 0.22, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  // Clock: hands sweep forward from the previous beat's time to this beat's, with a spring.
   const times = beats.map((b) => parseTime(b.time)).map((t) => (t ? angles(t) : { hour: 0, minute: 0 }))
   let hour = times[0].hour
   let minute = times[0].minute
@@ -61,8 +70,11 @@ export function Plan({ data, dur }) {
     minute += forward(times[i - 1].minute, times[i].minute) * s
   }
   const lastAt = at[beats.length - 1]
-  const glow = interpolate(frame, [lastAt + 6, lastAt + 22], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) * (0.85 + Math.sin(frame / 8) * 0.15)
+  const clockGlow = interpolate(frame, [lastAt + 6, lastAt + 22], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) * glow
   const clockIn = pop(frame, fps, 2, { damping: 14 })
+  const r = side / 2
+  const cx = box.x + r
+  const cy = box.y + r
   return (
     <SceneFade dur={dur}>
       <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 30%, #0b1838 0%, ${colors.navy} 65%)` }}>
@@ -71,11 +83,18 @@ export function Plan({ data, dur }) {
         ) : (
           <Snow count={80} opacity={0.6} />
         )}
-        <svg width={w} height={h} style={{ position: 'absolute', inset: 0 }}>
-          <g transform={`translate(${clock.cx} ${clock.cy}) scale(${0.7 + clockIn * 0.3}) translate(${-clock.cx} ${-clock.cy})`}>
-            <Clock cx={clock.cx} cy={clock.cy} r={r} hour={hour} minute={minute} glow={glow} colors={colors} opacity={fadeIn(frame, 2, 8)} />
-          </g>
-        </svg>
+        {img ? (
+          <>
+            <Cottage image={img} x={box.x} y={box.y} height={side} on={on} glow={glow} style={{ opacity: fadeIn(frame, 2, 10) }} />
+            <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at ${(cx / w) * 100}% ${((box.y + side * 0.6) / h) * 100}%, rgba(255,224,138,${flash}) 0%, transparent 45%)` }} />
+          </>
+        ) : (
+          <svg width={w} height={h} style={{ position: 'absolute', inset: 0 }}>
+            <g transform={`translate(${cx} ${cy}) scale(${0.7 + clockIn * 0.3}) translate(${-cx} ${-cy})`}>
+              <Clock cx={cx} cy={cy} r={r} hour={hour} minute={minute} glow={clockGlow} colors={colors} opacity={fadeIn(frame, 2, 8)} />
+            </g>
+          </svg>
+        )}
         <div style={{ position: 'absolute', left: text.x, top: text.y, width: text.w, display: 'flex', flexDirection: 'column', gap: tall ? 34 : square ? 24 : 30 }}>
           {beats.map((b, i) => {
             const s = pop(frame, fps, at[i])

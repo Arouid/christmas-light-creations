@@ -24,6 +24,9 @@ const data = {
   // The 16:9 render: fills the wide (16:9) teaser and end card, cottage right of centre, words on
   // the dark sky to its left. Empty = the square render feathered in, as in the other shapes.
   cottageImageWide: 'Gemini_Generated_Image_9rw9cv9rw9cv9rw9.jpg',
+  // The story ad: the cottage pops its lights on in the plan scene ("timer set for dusk"), so the
+  // end card shows it already lit. false = the end card flickers on too.
+  endCardLit: true,
   // Type: the site's fonts (Fraunces extrabold, tight tracking, for headlines; Inter for the rest).
   type: { displayWeight: 800, displayTracking: '-0.02em' },
   photos: {

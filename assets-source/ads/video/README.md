@@ -32,11 +32,11 @@ The story ad, scene by scene:
 | Seconds | Scene | What happens |
 |---|---|---|
 | 0–8.5 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
-| 8.5–15 | The plan | Three beats, one after another, over snow footage: "Thursday 9:02 am · Everyone's gone." "9:30 am · We're on the roof." "3:48 pm · Done. Timer set for dusk." A clock on the right sweeps its hands to each time and glows on the last beat. (The dark cottage that used to switch on here was cut.) |
+| 8.5–15 | The plan | Three beats, one after another, over snow footage: "Thursday 9:02 am · Everyone's gone." "9:30 am · We're on the roof." "3:48 pm · Done. Timer set for dusk." The photoreal cottage stands on the right with its lights off and pops them on with the last beat (click + harp). Without a cottage image, a clock sweeps to each time instead. |
 | 15–26 | 5:41 pm | Her in the red car at night (clip), then the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", then her turning to look out of the window (clip, same shoot) with real falling snow over that part only (the overlay looked fake over the house: owner). |
 | 26–30.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
 | 30.5–35.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
-| 35.5–39 | End card | Logo flickers on, real snow footage behind it, 281-819-0163, the site, Free 30-minute estimate. |
+| 35.5–39 | End card | The photoreal cottage already lit (it popped on in the plan scene; `endCardLit`), real snow, 281-819-0163, the site, Free 30-minute estimate. |
 
 Every word of the story is in `video/src/data.js` → `story` (bubbles with their timing, the three
 beats, the two lines, the ask). Photos: 32 (the reveal; a 1024×576 file, upscaled) and 34 (the ask).

@@ -29,7 +29,7 @@ export function totalFrames(props) {
 export function planTiming(durFrames, beatCount) {
   const step = Math.floor((durFrames - 30) / beatCount)
   const beats = Array.from({ length: beatCount }, (_, i) => 12 + i * step)
-  return { step, beats }
+  return { step, beats, on: beats[beatCount - 1] + 14 }
 }
 
 // The 5:41 pm scene: where the drive clip ends and the reveal starts (frames into the scene).

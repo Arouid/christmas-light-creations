@@ -48,7 +48,11 @@ export function Thread({ data, dur, header, messages, bgClip }) {
             const s = pop(frame, fps, m.land, { damping: 15 })
             return (
               <div key={i} style={{ display: 'flex', justifyContent: right ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 16 }}>
-                {!right && <div style={{ width: avatar, height: avatar, borderRadius: '50%', background: '#2b3a5e', flexShrink: 0, opacity: fadeIn(frame, typingFrom, 6) }} />}
+                {!right && (
+                  <div style={{ width: avatar, height: avatar, borderRadius: '50%', background: '#2b3a5e', flexShrink: 0, opacity: fadeIn(frame, typingFrom, 6), overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                    <svg width={avatar} height={avatar} viewBox="0 0 24 24" fill="#8fa0c4"><circle cx="12" cy="9" r="4.2" /><path d="M3.5 22c.6-4.4 4.1-7 8.5-7s7.9 2.6 8.5 7z" /></svg>
+                  </div>
+                )}
                 {typing ? (
                   <div style={{ opacity: fadeIn(frame, typingFrom, 6) }}>{dots(right)}</div>
                 ) : (

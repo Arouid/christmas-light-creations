@@ -10,7 +10,7 @@ import { offName } from './gemini.js'
 export function Cottage({ x, y, height, on = 1, dark = 0.22, glow = 1, style, image, aspect = 1, feather = true }) {
   if (image) {
     const width = height * aspect
-    const mask = feather ? 'radial-gradient(ellipse at 50% 58%, black 48%, transparent 72%)' : 'none'
+    const mask = feather ? 'radial-gradient(ellipse at 50% 58%, black 40%, transparent 64%)' : 'none'
     return (
       <div style={{ position: 'absolute', left: x, top: y, width, height, ...style }}>
         <Img src={staticFile(`gemini/${offName(image)}`)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', WebkitMaskImage: mask, maskImage: mask }} />
