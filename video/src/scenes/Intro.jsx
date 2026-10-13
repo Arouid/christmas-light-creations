@@ -34,6 +34,7 @@ export function Intro({ data, dur, holdEnd = false }) {
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: tall ? 520 : 260, background: `linear-gradient(to top, rgba(159,176,208,${0.18 * ground}), transparent)` }} />
         <Cottage x={x} y={y} height={logoH} on={on} dark={dark} glow={glow} style={{ transform: `scale(${push})` }} />
         <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 45%, rgba(255,224,138,${flash}) 0%, transparent 60%)` }} />
+        {data.clips?.end && (data.snowFrontOpacity ?? 0) > 0 ? <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}><SnowOverlay data={{ ...data, clips: { snowOverlay: data.clips.end } }} start={30} opacity={data.snowFrontOpacity} /></div> : null}
         <div style={{ position: 'absolute', left: 0, width: w, top: y + logoH + (tall ? 70 : 30), display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '0 60px' }}>
           <div style={{ ...display(type, tall ? 92 : square ? 72 : 88), color: colors.gold, transform: `translateY(${(1 - name) * 40}px)`, opacity: fadeIn(frame, ON + 10, 8), textShadow: '0 0 40px rgba(255,207,77,0.35)' }}>{words.brand}</div>
           <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 40 : square ? 32 : 38, color: colors.white, opacity: sub * 0.9, marginTop: 16, letterSpacing: '0.04em' }}>{words.brandSub}</div>

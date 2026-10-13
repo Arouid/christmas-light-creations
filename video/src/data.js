@@ -112,8 +112,10 @@ const data = {
     end: 'falling-snowflakes-overlay-86734-1080.mp4', // real snow behind the end card (black blended away)
     snowOverlay: 'falling-snowflakes-overlay-86734-1080.mp4', // falling snow in front of the footage and photos (owner: "snow that looks real")
   },
-  // How strong the falling snow is over the 5:41 pm scene and the closing shot (0 = none).
+  // How strong the falling snow is over the 5:41 pm scene and the closing shot (0 = none), and the
+  // thinner layer that falls in front of the cottage and the words on the end card and the 5-second ad.
   snowOverlayOpacity: 0.6,
+  snowFrontOpacity: 0.35,
   // Seconds to skip at the start of a clip (so the best stretch plays).
   clipStart: { reaction: 2.4, drive: 0.5 },
   // The 5:41 pm scene: how long the drive clip plays before the house appears, and how long the
