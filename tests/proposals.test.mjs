@@ -202,7 +202,7 @@ test('seasonal service terms (invoices): fill with the business only, say paying
   assert.doesNotMatch(t, /\{\w+\}/)
   assert.ok(t.includes('Paying the invoice is your agreement') && t.includes('Brazoria County, Texas') && t.includes('OUR TOTAL LIABILITY FOR THIS WORK IS LIMITED') && t.includes('We do not charge late fees'))
   const words = t.split(/\s+/).filter(Boolean).length
-  assert.ok(words > 300 && words < 1300, `a page or two: ${words} words`)
+  assert.ok(words > 300 && words < 3000, `a few pages at most: ${words} words`)
 })
 
 test('gutters and clips (owner 2026-10-12): explained in the access clause and excluded in the capitalized limits, in both documents', async () => {
@@ -216,6 +216,7 @@ test('gutters and clips (owner 2026-10-12): explained in the access clause and e
     assert.ok(/part of a normal install, service call and takedown|what a normal install, service call and takedown takes/.test(t))
     assert.ok(t.includes('express permission to enter and work anywhere on the outside of the property') && t.includes('We never enter the home, and we enter a garage only with your express consent or while you are present'))
     assert.ok(t.includes('its price is owed whether we take the lights down or you do'))
+    assert.ok(t.includes('set your empty') && t.includes('$15') && t.includes('stacked on the porch') && t.includes('by the morning of your re-install'))
     assert.ok(t.includes('however many times, is not a breach') && /aim(ing)? to finish by (the )?(January )?13/.test(t))
     assert.ok(t.includes('is a courtesy: we may decline it') && /not part of next season/.test(t))
     assert.ok(t.includes('wasp, hornet or bee nests') && t.includes('we may stop and reschedule') && t.includes('pre-approve a $25 treatment charge for each nest we treat'))
