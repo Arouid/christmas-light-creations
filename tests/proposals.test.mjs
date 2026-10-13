@@ -216,6 +216,7 @@ test('gutters and clips (owner 2026-10-12): explained in the access clause and e
     assert.ok(/part of a normal install, service call and takedown|what a normal install, service call and takedown takes/.test(t))
     assert.ok(t.includes('express permission to enter and work anywhere on the outside of the property') && t.includes('We never enter the home, and we enter a garage only with your express consent or while you are present'))
     assert.ok(t.includes('its price is owed whether we take the lights down or you do'))
+    assert.ok(t.includes('set a date by which') && t.includes('at least 30 days before') && t.includes('not responsible for any fine, letter'))
     assert.ok(t.includes('set your empty') && t.includes('$15') && t.includes('stacked on the porch') && t.includes('by the morning of your re-install'))
     assert.ok(t.includes('however many times, is not a breach') && /aim(ing)? to finish by (the )?(January )?13/.test(t))
     assert.ok(t.includes('is a courtesy: we may decline it') && /not part of next season/.test(t))

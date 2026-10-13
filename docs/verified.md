@@ -483,3 +483,4 @@ What was actually checked working, and how. Newest first.
 - DIY takedown (owner, 2026-10-12): clause 6 purchase + add-on and the seasonal terms; tested; check green.
 - Rescheduling / late takedown wording (owner, 2026-10-12): clauses 3 and 6 incl. lease and add-on, seasonal terms; tested; check green.
 - Boxes on the porch (owner, 2026-10-12): clause 6 and the seasonal terms; tested; the seasonal-terms word bound is now a 3,000-word sanity limit; check green.
+- HOA deadline duty (owner, 2026-10-12): clause 5 and the seasonal terms; tested; check green.
