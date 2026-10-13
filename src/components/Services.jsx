@@ -31,7 +31,7 @@ export default function Services() {
           </ul>
         </article>
         <article className="rounded-2xl border border-berry-500/30 bg-berry-600/10 p-6 md:p-8 lg:col-span-2">
-          <h3 className="font-display text-2xl font-bold">Service calls, on us</h3>
+          <h3 className="flex items-center gap-3 font-display text-2xl font-bold"><img src={`${import.meta.env.BASE_URL}images/holiday/light.svg`} alt="" width="40" height="40" className="size-10" loading="lazy" />Service calls, on us</h3>
           <p className="mt-2 text-slate-300">We aim for 100% up-time. If something goes out, we’ve got you covered:</p>
           <ul className="mt-5 flex flex-wrap gap-2">
             {serviceCalls.map((s) => (
