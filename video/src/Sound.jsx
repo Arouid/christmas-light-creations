@@ -30,34 +30,37 @@ export { LightsOn }
 export function Sound({ props, list }) {
   const sfx = props.sfx || {}
   const fps = props.fps || 30
-  const v = sfx.volume ?? 0.8
+  const base = sfx.volume ?? 0.8
+  const mix = props.adMix || {}
+  const lv = (key) => base * (mix[key] ?? 1)
+  const v = base
   const hits = []
   for (const { key, from, dur } of list) {
     if (key === 'thread1' || key === 'thread2') {
       const msgs = key === 'thread1' ? props.story.thread1 : props.story.thread2
       msgs.forEach((m, i) => {
         const land = from + Math.round(m.at * fps)
-        hits.push(<Hit key={`${key}-typing-${i}`} file={sfx.typing} at={land - TYPING} volume={v * 0.35} frames={TYPING} fadeOut={6} name={`typing ${key} ${i + 1}`} />)
-        hits.push(<Hit key={`${key}-pop-${i}`} file={sfx.pop} at={land} volume={v} name={`pop ${key} ${i + 1}`} />)
+        if (lv('typing') > 0) hits.push(<Hit key={`${key}-typing-${i}`} file={sfx.typing} at={land - TYPING} volume={lv('typing') * 0.35} frames={TYPING} fadeOut={6} name={`typing ${key} ${i + 1}`} />)
+        if (lv('pop') > 0) hits.push(<Hit key={`${key}-pop-${i}`} file={sfx.pop} at={land} volume={lv('pop')} name={`pop ${key} ${i + 1}`} />)
       })
     }
     if (key === 'plan' && props.cottageImage) {
       const { on } = planTiming(dur, props.story.plan.length)
-      hits.push(<LightsOn key="lightsOn-plan" sfx={sfx} at={from + on} v={v} keyPrefix="plan: lights on" />)
+      if (lv('lightsOn') > 0) hits.push(<LightsOn key="lightsOn-plan" sfx={sfx} at={from + on} v={lv('lightsOn')} keyPrefix="plan: lights on" />)
     }
     if (key === 'home') {
       const { revealStart } = homeTiming(props, dur)
       hits.push(<Hit key="car" file={sfx.car} at={from} volume={v * 0.8} name="car" />)
-      hits.push(<Hit key="reveal" file={sfx.reveal} at={from + revealStart} volume={v} name="reveal" />)
+      if (lv('reveal') > 0) hits.push(<Hit key="reveal" file={sfx.reveal} at={from + revealStart} volume={lv('reveal')} name="reveal" />)
     }
     if (key === 'end' && !(props.cottageImage && props.endCardLit)) {
-      hits.push(<LightsOn key="lightsOn-end" sfx={sfx} at={from + 4} v={v} keyPrefix="end card" scale={0.6} />)
+      if (lv('lightsOn') > 0) hits.push(<LightsOn key="lightsOn-end" sfx={sfx} at={from + 4} v={lv('lightsOn')} keyPrefix="end card" scale={0.6} />)
     }
   }
   return (
     <>
       {hits}
-      {sfx.ambience ? <Audio src={staticFile(`sfx/${sfx.ambience}`)} volume={sfx.ambienceVolume ?? 0.25} loop /> : null}
+      {sfx.ambience && (mix.ambience ?? 1) > 0 ? <Audio src={staticFile(`sfx/${sfx.ambience}`)} volume={(sfx.ambienceVolume ?? 0.25) * (mix.ambience ?? 1)} loop /> : null}
     </>
   )
 }

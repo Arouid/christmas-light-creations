@@ -37,7 +37,9 @@ phone number and the website close it and stay on screen 4 s.
 Music "Anticipation And Joy" (Giulio Fazio) from 4.4 s in, so its hit at 22 s lands on the
 reveal; fades out over the last 2.5 s. Effects: a pop as each bubble lands, typing under the dots,
 a switch click + harp pluck as the cottage comes on (end card, the 5-second ad; the first flicker file was ~20 dB too quiet: owner "can't hear it switch on"), the chime again
-as the house appears, a very low wind loop under everything. Footage in four slots (texting,
+as the house appears, a very low wind loop under everything. Then thinned for the full ad (`adMix`): quiet pops, a soft
+switch-on, no typing, no reveal chime, no wind, because the music carries it (owner: the effects
+"fit poorly for the full ad"); the 5-second ad keeps the full levels. Footage in four slots (texting,
 drive, reaction, bokeh), all under one grade (`look.grade`: saturation 0.8, contrast 1.06, blacks
 lifted toward navy, gold warmth) so the sources read as one film. Files and licences in
 `assets-source/ads/video/README.md`.
@@ -67,7 +69,9 @@ neon, the warm door and window and the green chimney, excluding anything blue-le
 sky and snow; those pixels go dark grey, a wider soft mask takes the coloured glow off the snow)
 and the ads crossfade from it to the lit render with the flicker, so the cottage is visible
 throughout and only its lights pop on (owner: "just darken the lights, door, window… and pop
-those lights on").
+those lights on"). The cottage is a cut-out (`cutout.mjs`: sky keyed from the picture's edges,
+largest remaining component kept, soft edge, faded mound bottom), not a feathered rectangle: the
+feathered version showed the render's own sky as a patch ("plastered over the top of everything").
 The YouTube banner went through three versions the same day: text-heavy ("infomercially"), the
 cottage logo with one line ("isn't gonna vibe with younger audiences"), the house photo, then the
 photoreal cottage small in the phone strip.

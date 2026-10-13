@@ -20,6 +20,7 @@ const index = readFileSync(join(repoRoot, 'assets-source', 'ads', 'contact-sheet
 const byNumber = Object.fromEntries(index.map(([n, p]) => [n, join(repoRoot, p.trim())]))
 
 const { default: data } = await import('../src/data.js')
+const { cutout } = await import('./cutout.mjs')
 
 mkdirSync(join(out, 'photos'), { recursive: true })
 mkdirSync(join(out, 'fonts'), { recursive: true })
@@ -156,6 +157,23 @@ for (const k of ['cottageImage', 'cottageImageWide']) {
   }
   await sharp(outRgb, { raw: { width, height, channels: 3 } }).modulate({ brightness: 0.85, saturation: 0.8 }).jpeg({ quality: 90 }).toFile(off)
   console.log('lights off', name, '->', off)
+}
+
+// Cut-outs (RGBA) of the square render, lit and lights off, so the cottage sits on a scene without
+// its own sky showing: see cutout.mjs.
+{
+  const name = data.cottageImage
+  if (name) {
+    const base = join(out, 'gemini', name.replace(/\.(jpe?g|png|webp)$/i, ''))
+    const lit = join(out, 'gemini', name)
+    const off = base + '-off.jpg'
+    const cutLit = base + '-cut.png'
+    const cutOff = base + '-cut-off.png'
+    if (existsSync(lit) && existsSync(off) && (fresh(lit, cutLit) || fresh(off, cutOff))) {
+      const { kept } = await cutout(sharp, lit, off, cutLit, cutOff)
+      console.log('cut-out', name, `(${Math.round(kept * 100)} % of the picture kept)`)
+    }
+  }
 }
 
 // Licensed downloads (Uppbeat and the like): footage, sound effects and music from

@@ -40,7 +40,7 @@ export function Intro({ data, dur, holdEnd = false }) {
 
         <div style={wide
           ? { position: 'absolute', left: 110, top: 0, height: h, width: w * 0.46, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', textAlign: 'left' }
-          : { position: 'absolute', left: 0, width: w, top: y + logoH - (img ? (tall ? 90 : 70) : 0) + (tall ? 70 : 30), display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '0 60px' }}>
+          : { position: 'absolute', left: 0, width: w, top: y + logoH - (img ? (tall ? 30 : 60) : 0) + (tall ? 70 : 30), display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '0 60px' }}>
           <div style={{ ...display(type, tall ? 92 : square ? 72 : wide ? 96 : 88), color: colors.gold, transform: `translateY(${(1 - name) * 40}px)`, opacity: fadeIn(frame, ON + 10, 8), textShadow: '0 0 40px rgba(255,207,77,0.35)' }}>{words.brand}</div>
           <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 40 : square ? 32 : 38, color: colors.white, opacity: sub * 0.9, marginTop: 16, letterSpacing: '0.04em' }}>{words.brandSub}</div>
           {words.brandSite ? <div style={{ fontFamily: BODY, fontWeight: 600, fontSize: tall ? 44 : square ? 34 : 42, color: colors.goldSoft, opacity: site, marginTop: 14, transform: `translateY(${(1 - site) * 16}px)` }}>{words.brandSite}</div> : null}

@@ -113,7 +113,11 @@ Where they appear: the 5-second ad and the story's end card (16:9 uses the wide 
 frame with the words on the sky to its left; vertical and square use the square render feathered
 into the navy; the switch-on crossfades from a "lights off" copy that `prepare-assets` makes by
 darkening only the neon, the door, the window and the chimney, so the cottage stays and just its
-lights pop on: owner, 2026-10-13), the YouTube banner
+lights pop on: owner, 2026-10-13). The cottage is placed as a **cut-out** (`video/scripts/cutout.mjs`:
+the render's dark blue sky is keyed from the edges, the biggest remaining piece, the cottage on its
+mound, is kept with a soft edge and a faded bottom; written as `…-cut.png` / `…-cut-off.png`), so
+the scene's own sky and snow show around it instead of the render's (owner: the feathered version
+looked "plastered over the top"), the YouTube banner
 (`assets-source/ads/youtube-banner-2048x1152.png`: the square render small in the middle so it
 sits in the strip phones and desktops show) and the profile picture
 (`assets-source/ads/youtube-profile-1080.png`). Clear `cottageImage` in `data.js` to go back to the
@@ -177,9 +181,9 @@ file into `video/public/music/`, set `music.file` in `data.js`, render, and reco
 |---|---|---|
 | "Little Swallow (Carol Of The Bells) – Ukrainian New Years Song" by JuliusH, 1:04, instrumental | https://pixabay.com/music/special-occasions-little-swallow-carol-of-the-bells-ukrainian-new-years-song-5821/ (downloaded 2026-10-11 to `video/public/music/carol-of-the-bells-juliush.mp3`, not in git) | Pixabay Content License: free for commercial use, no attribution required, not for resale as-is. Picked over the other Carol of the Bells tracks because its page shows no "Content ID Registered" badge (those can trigger YouTube copyright claims on an ad). The melody itself (Leontovych, 1914) is public domain. |
 
-The track is 64 s. It is currently **off** (`music.file: ''`). When on, the full ad uses its
-first 28 s and fades out over the last 2.5 s (`music` in `data.js`: file, volume, startFrom);
-the 5-second ad is always silent.
+In the full ad the effects sit under the music at a fraction of their level (`adMix` in `data.js`:
+pops at 45 %, the switch-on at 50 %, no typing, no reveal chime, no wind; owner 2026-10-13: "the
+sound efx fit poorly for the full ad"). The 5-second ad has no music and uses the full levels.
 
 ## Licence
 

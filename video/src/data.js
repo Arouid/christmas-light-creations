@@ -106,6 +106,9 @@ const data = {
     volume: 0.8,
     ambienceVolume: 0.12,
   },
+  // How loud each effect is in the full ad, under the music, as a share of its level above (0 = off).
+  // The 5-second ad has no music and uses the levels above as they are.
+  adMix: { pop: 0.45, typing: 0, lightsOn: 0.5, reveal: 0, ambience: 0 },
   // Footage: files in assets-source/ads/clips/ (MP4, 1080p or 4K). Empty = the scene uses its
   // graphic or photo instead. texting = hands on a phone at night, behind the first thread;
   // drive = headlights on a dark street / through the windshield, opens the 5:41 pm scene;
