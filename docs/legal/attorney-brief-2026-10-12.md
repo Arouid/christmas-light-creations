@@ -23,8 +23,8 @@ The full current text is in the staff app (default in `src/proposals/terms.js`; 
 | 6 | Ownership | Paid in full → customer owns the lights; we label and box them; re-install in future seasons is 50% of the original price |
 | 7 | Cancellation | Deposit refunded **in full through October 15**, **half from October 16 to November 1**, **not refundable from November 2** (owner, 2026-10-12). If we can't install by **Dec 1**, the customer may choose a full deposit refund |
 | 8 | Liability | We repair damage we cause (told within 7 days). In capitals (conspicuous): not liable for pre-existing conditions, weather/outages/surges, animals, or undisclosed items; except for our negligence or willful misconduct, liability capped at the amount paid; no consequential damages; nothing limits what Texas law says can't be limited |
-| 9 | Late payment | $25 late fee after 10 days; we may pause service, decline re-install or remove unpaid lights; collection costs and reasonable attorney's fees as Texas law allows |
-| 10 | Photos | Street photos for our portfolio, no name or address, opt-out any time |
+| 9 | Unpaid balances | No late fees (owner). After 10 days late we may pause service, decline re-install or remove unpaid lights; collection costs and reasonable attorney's fees as Texas law allows |
+| 10 | Photos and information | Street photos for our portfolio, no name or address, opt-out any time; a pointer to the privacy page |
 | 11 | General | Texas law, Brazoria County venue, talk then mediation before suit, prevailing-party attorney's fees, severability, written changes only, no assignment by the customer, force majeure (not payments) |
 | 12 | E-signature | Texas UETA / E-SIGN; a copy kept in their online account |
 
