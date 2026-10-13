@@ -51,3 +51,6 @@ video/out/
 assets-source/shirts/designs/*.png
 !assets-source/shirts/designs/mockup-*.png
 !assets-source/shirts/designs/preview-sheet.png
+
+# Stock downloads (Vecteezy): licensed to us, never redistributed; the repo is public.
+assets-source/Vecteezy Downloads/
