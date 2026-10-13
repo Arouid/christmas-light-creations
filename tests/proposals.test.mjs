@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { canonical, docHash, fillTerms, fmt, itemsFromDesign, newItem, newProposal, newToken, sendProblems, termVars, totals } from '../src/proposals/model.js'
+import { canonical, docHash, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, newToken, sendProblems, termVars, totals } from '../src/proposals/model.js'
 import { DEFAULT_TERMS } from '../src/proposals/terms.js'
 
 const base = () => newProposal({
@@ -217,4 +217,14 @@ test('gutters and clips (owner 2026-10-12): explained in the access clause and e
     assert.ok(t.includes('wasp, hornet or bee nests') && t.includes('we may stop and reschedule') && t.includes('$25 treatment charge to your bill for each nest we treat'))
     assert.ok(t.includes('You are required to tell us, before we start') && t.includes('landscape and pathway lights and their wires') && t.includes('NOT TOLD ABOUT AND COULD NOT REASONABLY SEE'))
   }
+})
+
+test('a known nest goes on the estimate as a $25 untaxed service line, approved by the signature', async () => {
+  const { NEST_FEE, nestItem } = await import('../src/proposals/model.js')
+  const n = nestItem()
+  assert.equal(NEST_FEE, 25)
+  assert.equal(itemCents(n), 2500); assert.equal(n.due, 'install'); assert.equal(n.taxable, false)
+  const p = newProposal({ items: [newItem('Roofline', 100, 'ft', 5), n], tax: { ratePct: 8.25 } })
+  assert.equal(totals(p).installTax, Math.round(50000 * 0.0825), 'the nest line is not taxed')
+  assert.ok(DEFAULT_TERMS.includes('your signature approves that charge'))
 })

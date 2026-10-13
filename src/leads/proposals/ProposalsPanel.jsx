@@ -5,7 +5,7 @@ import ProposalDocument from '../../proposals/ProposalDocument.jsx'
 import SignaturePad from '../../proposals/SignaturePad.jsx'
 import { PAY_PARTS, STATUS_LABEL, fillTerms, fmt, itemCents, itemsFromDesign, newItem, newProposal, partAmount, paymentOf, sendProblems, takedownItem, termVars, totals } from '../../proposals/model.js'
 import { DEFAULT_TERMS, FILL_IN, defaultTerms } from '../../proposals/terms.js'
-import { KINDS, PLANS, dueText, isPayIn3, partDue, partLabel, taxRateOf } from '../../proposals/model.js'
+import { KINDS, NEST_FEE, PLANS, dueText, isPayIn3, nestItem, partDue, partLabel, taxRateOf } from '../../proposals/model.js'
 import { taxSnapshot } from '../../lib/salesTax'
 import { todayISO } from '../../lib/customers'
 import { COLOR_SETS, STYLES, normalize } from '../../designer/model.js'
@@ -207,6 +207,8 @@ function Editor({ token, p, owner, designs, settings, user, onClose }) {
                 </ul>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => set({ items: [...d.items, newItem('', 1, '', 0)] })} className={btn}>＋ Add item</button>
+                  {/* A nest spotted at the measure: on the estimate, approved by the signature (contract clause 5). */}
+                  <button type="button" onClick={() => set({ items: [...d.items.filter((i) => i.due !== 'removal'), nestItem(), ...d.items.filter((i) => i.due === 'removal')] })} className={btn}>＋ Nest treatment (${NEST_FEE})</button>
                   {/* Takedown from the current install lines (replaces an existing takedown line).
                       Hidden when Settings has takedown at 0% / $0 (takedown included in the install). */}
                   {d.kind !== 'lease' && ((settings.takedownPct ?? 15) > 0 || (settings.takedownMin ?? 150) > 0) && <button type="button" onClick={() => {

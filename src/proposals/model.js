@@ -119,6 +119,11 @@ export function isPayable(p, part, today = todayCentral()) {
   return signed && partAmount(p, part) > 0 && paymentOf(p, part)?.status !== 'paid' && open
 }
 
+// A wasp / hornet nest we know about before the install (contract clause 5:
+// $25 a nest, approved by the signature). A service, so no sales tax on it.
+export const NEST_FEE = 25
+export const nestItem = () => newItem('Wasp / hornet nest treatment', 1, 'nest', NEST_FEE, 'install', 'Treated before we work near it', false)
+
 // Takedown: a % of the install with a minimum (CLC's form: 15% of
 // total, minimum $150), due at removal.
 export function takedownItem(installCents, pct = 15, minDollars = 150) {

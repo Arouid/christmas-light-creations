@@ -477,3 +477,4 @@ What was actually checked working, and how. Newest first.
 - Dec 1 refund limited to our own delays (owner, 2026-10-12): both clause-7 variants, tested; check green.
 - Nest treatment charge, quote-first (owner, 2026-10-12): clause 5 and the seasonal terms, tested; check green.
 - 5 per nest treated (owner, 2026-10-12), both documents, tested; check green.
+- ＋ Nest treatment ($25) button in the estimate editor; untaxed service line; clause 5 sentence; tested; check green (owner, 2026-10-12).
