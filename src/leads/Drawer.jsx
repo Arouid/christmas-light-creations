@@ -14,7 +14,7 @@ const saveOpen = (set) => { try { localStorage.setItem(OPEN_KEY, JSON.stringify(
 const row = (on) => `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-base ${on ? 'bg-white/10 font-semibold text-glow-300' : 'text-slate-100 hover:bg-white/5'}`
 const Pic = ({ k }) => <span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">{ICON[k]}</span>
 
-export default function Drawer({ open, onClose, tab, askOn, count, who, demo, onMessages, onGuide, onSettings, onSignOut }) {
+export default function Drawer({ open, onClose, tab, askOn, count, who, demo, onMessages, onGuide, guideNew = false, onSettings, onSignOut }) {
   const [q, setQ] = useState('')
   const [opened, setOpened] = useState(readOpen)
 
@@ -86,7 +86,7 @@ export default function Drawer({ open, onClose, tab, askOn, count, who, demo, on
         </nav>
         <div className="mt-2 border-t border-white/10 p-2">
           <ul>
-            <li><button type="button" onClick={() => { onGuide(); onClose() }} className={row(false)}><span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">?</span>Staff guide</button></li>
+            <li><button type="button" onClick={() => { onGuide(); onClose() }} className={row(false)}><span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">?</span>Staff guide{guideNew && <span className="ml-2 rounded-full bg-glow-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-night-950">New</span>}</button></li>
             <li><button type="button" onClick={() => { onSettings(); onClose() }} className={row(false)}><span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">⚙</span>Settings</button></li>
           </ul>
           <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-slate-400">

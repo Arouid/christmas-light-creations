@@ -14,7 +14,8 @@ import SettingsPanel from './SettingsPanel'
 import GuidePanel from './GuidePanel'
 import AskClaude from '../assistant/AskClaude'
 import Tour from './Tour'
-import { tourDone } from './tourState'
+import { markWhatsNewSeen, tourDone, whatsNewSeen } from './tourState'
+import { WHATS_NEW } from './guide'
 import IncidentsBanner from './Incidents'
 import InstallApp, { InstallButtons } from './InstallApp'
 import { VoiceAccount, getTextFrom, saveTextFrom } from './voice'
@@ -90,6 +91,10 @@ export default function LeadsApp() {
   const [signInError, setSignInError] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  // 📣 What's new: a banner and a mark on ? until this device opens the guide.
+  const [newsOpen, setNewsOpen] = useState(() => !whatsNewSeen(WHATS_NEW.date))
+  const openGuide = () => { setShowGuide(true); markWhatsNewSeen(WHATS_NEW.date); setNewsOpen(false) }
+  const dismissNews = () => { markWhatsNewSeen(WHATS_NEW.date); setNewsOpen(false) }
   const [menu, setMenu] = useState(false) // the phone's ☰ drawer
   const closeMenu = useCallback(() => setMenu(false), [])
   // null = not decided (show once per device after the first sign-in), true = asked for, false = closed.
@@ -306,8 +311,8 @@ export default function LeadsApp() {
                 </span>
               )}
             </button>
-            <button type="button" onClick={() => setShowGuide(true)} aria-label="Staff guide" title="Staff guide: what the app does"
-              className="hidden shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold lg:block">?</button>
+            <button type="button" onClick={openGuide} aria-label={newsOpen ? 'Staff guide (what’s new)' : 'Staff guide'} title="Staff guide: what the app does"
+              className="relative hidden shrink-0 rounded-full border border-white/20 px-3 py-1.5 font-semibold lg:block">?{newsOpen && <span aria-hidden="true" className="absolute -right-1 -top-1 size-3 rounded-full bg-glow-400" />}</button>
             <button type="button" onClick={() => setShowSettings(true)} aria-label="Settings" title="Settings"
               className="hidden shrink-0 rounded-full border border-white/20 px-3 py-1.5 lg:block">⚙</button>
             {!demo && <button type="button" onClick={signOut} className="hidden shrink-0 rounded-full border border-white/20 px-3 py-1.5 lg:block">Sign out</button>}
@@ -338,7 +343,7 @@ export default function LeadsApp() {
         </div>
       </header>
       <Drawer open={menu} onClose={closeMenu} tab={tab} askOn={askOn} count={alerts.count} who={staffName(user.email, feed.names)} demo={demo}
-        onMessages={() => setShowMessages(true)} onGuide={() => setShowGuide(true)} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
+        onMessages={() => setShowMessages(true)} onGuide={openGuide} guideNew={newsOpen} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
 
       {tab === 'ask' && (
         <div className="min-h-0 flex-1">
@@ -356,6 +361,13 @@ export default function LeadsApp() {
       )}
       <main className={tab === 'map' || tab === 'ask' ? 'hidden' : 'mx-auto max-w-3xl px-4 pb-16 pt-4 lg:max-w-7xl'}>
         {listError && <p className="mb-4 text-berry-500" role="alert">Couldn’t load: {listError}</p>}
+        {newsOpen && (
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-glow-400/50 bg-glow-400/10 px-4 py-3">
+            <p className="min-w-0 flex-1 text-sm text-slate-200"><strong className="text-glow-300">📣 {WHATS_NEW.title}:</strong> {WHATS_NEW.items.length} things changed, including what the app now does by itself.</p>
+            <button type="button" onClick={openGuide} className="min-h-11 rounded-full bg-glow-400 px-4 text-sm font-semibold text-night-950">See what’s new</button>
+            <button type="button" onClick={dismissNews} aria-label="Dismiss" className="min-h-11 px-2 text-slate-400">✕</button>
+          </div>
+        )}
         {tab === 'home' && (customers
           ? <HomeView user={user} season={season} alerts={alerts} feed={feed} customers={customers} leads={leads ?? []} invoices={invoicesApi.invoices ?? []}
               calls={calls} routes={routesApi.routes ?? []} settings={settingsApi.settings ?? {}} onOpenMessages={() => setShowMessages(true)} />

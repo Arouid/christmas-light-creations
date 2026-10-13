@@ -4,6 +4,30 @@
 
 export const GUIDE_UPDATED = 'October 12, 2026'
 
+// 📣 What's new (owner 2026-10-12: "send the release notes to Katie"): the
+// short list at the top of the ? guide, with a "New" mark on ? and a banner
+// in the app until each phone has opened it (tourState.js, keyed by `date`).
+// Keep it to the last batch; the full history is docs/decisions.md.
+export const WHATS_NEW = {
+  date: '2026-10-12',
+  title: 'What’s new (October 12)',
+  items: [
+    '**Every customer email is branded** (logo, phone, “found us in spam? mark it Not spam”): invoices, agreements, reminders, sign-in links, your own emails from the app.',
+    '**“Got your request”** goes to every website estimate request by itself, within seconds, and shows in the lead’s history.',
+    '**Still-waiting reminders**: a notification and an email to the alert list every hour (8 am–8 pm) when a message, request or problem report has sat 2+ hours with nobody on it.',
+    '**Weather heads-ups** at 4:30 pm when storms, strong wind or a freeze are coming: customers on a route that day hear their date may move, customers with lights up get the storm tips, you get the list of stops. **⚙ Settings → Automatic emails** has the switches.',
+    '**Pay in 3**, **leases** and **sales tax** on estimates; the Pay link emailed the morning each payment is due.',
+    '**Texas agreement** rewritten (12 clauses: weather, access, gutters, wasp nests, boxes, HOA dates, cancellation, liability), folded behind “Read the agreement”.',
+    '**Lifetime warranty**: from each install until their next install with us, worn-out lights are replaced new, free. On the site, in the agreement, in Help.',
+    '**Trees**: branches pulling lights down aren’t covered; the re-hang is a paid visit after booked installs. Told on the proposal, the account page, the reminders and the storm tips.',
+    '**Customers’ account page**: Report a problem, their property details (gate code, HOA date, things to avoid, pets, shown on the route), Email preferences, a Help search, a ☰ menu, Get the app. Staff see **📱 has the app** on the login line.',
+    '**Day-before reminders** tell returning customers to set their boxes out and ask for the gate code when we have none. Takedown invoices and the invoice page carry the seasonal terms.',
+    '**Price promise** on the site: we beat a legitimate written proposal from another real lighting company by 10%.',
+    '**Phone menu** on the staff app (☰) and the customer account; the website got an offer bar, the perks section and the warranty.',
+    '**The tour** (? → 🧭 Take the tour) has 13 stops now, including what the app does by itself.',
+  ],
+}
+
 // The jobs people actually do, each pointing at where to do it.
 export const TASKS = [
   ['Find my way around on a phone', 'Tap **☰** (top left). At the top, **Find anyone**: type a name, street or phone and go. Then Home, Accounts, Map, 🤖 Ask Claude and 💬 Messages, and the rest in groups (tap a group name to open or close it; the app remembers). The **?** guide, **⚙ Settings** and **Sign out** are at the bottom. The name next to CLC Staff tells you where you are. On a computer the sections stay in a row across the top.'],

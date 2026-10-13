@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { SECTIONS, TASKS, TOUR, groupedTasks, howSteps } from '../src/leads/guide.js'
+import { SECTIONS, TASKS, TOUR, WHATS_NEW, groupedTasks, howSteps } from '../src/leads/guide.js'
 
 test('every "How do I" task lands in exactly one group', () => {
   const titles = groupedTasks().flatMap(([, tasks]) => tasks.map(([t]) => t))
@@ -24,4 +24,11 @@ test('tour steps are complete and point at real tabs', () => {
     assert.ok(s.icon && s.title && s.body?.length >= 1, s.title)
     if (s.tab) assert.ok(tabs.has(s.tab), `${s.title}: tab ${s.tab}`)
   }
+})
+
+test('what’s new: dated, short, and about the latest batch (owner 2026-10-12)', () => {
+  assert.match(WHATS_NEW.date, /^\d{4}-\d{2}-\d{2}$/)
+  assert.ok(WHATS_NEW.items.length >= 5 && WHATS_NEW.items.length <= 20)
+  for (const line of WHATS_NEW.items) assert.ok(line.length <= 330, line.slice(0, 40))
+  for (const must of ['Got your request', 'Still-waiting', 'Weather', 'Lifetime warranty', 'Trees']) assert.ok(WHATS_NEW.items.some((l) => l.includes(must)), must)
 })

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GUIDE_UPDATED, SECTIONS, groupedTasks, howSteps } from './guide'
+import { GUIDE_UPDATED, SECTIONS, WHATS_NEW, groupedTasks, howSteps } from './guide'
 import Rich from './Rich'
 
 // The staff guide (? button in the header): what the app does and where to
@@ -48,6 +48,15 @@ export default function GuidePanel({ onClose, onTour }) {
             className="min-h-11 w-full rounded-full border border-white/20 bg-night-900 px-5 text-base focus:border-glow-400 focus:outline-none" />
           {!searching && <p className="text-sm text-slate-400">Tap a line to open it.</p>}
         </div>
+
+        {!searching && (
+          <section className="space-y-2 rounded-3xl border border-glow-400/50 bg-glow-400/10 p-4" aria-label="What's new">
+            <h3 className="font-display text-xl font-extrabold text-glow-300">📣 {WHATS_NEW.title}</h3>
+            <ul className="space-y-2">
+              {WHATS_NEW.items.map((line) => <li key={line} className="flex gap-2 text-base leading-relaxed text-slate-200"><span aria-hidden="true" className="text-glow-400">•</span><span className="min-w-0"><Rich text={line} /></span></li>)}
+            </ul>
+          </section>
+        )}
 
         {groups.length > 0 && (
           <section className="space-y-3 rounded-3xl border border-glow-400/30 bg-night-900 p-4">
