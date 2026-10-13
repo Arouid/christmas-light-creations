@@ -151,6 +151,25 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.token.email;
     }
 
+    // Staff notes (src/lib/notes.js, owner 2026-10-13): private to the writer
+    // unless `shared`, then the whole team reads it; only the writer edits or
+    // deletes. The app queries `by == me` and `shared == true` separately so
+    // each query provably matches this rule.
+    function noteOk() {
+      return stamped()
+        && request.resource.data.keys().hasOnly(['title', 'text', 'by', 'shared', 'createdAt', 'updatedAt', 'updatedBy'])
+        && request.resource.data.title is string && request.resource.data.title.size() <= 120
+        && request.resource.data.text is string && request.resource.data.text.size() <= 5000
+        && request.resource.data.shared is bool
+        && request.resource.data.by == request.auth.token.email.lower();
+    }
+    match /notes/{noteId} {
+      allow read: if isStaff() && (resource.data.by == request.auth.token.email.lower() || resource.data.shared == true);
+      allow create: if isStaff() && noteOk();
+      allow update: if isStaff() && resource.data.by == request.auth.token.email.lower() && noteOk();
+      allow delete: if isStaff() && resource.data.by == request.auth.token.email.lower();
+    }
+
     // Service routes: a day's stops (snapshots of customer name, address,
     // phone, gate code, notes) with their status. Staff only.
     match /routes/{routeId} {

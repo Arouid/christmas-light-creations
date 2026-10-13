@@ -28,7 +28,7 @@ test('sizes: the button cycles Half → 2/3 → 1/3 → Wide → Half; toggleWid
 test('drag and arrows reorder', () => {
   assert.deepEqual(placeBefore(DEFAULT_LAYOUT, 'status', 'season').order.slice(0, 2), ['status', 'season'])
   assert.equal(placeBefore(DEFAULT_LAYOUT, 'season', null).order.at(-1), 'season')
-  assert.deepEqual(nudge(DEFAULT_LAYOUT, 'who', 'up').order.slice(0, 2), ['who', 'season'])
+  assert.deepEqual(nudge(DEFAULT_LAYOUT, 'checklist', 'up').order.slice(0, 2), ['checklist', 'season'], 'My checklist sits second by default (owner 2026-10-13)')
   assert.equal(nudge(DEFAULT_LAYOUT, 'season', 'up'), DEFAULT_LAYOUT)
 })
 

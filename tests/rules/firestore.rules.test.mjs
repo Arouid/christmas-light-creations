@@ -4,7 +4,7 @@
 import { after, before, beforeEach, describe, test } from 'node:test'
 import { readFileSync } from 'node:fs'
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing'
-import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore'
 
 let env
 const STAFF = 'boss@example.com'
@@ -54,6 +54,7 @@ const staffDocs = {
   accountLinks: { count: 1 },
   conversations: { customerId: 'pat-test', customerName: 'Pat Test', messages: [{ from: 'customer', by: 'cust@example.com', text: 'Hi', at: '2026-10-13T15:00:00.000Z' }], lastAt: new Date(), lastFrom: 'customer', waitingSince: new Date(), count: 1 },
   staff: { name: 'Boss' },
+  notes: { title: 'Mine', text: 'private', by: STAFF, shared: false },
 }
 
 before(async () => {
@@ -491,5 +492,28 @@ describe('conversations: the account chat (docs/specs/account-chat.md)', () => {
     await assertFails(updateDoc(doc(db, 'conversations', 'x1'), { waitingSince: null, ...stamp() }))
     await assertFails(deleteDoc(doc(db, 'conversations', 'x1')))
     await assertFails(getDoc(doc(as.customer(), 'conversations', 'x1')))
+  })
+})
+
+describe('notes: private to the writer unless shared (docs/specs/notes.md)', () => {
+  const note = (over = {}) => ({ title: 'Gate codes', text: 'Smith: ask', by: STAFF, shared: false, createdAt: serverTimestamp(), ...stamp(), ...over })
+  test('the writer creates, reads by query, updates and deletes; by must be their own email', async () => {
+    const db = as.staff()
+    await assertSucceeds(setDoc(doc(db, 'notes', 'n1'), note()))
+    await assertFails(setDoc(doc(db, 'notes', 'n2'), note({ by: 'someone@else.com' })))
+    await assertFails(setDoc(doc(db, 'notes', 'n3'), note({ extra: 'x' })))
+    await assertFails(setDoc(doc(db, 'notes', 'n4'), note({ shared: 'yes' })))
+    await assertSucceeds(getDocs(query(collection(db, 'notes'), where('by', '==', STAFF))))
+    await assertSucceeds(getDocs(query(collection(db, 'notes'), where('shared', '==', true))))
+    await assertFails(getDocs(collection(db, 'notes')), 'the whole collection would include other people\'s private notes')
+    await assertSucceeds(updateDoc(doc(db, 'notes', 'n1'), { text: 'Smith: 1234', shared: true, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'notes', 'n1'), { by: 'someone@else.com', ...stamp() }))
+    await assertSucceeds(deleteDoc(doc(db, 'notes', 'n1')))
+  })
+  test('outsiders see and write nothing', async () => {
+    for (const who of outsiders) {
+      await assertFails(getDocs(query(collection(as[who](), 'notes'), where('shared', '==', true))))
+      await assertFails(setDoc(doc(as[who](), 'notes', `o-${who}`), note()))
+    }
   })
 })

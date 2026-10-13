@@ -6,6 +6,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 | # | Task | Notes |
 |---|---|---|
+| 65 | **Publish the rules for Notes** (built 2026-10-13, `docs/specs/notes.md`): paste `npx --yes firebase-tools@14.11.0 deploy --only firestore:rules --project clc-leads-site --non-interactive`; until then the Notes tab is empty and Save says the rules aren't published. Nothing to deploy on the server. | Owner |
 | 64 | **Make the GitHub repo private** (owner 2026-10-13: "I'll take it private tomorrow"): github.com/Arouid/christmas-light-creations → Settings → Danger Zone → Change visibility → Private. GitHub Pages serves a private repo only on GitHub Pro (~$4/month); if the site 404s after, upgrade (Settings → Billing) and push once, or ask Claude to move hosting to Firebase Hosting (free). Why: the designer and every spec are readable by anyone while the repo is public; minified site code can't be encrypted. | Owner |
 | 4 | **Voice account setup**: record a new voicemail greeting; add linked numbers if calls should ring cells | voice.google.com as clc.voicemail.01 |
 | 5 | **Each staff phone/computer**: sign into clc.voicemail.01 (Voice app + browser) | Katie: ⚙ "My own Google Voice number" if she uses hers |

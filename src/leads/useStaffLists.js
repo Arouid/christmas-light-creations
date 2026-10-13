@@ -1,5 +1,5 @@
 import { customerId, todayISO } from '../lib/customers'
-import { addRecord, deleteRecord, mergeMany, saveRecord, updateField, useLiveCollection } from './staffStore'
+import { addRecord, deleteRecord, mergeMany, saveRecord, updateField, useLiveCollection, useLiveQuery } from './staffStore'
 import { customerTarget, logActivity } from './activity'
 
 const newestFirst = (a, b) => (b.received ?? '').localeCompare(a.received ?? '')
@@ -107,3 +107,20 @@ export function useRoutes(user) {
     remove: (id) => deleteRecord('routes', id),
   }
 }
+
+// Staff notes (src/lib/notes.js): mine (by == me) and the team's shared ones,
+// two live queries so each provably matches firestore.rules.
+export function useNotes(user) {
+  const email = String(user?.email ?? '').trim().toLowerCase()
+  const mine = useLiveQuery(user, 'notes', 'by', email, newestNote)
+  const shared = useLiveQuery(user, 'notes', 'shared', true, newestNote)
+  return {
+    mine,
+    shared,
+    add: (data) => addRecord(user, 'notes', data),
+    save: (id, data) => saveRecord(user, 'notes', id, data),
+    remove: (id) => deleteRecord('notes', id),
+  }
+}
+const noteMs = (t) => (t?.toMillis ? t.toMillis() : Number(t) || 0)
+const newestNote = (a, b) => noteMs(b.updatedAt ?? b.createdAt) - noteMs(a.updatedAt ?? a.createdAt)

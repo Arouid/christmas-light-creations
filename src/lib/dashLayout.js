@@ -7,11 +7,12 @@
 export const PANELS = [
   ['season', 'Season'], ['activity', 'Recent activity'], ['who', 'Who’s on'], ['scheduled', 'Scheduled emails'],
   ['signins', 'Sign-ins'], ['routes', 'Today’s routes'], ['status', 'System status'], ['spent', 'Spent this month'], ['ads', 'Google Ads'],
+  ['checklist', 'My checklist'],
 ]
 // Width in sixths of the row, and the button label.
 export const SIZES = { half: { units: 3, label: 'Half' }, two: { units: 4, label: '2/3' }, one: { units: 2, label: '1/3' }, wide: { units: 6, label: 'Wide' } }
 const CYCLE = ['half', 'two', 'one', 'wide']
-export const DEFAULT_LAYOUT = { order: ['season', 'who', 'activity', 'scheduled', 'signins', 'routes', 'status', 'spent', 'ads'], size: { activity: 'wide' } }
+export const DEFAULT_LAYOUT = { order: ['season', 'checklist', 'activity', 'who', 'scheduled', 'signins', 'routes', 'status', 'spent', 'ads'], size: { activity: 'wide' } }
 export const LAYOUT_KEY = 'clcHomeLayout'
 const KNOWN = PANELS.map(([k]) => k)
 

@@ -6,7 +6,7 @@
 // The computer tab row, in order; the rarely used ones under "More" (the row
 // got too long: owner 2026-10-10); Past requests lives inside Leads.
 export const BEFORE = [['home', 'Home'], ['ask', '🤖 Ask Claude'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes'], ['service', 'Service']]
-export const MORE = [['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
+export const MORE = [['notes', 'Notes'], ['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
 export const HIDDEN = [['past', 'Past requests']]
 export const ALL_TABS = [...BEFORE, ...MORE, ...HIDDEN]
 export const LABEL = Object.fromEntries(ALL_TABS)
@@ -14,7 +14,7 @@ export const LABEL = Object.fromEntries(ALL_TABS)
 // Drawer rows get a small picture, like the console's.
 export const ICON = {
   home: '🏠', ask: '🤖', map: '🗺️', accounts: '🔎', invoices: '🧾', leads: '📥', customers: '👥', season: '🎄',
-  route: '🚚', service: '🛠', signs: '🪧', emails: '✉️', gates: '🔐', import: '📄', past: '🕰️',
+  route: '🚚', service: '🛠', signs: '🪧', emails: '✉️', gates: '🔐', import: '📄', past: '🕰️', notes: '📒',
 }
 // Drawer label: the plain name (the icon is drawn beside it).
 export const NAME = Object.fromEntries(ALL_TABS.map(([k, label]) => [k, label.replace(/^\S+\s(?=\S)/, (m) => (/\p{Extended_Pictographic}/u.test(m) ? '' : m))]))
@@ -25,7 +25,7 @@ export const GROUPS = [
   ['Customers & messages', ['leads', 'past', 'customers', 'emails']],
   ['Prices & money', ['invoices']],
   ['Installs, takedowns & service', ['season', 'route', 'service']],
-  ['Tools', ['signs', 'gates', 'import']],
+  ['Tools', ['notes', 'signs', 'gates', 'import']],
 ]
 export const groupOf = (tab) => GROUPS.find(([, keys]) => keys.includes(tab))?.[0] ?? null
 

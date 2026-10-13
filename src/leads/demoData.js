@@ -104,6 +104,12 @@ export const demoData = {
       topTerms: [{ term: 'christmas light installers pearland', clicks: 23, cents: 1180 }, { term: 'christmas lights near me', clicks: 19, cents: 905 }, { term: 'holiday lighting friendswood', clicks: 9, cents: 410 }, { term: 'christmas light hangers', clicks: 7, cents: 300 }, { term: 'roof lights install', clicks: 4, cents: 190 }],
       asOf: new Date(Date.now() - 3 * 3600e3).toISOString(), lastDay: new Date(Date.now() - 30 * 3600e3).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }) },
   } },
+  // Staff notes (src/lib/notes.js): one of mine, two shared by others.
+  notes: byId([
+    { id: 'demo-note-1', title: 'Questions for Scott', text: 'Do we re-hang after wind if it was a tree? (contract says paid)\nPat Sample wants the arch moved left.', by: 'demo@example.com', shared: false, createdAt: hoursAgo(30), updatedAt: hoursAgo(2) },
+    { id: 'demo-note-2', title: 'Gate codes that changed', text: 'Example Family: new code, ask at scheduling.\nSample Customer: gate stays open on install day.', by: 'katiep.lights@gmail.com', shared: true, createdAt: hoursAgo(50), updatedAt: hoursAgo(26) },
+    { id: 'demo-note-3', title: 'Ideas', text: 'Review request text could mention the lifetime warranty.', by: 'lacie.jaye.mccloud@gmail.com', shared: true, createdAt: hoursAgo(90), updatedAt: hoursAgo(90) },
+  ]),
   signs: byId([
     { id: 'demo-sign-1', corner: 'Broadway & 288', code: 'broadway-288', lat: 29.5695, lng: -95.3864, placedAt: hoursAgo(30), cost: 10, updatedBy: 'demo@example.com' },
     { id: 'demo-sign-2', corner: 'Dixie Farm & 35', code: 'dixie-farm-35', lat: 29.5830, lng: -95.2520, placedAt: hoursAgo(60), cost: 10, removedAt: hoursAgo(40), updatedBy: 'demo@example.com' },

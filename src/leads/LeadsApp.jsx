@@ -27,6 +27,7 @@ import EmailsView from './EmailsView'
 import PastRequestsView from './PastRequestsView'
 import AccountsView from './accounts/AccountsView'
 import SignsView from './SignsView'
+import NotesView from './NotesView'
 import RoutesView from './RoutesView'
 import { RoutesContext } from './routesContext'
 import { StaffContext } from './staffContext'
@@ -39,7 +40,7 @@ import ViewEditor from './ViewEditor'
 import { mergeMany, queryOnce, saveRecord } from './staffStore'
 import { useCustomers } from './useCustomers'
 import { useLeads } from './useLeads'
-import { useGateCodes, usePastRequests, useRoutes, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
+import { useGateCodes, useNotes, usePastRequests, useRoutes, useServiceCalls, useSettings, useSigns, useViews } from './useStaffLists'
 import InvoicesView from './invoices/InvoicesView'
 import { InvoicesContext, useInvoices } from './invoices/useInvoices'
 import MessagesPanel from './MessagesPanel'
@@ -83,6 +84,7 @@ export default function LeadsApp() {
   const settingsApi = useSettings(user)
   const pastApi = usePastRequests(user)
   const signsApi = useSigns(user)
+  const notesApi = useNotes(user)
   const routesApi = useRoutes(user)
   const invoicesApi = useInvoices(user)
   const [editing, setEditing] = useState(null) // null | {} (new) | view
@@ -411,6 +413,7 @@ export default function LeadsApp() {
               leads={leads} customers={customers} season={season} settings={settingsApi.settings ?? {}} onSaveSettings={settingsApi.save}
               onAdd={signsApi.add} onUpdate={signsApi.update} onRemove={signsApi.remove} onUpdateLead={updateLead} />
           : loading)}
+        {tab === 'notes' && <NotesView mine={notesApi.mine} shared={notesApi.shared} email={user?.email} names={feed.names} onAdd={notesApi.add} onSave={notesApi.save} onRemove={notesApi.remove} />}
         {tab === 'past' && (customers
           ? <PastRequestsView requests={pastApi.error === 'not-staff' ? [] : pastApi.requests} error={pastApi.error === 'not-staff' ? null : pastApi.error}
               customers={customers} season={season} onUpdate={pastApi.update} onMakeCustomer={makePastCustomer} onOpenCustomer={openCustomer} />

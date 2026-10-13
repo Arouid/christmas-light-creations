@@ -6,6 +6,7 @@ import { alertRecipients } from '../../functions/leadEmail.js'
 import { adsSummary, monthKey, spentSummary } from '../lib/spend'
 import { ActivityPanel, AdsPanel, Counters, Light, RoutesPanel, SeasonPanel, SignInsPanel, SpendPanel, StatusPanel, WhoPanel, label } from './HomePanels'
 import { ScheduledPanel } from './ScheduledEmails'
+import ChecklistPanel from './ChecklistPanel'
 import { usePresence, useSignIns } from './usePresence'
 import { useOutgoingMail } from './useOutgoingMail'
 import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, SIZES, bands, cycleSize, nudge, placeBefore, readLayout, sizeOf } from '../lib/dashLayout'
@@ -115,6 +116,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
     status: <StatusPanel lights={lights} wall={wall} />,
     spent: <SpendPanel summary={spent} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
     ads: <AdsPanel ads={ads} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
+    checklist: <ChecklistPanel wall={wall} onOpenMessages={onOpenMessages} />,
   }
 
   const board = (
