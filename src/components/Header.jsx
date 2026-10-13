@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { business, nav } from '../data/content'
 import { useFocusOnOpen } from '../lib/focus'
+import { useToday } from '../lib/prerendered'
+import { topBar } from '../lib/urgency'
 import Icon from './Icon'
 
 export default function Header() {
@@ -8,6 +10,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const menu = useRef(null)
   useFocusOnOpen(menu, open)
+  const bar = topBar(useToday())
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -18,6 +21,12 @@ export default function Header() {
 
   return (
     <header className={`fixed inset-x-0 top-0 z-40 transition-colors ${scrolled || open ? 'bg-night-950/90 backdrop-blur border-b border-white/10' : 'bg-transparent'}`}>
+      {/* The offer bar (content.js urgency.topBar): only while at the top of the page. */}
+      {!scrolled && !open && (
+        <a href={bar.href} className="flex min-h-11 items-center justify-center bg-glow-400 px-4 py-2 text-center text-xs font-semibold leading-tight text-night-950 sm:text-sm">
+          {bar.text}
+        </a>
+      )}
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <a href="#top" className="flex min-w-0 items-center gap-2.5" onClick={() => setOpen(false)}>
           {/* The name is part of the picture; the alt text carries it for screen readers. */}

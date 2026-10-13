@@ -365,6 +365,15 @@ export const urgency = {
     season: 'Booking now for the {season} season',
     next: 'Booking for the {season} season',
   },
+  // The slim bar above the header (owner 2026-10-12: "utilize the top of the site banner"): one line by the calendar.
+  topBar: {
+    before: 'Install by Oct 31 and save 10% · Lifetime warranty on every light',
+    countdown: '{n} days left to save 10% on an early install · Pay in 3 at the same price',
+    lastDay: 'Last day: the 10% early-install discount ends tonight',
+    season: 'Installing now · Pay in 3 at the same price · Lifetime warranty',
+    takedown: 'Takedowns Jan 3–13 · Booking the {season} season now',
+    offseason: 'Booking the {season} season · Buy, lease or pay in 3 · Lifetime warranty',
+  },
   line: {
     early: 'October dates fill first. Request yours today.',
     season: 'Dates fill fast this time of year. Request yours today.',

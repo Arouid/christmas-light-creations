@@ -22,6 +22,19 @@ export function seasonBadge(d = new Date()) {
   return fill(U.badge.season, { season })
 }
 
+// The bar above the header: { text, href } for the day. Only at the top of
+// the page (it hides on scroll), so the fixed header stays one row.
+export function topBar(d = new Date()) {
+  const now = md(d)
+  const season = bookingSeason(d)
+  if (now > at(U.bookingClose) || now < 200) return { text: fill(U.topBar.takedown, { season }), href: '#estimate' }
+  if (now < 700) return { text: fill(U.topBar.offseason, { season }), href: '#options' }
+  if (now < at(U.installStart)) return { text: U.topBar.before, href: '#warranty' }
+  if (now < at(U.discountEnd)) return { text: fill(U.topBar.countdown, { n: at(U.discountEnd) - now + 1 }), href: '#estimate' }
+  if (now === at(U.discountEnd)) return { text: U.topBar.lastDay, href: '#estimate' }
+  return { text: U.topBar.season, href: '#options' }
+}
+
 export function bookLine(d = new Date()) {
   const now = md(d)
   if (now > at(U.bookingClose) || now < 700) return U.line.next
