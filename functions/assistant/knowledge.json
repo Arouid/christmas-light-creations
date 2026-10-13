@@ -232,22 +232,22 @@
     {
       "when": "They said yes but the install date isn't set yet.",
       "subject": "You're on our list for {season}",
-      "body": "Hi {first},\n\nGreat, you're on the list! We don't have your exact install date yet: we build the schedule area by area as the season fills in, and we'll email or text you your date as soon as it's set. Nothing to do on your end for now.\n\nIf some dates work best for you (or don't work at all), reply and we'll do our best to match them.\n\nReminder: installs done by October 31st get 10% off.\n\nThank you,\n{me}\n{business}\n{businessPhone}"
+      "body": "Hi {first},\n\nGreat, you're on the list! We don't have your exact install date yet: we build the schedule area by area as the season fills in, and we'll email or text you your date as soon as it's set. Nothing to do on your end for now.\n\nIf some dates work best for you (or don't work at all), reply and we'll do our best to match them.\n\nReminder: installs done by October 31st get 10% off.\n\nThank you,\n{me}{myTitle}\n{business}\n{businessPhone}"
     },
     {
       "when": "Any message you can't answer right away.",
       "subject": "Got your message",
-      "body": "Hi {first},\n\nThanks for your message, we've got it. We're out installing most of the day, so we check messages between jobs and reply within a day, usually sooner.\n\nNeed us faster? Call or text {businessPhone}.\n\nThank you,\n{me}\n{business}\n{businessPhone}"
+      "body": "Hi {first},\n\nThanks for your message, we've got it. We're out installing most of the day, so we check messages between jobs and reply within a day, usually sooner.\n\nNeed us faster? Call or text {businessPhone}.\n\nThank you,\n{me}{myTitle}\n{business}\n{businessPhone}"
     },
     {
       "when": "Right after a website estimate request comes in.",
       "subject": "Your Christmas light estimate request",
-      "body": "Hi {first},\n\nThanks for reaching out to {business}! We got your estimate request for {address}.\n\nWe'll swing by to measure your roofline with a measuring wheel. It takes about 30 minutes, there's no roof climbing, and you don't need to be home unless we need to get through a gate. In a hurry? Reply with a few phone photos of the front of your home and we can send a rough quote.\n\nWe'll be in touch soon to let you know when we're coming by.\n\nThank you,\n{me}\n{business}\n{businessPhone}"
+      "body": "Hi {first},\n\nThanks for reaching out to {business}! We got your estimate request for {address}.\n\nWe'll swing by to measure your roofline with a measuring wheel. It takes about 30 minutes, there's no roof climbing, and you don't need to be home unless we need to get through a gate. In a hurry? Reply with a few phone photos of the front of your home and we can send a rough quote.\n\nWe'll be in touch soon to let you know when we're coming by.\n\nThank you,\n{me}{myTitle}\n{business}\n{businessPhone}"
     },
     {
       "when": "Customer says lights are off; things to try first.",
       "subject": "Quick checks for your lights",
-      "body": "Hi {first},\n\nSorry your lights are giving you trouble! A couple of quick things to check:\n- Outdoor outlets (GFCI): press the \"reset\" button on the outlet, and check for another GFCI in the garage or a bathroom\n- Timer: make sure it's plugged in all the way and switched to \"timer\" or \"on\"\n\nIf that doesn't do it, reply here or text {businessPhone} and we'll come take care of it, free.\n\nThank you,\n{me}\n{business}\n{businessPhone}"
+      "body": "Hi {first},\n\nSorry your lights are giving you trouble! A couple of quick things to check:\n- Outdoor outlets (GFCI): press the \"reset\" button on the outlet, and check for another GFCI in the garage or a bathroom\n- Timer: make sure it's plugged in all the way and switched to \"timer\" or \"on\"\n\nIf that doesn't do it, reply here or text {businessPhone} and we'll come take care of it, free.\n\nThank you,\n{me}{myTitle}\n{business}\n{businessPhone}"
     }
   ]
 }

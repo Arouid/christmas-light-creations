@@ -48,7 +48,7 @@ import { useStaffAlerts } from './useStaffAlerts'
 import HomeView from './HomeView'
 import { byPhone, logActivity, setActivityContext, useActivityFeed } from './activity'
 import { usePresenceBeat } from './usePresence'
-import { staffName } from '../lib/activity'
+import { staffName, staffTitle, staffTitlesMap } from '../lib/activity'
 
 // Top-row tabs. Saved filters live inside Customers (#view-<id>), Past
 // requests inside Leads (#past), and the rarely used tabs under "More"
@@ -128,7 +128,10 @@ export default function LeadsApp() {
 
   useEffect(() => { setIconBadge(alerts.count) }, [alerts.count])
   // {me} in email templates: the signed-in person's name (owner 2026-10-13).
-  useEffect(() => { setSender(user && !demo ? staffName(user.email, feed.names) : (demo ? 'Demo' : '')) }, [user, feed.names, demo])
+  useEffect(() => {
+    const titles = staffTitlesMap(settingsApi.settings?.staffNames)
+    setSender(user && !demo ? staffName(user.email, feed.names) : (demo ? 'Demo' : ''), user && !demo ? staffTitle(user.email, titles) : '')
+  }, [user, feed.names, demo, settingsApi.settings?.staffNames])
   // Recent activity: who's signed in and who's who, for the action loggers.
   useEffect(() => { setActivityContext(user, customersApi.customers, leads, pastApi.requests) }, [user, customersApi.customers, leads, pastApi.requests])
   // "Started a call": any Call (tel:) link tapped anywhere in the app.

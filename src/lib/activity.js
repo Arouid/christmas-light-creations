@@ -47,7 +47,7 @@ export function whoByPhone(dir, phone) {
 
 // Who's who (names from the address, ⚙ Settings → Staff names): shared with
 // the server in functions/staffNames.js, which signs outgoing email.
-export { STAFF_NAMES, staffName, staffNamesMap } from '../../functions/staffNames.js'
+export { STAFF_NAMES, staffName, staffNamesMap, staffTitle, staffTitlesMap } from '../../functions/staffNames.js'
 import { staffName } from '../../functions/staffNames.js'
 
 // ---- Entries ----------------------------------------------------------------------

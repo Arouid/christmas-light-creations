@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
-import { STAFF_NAMES, staffName } from '../lib/activity'
+import { STAFF_NAMES, staffName, staffTitle } from '../lib/activity'
 import { useStaff } from './staffContext'
 import { useLiveCollection } from './staffStore'
 import HomeBase from './HomeBase'
@@ -259,24 +259,32 @@ function StaffNames({ settings, onSave }) {
   const { user } = useStaff()
   const staff = useLiveCollection(user, 'staff', byEmail)
   const saved = Object.fromEntries((settings.staffNames ?? []).map((x) => [String(x.email).toLowerCase(), x.name]))
+  const savedTitles = Object.fromEntries((settings.staffNames ?? []).map((x) => [String(x.email).toLowerCase(), x.title ?? '']))
   const [names, setNames] = useState(saved)
+  const [titles, setTitles] = useState(savedTitles)
   const [msg, setMsg] = useState(null)
   const emails = [...new Set([...(staff.items ?? []).map((x) => x.id.toLowerCase()), ...Object.keys(saved)])].sort()
   async function save() {
-    await onSave({ staffNames: emails.map((email) => ({ email, name: String(names[email] ?? '').trim() })).filter((x) => x.name) })
+    await onSave({ staffNames: emails.map((email) => ({ email, name: String(names[email] ?? '').trim(), title: String(titles[email] ?? '').trim() })).filter((x) => x.name || x.title) })
     setMsg('Saved ✓')
   }
   return (
     <div className={box}>
       <p className="font-semibold">Staff names</p>
-      <p className="text-sm text-slate-400">How each person shows on Home (“Katie emailed…”, “Scott is on it”). First name and last initial. Empty = the name shown in grey (Scott M., Lacie M. and Katie P. are known by their email).</p>
+      <p className="text-sm text-slate-400">Name: how each person shows on Home (“Katie emailed…”, “Scott is on it”) and signs emails (“Katie at Christmas Light Creations”); first name and last initial. Title: under the name in the email sign-off. Empty = the grey default (Scott M. Owner, Lacie M. Co-owner, Katie P. Customer care).</p>
       {staff.error && <p className="text-sm text-berry-500">Couldn’t load the staff list.</p>}
       {!staff.error && !emails.length && <p className="text-sm text-slate-400">Loading the staff list…</p>}
       {emails.map((email) => (
-        <label key={email} className="block break-all text-sm text-slate-400">{email}
-          <input list="staff-first-names" value={names[email] ?? ''} placeholder={staffName(email)} autoComplete="off"
-            onChange={(e) => { setNames({ ...names, [email]: e.target.value }); setMsg(null) }} className={field} />
-        </label>
+        <div key={email} className="grid gap-2 sm:grid-cols-2">
+          <label className="block break-all text-sm text-slate-400">{email}
+            <input list="staff-first-names" value={names[email] ?? ''} placeholder={staffName(email)} autoComplete="off" aria-label={`Name for ${email}`}
+              onChange={(e) => { setNames({ ...names, [email]: e.target.value }); setMsg(null) }} className={field} />
+          </label>
+          <label className="block text-sm text-slate-400">Title
+            <input value={titles[email] ?? ''} placeholder={staffTitle(email) || 'e.g. Customer care'} autoComplete="off" aria-label={`Title for ${email}`}
+              onChange={(e) => { setTitles({ ...titles, [email]: e.target.value }); setMsg(null) }} className={field} />
+          </label>
+        </div>
       ))}
       <datalist id="staff-first-names">{STAFF_NAMES.map((n) => <option key={n} value={n} />)}</datalist>
       {emails.length > 0 && (

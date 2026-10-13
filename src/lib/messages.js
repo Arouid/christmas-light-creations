@@ -55,11 +55,17 @@ export const PLACEHOLDERS = [
   ['gateAskEmail', 'Same, as an email bullet line', (c, y, x) => x?.gateAskEmail, true],
   // Who is sending (owner 2026-10-13): the signed-in person's first name, from Staff names; blank when unknown.
   ['me', 'Your first name (the sign-off)', (c, y, x) => x?.me ?? sender, true],
+  // ", Customer care" after the name (owner 2026-10-13); blank without a name or a title.
+  ['myTitle', 'Your title, after your name (the sign-off)', (c, y, x) => { const me = x?.me ?? sender; const t = x?.myTitle ?? senderTitle; return me && t ? `, ${t}` : '' }, true],
 ].map(([key, label, get, optional = false]) => ({ key, label, get, optional })) // optional: blank is fine, never "missing"
 
 // The signed-in person's first name for {me}; the app sets it once it knows who is here.
 let sender = ''
-export const setSender = (name) => { sender = String(name ?? '').trim().split(/\s+/)[0] || '' }
+let senderTitle = ''
+export const setSender = (name, title = '') => {
+  sender = String(name ?? '').trim().split(/\s+/)[0] || ''
+  senderTitle = String(title ?? '').trim()
+}
 
 // extra: values a route stop fills in ({ when, visitDay, job, eta }), or { me }.
 // A line that holds only an optional placeholder with nothing to say is
