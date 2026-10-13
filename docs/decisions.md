@@ -249,3 +249,4 @@
 - 2026-10-12 Nest treatment charge is a fixed $25 per nest treated (owner), in the contract and the seasonal terms; the customer may use their own pest control instead.
 - 2026-10-12 Known nests on the estimate (owner): a ＋ Nest treatment ($25) button in the estimate editor adds an untaxed service line approved by the signature (clause 5 says so); nests found later are billed as before.
 - 2026-10-12 Nest charge pre-approval (owner): signing the contract (or paying an invoice) pre-approves $25 per nest treated; no per-nest OK needed.
+- 2026-10-12 Courtesies (owner: burned by favors like hanging a customer's wreath or a free strand that became an expectation): the contract covers only what is listed; favors are courtesies we may decline, outside the warranty and service calls, not our responsibility, and not part of next season unless added as a priced line. Clause 1 and the seasonal terms.
