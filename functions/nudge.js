@@ -3,7 +3,8 @@
 // server's "still waiting" nudge (owner 2026-10-12: "staff reminders for
 // missed or forgotten emails/messages"). Every hour from 8 am to 8 pm
 // Central, staffNudge (functions/index.js) lists customer texts, voicemails,
-// missed calls, emails, website requests and problem reports that have waited
+// missed calls, emails, website requests, problem reports and account chat
+// messages that have waited
 // more than WAIT_MS with nobody tapping I've got it / Take it over, and sends
 // one phone notification plus one email to the alert list, again when the
 // list changes or after NUDGE_GAP_MS. Pure: no Firebase.
@@ -45,7 +46,27 @@ export function reportItems(calls) {
   }))
 }
 
-// Synced messages, requests and reports -> what the list shows: incoming, last 7 days, newest first.
+// Account chats (docs/specs/account-chat.md) -> one list entry per customer
+// thread with a customer message: the first unanswered message (so one
+// I've got it holds while they add to it), or the last one once answered.
+// Threads staff started that the customer hasn't answered aren't alerts.
+export function chatItems(conversations) {
+  const out = []
+  for (const c of conversations ?? []) {
+    const last = [...(c.messages ?? [])].reverse().find((m) => m.from === 'customer')
+    const lastMs = last ? Date.parse(last.at) || toMs(c.lastAt) : 0
+    if (!lastMs) continue
+    const waiting = Boolean(c.waitingSince)
+    const since = waiting ? toMs(c.waitingSince) || lastMs : lastMs
+    out.push({
+      id: `chat-${c.id}-${since}`, kind: 'chat', direction: 'in', customerId: c.id, name: c.customerName ?? '', status: waiting ? 'waiting' : 'answered',
+      at: new Date(since).toISOString(), syncedAt: lastMs, text: String(last.text ?? ''),
+    })
+  }
+  return out
+}
+
+// Synced messages, requests, reports and chats -> what the list shows: incoming, last 7 days, newest first.
 export function recentIncoming(items, now = Date.now()) {
   const since = listSince(now)
   const when = (m) => Date.parse(m.at) || toMs(m.syncedAt)
@@ -54,12 +75,13 @@ export function recentIncoming(items, now = Date.now()) {
 
 // Still needs someone (owner 2026-10-10: just opening the list mustn't clear
 // it): nobody has tapped I've got it / Take it over, and an estimate request
-// is still New, a problem report still Open. Dismissed ones are already out of
-// the list. `handling` is anything with .has(id): the Map from
-// src/lib/activity.js handlers(), or the Set from claimed() below.
+// is still New, a problem report still Open, an account chat still unanswered.
+// Dismissed ones are already out of the list. `handling` is anything with
+// .has(id): the Map from src/lib/activity.js handlers(), or the Set from claimed() below.
 export const needsSomeone = (m, handling) => !handling?.has?.(m.id)
   && !(m.kind === 'request' && m.status && m.status !== 'new')
   && !(m.kind === 'report' && m.status !== 'Open')
+  && !(m.kind === 'chat' && m.status !== 'waiting')
 export const countOpen = (list, handling) => list.filter((m) => needsSomeone(m, handling)).length
 
 // Activity entries -> the ids someone tapped I've got it / Take it over on.
@@ -67,9 +89,9 @@ export const CLAIMS = ['handling', 'takeover']
 export const claimed = (activity) => new Set((activity ?? []).filter((e) => CLAIMS.includes(e.action) && e.target?.id).map((e) => e.target.id))
 
 // Everything that has waited longer than waitMs with nobody on it, newest first.
-export function waiting({ messages, leads, calls, activity, now = Date.now(), waitMs = WAIT_MS }) {
+export function waiting({ messages, leads, calls, conversations, activity, now = Date.now(), waitMs = WAIT_MS }) {
   const handling = claimed(activity)
-  const list = recentIncoming([...(messages ?? []), ...requestItems(leads), ...reportItems(calls)], now)
+  const list = recentIncoming([...(messages ?? []), ...requestItems(leads), ...reportItems(calls), ...chatItems(conversations)], now)
   return list.filter((m) => needsSomeone(m, handling) && now - (Date.parse(m.at) || toMs(m.syncedAt)) >= waitMs)
 }
 

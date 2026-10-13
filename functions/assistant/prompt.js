@@ -151,7 +151,8 @@ export const OUTPUT_SCHEMA = {
   additionalProperties: false,
 }
 
-const KIND_WORD = { text: 'text', voicemail: 'voicemail', missed: 'missed call', call: 'call', email: 'email', request: 'website estimate request', payment: 'payment', invoice: 'invoice' }
+// chat = the account page's Chat with us (docs/specs/account-chat.md).
+const KIND_WORD = { text: 'text', voicemail: 'voicemail', missed: 'missed call', call: 'call', email: 'email', request: 'website estimate request', payment: 'payment', invoice: 'invoice', chat: 'account chat message' }
 const oldestFirst = (a, b) => String(a.at ?? '').localeCompare(String(b.at ?? ''))
 const clip = (s, n) => {
   const t = String(s ?? '').replace(/[ \t]+\n/g, '\n').trim() // trailing spaces off, blank lines kept
@@ -227,7 +228,8 @@ export function channelFor(messages, record) {
   const incoming = [...(messages ?? [])].filter((m) => m?.direction !== 'out').sort(oldestFirst)
   const last = incoming.at(-1)
   if (last?.kind === 'email') return 'email'
-  if (last && ['text', 'voicemail', 'missed', 'call'].includes(last.kind)) return 'text'
+  // A chat message gets a short, text-style draft (staff paste it into the Chat box).
+  if (last && ['text', 'voicemail', 'missed', 'call', 'chat'].includes(last.kind)) return 'text'
   if (last?.kind === 'request' || !last) return record?.email ? 'email' : 'text'
   return record?.email ? 'email' : 'text'
 }

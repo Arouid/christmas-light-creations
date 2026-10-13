@@ -11,6 +11,7 @@ import { TextButton } from './Reach'
 import { LogCallForm, ServiceCallCard } from './ServiceView'
 import StreetViewPhoto from './StreetViewPhoto'
 import TextHistory from './TextHistory'
+import ChatPanel from './ChatPanel'
 import DesignsPanel from './designs/DesignsPanel'
 import ProposalsPanel from './proposals/ProposalsPanel'
 import CustomerInvoices from './invoices/CustomerInvoices'
@@ -191,6 +192,9 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
           </Section>
         )}
 
+        <Section title="💬 Chat (their account page)" open={false}>
+          <ChatPanel user={user} customer={customer} />
+        </Section>
         <Section title="Text & email history" open={false}>
           <TextHistory user={user} customerId={customer.id} />
         </Section>

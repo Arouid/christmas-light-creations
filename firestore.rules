@@ -321,6 +321,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Account chat (docs/specs/account-chat.md): one thread per customer,
+    // written only by the server (sendAccountMessage, replyToCustomer).
+    // Staff read; customers get theirs through myAccount, never from here.
+    match /conversations/{customerId} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+
     // Scheduled emails ("Send later", docs/specs/scheduled-email.md), written
     // only by the server: scheduleStaffEmail (schedule, edit, cancel, with the
     // same checks as Send) and the sender, which alone marks one sent. Staff read.

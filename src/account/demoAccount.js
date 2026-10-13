@@ -8,6 +8,12 @@ export const DEMO_ACCOUNT = {
   // Your schedule + Report a problem (docs/specs/account-service.md).
   schedule: { season: '2026', installStatus: 'Install Scheduled', day: 'Thursday', plannedDate: 'Nov 13', weekOf: 'Nov 9-15', timeframe: '', takedownStatus: '' },
   service: { days: 2, open: null },
+  // Chat with us (docs/specs/account-chat.md): a thread answered yesterday.
+  chat: { waiting: false, dropped: 0, messages: [
+    { from: 'customer', text: 'Hi! Could you come Friday instead of Thursday? We have family staying over.', at: '2026-10-11T21:12:00Z' },
+    { from: 'staff', text: 'Hi Pat, Friday works. Same evening slot, 5 to 8 pm. We’ll text when we’re on our way.', at: '2026-10-11T22:05:00Z' },
+    { from: 'customer', text: 'Perfect, thank you!', at: '2026-10-11T22:09:00Z' },
+  ] },
   details: { gateCode: '#1234', hoa: 'Example Lakes HOA', lightsDownBy: 'Jan 15', hazards: 'Sprinkler heads along the front bed; landscape lights by the walkway', pets: 'One dog, friendly', emailNotices: true },
   price: { originalRate: '$900.00', since: '2021', addOns: [{ season: '2023', what: 'Arch over the driveway', price: 300 }, { season: '2024', what: 'Front tree wrap', price: 240 }],
     history: [

@@ -298,7 +298,7 @@ export const recaptchaNote = {
 // Privacy policy (/privacy/). Plain words; keep it true to what the site does.
 // Owner to review (and the attorney along with the contract terms).
 export const privacy = {
-  updated: 'October 11, 2026',
+  updated: 'October 13, 2026',
   intro: 'We’re a family business. We only collect what we need to quote, install, service and bill your lights, and we never sell it. Here’s exactly what that means.',
   sections: [
     {
@@ -311,6 +311,7 @@ export const privacy = {
         '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
         '**When we text, call or email each other:** we keep that conversation history (including the emails we send you, those we’ve scheduled to send you later, and which of us called, texted or emailed you, so we don’t double up, and whether an email we sent you came back undelivered, so we can fix the address) with your customer record so anyone on our team can help you. If we don’t know you yet, your text or email waits in a list our team goes through (obvious junk mail isn’t kept). When you write to us or ask for an estimate, our team’s phones may show a short notification (your name and the first words) so you hear back sooner; if an email to you comes back undelivered, they show your name and why.',
         '**When you sign in to your account:** your email address, when you signed in, and, if you open the account as the installed app, the kind of device (for example “iPhone”). With “Sign in with Google”, Google tells us your name and email; we never see your Google password. If you report a problem with your lights from your account, what you picked and the note you typed go on your customer record as a service call, and our team’s phones get the same short notification as for a text.',
+        '**When you message us from your account (Chat with us):** what you write, and our replies, are kept as one conversation on your customer record (the last 200 messages), so anyone on our team can pick it up. Our team’s phones get the same short notification as for a text, and when we answer you get an email with the reply. We never share that conversation with anyone else.',
       ],
     },
     {
@@ -330,7 +331,7 @@ export const privacy = {
         '**Google** (Firebase, Google Workspace, Google Voice, Google Maps): stores our customer records, sends and receives our email and texts, and shows addresses on a map for our crew.',
         '**PayPal** (including Venmo and card payments): processes online payments under PayPal’s own privacy policy.',
         '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
-        '**Anthropic (Claude):** when one of our team asks for help writing a reply to you, your conversation with us and the details on your record (name, address, what we installed, prices and schedule, never gate codes or payment details) are sent to Anthropic’s Claude service to suggest a draft. A person on our team reads, edits and sends every reply; nothing is sent to you automatically. Anthropic does not use this to train its models. Our team can also ask Claude questions about our own records (for example which invoices are due or what a customer asked us before); the same kinds of details are sent for that, with the same limits, and Claude can only read, never change or send anything.',
+        '**Anthropic (Claude):** when one of our team asks for help writing a reply to you, your conversation with us (texts, emails and messages from your account) and the details on your record (name, address, what we installed, prices and schedule, never gate codes or payment details) are sent to Anthropic’s Claude service to suggest a draft. A person on our team reads, edits and sends every reply; nothing is sent to you automatically. Anthropic does not use this to train its models. Our team can also ask Claude questions about our own records (for example which invoices are due or what a customer asked us before); the same kinds of details are sent for that, with the same limits, and Claude can only read, never change or send anything.',
         '**Google Ads:** we advertise on Google, so our public pages (not your account or agreement pages) load Google’s ad tag. It tells Google when a visit from one of our ads led to an estimate request, so we know the ads work. Google sets its own cookies for this and its privacy policy applies; it doesn’t see what you type into the form.',
         'Our fonts come from our own website (no font service sees your visit), and the home page asks our own server (on Google Cloud) for the line about how booked we are and the next open install dates (only dates, nothing about anyone). That’s all: no other outside services see your visit.',
       ],

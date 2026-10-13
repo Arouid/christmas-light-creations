@@ -11,6 +11,7 @@ import { InstallButtons } from '../components/InstallApp'
 import { isIos, standalone, useInstall } from '../components/useInstall'
 import AccountDrawer from './AccountDrawer.jsx'
 import { NOTE_MAX, REPORT_ISSUES, scheduleText, shortDate } from '../../functions/service.js'
+import { TEXT_MAX as CHAT_MAX } from '../../functions/chat.js'
 import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
 import { searchHelp } from '../data/help.js'
 
@@ -50,6 +51,7 @@ export default function AccountPage() {
   // What the drawer links to, by what's on the page (anchors below).
   const menuItems = data ? [
     (data.schedule || data.service) && { href: '#lights', label: 'Your lights', icon: '🎄' },
+    data.chat && { href: '#chat', label: 'Chat with us', icon: '💬' },
     ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0) && { href: '#agreements', label: 'Agreements & payments', icon: '🧾' },
     (data.invoices ?? []).some((i) => i.state === 'paid') && { href: '#paid', label: 'Paid invoices', icon: '✓' },
     data.price && { href: '#price', label: 'Your yearly price', icon: '💲' },
@@ -232,6 +234,7 @@ function Account({ data, reload, logOut }) {
       </section>
       {data.details && <DetailsNudge details={data.details} />}
       <Lights schedule={data.schedule} service={data.service} />
+      {data.chat && <Chat chat={data.chat} reload={reload} />}
       {data.details && <Details details={data.details} onSaved={reload} />}
       {data.details && <EmailPrefs details={data.details} onSaved={reload} />}
       {data.price && <YearlyPrice price={data.price} />}
@@ -277,6 +280,98 @@ function Lights({ schedule, service }) {
       {service && <ReportProblem service={service} />}
       {/* Told plainly, not only in the agreement (owner 2026-10-12). */}
       <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300"><strong className="text-glow-300">{TREE_TITLE}: </strong>{TREE_NOTICE}</p>
+    </section>
+  )
+}
+
+// Chat with us (docs/specs/account-chat.md, owner 2026-10-12): the thread with
+// us, kept in our own database. Send goes through the server
+// (sendAccountMessage), which tells staff; our replies land here and in an
+// email. The page can't listen live, so it re-reads the account when the tab
+// comes back and on ↻.
+const chatWhen = (iso) => {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const sameYear = d.getFullYear() === new Date().getFullYear()
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }), hour: 'numeric', minute: '2-digit' })
+}
+const CHAT_SHOW = 12
+function Chat({ chat, reload }) {
+  const [text, setText] = useState('')
+  const [state, setState] = useState(null) // null | 'sending' | 'sent' | 'checking' | { error }
+  const [all, setAll] = useState(false)
+  const [sent, setSent] = useState(null) // { of: chat, thread }: what the server answered, until the next load
+  const thread = sent?.of === chat ? sent.thread : chat
+  const messages = thread.messages ?? []
+  const shown = all ? messages : messages.slice(-CHAT_SHOW)
+
+  useEffect(() => {
+    if (demo || !reload) return
+    const onShow = () => { if (document.visibilityState === 'visible') reload() }
+    document.addEventListener('visibilitychange', onShow)
+    return () => document.removeEventListener('visibilitychange', onShow)
+  }, [reload])
+
+  async function send(e) {
+    e.preventDefault()
+    const body = text.trim()
+    if (!body) { setState({ error: 'Write a message first.' }); return }
+    setState('sending')
+    try {
+      const next = demo
+        ? { messages: [...messages, { from: 'customer', text: body, at: new Date().toISOString() }], waiting: true, dropped: thread.dropped ?? 0 }
+        : (await (await lib).sendAccountMessage(body)).chat
+      setSent({ of: chat, thread: next })
+      setText('')
+      setState('sent')
+    } catch (err) {
+      setState({ error: err?.message || 'That didn’t send. Please try again, or call us.' })
+    }
+  }
+
+  async function check() {
+    setState('checking')
+    try { await reload?.() } finally { setState(null) }
+  }
+
+  return (
+    <section id="chat" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-display text-xl font-extrabold">Chat with us</h2>
+        {!demo && <button type="button" onClick={check} disabled={state === 'checking'} className="min-h-11 rounded-full px-3 text-sm font-semibold text-slate-300 hover:bg-white/5 disabled:opacity-60">↻ {state === 'checking' ? 'Checking…' : 'Check for replies'}</button>}
+      </div>
+      <p className="text-sm text-slate-300">Ask about your date, your lights, a bill, anything. We answer here and by email, usually within a few hours. Urgent? Call <a href={business.phoneHref} className="underline">{business.phone}</a>.</p>
+      {messages.length > 0 && (
+        <div className="space-y-2">
+          {!all && messages.length > CHAT_SHOW && (
+            <button type="button" onClick={() => setAll(true)} className="w-full rounded-xl bg-white/5 py-2 text-sm">Show all {messages.length}{thread.dropped ? ` (${thread.dropped} older ones were dropped)` : ''}</button>
+          )}
+          <ul className="space-y-2" aria-label="Messages">
+            {shown.map((m, i) => (
+              <li key={`${m.at}-${i}`} className={`flex ${m.from === 'customer' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] min-w-0 rounded-2xl px-3 py-2 text-sm ${m.from === 'customer' ? 'bg-glow-400/15 text-slate-50' : 'bg-white/10'}`}>
+                  <p className="whitespace-pre-wrap break-words">{m.text}</p>
+                  <p className="mt-1 text-[11px] text-slate-400">{m.from === 'customer' ? 'You' : business.name} · {chatWhen(m.at)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {thread.waiting && <p className="text-sm text-glow-300">We’ve got your message and will answer soon.</p>}
+      <form onSubmit={send} className="space-y-2">
+        <label className="block">
+          <span className="sr-only">Your message</span>
+          <textarea value={text} onChange={(e) => { setText(e.target.value.slice(0, CHAT_MAX)); if (state !== 'sending') setState(null) }} rows={3} maxLength={CHAT_MAX} placeholder="Type your message…"
+            className="w-full rounded-xl border border-white/20 bg-night-950 px-4 py-3 text-base" />
+        </label>
+        {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="submit" disabled={state === 'sending'} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>{state === 'sending' ? 'Sending…' : 'Send'}</button>
+          {state === 'sent' && <span className="text-sm text-emerald-300">Sent ✓ We’ll answer here and by email.</span>}
+          {text.length > CHAT_MAX - 100 && <span className="text-xs text-slate-400">{CHAT_MAX - text.length} characters left</span>}
+        </div>
+      </form>
     </section>
   )
 }

@@ -52,6 +52,7 @@ const staffDocs = {
   customerLogins: { email: 'cust@example.com' },
   scheduledEmails: { status: 'scheduled', open: true, sendAt: new Date(), to: 'cust@example.com', subject: 'Hi', text: 'Hello', target: { field: 'customerId', id: 'pat-test' }, customerId: 'pat-test', name: 'Pat Test', by: STAFF },
   accountLinks: { count: 1 },
+  conversations: { customerId: 'pat-test', customerName: 'Pat Test', messages: [{ from: 'customer', by: 'cust@example.com', text: 'Hi', at: '2026-10-13T15:00:00.000Z' }], lastAt: new Date(), lastFrom: 'customer', waitingSince: new Date(), count: 1 },
   staff: { name: 'Boss' },
 }
 
@@ -478,5 +479,17 @@ describe('scheduledEmails: "Send later" (docs/specs/scheduled-email.md)', () => 
     await assertFails(updateDoc(doc(db, 'scheduledEmails', 'x1'), { status: 'cancelled', open: false, ...stamp() }))
     await assertFails(updateDoc(doc(db, 'scheduledEmails', 'x1'), { to: 'stranger@example.com', ...stamp() }))
     await assertFails(deleteDoc(doc(db, 'scheduledEmails', 'x1')))
+  })
+})
+
+describe('conversations: the account chat (docs/specs/account-chat.md)', () => {
+  test('staff read a thread; nobody, staff included, writes one (only the server appends); outsiders get nothing', async () => {
+    const db = as.staff()
+    await assertSucceeds(getDocs(collection(db, 'conversations')))
+    await assertSucceeds(getDoc(doc(db, 'conversations', 'x1')))
+    await assertFails(setDoc(doc(db, 'conversations', 'new1'), { ...staffDocs.conversations, ...stamp() }))
+    await assertFails(updateDoc(doc(db, 'conversations', 'x1'), { waitingSince: null, ...stamp() }))
+    await assertFails(deleteDoc(doc(db, 'conversations', 'x1')))
+    await assertFails(getDoc(doc(as.customer(), 'conversations', 'x1')))
   })
 })

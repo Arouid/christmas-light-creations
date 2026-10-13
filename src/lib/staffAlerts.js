@@ -6,7 +6,7 @@ export * from '../../functions/staffPush.js'
 
 // The list's rules (last 7 days, requests, reports, who still needs someone)
 // live in functions/nudge.js, shared with the server's "still waiting" nudge.
-export { LIST_DAYS, WAIT_MS, countOpen, listSince, needsSomeone, recentIncoming, reportItems, requestItems, toMs } from '../../functions/nudge.js'
+export { LIST_DAYS, WAIT_MS, chatItems, countOpen, listSince, needsSomeone, recentIncoming, reportItems, requestItems, toMs } from '../../functions/nudge.js'
 import { toMs } from '../../functions/nudge.js'
 
 // New = arrived after you last opened the list (never opened: all of them).

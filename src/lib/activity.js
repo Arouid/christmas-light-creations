@@ -79,9 +79,9 @@ export function staffName(email, names = {}) {
 // ---- Entries ----------------------------------------------------------------------
 
 // Website entries: the customer did it ("Pat Sample signed their proposal").
-const WEBSITE = { 'details-updated': 'updated their property details from their account', 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights' }
+const WEBSITE = { 'details-updated': 'updated their property details from their account', 'proposal-signed': 'signed their proposal', 'proposal-paid': 'paid online', 'invoice-paid-online': 'paid an invoice online', 'service-reported': 'reported a problem with their lights', 'chat-message': 'sent a message from their account' }
 const VERB = {
-  email: 'emailed', 'invoice-sent': 'sent an invoice to', 'invoice-again': 'emailed the invoice again to',
+  email: 'emailed', 'chat-reply': 'replied in the account chat to', 'invoice-sent': 'sent an invoice to', 'invoice-again': 'emailed the invoice again to',
   'invoice-paid': 'marked paid the invoice for', 'invoice-void': 'voided the invoice for',
   'proposal-sent': 'sent a proposal to', 'proposal-void': 'voided the proposal for', 'proposal-countersigned': 'countersigned the proposal for',
   'lead-status': 'updated', 'make-customer': 'made a customer of', 'service-logged': 'logged a service call for',
@@ -99,6 +99,8 @@ export function targetLink(target, messages = []) {
   if (t.type === 'message') {
     if (String(t.id).startsWith('request-')) return `#accounts/lead/${encodeURIComponent(t.id.slice(8))}`
     if (String(t.id).startsWith('report-')) return '#service' // a problem reported from a customer's account
+    const chat = String(t.id).match(/^chat-(.+)-\d+$/) // an account chat entry (docs/specs/account-chat.md)
+    if (chat) return `#accounts/customer/${encodeURIComponent(chat[1])}`
     const m = messages.find((x) => x.id === t.id)
     return m ? messageLink(m) : '#messages'
   }

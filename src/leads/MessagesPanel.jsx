@@ -6,10 +6,11 @@ import SuggestReply from '../assistant/SuggestReply'
 import { draftTarget } from '../assistant/lib/targets'
 
 // 💬 New messages (docs/specs/staff-alerts.md): texts, voicemails, missed
-// calls, emails, website estimate requests and problems customers reported
-// from their account, from the last 7 days, newest first; the ones that
-// arrived since you last looked are marked. Tap one → their account.
-const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝', report: '🛠' }
+// calls, emails, website estimate requests, problems customers reported
+// from their account and messages typed in their account's chat
+// (docs/specs/account-chat.md), from the last 7 days, newest first; the ones
+// that arrived since you last looked are marked. Tap one → their account.
+const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝', report: '🛠', chat: '🗨️' }
 
 function when(iso) {
   const d = new Date(iso)
@@ -81,7 +82,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
           </ul>
         )}
         <p className="text-xs text-slate-500">
-          What customers and new people sent in the last {LIST_DAYS} days: texts, voicemails and emails arrive within about 5 minutes, website estimate requests at once. Our own replies aren’t listed. Tap one to open their account and full history; unknown numbers and emails open the Unmatched list on Leads.
+          What customers and new people sent in the last {LIST_DAYS} days: texts, voicemails and emails arrive within about 5 minutes, website estimate requests, problem reports and account messages at once. Our own replies aren’t listed. Tap one to open their account and full history (account messages: the 💬 Chat box at the top); unknown numbers and emails open the Unmatched list on Leads.
         </p>
       </div>
     </div>

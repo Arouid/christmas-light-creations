@@ -42,8 +42,10 @@ export const HELP = [
     a: `If you added lights (an arch, a tree, more roofline), the new part is charged in full that year and adds about half its price to your yearly re-install from then on. Your yearly price section shows the breakdown.` },
   { id: 'app', q: 'How do I put the app on my phone?', tags: 'install home screen android iphone notifications',
     a: `Under Get the app: on Android tap Install; on an iPhone open this page in Safari, tap Share, then Add to Home Screen. Phone notifications of any kind only work from the installed app, so add it first if you want them.` },
+  { id: 'chat', q: 'Can I message you from here?', tags: 'chat message write reply answer conversation',
+    a: `Yes: Chat with us, near the top of your account, is a message box straight to our team. Write anything (your date, your lights, a bill) and tap Send; we answer in the same place and by email, usually within a few hours. Urgent? Call ${PHONE}.` },
   { id: 'contact', q: 'How do I reach a person?', tags: 'call text phone email hours support',
-    a: `Call or text ${PHONE}, or reply to any email from us. We answer in the order messages come in, usually the same day. There is no separate tech support line: this page and Report a problem cover the common questions.` },
+    a: `Call or text ${PHONE}, write to us in Chat with us on your account, or reply to any email from us. We answer in the order messages come in, usually the same day. There is no separate tech support line: this page, Chat with us and Report a problem cover the common questions.` },
 ]
 
 const words = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 1)

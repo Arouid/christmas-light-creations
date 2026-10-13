@@ -62,3 +62,6 @@ export const loadAccount = () => callDeposit('myAccount', { app: standalone() ? 
 export const reportProblem = (problem, note) => callDeposit('reportProblem', { problem, note })
 // "Your property details": gate code, HOA, lights-down-by, things to avoid, pets (functions/propertyDetails.js).
 export const updateMyDetails = (details) => callDeposit('updateMyDetails', details)
+// Chat with us (docs/specs/account-chat.md): the server saves it on their
+// thread and tells staff; answers { chat } as myAccount returns it.
+export const sendAccountMessage = (text) => callDeposit('sendAccountMessage', { text })

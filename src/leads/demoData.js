@@ -83,6 +83,16 @@ export const demoData = {
       details: 'The whole left side of the roofline has been dark since last night', received: localDay(), status: 'Open',
       source: 'customer', reportedBy: 'test.homeowner@example.com', reportedAt: new Date(minAgo(45)).toISOString() },
   ]),
+  // The account chat (docs/specs/account-chat.md): one thread waiting for a reply, in 💬 too.
+  conversations: byId([
+    { id: 'test-homeowner', customerId: 'test-homeowner', customerName: 'Test Homeowner', lastFrom: 'customer', count: 3,
+      lastAt: new Date(minAgo(25)).toISOString(), waitingSince: new Date(minAgo(25)).toISOString(), updatedBy: 'website',
+      messages: [
+        { from: 'customer', by: 'test.homeowner@example.com', text: 'Hi! Are you still coming Thursday? The HOA wants the ladder off the lawn by 6.', at: new Date(minAgo(26 * 60)).toISOString() },
+        { from: 'staff', by: 'katiep@example.com', text: 'Yes, Thursday afternoon, and we’ll be off the lawn well before 6.', at: new Date(minAgo(25 * 60)).toISOString() },
+        { from: 'customer', by: 'test.homeowner@example.com', text: 'Great. One more thing: the section by the garage went dark last night. Can the crew look at it while they’re here?', at: new Date(minAgo(25)).toISOString() },
+      ] },
+  ]),
   settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 } } },
   // Home → Spent this month (docs/specs/spend.md): this month's Claude calls, PayPal fees, Google Cloud export and Google Ads transfer.
   usage: { [monthKey()]: {
@@ -155,6 +165,7 @@ export const demoData = {
     { id: 'demo-act-11', at: minAgo(20), by: 'katiep@example.com', action: 'takeover', target: { type: 'message', id: 'gv-demo-unmatched-2', name: '(555) 010-0177' }, text: 'was Lacie M.’s · Voicemail' },
     { id: 'demo-act-7', at: minAgo(26 * 60), by: 'demo@example.com', action: 'service-done', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: 'Lights out on the left side' },
     { id: 'demo-act-13', at: minAgo(45), by: 'website', action: 'service-reported', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: 'Section out' },
+    { id: 'demo-act-14', at: minAgo(25), by: 'website', action: 'chat-message', target: { type: 'customer', id: 'test-homeowner', name: 'Test Homeowner' }, text: 'Great. One more thing: the section by the garage went dark last night. Can the crew look at it while they’re here?' },
     { id: 'demo-act-12', at: minAgo(50), by: 'katiep@example.com', action: 'email-scheduled', target: { type: 'customer', id: 'sample-customer', name: 'Sample Customer' }, text: `Your 2026 Christmas lights · ${whenText(picks[0].at)}` },
   ]),
   // Home → Scheduled emails and the top of history (docs/specs/scheduled-email.md).

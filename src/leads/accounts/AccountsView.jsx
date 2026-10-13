@@ -24,6 +24,7 @@ import { WhatsUpSummary } from '../WhatsUp'
 import { installedLines, photoList } from '../../lib/jobRecord'
 import { noAutofill } from '../ui'
 import TextHistory from '../TextHistory'
+import ChatPanel from '../ChatPanel'
 import { Grid } from '../CustomerDetail'
 import { SEASON } from '../seasonFields'
 
@@ -211,6 +212,8 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
         <AddToRoute customers={[c]} className={action} />
         {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}
       </Header>
+      {/* The account chat (docs/specs/account-chat.md): where a 💬 "Account message" lands. */}
+      <Section title="💬 Chat (their account page)"><ChatPanel user={user} customer={c} /></Section>
       <ThisSeason c={c} season={season} onUpdate={onUpdateCustomer} />
       <Section title={`📷 Photos${photoList(c.photos).length ? ` (${photoList(c.photos).length})` : ''}`} open={photoList(c.photos).length > 0}>
         <PhotosPanel customer={c} season={season} />

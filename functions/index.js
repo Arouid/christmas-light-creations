@@ -15,6 +15,10 @@
 // - reportProblem: "Report a problem" on /account/ becomes a service call on
 //   the customer's record, like staff's Log call, and alerts staff
 //   (docs/specs/account-service.md).
+// - sendAccountMessage / replyToCustomer: the account chat. Customers write
+//   from /account/ (staff phones buzz, 💬 lists it), staff answer from the
+//   customer's account (the customer gets a branded email). Only this code
+//   writes conversations/{customerId} (docs/specs/account-chat.md).
 // - createInvoiceOrder / captureInvoiceOrder / invoiceChanged /
 //   invoiceReminders: our own invoices (docs/specs/invoices.md), paid like
 //   proposals; numbers, emails, season billing and reminders done here.
@@ -87,6 +91,7 @@ import { AskError, askFor } from './assistant/ask.js'
 import sharp from 'sharp'
 import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import { SERVICE_DAYS, openMessage, openReport, openSummary, reportCall, reportEmail, reportPush, reportRequest, scheduleFor } from './service.js'
+import { LIMITS as CHAT_LIMITS, appendMessage, chatAlertEmail, chatAllowed, chatPush, chatRequest, customerView, previewText, recipientFor, replyEmail } from './chat.js'
 import {
   centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceState, invoiceSummary, KIND_SHORT, paidInfo,
   payableInvoiceProblem, receiptEmail, reminderDue, seasonFillsOnPaid, seasonFillsOnSend, shownInvoice, staffPaidEmail, toMs, validToken,
@@ -881,7 +886,9 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const service = ids.length ? { days: SERVICE_DAYS, open: await openCallFor(db, ids) } : null
   // Property details the customer may fill in themselves (functions/propertyDetails.js).
   const details = rec ? detailsSummary(rec) : null
-  return { email, proposals, invoices, price, schedule, service, details, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+  // Chat with us (docs/specs/account-chat.md): the thread on their first record, staff emails stripped.
+  const chat = ids.length ? customerView((await db.doc(`conversations/${ids[0]}`).get()).data()) : null
+  return { email, proposals, invoices, price, schedule, service, details, chat, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
 })
 
 // The newest Open / Scheduled service call on any of these customer records,
@@ -936,6 +943,86 @@ export const reportProblem = onCall({ region: REGION, invoker: 'public', secrets
   }
   logger.info('reportProblem', { issue: call.issue, note: Boolean(call.details), emailed: to.length })
   return { ok: true, days: SERVICE_DAYS, open: openSummary(ref.id, call) }
+})
+
+// ---- Account chat (functions/chat.js, docs/specs/account-chat.md) -----------
+// One document per customer, conversations/{customerId}, with the messages in
+// an array (200 kept). Each append runs in a transaction with the rate-limit
+// check (serverState/chat: per person and day). Logs carry no message text.
+
+async function appendChat(db, customerId, msg, who, limits, by) {
+  const ref = db.doc(`conversations/${customerId}`)
+  const gate = db.doc('serverState/chat')
+  return db.runTransaction(async (tx) => {
+    const [conv, state, cust] = await Promise.all([tx.get(ref), tx.get(gate), tx.get(db.doc(`customers/${customerId}`))])
+    if (!cust.exists) throw new HttpsError('not-found', 'That customer record is gone. Refresh and try again.')
+    const allowed = chatAllowed(state.data(), who, limits, Date.now(), centralDay())
+    if (allowed.problem) throw new HttpsError(...allowed.problem)
+    tx.set(gate, allowed.next)
+    const prev = conv.data() ?? null
+    const customer = { id: cust.id, ...cust.data() }
+    const next = appendMessage(prev, msg, customer, new Date())
+    tx.set(ref, { ...next, updatedAt: FieldValue.serverTimestamp(), updatedBy: by })
+    return { prev, next, customer }
+  })
+}
+
+// The customer wrote from their account: save it, show it in 💬, buzz staff
+// phones, and email the alert list when it starts a new unanswered thread.
+export const sendAccountMessage = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  const email = normEmail(req.auth?.token?.email)
+  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const r = chatRequest(req.data)
+  if (r.error) throw new HttpsError(...r.error)
+  const db = getFirestore()
+  const ids = await customersFor(email)
+  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll take care of it.')
+  const { prev, next, customer } = await appendChat(db, ids[0], { from: 'customer', by: email, text: r.text }, email, CHAT_LIMITS.customer, 'website')
+  await logWebsite('chat-message', { type: 'customer', id: customer.id, name: customer.fullName }, previewText(r.text))
+  await alertStaff(chatPush(customer.id, customer.fullName ?? '', r.text))
+  const newThread = !prev?.waitingSince
+  let emailed = 0
+  if (newThread) {
+    const to = await staffEmails()
+    if (to.length) {
+      try {
+        await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, ...chatAlertEmail({ customer, text: r.text, email }) })
+        emailed = to.length
+      } catch (e) {
+        await reportIncident('other', `${customer.fullName || 'A customer'} wrote from their account (it’s in 💬 and on their account), but the alert email failed: ${e.message}`)
+      }
+    }
+  }
+  logger.info('sendAccountMessage', { newThread, emailed, messages: next.messages.length })
+  return { ok: true, chat: customerView(next) }
+})
+
+// Staff reply from the Chat box: save it, log it, email the customer (critical
+// mail, through the branded shell; never optional).
+export const replyToCustomer = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
+  if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Staff only.')
+  const staff = normEmail(req.auth.token.email)
+  const r = chatRequest(req.data)
+  if (r.error) throw new HttpsError(...r.error)
+  const customerId = String(req.data?.customerId ?? '')
+  if (!/^(?!__)[^/]{1,200}$/.test(customerId)) throw new HttpsError('invalid-argument', 'Unknown customer')
+  const db = getFirestore()
+  const { next, customer } = await appendChat(db, customerId, { from: 'staff', by: staff, text: r.text }, staff, CHAT_LIMITS.staff, staff)
+  await logActivity(staff, 'chat-reply', { type: 'customer', id: customer.id, name: customer.fullName }, previewText(r.text))
+  const to = recipientFor(next, customer)
+  if (!to) {
+    logger.info('replyToCustomer', { emailed: false, reason: 'no-email' })
+    return { ok: true, emailed: false, note: 'Saved. No email on file: they’ll see it when they open their account.' }
+  }
+  try {
+    await mailer().sendMail({ from: `"Christmas Light Creations" <${FROM}>`, to, replyTo: FROM, ...replyEmail({ text: r.text }) })
+  } catch (e) {
+    await reportIncident('email', `A chat reply to ${customer.fullName || 'a customer'} (by ${staff}) is saved on their account, but the email telling them didn’t go out: ${e.message}`)
+    return { ok: true, emailed: false, note: 'Saved on their account, but the email didn’t go out (Gmail didn’t take it). Text them to look, or try again in a minute.' }
+  }
+  logger.info('replyToCustomer', { emailed: true, messages: next.messages.length })
+  return { ok: true, emailed: true, note: 'Sent. They get an email with your reply and see it in their account.' }
 })
 
 // ---- Message sync (Voice notifications + customer emails → history) ---------
@@ -1558,21 +1645,22 @@ export const leadDesignCreated = onDocumentCreated({ document: 'leadDesigns/{id}
 })
 
 // ---- "Still waiting" nudge (functions/nudge.js, docs/specs/auto-emails.md) ----
-// Customer texts, voicemails, missed calls, emails, website requests and
-// problem reports nobody has taken for 2+ hours: one phone notification and
+// Customer texts, voicemails, missed calls, emails, website requests, problem
+// reports and account chats nobody has taken for 2+ hours: one phone notification and
 // one email to the alert list, every hour 8 am to 8 pm Central, again when
 // the list changes or after 4 hours. Off in ⚙ Settings → Automatic emails
 // (settings/app.staffNudges false). Logs carry counts only.
 async function loadWaiting(db, now) {
   const since = new Date(listSince(now))
   const all = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-  const [msgs, leads, calls, acts] = await Promise.all([
+  const [msgs, leads, calls, chats, acts] = await Promise.all([
     db.collection('messages').where('syncedAt', '>=', since).get(),
     db.collection('leads').where('createdAt', '>=', since).get(),
     db.collection('serviceCalls').where('source', '==', 'customer').get(),
+    db.collection('conversations').where('lastAt', '>=', since).get(),
     db.collection('activity').where('at', '>=', since).select('action', 'target').get(),
   ])
-  return waiting({ messages: all(msgs), leads: all(leads), calls: all(calls), activity: all(acts), now })
+  return waiting({ messages: all(msgs), leads: all(leads), calls: all(calls), conversations: all(chats), activity: all(acts), now })
 }
 
 // { 'customer:<id>': name, 'lead:<id>': name } for the people in the list.

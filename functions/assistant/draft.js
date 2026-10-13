@@ -32,8 +32,16 @@ export async function threadFor(db, target) {
     }
     return { record, messages, contact: { firstName: record.firstName ?? '', fullName: `${record.firstName ?? ''} ${record.lastName ?? ''}`.trim(), phone: record.phone ?? '', email: record.email ?? '' } }
   }
+  // The account chat (docs/specs/account-chat.md) is part of the conversation too.
+  const chat = (await db.doc(`conversations/${target.id}`).get()).data()
+  messages.push(...chatMessages(chat))
   return { record, messages, contact: { firstName: record.firstName ?? '', fullName: record.fullName ?? '', phone: record.phone ?? '', email: record.email ?? '' } }
 }
+
+// A conversations/{customerId} document -> history-shaped messages. Pure.
+export const chatMessages = (chat) => (chat?.messages ?? []).map((m, i) => ({
+  id: `chat-${i}`, kind: 'chat', direction: m.from === 'staff' ? 'out' : 'in', at: String(m.at ?? ''), text: String(m.text ?? ''),
+}))
 
 // Problems the callable turns into HttpsErrors: { code, message }.
 export class DraftError extends Error {
