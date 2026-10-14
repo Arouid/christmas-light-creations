@@ -31,6 +31,7 @@ test('stock email templates: valid placeholders, known groups, unique ids', () =
   for (const id of ['reinstall', 'schedule', 'review', 'custom']) assert.ok(ids.has(id), `keeps ${id} (emailsSent history)`)
   assert.match(STOCK_TEMPLATES.find((t) => t.id === 'review').body, /\{reviewLink\}/)
   assert.match(textMessages.review({}), /^Hi there,/)
+  assert.match(textMessages.account({ firstName: 'Pat' }), /^Hi Pat, Christmas Light Creations here\. Your account: https:\/\/christmas-light-creations\.com\/account\//)
 })
 
 test('staff edits replace stock templates; added ones come last', () => {

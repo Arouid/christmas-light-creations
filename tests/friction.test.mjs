@@ -50,4 +50,6 @@ test('re-book: request checks, the season patch, already-on-the-list, and what s
   assert.ok(mail.text.includes('123 Example St') && mail.text.includes('Preferred week: Late October') && mail.text.includes('Note: Add the arch') && mail.text.includes('#accounts/customer/pat-sample'))
   const invite = STOCK_TEMPLATES.find((t) => t.id === 'reinstall')
   assert.ok(invite.body.includes('Yes, put my lights back up') && invite.body.includes('{website}/account/'))
+  const link = STOCK_TEMPLATES.find((t) => t.id === 'account-invite')
+  assert.ok(link && link.body.includes('{website}/account/') && /Google/.test(link.body) && /Get the app/.test(link.body), 'the account-link template names the link, Google sign-in and the app')
 })

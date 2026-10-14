@@ -121,6 +121,18 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
     body: `Hi {first},\n\nIt's {business}! We're booking {season} installs now and would love to light up your home again. Fastest: open your account and tap "Yes, put my lights back up" ({website}/account/), or reply to this email (or text {businessPhone}) with "yes" and any timing preferences, and we'll get you on the schedule.\n\nInstalls done by October 31st get 10% off, and early spots book up fast.${sign}`,
   },
   {
+    id: 'account-invite', group: 'Booking', label: 'Your account link',
+    when: 'Any time: a new customer, or anyone who hasn’t signed in yet.',
+    subject: 'Your Christmas Light Creations account',
+    body: `Hi {first},
+
+Your account is ready: {website}/account/
+
+Sign in with Google, or with a one-time link we email you (no password to remember), using the email address this message came to. Inside: your install date, your lights and the lifetime warranty, your proposal and invoices with online payment, a chat box straight to us, and a Report a problem button for the season.
+
+On your phone, open it once and tap Get the app: it saves to your home screen and works like an app.${sign}`,
+  },
+  {
     id: 'schedule', group: 'Booking', label: 'Pick your install date',
     when: 'Customer said yes; ask what dates work.',
     subject: 'Scheduling your {season} install',

@@ -18,6 +18,7 @@ import DesignsPanel from '../designs/DesignsPanel'
 import ProposalsPanel from '../proposals/ProposalsPanel'
 import CustomerInvoices from '../invoices/CustomerInvoices'
 import { TextButton } from '../Reach'
+import { textMessages } from '../../lib/messages'
 import StreetViewPhoto from '../StreetViewPhoto'
 import PhotosPanel from '../photos/PhotosPanel'
 import { WhatsUpSummary } from '../WhatsUp'
@@ -209,6 +210,9 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={c.phone} className={action} />
         <ComposeEmail person={c} season={season} target={{ customerId: c.id }} className={action} />
+        {/* Their account link (owner 2026-10-14): the email template, or the same words as a text. */}
+        <ComposeEmail person={c} season={season} target={{ customerId: c.id }} start="account-invite" label="✉️ Account link" className={action} />
+        <TextButton phone={c.phone} className={action} label="Text account link" message={textMessages.account(c)} />
         {c.address && <a className={action} href={mapLink(c.address)} target="_blank" rel="noreferrer">Map</a>}
         <AddToRoute customers={[c]} className={action} />
         {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}
