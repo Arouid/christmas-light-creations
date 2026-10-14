@@ -21,6 +21,10 @@ export function Whisper({ data, dur }) {
   // story.whisperCaption: a small bracketed caption top-left while the clip plays (the Halloween cut's
   // sound-off joke), from 1 s to the scene's last half second.
   const caption = story.whisperCaption || ''
+  // story.whisperLead: a gold line bottom-left (where the house scene's words sit) fading in at
+  // story.whisperLeadAt seconds, so it is up before the cut (the Halloween cut).
+  const lead = story.whisperLead || ''
+  const leadOn = lead ? fadeIn(frame, Math.round((story.whisperLeadAt ?? 3) * fps), 12) : 0
   const capOn = caption ? fadeIn(frame, fps, 8) * (1 - fadeIn(frame, dur - 14, 8)) : 0
   // Tall and square: the 16:9 close-up as a wide band (a light crop keeps both faces; a full
   // cover crop showed only her eye and lost the whisper), the words under it on black.
@@ -56,6 +60,9 @@ export function Whisper({ data, dur }) {
           </>
         )}
         {wordRow}
+        {lead ? (
+          <div style={{ position: 'absolute', left: tall ? 70 : square ? 72 : 96, right: 72, bottom: band ? 'auto' : square ? 72 : 90, top: band ? bandY + bandH + (tall ? 70 : 44) : 'auto', ...display(type, tall ? 54 : square ? 44 : 56), color: colors.goldSoft, opacity: leadOn, textShadow: '0 4px 24px rgba(0,0,0,0.8)' }}>{lead}</div>
+        ) : null}
         {caption ? (
           <div style={{ position: 'absolute', left: tall ? 70 : square ? 72 : 96, top: band ? bandY - (tall ? 90 : 70) : tall ? 120 : square ? 60 : 72, fontFamily: BODY, fontWeight: 500, fontSize: tall ? 38 : square ? 32 : 36, color: 'rgba(255,255,255,0.9)', opacity: capOn, textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}>{caption}</div>
         ) : null}
