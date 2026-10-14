@@ -70,6 +70,7 @@ Owner: "I want that photo to show as the house. Can we get a place to upload a p
 - **No second copies** (owner's screenshot, same evening: the card upload had copied a picture that was already under Photos). With photos on file, **📷 Use our own photo / Change house photo** first opens a chooser of their photos ("Pick one of their photos, or add a new one"), with **📷 New photo** and Cancel. And every upload records `hash` (first 32 hex digits of the SHA-256 of the picked file) on the photo entry: picking the very same file again reuses that photo (from the card it becomes the house photo; under Photos the panel says "That picture is already here, so it wasn't added again"), the same picture twice in one pick included. `findByHash(photos, hash)` in `src/lib/jobRecord.js`, tested. Photos added before this have no hash, so they never match.
 - The photo viewer keeps to the photo's width with its actions centered under the photo (🏠 Use as house photo, 🗑 Remove photo); before, Remove sat in the far top-right corner of a full-screen overlay and was easy to miss on a wide screen. Under the thumbnails: "Tap a photo to see it full size, make it the house photo or remove it."
 - The Accounts page header shows the house photo when there is one (display only).
+- The customer sees the same picture at the top of their own account page (through a 1-hour link; Street View there too when none is picked): `docs/specs/account-house-photo.md`.
 - Same stamped merge write as the photos map, so no rules change; leads keep Street View (they have no photos).
 
 ## What's up

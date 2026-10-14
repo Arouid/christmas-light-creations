@@ -12,7 +12,8 @@
 // - sendAccountLink / myAccount: customer accounts at /account/ (Google,
 //   email-link or phone sign-in; the account lists proposals and invoices
 //   whose emailKeys / phoneKeys hold that verified email or phone, plus this
-//   season's schedule and any open service call; docs/specs/phone-sign-in.md).
+//   season's schedule, any open service call and a 1-hour link to our photo
+//   of their house; docs/specs/phone-sign-in.md, account-house-photo.md).
 // - accountPreview: staff see a customer's account page as the customer does
 //   (same payload as myAccount, reads only; docs/specs/account-preview.md).
 // - reportProblem: "Report a problem" on /account/ becomes a service call on
@@ -56,6 +57,7 @@
 import { getApp, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { FieldPath, FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore'
+import { getStorage } from 'firebase-admin/storage'
 import { onDocumentCreated, onDocumentUpdated, onDocumentWritten } from 'firebase-functions/v2/firestore'
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
@@ -98,7 +100,7 @@ import { DraftError, PRESENCE_ID, draftFor, threadFor } from './assistant/draft.
 import { askAllowed, askRequest } from './assistant/askPrompt.js'
 import { AskError, askFor } from './assistant/ask.js'
 import sharp from 'sharp'
-import { accountIdentity, accountQueries, accountUrl, addOnFromProposal, customerEmailKeys, customerPhoneKeys, EMAIL_RE, loginRecord, normEmail, previewIdentity, previewRequest, proposalEmailKeys, proposalPhoneKeys, providerName, sameKeys, staffTokenEmail } from './account.js'
+import { accountIdentity, accountQueries, accountUrl, addOnFromProposal, customerEmailKeys, customerPhoneKeys, EMAIL_RE, housePhotoFile, loginRecord, normEmail, previewIdentity, previewRequest, proposalEmailKeys, proposalPhoneKeys, providerName, sameKeys, staffTokenEmail } from './account.js'
 import { CUSTOMER_FIELDS, PROPOSAL_FIELDS, accountPayload } from './accountPayload.js'
 import { SERVICE_DAYS, openMessage, openReport, openSummary, reportCall, reportEmail, reportPush, reportRequest } from './service.js'
 import { LIMITS as CHAT_LIMITS, appendMessage, chatAlertEmail, chatAllowed, chatPush, chatRequest, customerView, previewText, recipientFor, replyEmail } from './chat.js'
@@ -969,7 +971,10 @@ async function accountFor(db, who, { firstId = '', fill = true } = {}) {
     ids.length ? db.doc(`conversations/${ids[0]}`).get() : null,
   ])
   const rows = (docs) => docs.map((d) => ({ id: d.id, data: d.data() }))
-  return accountPayload({ who, proposals: rows(proposals), invoices: rows(invoices), customers: rows(customers), openCall, conversation: conversation?.data() ?? null })
+  const payload = accountPayload({ who, proposals: rows(proposals), invoices: rows(invoices), customers: rows(customers), openCall, conversation: conversation?.data() ?? null })
+  // Our photo of their house: the first record's, like the name and address (docs/specs/account-house-photo.md).
+  const first = rows(customers).find((c) => c.data)
+  return { ...payload, house: await houseLink(first?.id, first?.data) }
 }
 
 // The signed-in customer's proposals with what's paid and what's due. Only
@@ -1000,6 +1005,31 @@ export const accountPreview = onCall({ region: REGION, invoker: 'public', cors: 
   logger.info('accountPreview', { customer: r.id })
   return { ...account, preview: { id: r.id, name: snap.data().fullName ?? '', canSignIn: Boolean(who.key) } }
 })
+
+// The house picture at the top of /account/ (docs/specs/account-house-photo.md,
+// owner 2026-10-14): a link to the one photo staff picked that works for an
+// hour, made fresh on each visit; Storage itself stays staff-only. Signing
+// needs the functions' service account to hold Service Account Token Creator
+// (and the IAM Service Account Credentials API on): docs/TODO.md. Without it
+// there's no link (the page shows Street View instead) and staff hear about it,
+// at most once an hour per server instance.
+const HOUSE_LINK_MS = 60 * 60 * 1000
+let houseLinkReportedAt = 0
+async function houseLink(customerId, rec) {
+  const file = housePhotoFile(customerId, rec)
+  if (!file) return null
+  try {
+    const [url] = await getStorage().bucket().file(file.path).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + HOUSE_LINK_MS })
+    return { id: file.id, url, at: file.at }
+  } catch (e) {
+    logger.warn('House photo link failed', e.message)
+    if (Date.now() - houseLinkReportedAt > HOUSE_LINK_MS) {
+      houseLinkReportedAt = Date.now()
+      await reportIncident('house-photo', `A customer's account showed Street View instead of our house photo: the photo link couldn't be made (${e.message}). If it mentions signBlob or permission, give the functions' service account the Service Account Token Creator role (docs/TODO.md).`)
+    }
+    return null
+  }
+}
 
 // The newest Open / Scheduled service call on any of these customer records,
 // as the customer may see it (no staff notes), or null.

@@ -15,8 +15,10 @@ import { accountReview } from './reviewAsk.js'
 // Proposal fields accountSummary reads (amounts with sales tax, Pay in 3).
 export const PROPOSAL_FIELDS = ['status', 'title', 'season', 'kind', 'plan', 'payDay', 'customer', 'items', 'discountPct', 'depositPct', 'tax', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt']
 // Customer fields: name and address, the yearly price, seasons (schedule,
-// what they paid, the review card), property details and the email switch.
-export const CUSTOMER_FIELDS = ['fullName', 'address', 'since', 'originalRate', 'reinstallBase', 'addOns', 'priceShown', 'seasons', ...DETAIL_FIELDS.map(([k]) => k), NOTICES_FIELD]
+// what they paid, the review card), property details and the email switch,
+// and the house photo (housePhoto + photos: read by index.js houseLink for
+// the 1-hour link, never sent on; docs/specs/account-house-photo.md).
+export const CUSTOMER_FIELDS = ['fullName', 'address', 'since', 'originalRate', 'reinstallBase', 'addOns', 'priceShown', 'seasons', ...DETAIL_FIELDS.map(([k]) => k), NOTICES_FIELD, 'housePhoto', 'photos']
 
 // The season the page talks about: same as src/lib/customers.js seasonYear
 // (the server clock is UTC; fine for a July 1 cutover).

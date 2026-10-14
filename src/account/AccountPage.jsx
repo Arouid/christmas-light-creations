@@ -18,6 +18,7 @@ import { searchHelp } from '../data/help.js'
 import { WEEKS } from '../../functions/rebook.js'
 import { demoCodeStep, demoPhoneStep, phoneError, prettyPhone } from './phoneSignIn.js'
 import AccountTour from './AccountTour.jsx'
+import AccountHouse from './AccountHouse.jsx'
 import { accountTourSteps, tourWorthOpening } from '../data/accountTour.js'
 import { PREVIEW_NO_SIGN_IN, PREVIEW_OFF, PREVIEW_PARAM, previewBanner, previewProblem } from '../lib/accountPreview.js'
 
@@ -118,7 +119,10 @@ export default function AccountPage() {
     if (demo) {
       const { DEMO_ACCOUNT } = await import('./demoAccount.js')
       // ?demo=rebook: a returning customer who isn't on this season's list yet.
-      const rebook = q.get('demo') === 'rebook' ? { ...DEMO_ACCOUNT, schedule: { ...DEMO_ACCOUNT.schedule, installStatus: '', day: '', plannedDate: '', weekOf: '' } } : DEMO_ACCOUNT
+      // ?demo=street: no house photo of ours, so Street View (only on localhost:5173, where the Maps key works).
+      const variant = q.get('demo')
+      const rebook = variant === 'rebook' ? { ...DEMO_ACCOUNT, schedule: { ...DEMO_ACCOUNT.schedule, installStatus: '', day: '', plannedDate: '', weekOf: '' } }
+        : variant === 'street' ? { ...DEMO_ACCOUNT, house: null } : DEMO_ACCOUNT
       setView({ name: 'account', data: preview ? { ...rebook, preview: { id: previewId, name: rebook.customer?.name ?? '', canSignIn: true } } : rebook })
       return
     }
@@ -408,6 +412,7 @@ function Account({ data, reload, logOut }) {
       <section className="space-y-1">
         <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : 'Your account'}</h1>
         {me?.address && <p className="text-slate-300">{me.address}</p>}
+        {(data.house || me?.address) && <AccountHouse house={data.house} address={me?.address} className="mb-2 mt-3" />}
         <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
       </section>
       {data.review?.show && <ReviewCard />}

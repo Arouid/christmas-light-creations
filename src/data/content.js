@@ -295,6 +295,16 @@ export const accountReviewCard = {
   thanks: 'Thank you! It means a lot to our family.',
 }
 
+// The picture of their house under "Hi, <name>" on /account/
+// (docs/specs/account-house-photo.md, owner 2026-10-14): our own photo when
+// staff picked one, else Google Street View of the address, else nothing.
+export const accountHouse = {
+  alt: 'Your house', // + " at <address>"
+  ours: 'Our photo', // + " · <date>"
+  streetView: 'Google Street View',
+  streetViewAlt: 'Google Street View of your house',
+}
+
 // The hero's background: a different one of these on every visit (owner
 // 2026-10-14, src/lib/heroPhoto.js). Wide night shots with the whole house lit;
 // every one is also in `gallery` (tests/heroPhoto.test.mjs). The first is the
@@ -390,7 +400,7 @@ export const privacy = {
       title: 'What we collect',
       items: [
         '**When you ask for an estimate:** your name, email, phone, address, how you’d like us to contact you, your message, and how you heard about us. If you used our light designer and send your design with the request, we also keep your design and the photo of your home you used, for 30 days (longer only if we use it for your proposal).',
-        '**When you’re a customer:** your contact and property details (like a gate code, your HOA and any date your lights must be down by, things in the yard we should avoid, and pets), what we installed, your season schedule, prices and what you’ve paid, and notes we need to do the job. You can fill in or change the property details yourself on your account page.',
+        '**When you’re a customer:** your contact and property details (like a gate code, your HOA and any date your lights must be down by, things in the yard we should avoid, and pets), what we installed and the photos we take of it, your season schedule, prices and what you’ve paid, and notes we need to do the job. You can fill in or change the property details yourself on your account page.',
         '**When you sign a proposal:** your typed name, your drawn signature, the date and time, the browser you signed on, and a fingerprint of the exact document you agreed to.',
         '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',
         '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
@@ -405,7 +415,7 @@ export const privacy = {
         'To contact you about your estimate, schedule installs, service calls and takedowns, send proposals, invoices and receipts, and answer your questions. When you ask for an estimate on the website, you get one automatic “Got your request” email right away.',
         'Weather heads-ups: when the forecast for our area has thunderstorms, strong wind or a freeze, we email customers with a visit that day that the date may move, and customers whose lights are up what to check (at most one such email per bad day, and one every 5 days). You can turn the heads-ups and tips off on your account page; agreements, bills, payment reminders and scheduling emails always come. We read the forecast from the National Weather Service; nothing about you is sent to them.',
         'If an invoice is still unpaid, we email at most two reminders (7 and 14 days after it was due), then stop.',
-        'To show you your agreements, invoices, yearly price and payments in your account.',
+        'To show you your agreements, invoices, yearly price and payments in your account, with a picture of your house at the top: one of our own photos of it, once we pick one (the page gets a private link to that one photo that works for an hour), otherwise Google Street View (below).',
         'To keep our own business records (agreements and payments).',
         'We don’t use advertising or tracking cookies, we don’t run analytics on this site, and we don’t sell or rent your information to anyone.',
       ],
@@ -413,7 +423,7 @@ export const privacy = {
     {
       title: 'Who else handles it',
       items: [
-        '**Google** (Firebase, Google Workspace, Google Voice, Google Maps): stores our customer records, sends and receives our email and texts, and shows addresses on a map for our crew.',
+        '**Google** (Firebase, Google Workspace, Google Voice, Google Maps): stores our customer records, sends and receives our email and texts, and shows addresses on a map for our crew. When we don’t have our own photo of your house yet, your account page asks Google Maps for the Street View picture of your address, so Google sees that visit and the address; Google’s privacy policy applies to it.',
         '**PayPal** (including Venmo and card payments): processes online payments under PayPal’s own privacy policy.',
         '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
         '**Anthropic (Claude):** when one of our team asks for help writing a reply to you, your conversation with us (texts, emails and messages from your account) and the details on your record (name, address, what we installed, prices and schedule, never gate codes or payment details) are sent to Anthropic’s Claude service to suggest a draft. A person on our team reads, edits and sends every reply; nothing is sent to you automatically. Anthropic does not use this to train its models. Our team can also ask Claude questions about our own records (for example which invoices are due or what a customer asked us before); the same kinds of details are sent for that, with the same limits, and Claude can only read, never change or send anything.',
