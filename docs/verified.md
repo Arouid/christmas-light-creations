@@ -650,3 +650,10 @@ What was actually checked working, and how. Newest first.
 - `housePhotoOf` tests (picked photo, none picked, photo gone, entry with no file, no photos): `tests/jobRecord.test.mjs`. Lint clean on the changed files.
 - Browser pane, `/leads/?demo#customers` → Example Family, at 375 px: "📷 Use our own photo" under the picture (the demo address isn't real, so Street View says "Address not found"); a generated test JPEG through it → the picture becomes it with "🏠 House photo · Oct 14", Photos (1) with the 🏠 House badge, buttons "📷 Change house photo" and "🗺 Street View". Street View peek → "🏠 Our photo" and "Use Street View instead"; the latter → back to Street View, badge gone. Photo viewer → "🏠 Use as house photo" → set again; the viewer's buttons wrap under the date line at 375 px. Desktop 1440 px: the side panel shows it 688×344. Console clean, no sideways scroll.
 - Not checked: a real upload to Storage and a second staff phone seeing it live (checklist #148).
+
+## 2026-10-14 House photo: no duplicates, Remove where you can see it
+
+- Owner's screenshot: Ashley Ashna's Photos (2), the same picture twice (the card upload copied the one already there), and "no way to delete" (Remove was a small button in the far corner of the full-screen viewer).
+- `findByHash` tests (`tests/jobRecord.test.mjs`); lint clean.
+- Browser pane, `/leads/?demo#customers` → Example Family at 375 px, one generated JPEG used throughout: added under Photos → 1 photo; card **📷 Use our own photo** opens "Pick one of their photos, or add a new one" → tapping it makes it the house photo, still 1 photo, chooser closes; the same file again under Photos → still 1, "That picture is already here, so it wasn't added again."; the same file from the card → still 1, house photo kept. Hint line under the thumbnails shows; no sideways scroll. At 1440 px the viewer shows the photo 864×576 in the middle and "🗑 Remove photo" centered right under it. Console: no errors after a reload (two from a half-saved file during editing, before the reload).
+- Not checked: the live duplicate on Ashley Ashna (owner removes it: open the copy without the 🏠 badge → 🗑 Remove photo).

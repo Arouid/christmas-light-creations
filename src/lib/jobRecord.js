@@ -51,6 +51,14 @@ export function housePhotoOf(customer) {
   return photoList(customer.photos).find((p) => p.id === id) ?? null
 }
 
+// The photo already on the record that came from the very same picture
+// (entry.hash = SHA-256 of the picked file, photoStore.js), or null. Photos
+// added before 2026-10-14 carry no hash, so they never match.
+export function findByHash(photos, hash) {
+  if (!hash) return null
+  return photoList(photos).find((p) => p.hash === hash) ?? null
+}
+
 // Same rule as storage.rules: the person who added it, or the owner.
 export function canDeletePhoto(photo, email, isOwner = false) {
   if (isOwner) return true

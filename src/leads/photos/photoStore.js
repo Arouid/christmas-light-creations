@@ -4,7 +4,7 @@
 //   Firestore customers/{id}.photos.{photoId} = { path, url, thumbUrl, season, at, by, width, height }
 // In demo mode (?demo) the pictures stay in memory as data URLs.
 import { firebaseConfig, getFirebaseApp } from '../../lib/firebase'
-import { MAX_PHOTO_PX, MAX_UPLOAD_BYTES, PHOTO_QUALITY, THUMB_PX, fitWithin, photoId, photoPaths } from '../../lib/jobRecord'
+import { MAX_PHOTO_PX, MAX_UPLOAD_BYTES, PHOTO_QUALITY, THUMB_PX, findByHash, fitWithin, photoId, photoPaths } from '../../lib/jobRecord'
 import { demoMode } from '../demo'
 import { mergePaths, useLiveDoc } from '../staffStore'
 
@@ -43,9 +43,29 @@ async function shrink(file, max, quality = PHOTO_QUALITY) {
   return { blob, width, height, dataUrl: demoMode ? c.toDataURL('image/jpeg', quality) : null }
 }
 
-// Upload one picture for a customer and season; resolves to the saved entry.
+// SHA-256 of the picked file's bytes (first 32 hex digits), so the same picture
+// is recognised when it is picked again; null where the browser can't hash.
+async function fingerprint(file) {
+  try {
+    const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer())
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+  } catch {
+    return null
+  }
+}
+
+// Upload one picture for a customer and season; resolves to the saved entry
+// ({ duplicate: true } when that very picture was already there).
 // `house: true` also makes it the house photo (customer.housePhoto), in the same write.
 export async function addPhoto(user, customer, season, file, { house = false } = {}) {
+  // The same picture again (picked twice, or uploaded from the card when it was
+  // already under Photos): keep the one we have, no second copy.
+  const hash = await fingerprint(file)
+  const same = findByHash(customer.photos, hash)
+  if (same) {
+    if (house && customer.housePhoto !== same.id) await mergePaths(user, 'customers', customer.id, { housePhoto: same.id })
+    return { ...same, duplicate: true }
+  }
   const id = photoId()
   const paths = photoPaths(customer.id, season, id)
   const [full, thumb] = await Promise.all([shrink(file, MAX_PHOTO_PX), shrink(file, THUMB_PX, 0.8)])
@@ -54,7 +74,7 @@ export async function addPhoto(user, customer, season, file, { house = false } =
     if (smaller.blob.size >= MAX_UPLOAD_BYTES) throw new Error('This picture is too big even after shrinking.')
     Object.assign(full, smaller)
   }
-  const base = { path: paths.full, season: String(season), at: Date.now(), by: user.email, width: full.width, height: full.height }
+  const base = { path: paths.full, season: String(season), at: Date.now(), by: user.email, width: full.width, height: full.height, ...(hash ? { hash } : {}) }
   let entry
   if (demoMode) {
     entry = { ...base, url: full.dataUrl, thumbUrl: thumb.dataUrl }

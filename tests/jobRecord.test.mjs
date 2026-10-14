@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  amountText, canDeletePhoto, colorIn, fitWithin, housePhotoOf, installedFromProposal, installedLine, installedSummary,
+  amountText, canDeletePhoto, colorIn, findByHash, fitWithin, housePhotoOf, installedFromProposal, installedLine, installedSummary,
   latestSigned, photoDate, photoList, photoPaths, photosBySeason, storageProblem,
 } from '../src/lib/jobRecord.js'
 import { newItem, newProposal, takedownItem } from '../src/proposals/model.js'
@@ -132,4 +132,16 @@ test('housePhotoOf: the picked photo stands for the house; none picked, or the p
   assert.equal(housePhotoOf({ housePhoto: 'b' }), null)
   assert.equal(housePhotoOf({ photos: { c: { at: 3 } }, housePhoto: 'c' }), null) // an entry with no file
   assert.equal(housePhotoOf(undefined), null)
+})
+
+test('findByHash: the same picked file is found again; old photos without a hash never match', () => {
+  const photos = {
+    old: { url: 'https://x/old.jpg', at: 1 },
+    a: { url: 'https://x/a.jpg', at: 2, hash: 'abc123' },
+  }
+  assert.equal(findByHash(photos, 'abc123')?.id, 'a')
+  assert.equal(findByHash(photos, 'zzz'), null)
+  assert.equal(findByHash(photos, null), null)
+  assert.equal(findByHash(photos, ''), null)
+  assert.equal(findByHash(undefined, 'abc123'), null)
 })

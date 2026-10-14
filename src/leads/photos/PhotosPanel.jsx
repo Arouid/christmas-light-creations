@@ -16,6 +16,7 @@ export default function PhotosPanel({ customer, season }) {
   const [enabled, setEnabled] = useState(null) // null = checking
   const [busy, setBusy] = useState('') // "Uploading 1 of 3…"
   const [error, setError] = useState('')
+  const [note, setNote] = useState('') // "already here" after an upload
   const [open, setOpen] = useState(null) // photo being viewed
   const camera = useRef(null)
   const gallery = useRef(null)
@@ -29,10 +30,16 @@ export default function PhotosPanel({ customer, season }) {
     e.target.value = ''
     if (!files.length || !user) return
     setError('')
+    setNote('')
+    // Photos added in this batch count too, so the same picture twice in one pick is caught.
+    let photos = customer.photos ?? {}
+    let already = 0
     for (const [i, file] of files.entries()) {
       setBusy(files.length > 1 ? `Uploading ${i + 1} of ${files.length}…` : 'Uploading…')
       try {
-        await addPhoto(user, customer, season, file)
+        const { id, duplicate, ...entry } = await addPhoto(user, { ...customer, photos }, season, file)
+        if (duplicate) already += 1
+        else photos = { ...photos, [id]: entry }
       } catch (err) {
         console.warn('Photo upload failed', err)
         setError(storageProblem(err))
@@ -40,6 +47,7 @@ export default function PhotosPanel({ customer, season }) {
       }
     }
     setBusy('')
+    if (already) setNote(already === 1 ? 'That picture is already here, so it wasn’t added again.' : `${already} of those pictures are already here, so they weren’t added again.`)
   }
 
   async function remove(photo) {
@@ -101,22 +109,29 @@ export default function PhotosPanel({ customer, season }) {
             </ul>
           </section>
         ))}
+      {count > 0 && <p className="text-xs text-slate-400">Tap a photo to see it full size, make it the house photo or remove it.</p>}
+      {note && <p role="status" className="rounded-xl bg-white/5 px-3 py-2 text-sm text-slate-300">{note}</p>}
 
       {open && (
         <div className="fixed inset-0 z-50 flex flex-col bg-night-950/95 backdrop-blur" role="dialog" aria-modal="true" aria-label="Photo">
-          <div className="flex flex-wrap items-center gap-2 px-4 py-3">
-            <p className="min-w-0 flex-1 basis-full truncate text-sm text-slate-300 sm:basis-auto">{photoDate(open.at)} · {who(open)} · {open.season} season</p>
-            {isHouse(open)
-              ? <span className="px-2 text-sm font-semibold text-glow-300">🏠 The house photo</span>
-              : <button type="button" onClick={() => makeHouse(open)} disabled={!user} className={btn}>🏠 Use as house photo</button>}
-            {canDeletePhoto(open, user?.email, isOwner)
-              ? <button type="button" onClick={() => remove(open)} className={`${btn} text-berry-500`}>Remove</button>
-              : <span className="text-xs text-slate-500">Only {who(open)} or the owner can remove it</span>}
-            <button type="button" onClick={() => setOpen(null)} className={btn} aria-label="Close">✕</button>
+          {/* Kept to the photo's width, with the actions right under it: on a wide screen they sat in the far corners. */}
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-3 p-4">
+            <div className="flex items-center gap-2">
+              <p className="min-w-0 flex-1 truncate text-sm text-slate-300">{photoDate(open.at)} · {who(open)} · {open.season} season</p>
+              <button type="button" onClick={() => setOpen(null)} className={btn} aria-label="Close">✕</button>
+            </div>
+            <button type="button" onClick={() => setOpen(null)} className="min-h-0 flex-1 cursor-zoom-out" aria-label="Close the photo">
+              <img src={open.url} alt={`Install photo from ${photoDate(open.at)}`} className="mx-auto max-h-full max-w-full rounded-xl object-contain" />
+            </button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {isHouse(open)
+                ? <span className="px-2 text-sm font-semibold text-glow-300">🏠 The house photo</span>
+                : <button type="button" onClick={() => makeHouse(open)} disabled={!user} className={btn}>🏠 Use as house photo</button>}
+              {canDeletePhoto(open, user?.email, isOwner)
+                ? <button type="button" onClick={() => remove(open)} className={`${btn} text-berry-500`}>🗑 Remove photo</button>
+                : <span className="text-xs text-slate-500">Only {who(open)} or the owner can remove it</span>}
+            </div>
           </div>
-          <button type="button" onClick={() => setOpen(null)} className="min-h-0 flex-1 cursor-zoom-out px-2 pb-4" aria-label="Close the photo">
-            <img src={open.url} alt={`Install photo from ${photoDate(open.at)}`} className="mx-auto max-h-full max-w-full rounded-xl object-contain" />
-          </button>
         </div>
       )}
     </div>

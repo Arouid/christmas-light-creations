@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { housePhotoOf, photoDate, storageProblem } from '../../lib/jobRecord'
+import { housePhotoOf, photoDate, photoList, storageProblem } from '../../lib/jobRecord'
 import StreetViewPhoto from '../StreetViewPhoto'
 import { useStaff } from '../staffContext'
 import { addPhoto, setHousePhoto, storageEnabled } from './photoStore'
@@ -18,7 +18,28 @@ export default function HousePicture({ customer, season, address }) {
   const [enabled, setEnabled] = useState(null) // null = checking Storage
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [choosing, setChoosing] = useState(false) // their photos to pick from, before uploading a new one
   const input = useRef(null)
+  const others = photoList(customer.photos).filter((p) => p.id !== customer.housePhoto)
+
+  // With photos on file, offer those first (picking one is free and makes no copy).
+  function change() {
+    setError('')
+    if (others.length) setChoosing(!choosing)
+    else input.current?.click()
+  }
+
+  async function pick(p) {
+    setError('')
+    try {
+      await setHousePhoto(user, customer, p.id)
+      setChoosing(false)
+      setStreet(false)
+    } catch (err) {
+      console.warn('House photo change failed', err)
+      setError('Couldn’t change it. Check your signal and try again.')
+    }
+  }
 
   useEffect(() => { storageEnabled().then(setEnabled) }, [])
 
@@ -30,6 +51,7 @@ export default function HousePicture({ customer, season, address }) {
     setBusy(true)
     try {
       await addPhoto(user, customer, season, file, { house: true })
+      setChoosing(false)
       setStreet(false)
     } catch (err) {
       console.warn('House photo upload failed', err)
@@ -62,7 +84,7 @@ export default function HousePicture({ customer, season, address }) {
       {user && enabled !== false && (
         <div className="flex flex-wrap items-center gap-2">
           <input ref={input} type="file" accept="image/*" className="hidden" onChange={picked} aria-label="Choose a photo of the house" />
-          <button type="button" onClick={() => input.current?.click()} disabled={busy || enabled === null} className={btn}>
+          <button type="button" onClick={change} disabled={busy || enabled === null} className={btn} aria-expanded={others.length ? choosing : undefined}>
             {busy ? 'Uploading…' : photo ? '📷 Change house photo' : '📷 Use our own photo'}
           </button>
           {photo && address && (
@@ -71,6 +93,24 @@ export default function HousePicture({ customer, season, address }) {
             </button>
           )}
           {photo && street && <button type="button" onClick={backToStreetView} className={btn}>Use Street View instead</button>}
+        </div>
+      )}
+      {choosing && others.length > 0 && (
+        <div className="space-y-2 rounded-xl border border-white/10 bg-night-900 p-3">
+          <p className="text-sm text-slate-300">Pick one of their photos, or add a new one.</p>
+          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {others.slice(0, 12).map((p) => (
+              <li key={p.id}>
+                <button type="button" onClick={() => pick(p)} className="block w-full" aria-label={`Use the photo from ${photoDate(p.at)} as the house photo`}>
+                  <img src={p.thumbUrl || p.url} alt="" loading="lazy" className="aspect-square w-full rounded-lg bg-white/5 object-cover" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => input.current?.click()} disabled={busy} className={btn}>📷 New photo</button>
+            <button type="button" onClick={() => setChoosing(false)} className={btn}>Cancel</button>
+          </div>
         </div>
       )}
       {error && <p role="alert" className="rounded-xl border border-berry-500/50 bg-berry-600/15 px-3 py-2 text-sm">{error}</p>}
