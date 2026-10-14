@@ -12,6 +12,9 @@ Two ads made in **Remotion** (React video), built in `video/` (storyboard and hi
 
 The story ad's MP4s are not in git (`.gitignore`: this folder except this README and the
 5-second files). Rebuild them whenever they are missing or the words, photos or offer change.
+`approved-2026-10-13/` holds the set the owner signed off on that night (all fifteen MP4s and the
+YouTube thumbnails), kept apart so later experiments (stop-motion elements) can't overwrite them;
+`keep/` holds the dated copies of every render.
 
 ## Files
 
