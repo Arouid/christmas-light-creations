@@ -5,7 +5,7 @@ Two ads made in **Remotion** (React video), built in `video/` (storyboard and hi
 
 - **The 5-second ad**: the cottage logo switching on in the snow, the name. Owner-approved
   2026-10-11, the three MP4s are in git (tag `ad-teaser-5s-v1`).
-- **The story ad** (about 33 s, cut 3, 2026-10-11, owner's idea): a husband texts the business to
+- **The story ad** (about 30 s, cut 3, 2026-10-11, owner's idea; trimmed from 35 s on 2026-10-13 after a Gemini review the owner ran): a husband texts the business to
   install while his wife is at work on her birthday; the plan; she comes home to the lights.
   Told as a text thread in the brand's night-and-snow world, the cottage coming on when the
   timer is set, one real photo for the reveal, the ask, the end card. Silent.
@@ -20,9 +20,10 @@ The story ad's MP4s are not in git (`.gitignore`: this folder except this README
 | `clc-teaser-5s-16x9.mp4` | 1920×1080, landscape | **the 5-second ad**, silent | YouTube bumper (6 s max), in-stream, TV |
 | `clc-teaser-5s-9x16.mp4` | 1080×1920, vertical | same | Shorts, phone feeds |
 | `clc-teaser-5s-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
-| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 35 s, with music and sound | YouTube in-stream, TV, desktop |
+| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, 30.5 s, with music and sound | YouTube in-stream, TV, desktop |
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | same | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
+| `clc-ad-16x9-music-<name>.mp4` | 1920×1080 | the story ad with another music track, for comparison only (`render-all.mjs ad 16x9 --music=… --suffix=<name>`; `-music-sugarplum` is from the older 39 s cut) | not uploaded |
 
 All H.264, 30 fps. The story ad has music and sound effects (Uppbeat, below); the 5-second ad
 has the lights-on effect only, no music.
@@ -31,12 +32,11 @@ The story ad, scene by scene:
 
 | Seconds | Scene | What happens |
 |---|---|---|
-| 0–8.5 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
-| 8.5–11 | Time card | One line over the snow footage: "Thursday 3:48 pm · Done. Timer set for dusk." (The three-beat scene with the cottage popping on was cut: owner, "this scene just feels so forced into it". More entries in `story.plan` bring the beats back; `planCottage: true` brings the cottage.) |
-| 11–23 | 5:41 pm | Her in the red car at night (clip, wipers under it), the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", her reaction in the car (1.2 s, same woman, real snow in front), then the car door closes as she gets out (2.6 s; the slam lands at about 20.9 s, synced to the shot, and a second door closes at about 22.0 s, just before we cut away: two of them got out, owner's ask). Beds: the wipers and a muffled street under her in the car, the quiet street under her reaction and the door, nothing under the still house (owner). |
-| 23–27.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
-| 27.5–32.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
-| 32.5–36 | End card | The photoreal cottage pops its lights on (click + harp), real snow, 281-819-0163, the site, Free 30-minute estimate. |
+| 0–7.6 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
+| 7.6–9.7 | Time card | One line over the snow footage: "Thursday 3:48 pm · Done. Timer set for dusk." (The three-beat scene with the cottage popping on was cut: owner, "this scene just feels so forced into it". More entries in `story.plan` bring the beats back; `planCottage: true` brings the cottage.) |
+| 9.5–20.9 | 5:41 pm | Her in the red car at night (clip, wipers under it), the big two-storey house (photo 32, owner's pick) opens out of the dark at 12.2 s with the switch click of the dusk timer, settles, "She's home." (14.5 s), her reaction in the car (1.2 s, same woman, real snow in front), then the car door closes as she gets out (2.6 s; the line fades as this shot starts; the slam lands at about 19.2 s, synced to the shot, and a second door closes at about 20.3 s, just before we cut away: two of them got out, owner's ask). Beds: the wipers and a muffled street under her in the car, the quiet street under her reaction and the door, nothing under the still house (owner). |
+| 20.6–24.8 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
+| 24.5–30.5 | The one closing card | The photoreal cottage pops its lights on (click + harp), real snow; "Surprise someone this year.", the offer pill (while `offer.enabled`) and "Free 30-minute estimate", 281-819-0163, the site. Held to the end. (`endCardAsk: false` in `data.js` brings back the two closing screens: the ask over the three-gable house (34) for 5 s, then the number card for 4 s.) |
 
 Every word of the story is in `video/src/data.js` → `story` (bubbles with their timing, the three
 beats, the two lines, the ask). Photos: 32 (the reveal; a 1024×576 file, upscaled) and 34 (the ask).
@@ -62,7 +62,7 @@ Shopping list (what each slot is for, and what to search):
 | `music.file` | under the whole story ad, fades out over the last 2.5 s | warm, emotional, piano or strings, holiday without jingle bells; quiet opening, a swell about 15 s in for the reveal. Uppbeat searches: "emotional christmas piano", "heartwarming holiday", "magical winter" | 35 s or more |
 | `sfx.pop` | each text bubble lands | "message pop", "notification bubble", "sent" | under 1 s |
 | `sfx.typing` | the typing dots (optional) | "keyboard typing phone", "text typing" | about 1 s |
-| `sfx.lightsOn` | the cottage flickers on (plan beat 3, end card, the 5-second ad) | "neon flicker", "light switch buzz", "magical shimmer" | 1–2 s |
+| `sfx.lightsOn` | the cottage flickers on (plan beat 3, end card, the 5-second ad); the click alone as the house appears (the dusk timer, `adMix.revealClick`) | "neon flicker", "light switch buzz", "magical shimmer" | 1–2 s |
 | `sfx.car` | start of the 5:41 pm scene | "car pulls up driveway", "car arriving", "car door close" | 2–4 s |
 | `sfx.reveal` | the house opens out of the dark | "magical chime", "soft sparkle whoosh", "christmas bell swell" | 1–3 s |
 | `sfx.ambience` | low under everything, looped | "winter night wind", "snow ambience", "quiet suburban night" | any |
@@ -80,7 +80,9 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 |---|---|---|---|
 | `music/wintertime-waltz-albert-behar-main-version-46196-02-05.wav` | `music.file` (from 0: quiet under the first texts, peaks at 15–17 s as the house appears) | "Wintertime Waltz", Albert Behar (2:05) | Uppbeat Pro (Solo Professional), downloaded 2026-10-13 |
 | `music/dance-of-the-sugar-plum-fairies-kevin-macleod-main-version-9984-01-46.wav` | alternative (a 16:9 comparison render `clc-ad-16x9-music-sugarplum.mp4`) | "Dance of the Sugar Plum Fairies", Kevin MacLeod (1:46) | same |
-| `music/it-s-christmas-corals-main-version-35993-01-57.wav` | not used (loud from the first second, no build) | "It's Christmas", Corals (1:57) | same |
+| `music/it-s-christmas-corals-main-version-35993-01-57.wav` | comparison render `clc-ad-16x9-music-its-christmas.mp4` (loud from the first second, no build: startFrom 0, volume 0.35) | "It's Christmas", Corals (1:57) | same |
+| `music/a-little-christmas-ben-johnson-main-version-10155-02-35.wav` | comparison render `clc-ad-16x9-music-little-christmas.mp4` (owner 2026-10-13, upbeat: soft intro, sleigh-bell stabs every 3 s from 11.6 s, full band from 22 s; startFrom 2.4 puts a stab on the house, volume 0.25 because it is twice as loud as the waltz) | "A Little Christmas", Ben Johnson (2:35) | same |
+| `music/guess-who-flew-in-for-christmas-sky-toes-main-version-02-23-10383.wav` | comparison render `clc-ad-16x9-music-guess-who.mp4` (owner 2026-10-13, upbeat: near-silent start, builds, lifts at 17.8 s, hit at 20 s; startFrom 5.6 puts the lift on the house and the hit on the line, volume 0.45) | "Guess Who Flew In For Christmas", Sky Toes (2:23) | same |
 | `music/anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav` | not used now (was the first bed; its swell at 22 s needed re-timing after every edit: startFrom 4.3) | "Anticipation And Joy", Giulio Fazio (58 s) | same |
 | `sfx/windshield-wipers-jeff-kaale-1-00-07.wav` | `sfx.carInterior` (the wipers under her driving shot, `sfx.wipersVolume` 0.7: about level with the music) | "Windshield Wipers", Jeff Kaale | same |
 | `sfx/city-street-ambience-light-wind-traffic-jam-fx-quiet-park-ambience-on-a-spring-morning-1-0m13s.wav` | `sfx.nightOutside` (muffled under her in the car, full under her reaction and the door; never under the still house) | "City Street Ambience Light Wind", Traffic Jam FX | same |
@@ -205,7 +207,7 @@ file into `video/public/music/`, set `music.file` in `data.js`, render, and reco
 | "Little Swallow (Carol Of The Bells) – Ukrainian New Years Song" by JuliusH, 1:04, instrumental | https://pixabay.com/music/special-occasions-little-swallow-carol-of-the-bells-ukrainian-new-years-song-5821/ (downloaded 2026-10-11 to `video/public/music/carol-of-the-bells-juliush.mp3`, not in git) | Pixabay Content License: free for commercial use, no attribution required, not for resale as-is. Picked over the other Carol of the Bells tracks because its page shows no "Content ID Registered" badge (those can trigger YouTube copyright claims on an ad). The melody itself (Leontovych, 1914) is public domain. |
 
 In the full ad the effects sit under the music at a fraction of their level (`adMix` in `data.js`:
-pops at 60 %, the switch-on at 85 %, the car doors at 100 %, no typing, no reveal chime, no wind; owner 2026-10-13: "the
+pops at 60 %, the switch-on at 85 %, the car doors at 100 %, the timer's click as the house appears at 45 %, no typing, no reveal chime, no wind; owner 2026-10-13: "the
 sound efx fit poorly for the full ad", then "turn the volume up on the sfx some, everything but the ambient", so
 `sfx.volume` went 0.8 → 1.0 and the beds stayed at 0.35). The 5-second ad has no music and uses the full levels, so its
 next render will be a quarter louder than the one in git (`ad-teaser-5s-v4`).

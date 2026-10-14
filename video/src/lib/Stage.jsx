@@ -132,7 +132,10 @@ export function LightSweep({ dur = 14, color = 'rgba(255,224,138,0.22)' }) {
   const frame = useCurrentFrame()
   const { w, h } = useFmt()
   const x = interpolate(frame, [0, dur], [-w * 0.6, w * 1.2])
+  // A side-to-side gradient, fully transparent at both ends, skewed for the diagonal look. A
+  // diagonal gradient inside a tall box ended short of its sides and left a hard vertical edge
+  // crossing the frame at each scene change (seen 2026-10-13).
   return (
-    <div style={{ position: 'absolute', top: 0, left: x, width: w * 0.35, height: h, background: `linear-gradient(100deg, transparent 0%, ${color} 50%, transparent 100%)`, mixBlendMode: 'screen', pointerEvents: 'none' }} />
+    <div style={{ position: 'absolute', top: 0, left: x, width: w * 0.35, height: h, background: `linear-gradient(90deg, transparent 0%, ${color} 50%, transparent 100%)`, transform: 'skewX(-12deg)', mixBlendMode: 'screen', pointerEvents: 'none' }} />
   )
 }

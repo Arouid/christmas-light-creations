@@ -27,6 +27,8 @@ export function HomeReveal({ data, dur }) {
   const line = pop(frame, fps, lineAt, { damping: 14 })
   const driveFade = driveEnd ? interpolate(frame, [driveEnd - 6, driveEnd + 4], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 0
   const doorIn = clips?.door && doorStart < dur ? fadeIn(frame, doorStart, 4) : 0
+  // The line leaves once the door shot is in, so it is gone well before the next scene.
+  const lineOut = clips?.door && doorStart < dur ? fadeIn(frame, doorStart + 10, 8) : 0
   const reactionIn = clips?.reaction ? fadeIn(frame, reactionStart, 10) : 0
   const media = {
     width: '100%', height: '100%', objectFit: 'cover',
@@ -66,7 +68,7 @@ export function HomeReveal({ data, dur }) {
           )}
         </div>
         <div style={{ position: 'absolute', left: tall ? 70 : square ? 72 : 96, top: tall ? 120 : square ? 60 : 72, fontFamily: BODY, fontWeight: 600, fontSize: tall ? 36 : square ? 30 : 34, color: colors.gold, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: fadeIn(frame, 4, 10) * (1 - reactionIn), textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}>{story.homeTime}</div>
-        <div style={{ position: 'absolute', left: tall ? 70 : square ? 72 : 96, right: 72, top: tall ? TALL_WINDOW - 60 : 'auto', bottom: tall ? 'auto' : square ? 72 : 90, ...display(type, tall ? 120 : square ? 100 : 136, { lineHeight: 1 }), color: colors.white, transform: `translateY(${(1 - line) * 60}px)`, opacity: fadeIn(frame, lineAt, 8), textShadow: '0 6px 40px rgba(0,0,0,0.8)' }}>
+        <div style={{ position: 'absolute', left: tall ? 70 : square ? 72 : 96, right: 72, top: tall ? TALL_WINDOW - 60 : 'auto', bottom: tall ? 'auto' : square ? 72 : 90, ...display(type, tall ? 120 : square ? 100 : 136, { lineHeight: 1 }), color: colors.white, transform: `translateY(${(1 - line) * 60}px)`, opacity: fadeIn(frame, lineAt, 8) * (1 - lineOut), textShadow: '0 6px 40px rgba(0,0,0,0.8)' }}>
           {story.homeLine}
         </div>
       </AbsoluteFill>

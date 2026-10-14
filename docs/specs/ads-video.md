@@ -1,15 +1,15 @@
 # Google Ads video (Performance Max) — motion-design cut
 
-Status: cut 1 (slideshow feel) and cut 2 (motion-graphics kit) rejected 2026-10-11; scene 1 of cut 2 shipped as the **5-second ad** (Teaser compositions, silent, in git). **Cut 3 is the story ad** (owner's idea, same day): the birthday surprise, told as a text thread, the plan, the reveal. Waiting for the owner's verdict on cut 3.
+Status: cut 1 (slideshow feel) and cut 2 (motion-graphics kit) rejected 2026-10-11; scene 1 of cut 2 shipped as the **5-second ad** (Teaser compositions, silent, in git). **Cut 3 is the story ad** (owner's idea, same day): the birthday surprise, told as a text thread, the plan, the reveal. Reworked through 2026-10-13 with the owner's Uppbeat music, effects and footage; trimmed to 30.5 s with one closing card after a Gemini review the owner ran (below). Waiting for the owner's verdict with sound, and the music pick.
 Owner's brief: "more than just some gallery photos stitched together"; the first slideshow cut
 (`scripts/ads-video.py`, 2026-10-11) "looks pretty cheap".
 
 ## What it is for
 
-A 5-second ad (scene 1 alone) and a 28-second video, rendered in three shapes (16:9, 9:16, 1:1) for the Performance Max
+A 5-second ad (scene 1 alone) and a 30-second video, rendered in three shapes (16:9, 9:16, 1:1) for the Performance Max
 asset group (YouTube in-stream, Shorts, square feeds). Google trims nothing, but viewers skip
 after 5 s, so the first 5 s carry the name of the service and the second line of the story. The
-phone number and the website close it and stay on screen 4 s.
+phone number and the website close it and stay on screen 6 s.
 
 ## Owner's notes on cut 1 (2026-10-11) and what changed
 
@@ -56,12 +56,23 @@ lifted toward navy, gold warmth) so the sources read as one film. Files and lice
 
 | # | Seconds | Scene | What moves | Words | Picture |
 |---|---|---|---|---|---|
-| 1 | 0–8.5 | **Tuesday 8:14 pm** | Night; warm bokeh lights behind (Uppbeat clip, dimmed; the owner preferred it to hands on a phone). A text thread: typing dots, then each bubble springs in. Customer bubbles dark on the left with a person silhouette as avatar, ours gold on the right with the cottage as avatar. | "Can you do my house Thursday while she's at work? It's her birthday 🎂" / "Done by 4. We'll be gone before she's home." / "🤫 She has no idea." | none |
-| 2 | 8.5–11 | **Time card** | One line over falling-snow footage: Thursday 3:48 pm · Done. Timer set for dusk. The three-beat version (with a clock, then with the cottage popping on) was cut on 2026-10-13: "this scene just feels so forced into it"; the texts already tell the plan, and the mascot in the middle of a realistic story broke the tone. `story.plan` with several entries and `planCottage` bring the old versions back. The dark cottage that switched on here in the first version was cut on 2026-10-13 (owner: a still background between footage was jarring); the owner then asked for the beats one at a time again and something in the right-hand space. | Thursday 9:02 am · Everyone's gone. / 9:30 am · We're on the roof. / 3:48 pm · Done. Timer set for dusk. | snow footage |
-| 3 | 11–23 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s, the wipers and a muffled street under it; the sharper city-driving clip was "too jarring"), the time. Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
-| 4 | 23–27.5 | **Thursday 5:52 pm** | The thread again, two bubbles, gold bokeh behind (Uppbeat clip). | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
-| 5 | 27.5–32.5 | **The ask** | Stone house, slow push-in; big line, the estimate line, the offer pill (while enabled). | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 34 (or a clip) |
-| 6 | 32.5–36 | **End card** | The photoreal cottage pops its lights on (the only time in the ad), real falling snow behind it (Uppbeat clip, screen-blended over the navy), phone number large, website, estimate line. Held 4 s. | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate | logo |
+| 1 | 0–7.6 | **Tuesday 8:14 pm** | Night; warm bokeh lights behind (Uppbeat clip, dimmed; the owner preferred it to hands on a phone). A text thread: typing dots, then each bubble springs in. Customer bubbles dark on the left with a person silhouette as avatar, ours gold on the right with the cottage as avatar. | "Can you do my house Thursday while she's at work? It's her birthday 🎂" / "Done by 4. We'll be gone before she's home." / "🤫 She has no idea." | none |
+| 2 | 7.6–9.7 | **Time card** | One line over falling-snow footage: Thursday 3:48 pm · Done. Timer set for dusk. The three-beat version (with a clock, then with the cottage popping on) was cut on 2026-10-13: "this scene just feels so forced into it"; the texts already tell the plan, and the mascot in the middle of a realistic story broke the tone. `story.plan` with several entries and `planCottage` bring the old versions back. The dark cottage that switched on here in the first version was cut on 2026-10-13 (owner: a still background between footage was jarring); the owner then asked for the beats one at a time again and something in the right-hand space. | Thursday 9:02 am · Everyone's gone. / 9:30 am · We're on the roof. / 3:48 pm · Done. Timer set for dusk. | snow footage |
+| 3 | 9.5–20.9 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s, the wipers and a muffled street under it; the sharper city-driving clip was "too jarring"), the time. The dusk timer's switch click as the house appears (12.2 s). "She's home." fades as the door shot starts. Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
+| 4 | 20.6–24.8 | **Thursday 5:52 pm** | The thread again, two bubbles, gold bokeh behind (Uppbeat clip). | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
+| 5 | (off) | **The ask** | Skipped since 2026-10-13 (`endCardAsk`): its words moved onto the closing card. With `endCardAsk: false`: stone house, slow push-in; big line, the estimate line, the offer pill (while enabled), 5 s. | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 34 (or a clip) |
+| 6 | 24.5–30.5 | **The closing card** | The photoreal cottage pops its lights on (the only time in the ad), real falling snow behind it (Uppbeat clip, screen-blended over the navy); the ask line, the offer and estimate pills, the phone number large, the website. Held 6 s. | Surprise someone this year. / 10% off installs done by October 31 · Free 30-minute estimate / 281-819-0163 / christmas-light-creations.com | logo |
+
+## Gemini's review (2026-10-13, the owner ran the 35 s cut through Gemini)
+
+| Gemini's note | Checked against the frames | Change |
+|---|---|---|
+| A vertical seam on the right third at 0:08 (into the time card) | Real: the light sweep at every scene change was a diagonal gradient inside a tall box, which ended short of the box's sides and left a hard vertical edge (visible at 8.3, 22.3 and 31.3 s). | The sweep is a side-to-side gradient, transparent at both ends, skewed for the diagonal look. |
+| "She's home." frozen bottom-left through the second thread (0:16–0:26) | Partly: it stayed to 22.5 s, over her reaction and the door shot, and left with the dissolve; it never sat over the thread. | The line fades out once the door shot is in (gone about 0.6 s after it starts). |
+| The headline ghost-fades over the closing card (0:30–0:31) | The 8-frame cross-dissolve from the ask to the end card. | Gone with the one closing card. |
+| Two closing screens "stutter"; make one 5–6 s card: ask, offer + estimate, number, site on the cottage | Agreed. | `endCardAsk`: the pitch scene is skipped, the closing card carries the ask, the two pills, the number and the site, 6 s. The three-gable house (34) and "We can keep a secret." are off while it is on. |
+| A click or chime as the lit house appears (the dusk timer) | The reveal chime had been turned off (owner: effects "fit poorly"). | The switch click alone, at 45 % (`adMix.revealClick`). |
+| Trim 2–3 s to about 30 s | 35.3 s before. | 30.5 s: 7.6 / 2.4 / 11.4 / 4.2 / 6 s scenes; the music start moved (2.9 s) so the waltz's peak still lands on the house. |
 
 Cut 2's scene files (headline, estimate ring, design tool, season cards, map, offer stamp, the
 illustrated street) were deleted in cut 3; git history (commit b485d58) has them.

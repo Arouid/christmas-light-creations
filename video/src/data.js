@@ -27,6 +27,11 @@ const data = {
   // true = the end card shows the cottage already lit (when it pops on earlier in the ad);
   // false = the end card flickers it on.
   endCardLit: false, // the cottage no longer pops on in the plan scene, so the end card does it
+  // true = one closing card: the ask ("Surprise someone this year."), the offer and the estimate
+  // pills, the number and the site on the cottage card, and the stone-house pitch scene is skipped
+  // (Gemini's review 2026-10-13, via the owner: the two closing screens "stutter"). false = the
+  // pitch scene over the stone house, then the number card.
+  endCardAsk: true,
   // Type: the site's fonts (Fraunces extrabold, tight tracking, for headlines; Inter for the rest).
   type: { displayWeight: 800, displayTracking: '-0.02em' },
   photos: {
@@ -41,13 +46,14 @@ const data = {
   teaser: { seconds: 5, onAt: 2.0 },
   // The story ad (Ad compositions). Scene lengths in seconds; the length is their sum minus the
   // 8-frame cross-dissolves between scenes.
+  // Trimmed 2026-10-13 to about 30 s (Gemini's review via the owner): was 8.5 / 2.6 / 12 / 4.5 / 5 / 4.
   scenes: {
-    thread1: 8.5,
-    plan: 2.6, // the time card (6.5 with three beats and the cottage)
-    home: 12, // drive 2.5 s → reveal → reaction 2.2 s → door 1.6 s (6.5 without the clips)
-    thread2: 4.5,
-    pitch: 5,
-    end: 4,
+    thread1: 7.6,
+    plan: 2.4, // the time card (6.5 with three beats and the cottage)
+    home: 11.4, // drive 2.5 s → reveal → reaction 1.2 s → door 2.6 s (6.5 without the clips)
+    thread2: 4.2,
+    pitch: 5, // skipped while endCardAsk is true
+    end: 6, // the one closing card (4 when the pitch scene is on)
   },
   // The story: a husband texts the business to install while his wife is at work on her birthday.
   story: {
@@ -90,9 +96,14 @@ const data = {
   // Source and licence go in assets-source/ads/video/README.md. Empty = silent.
   // startFrom: seconds into the track; the bed fades out over the last 2.5 s of the video.
   // Wintertime Waltz: quiet for 6 s under the first texts, builds through the time card, its 15 s peak
-  // lands as the house appears (startFrom lines them up: house at ~13.2 s into the video). Others on disk: 'dance-of-the-sugar-plum-fairies-kevin-macleod-main-version-9984-01-46.wav'
+  // lands as the house appears (startFrom lines them up: house at ~12.2 s into the video since the trim; it was 13.2 s at startFrom 1.8). Others on disk: 'dance-of-the-sugar-plum-fairies-kevin-macleod-main-version-9984-01-46.wav'
   // (quiet 9 s, playful from 17 s), 'anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav' (swell at 22 s: startFrom 4.3).
-  music: { file: 'wintertime-waltz-albert-behar-main-version-46196-02-05.wav', volume: 0.6, startFrom: 1.8 },
+  // To try another track without editing this: node scripts/render-all.mjs ad 16x9 --music=<file> --start=<s> --volume=<v> --suffix=<name>
+  // Two more on disk (owner 2026-10-13, upbeat): 'a-little-christmas-ben-johnson-main-version-10155-02-35.wav'
+  // (sleigh-bell stabs at 11.6 / 14.6 / 17.6 / 20.5 s, full band from 22 s; loud: volume ~0.25, startFrom 2.45 puts a
+  // stab on the house) and 'guess-who-flew-in-for-christmas-sky-toes-main-version-02-23-10383.wav' (near-silent start,
+  // builds, lifts at 17.8 s, hit at 20 s; volume ~0.45, startFrom 5.6 puts the lift on the house).
+  music: { file: 'wintertime-waltz-albert-behar-main-version-46196-02-05.wav', volume: 0.6, startFrom: 2.9 },
   // Sound effects: files in assets-source/ads/sfx/. Empty = none. Each plays at its moment:
   // pop = a text bubble lands (both sides); typing = the dots start; lightsOn = the cottage flickers
   // on (plan beat 3, end card, the 5-second ad); lightsChime = a second layer as the glow settles;
@@ -117,7 +128,8 @@ const data = {
   },
   // How loud each effect is in the full ad, under the music, as a share of its level above (0 = off).
   // The 5-second ad has no music and uses the levels above as they are.
-  adMix: { pop: 0.6, typing: 0, lightsOn: 0.85, car: 1, reveal: 0, ambience: 0, beds: 1 },
+  // revealClick = the switch click as the house appears (the dusk timer), no harp (Gemini's note, 2026-10-13).
+  adMix: { pop: 0.6, typing: 0, lightsOn: 0.85, car: 1, reveal: 0, revealClick: 0.45, ambience: 0, beds: 1 },
   // Footage: files in assets-source/ads/clips/ (MP4, 1080p or 4K). Empty = the scene uses its
   // graphic or photo instead. texting = hands on a phone at night, behind the first thread;
   // drive = headlights on a dark street / through the windshield, opens the 5:41 pm scene;

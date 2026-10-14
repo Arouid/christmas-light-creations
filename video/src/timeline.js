@@ -11,6 +11,8 @@ export function sceneList(props) {
   let from = 0
   const out = []
   for (const key of ORDER) {
+    // One closing card (endCardAsk): the ask moves onto the end card and the pitch scene is skipped.
+    if (key === 'pitch' && props.endCardAsk) continue
     const dur = Math.round((props.scenes[key] || 0) * fps)
     if (dur <= 0) continue
     out.push({ key, from, dur })
