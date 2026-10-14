@@ -156,7 +156,7 @@ export const SECTIONS = [
     id: 'customers', icon: '👥', title: 'Customers', tab: 'customers',
     summary: 'Every household, replacing the Google Sheet. On a computer it’s a sortable table; on a phone, a list.',
     items: [
-      'Tap a customer → **Edit details**: contact, property (gate code, location block, install type), lights (color, takedown notes), account (since, original rate, payment method) and **each season** (status, dates, install billing, takedown billing).',
+      'Tap a customer → **Edit details**: contact, property (**Street, City, State, ZIP**: fill in the ZIP for the full address, or tap **Save full address** when it only has the street; gate code, location block, install type), lights (color, takedown notes), account (since, original rate, payment method) and **each season** (status, dates, install billing, takedown billing).',
       '**＋ Add a past season** (bottom of Edit details) for a year that isn’t on file yet.',
       'Typing saves on its own (“Saved ✓”).',
       'Early installs: a suggested early discount appears by the install date; tap to apply.',
