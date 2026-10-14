@@ -54,7 +54,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
           <ul className="space-y-2">
             {list.map((m) => {
               // Marked until someone takes it (or, without the activity log, until you've looked).
-              const fresh = alerts.openMode ? needsSomeone(m, feed?.handling) : isNew(m, seenAtOpen)
+              const fresh = alerts.openMode ? needsSomeone(m, alerts.cover) : isNew(m, seenAtOpen)
               return (
                 <li key={m.id}>
                   <button type="button" onClick={() => go(messageLink(m))}
@@ -74,7 +74,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
                     </span>
                   </button>
                   <div className="space-y-2 pl-13">
-                    <Handling m={m} who={whoOf(m, names)} feed={feed} user={user} />
+                    <Handling m={m} who={whoOf(m, names)} feed={feed} user={user} cover={alerts.cover} />
                     {m.kind !== 'review' && <SuggestReply target={draftTarget(m)} chat={m.kind === 'chat'} />}
                   </div>
                 </li>

@@ -78,11 +78,68 @@ export function recentIncoming(items, now = Date.now()) {
 // is still New, a problem report still Open, an account chat still unanswered.
 // Dismissed ones are already out of the list. `handling` is anything with
 // .has(id): the Map from src/lib/activity.js handlers(), or the Set from claimed() below.
-export const needsSomeone = (m, handling) => !handling?.has?.(m.id)
+// Coverage (owner 2026-10-14: Lacie was texting Tracie from the Voice app while 💬 showed five
+// “Needs someone” texts from her, because Voice never emails outgoing texts and each claim was
+// per message). Two kinds of staff action cover a person:
+// - live ones (I've got it / Take it over on any of their messages, a text or a call to them from
+//   the app): the conversation is theirs for COVER_MS either side, so the person's messages up to
+//   six hours before and after need nobody (our Voice replies in between are invisible to us);
+// - replies (an email, chat reply or Claude draft sent to them, an invoice or proposal, a stored
+//   outgoing message): they answer what came before them, never what comes after.
+export const COVER_MS = 6 * 60 * 60 * 1000
+export const LIVE_ACTIONS = ['handling', 'takeover', 'text', 'call']
+export const REPLY_ACTIONS = ['email', 'chat-reply', 'ai-draft', 'email-scheduled', 'invoice-sent', 'proposal-sent']
+// Who a message is with: the customer, else the lead, else the number or address, else itself.
+export const personKey = (m) => m?.customerId ? `customer:${m.customerId}` : m?.leadId ? `lead:${m.leadId}` : m?.phone ? `phone:${m.phone}` : m?.email ? `email:${String(m.email).toLowerCase()}` : `msg:${m?.id ?? ''}`
+const atOf = (m) => Date.parse(m?.at) || toMs(m?.syncedAt) || 0
+// activity: the last days' entries; items: the incoming list (to turn a claim on a message into its
+// person); outgoing: stored messages, the direction 'out' ones count as replies.
+// -> { live: Map key -> { at, by }, replied: Map key -> { at, by } }, the latest per key.
+export function coverage({ activity, items, outgoing, now = Date.now() }) {
+  const live = new Map()
+  const replied = new Map()
+  const note = (map, key, at, by) => {
+    if (!key || !at) return
+    const cur = map.get(key)
+    if (!cur || at > cur.at) map.set(key, { at, by: by ?? '' })
+  }
+  const byId = new Map((items ?? []).map((m) => [m.id, m]))
+  for (const e of activity ?? []) {
+    if (!e?.target?.id) continue
+    const at = toMs(e.at)
+    const type = e.target.type ?? 'message'
+    if (type === 'message') {
+      if (!CLAIMS.includes(e.action)) continue
+      note(live, `msg:${e.target.id}`, at || now, e.by) // a claim on the message itself holds whatever its time
+      const m = byId.get(e.target.id)
+      if (m && at) note(live, personKey(m), at, e.by)
+    } else if (type === 'customer' || type === 'lead') {
+      if (LIVE_ACTIONS.includes(e.action)) note(live, `${type}:${e.target.id}`, at, e.by)
+      else if (REPLY_ACTIONS.includes(e.action)) note(replied, `${type}:${e.target.id}`, at, e.by)
+    }
+  }
+  for (const m of outgoing ?? []) if (m?.direction === 'out') note(replied, personKey(m), atOf(m), m.updatedBy || m.by)
+  return { live, replied }
+}
+// The claim or reply that covers this message: { at, by }, or null when it needs someone.
+// Also takes the older shape, a Set or Map of claimed message ids (the app's handlers()).
+export function coveredBy(m, cover) {
+  if (!cover) return null
+  if (!cover.live && typeof cover.has === 'function') return cover.has(m?.id) ? { at: 0, by: '' } : null // a Set or Map of claimed ids
+  const own = cover.live?.get(`msg:${m?.id}`)
+  if (own) return own
+  const key = personKey(m)
+  const t = atOf(m)
+  const l = cover.live?.get(key)
+  if (l && l.at >= t - COVER_MS) return l
+  const r = cover.replied?.get(key)
+  return r && r.at >= t ? r : null
+}
+export const needsSomeone = (m, cover) => !coveredBy(m, cover)
   && !(m.kind === 'request' && m.status && m.status !== 'new')
   && !(m.kind === 'report' && m.status !== 'Open')
   && !(m.kind === 'chat' && m.status !== 'waiting')
-export const countOpen = (list, handling) => list.filter((m) => needsSomeone(m, handling)).length
+export const countOpen = (list, cover) => list.filter((m) => needsSomeone(m, cover)).length
 
 // Activity entries -> the ids someone tapped I've got it / Take it over on.
 export const CLAIMS = ['handling', 'takeover']
@@ -90,9 +147,9 @@ export const claimed = (activity) => new Set((activity ?? []).filter((e) => CLAI
 
 // Everything that has waited longer than waitMs with nobody on it, newest first.
 export function waiting({ messages, leads, calls, conversations, activity, now = Date.now(), waitMs = WAIT_MS }) {
-  const handling = claimed(activity)
   const list = recentIncoming([...(messages ?? []), ...requestItems(leads), ...reportItems(calls), ...chatItems(conversations)], now)
-  return list.filter((m) => needsSomeone(m, handling) && now - (Date.parse(m.at) || toMs(m.syncedAt)) >= waitMs)
+  const cover = coverage({ activity, items: list, outgoing: messages, now })
+  return list.filter((m) => needsSomeone(m, cover) && now - (Date.parse(m.at) || toMs(m.syncedAt)) >= waitMs)
 }
 
 // serverState/staffNudge: { at, key }. Send when the list changed or the gap has passed.

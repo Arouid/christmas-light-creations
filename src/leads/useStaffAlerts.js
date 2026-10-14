@@ -4,7 +4,7 @@
 // everyone; opening the list doesn't clear it (owner 2026-10-10). Without the
 // activity log it falls back to "since you last looked" (staffPrefs).
 import { useMemo, useState } from 'react'
-import { chatItems, countNew, countOpen, listSince, recentIncoming, reportItems, requestItems, toMs } from '../lib/staffAlerts'
+import { chatItems, countNew, countOpen, coverage, listSince, recentIncoming, reportItems, requestItems, toMs } from '../lib/staffAlerts'
 import { reviewTextItems } from '../lib/reviewAsk'
 import { prefsId } from './push'
 import { SERVER_TIME, mergePaths, useLiveDoc, useLiveSince } from './staffStore'
@@ -44,7 +44,9 @@ export function useStaffAlerts(user, leads, feed, calls, customers, season) {
   const lastSync = useMemo(() => Math.max(0, ...(items ?? []).map((m) => toMs(m.syncedAt))), [items])
 
   const openMode = Boolean(feed && !feed.error)
-  const count = loading || (openMode && feed.loading) ? 0 : openMode ? countOpen(list, feed.handling) : countNew(list, seenAt)
+  // Who is on whom (functions/nudge.js coverage): claims, and texts/calls/emails from the app.
+  const cover = useMemo(() => coverage({ activity: feed?.entries, items: list, outgoing: items }), [feed?.entries, list, items])
+  const count = loading || (openMode && feed.loading) ? 0 : openMode ? countOpen(list, cover) : countNew(list, seenAt)
 
-  return { list, count, openMode, seenAt, markSeen, prefs, error, loading, lastSync }
+  return { list, count, openMode, seenAt, markSeen, prefs, error, loading, lastSync, cover }
 }

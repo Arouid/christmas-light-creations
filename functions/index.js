@@ -1730,7 +1730,7 @@ async function loadWaiting(db, now) {
     db.collection('leads').where('createdAt', '>=', since).get(),
     db.collection('serviceCalls').where('source', '==', 'customer').get(),
     db.collection('conversations').where('lastAt', '>=', since).get(),
-    db.collection('activity').where('at', '>=', since).select('action', 'target').get(),
+    db.collection('activity').where('at', '>=', since).select('action', 'target', 'at', 'by').get(),
   ])
   return waiting({ messages: all(msgs), leads: all(leads), calls: all(calls), conversations: all(chats), activity: all(acts), now })
 }

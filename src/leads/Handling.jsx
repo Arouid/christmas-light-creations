@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { agoText, staffName } from '../lib/activity'
-import { KIND_WORD } from '../lib/staffAlerts'
+import { KIND_WORD, coveredBy } from '../lib/staffAlerts'
 import { logActivity } from './activity'
 
 // "I've got it" / "Take it over" on a message (docs/specs/dashboard.md): tells
@@ -10,7 +10,7 @@ import { logActivity } from './activity'
 const same = (a, b) => String(a ?? '').toLowerCase() === String(b ?? '').toLowerCase()
 const tapTime = () => Date.now()
 
-export default function Handling({ m, who, feed, user }) {
+export default function Handling({ m, who, feed, user, cover }) {
   const [tap, setTap] = useState(null) // { at, from }: shows at once, before the server confirms
   if (!feed || feed.error) return null
   const me = user?.email
@@ -30,7 +30,11 @@ export default function Handling({ m, who, feed, user }) {
     setTap({ at: tapTime(), from })
   }
 
+  // Not claimed itself, but the person is covered (a claim on another message of theirs, or a
+  // text/call/email to them from the app in the last hours): say so instead of “Needs someone”.
+  const conv = !shown && cover ? coveredBy(m, cover) : null
   let line = ''
+  if (conv) line = same(conv.by, me) ? 'You’re on this conversation' : `${name(conv.by)} is on this conversation`
   if (shown) {
     const from = shown.from
     if (mine) line = from ? `You took it over from ${name(from)}` : 'You’re on it'
@@ -40,8 +44,8 @@ export default function Handling({ m, who, feed, user }) {
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
       {line && (
-        <span className={`rounded-full px-2.5 py-1 font-semibold ${mine ? 'bg-pine-500/30 text-white' : 'bg-sky-500/20 text-sky-100'}`} role="status">
-          👤 {line} · {agoText(shown.at)}
+        <span className={`rounded-full px-2.5 py-1 font-semibold ${mine || (conv && same(conv.by, me)) ? 'bg-pine-500/30 text-white' : 'bg-sky-500/20 text-sky-100'}`} role="status">
+          👤 {line} · {agoText((shown ?? conv).at)}
         </span>
       )}
       {!mine && (
