@@ -104,6 +104,7 @@ for each, `render-all.mjs <name>` renders it as `clc-<file>-<shape>.mp4`. The ba
 |---|---|---|---|
 | `bumper` | 6.00 s (180 frames) | one bubble "🤫 She has no idea." (2.6 s), the card in compact mode: the line, the number, the site (3.67 s) | no music; the pop, the switch click and the harp at full level |
 | `short` | 15.00 s (450 frames) | two texts (4.2 s), her in the car 1.6 s → the house → "She's home." (6.4 s, no reaction or door shot), the ask card (1.6 s), the closing card (3.6 s) | Sugar Plum from 8.7 s so its first swell lands as the house appears (5.7 s), the timer's click, the wipers under the car |
+| `whisper` | 15.00 s (450 frames) | the humorous one (`scenes/Whisper.jsx`, owner's clip "intimate whisper", 2026-10-13: "any humorous christmas light video would use it to make?"): black, the perfume-ad close-up fades in, he leans in, the words land one at a time under the picture, "I booked the lights." (from 1.4 s, 0.55 s apart), her eyes open, the smile (6.8 s); the house opens out of the dark, no time, no line (4.6 s); the closing card (4.13 s). The joke: her reaction is to a chore. | Sugar Plum from 1.7 s: the quiet celesta under the whisper, its rise under the house, the 14.5 s swell on the card's switch-on; the timer's click; no other effects |
 
 The owner's question "wouldn't I need to change the stock video?": yes for the stories where
 someone other than the woman in the red car comes home (her turn, the kids, the parents, Mom's

@@ -31,6 +31,19 @@ export const STORIES = {
     home: { driveSeconds: 1.6, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0 },
     music: { startFrom: 8.7 }, // Sugar Plum's first swell (14.5 s in the file) as the house appears (5.7 s in); the waltz: 3.8
   },
+  // 15 s, the humorous one (owner's clip, 2026-10-13): a perfume-ad close-up, he whispers, the
+  // words land one at a time: "I booked the lights." Her eyes open, the smile. Cut: the house opens
+  // out of the dark with the timer's click, then the card. The joke: her reaction is to a chore.
+  whisper: {
+    label: 'We can keep a secret · the whisper (15 s)',
+    file: 'clc-whisper-15s',
+    scenes: { whisper: 6.8, thread1: 0, plan: 0, home: 4.6, thread2: 0, ask: 0, pitch: 0, end: 4.13 },
+    story: { whisperLine: 'I booked the lights.', whisperAt: 1.4, whisperStep: 0.55, homeTime: '', homeLine: '' },
+    clips: { whisper: 'intimate-whisper-4k.mp4', drive: '' },
+    clipStart: { whisper: 0 },
+    home: { driveSeconds: 0, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0 },
+    music: { startFrom: 1.7 }, // Sugar Plum's quiet celesta under the whisper; its rise under the house; the 14.5 s swell on the card's switch-on
+  },
 }
 
 // data.js with one cut's overrides laid over it (one level deep for objects).

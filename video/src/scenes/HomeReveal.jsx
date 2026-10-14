@@ -50,7 +50,7 @@ export function HomeReveal({ data, dur }) {
           {tall ? (
             <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 320, background: `linear-gradient(to bottom, transparent, ${colors.navy})` }} />
           ) : (
-            <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(5,11,26,0.85) 0%, rgba(5,11,26,0) 45%)`, opacity: line * (1 - reactionIn) }} />
+            <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(5,11,26,0.85) 0%, rgba(5,11,26,0) 45%)`, opacity: (story.homeLine ? line : 0) * (1 - reactionIn) }} />
           )}
           {clips?.reaction && frame >= reactionStart && (
             <div style={{ position: 'absolute', inset: 0, opacity: reactionIn }}>
