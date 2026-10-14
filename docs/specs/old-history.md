@@ -31,7 +31,7 @@ node scripts/old-site/old-history.mjs old-site-backup/takeout-*.zip old-site-bac
 
 Add a Google Contacts export (Google CSV, e.g. `old-site-backup/old-contacts.csv`) to the second command to name more Voice numbers.
 
-Outputs `customer-history.json` (Import → Customer history) and `past-requests-plus.csv` (Import → Past requests and win-backs).
+Outputs `customer-history.json` (Import → Customer history), `past-requests-plus.csv` (Import → Past requests and win-backs) and, since 2026-10-14, `review-alerts.csv`: every Google “left a review” notification in the mailboxes (date, reviewer, stars, quoted words), oldest first, for the missing-reviews case with Google support (`docs/TODO.md` #70). Nothing from it is imported into the app.
 
 ## Matching (Import tab, `src/lib/messageImport.js`)
 

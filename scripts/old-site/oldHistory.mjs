@@ -46,6 +46,28 @@ export function personEmail(e) {
   return { idBase: `em-${sha(messageId)}`, data, match: { emails: counterparts } }
 }
 
+// ---- Google review alerts ------------------------------------------------------------
+// For the missing-reviews case (owner 2026-10-13, docs/TODO.md #70): every "left a review"
+// notification Google sent, in all three shapes seen since 2016: "Pat left a review for
+// Christmas Light Creations" (2024+), "Pat left a review for … on Google My Business"
+// (2017–21), "Christmas Light Creations. You just got a 5-star review" (2016, no name in
+// the subject). -> { date, reviewer, stars, quote, subject }, or null for anything else.
+const REVIEW_FROM = /^(googlemybusiness-noreply|google-my-business-noreply|businessprofile-noreply|business-noreply)@google\.com$/i
+export function reviewAlert(e) {
+  const from = addressesOf(e.h.from)[0] ?? ''
+  if (!REVIEW_FROM.test(from)) return null
+  const subject = String(e.subject ?? '').replace(/\s+/g, ' ').trim()
+  const text = String(e.text ?? '')
+  const named = subject.match(/^(.+?) (?:just )?left a review for Christmas Light Creations/i)
+  const generic = !named && /\b(you (just )?got a|new) (\d-star )?review\b/i.test(`${subject} ${text}`)
+  if (!named && !generic) return null
+  const date = isoOf(e.date)
+  if (!date) return null
+  const stars = `${subject} ${text}`.match(/\b(\d)[- ]star\b/i)?.[1] ?? ''
+  const quote = text.match(/[“"]([^”"\n]{3,200})[”"]/)?.[1]?.trim() ?? ''
+  return { date: date.slice(0, 10), reviewer: named ? named[1].trim() : '', stars, quote, subject: subject.slice(0, 120) }
+}
+
 // ---- Estimate request notifications (website forms) ------------------------------
 
 const FORM_SUBJECT = /^(New estimate from Get An Estimate|New Estimate - [A-Z]+\d+|Contact Form submission from|Estimate Submission)/i

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { formRequest, paymentEntry, paymentOf, personEmail, requestEntry } from '../scripts/old-site/oldHistory.mjs'
+import { formRequest, paymentEntry, paymentOf, personEmail, requestEntry, reviewAlert } from '../scripts/old-site/oldHistory.mjs'
 import { readEmail } from '../scripts/old-site/mbox.mjs'
 import { matchMessages } from '../src/lib/messageImport.js'
 import { cleanRow, mergePeople } from '../src/lib/oldEstimates.js'
@@ -66,6 +66,17 @@ test('estimate form emails, all three layouts', () => {
   assert.equal(formRequest(mail({ From: 'x@y.com', Subject: 'Re: New Estimate - A000547', Date: DATE }, 'Name : *X*')), null)
   // Same person, same day: the email and the website's own record are one entry.
   assert.equal(requestEntry({ ...b, date: '2020-10-23T10:00:00.000Z' }).id, requestEntry({ ...b, date: '2020-10-23T23:00:00.000Z' }).id)
+})
+
+test('Google review alerts in all three shapes; everything else from Google is not one', () => {
+  const a = reviewAlert(mail({ From: 'Google Business Profile <businessprofile-noreply@google.com>', To: 'me@example.com', Subject: 'Jenny left a review for Christmas Light Creations', Date: 'Wed, 7 Jan 2026 15:00:00 -0600', 'Message-ID': '<r1@x>' }, 'Go to reviews and respond to customers today.'))
+  assert.deepEqual(a, { date: '2026-01-07', reviewer: 'Jenny', stars: '', quote: '', subject: 'Jenny left a review for Christmas Light Creations' })
+  const b = reviewAlert(mail({ From: 'Google My Business <googlemybusiness-noreply@google.com>', To: 'me@example.com', Subject: 'cindy left a review for Christmas Light Creations on Google My Business', Date: 'Sat, 23 Sep 2017 10:00:00 -0500', 'Message-ID': '<r2@x>' }, 'Christmas Light Creations. Congrats! You got a 5-star review. "customer service like this is rare these days."'))
+  assert.equal(b.reviewer, 'cindy'); assert.equal(b.stars, '5'); assert.equal(b.quote, 'customer service like this is rare these days.'); assert.equal(b.date, '2017-09-23')
+  const c = reviewAlert(mail({ From: 'google-my-business-noreply@google.com', To: 'me@example.com', Subject: 'You just got a new review', Date: 'Thu, 20 Oct 2016 09:00:00 -0500', 'Message-ID': '<r3@x>' }, 'Christmas Light Creations. You just got a 5-star review. "Awesome job guys, love them."'))
+  assert.equal(c.reviewer, ''); assert.equal(c.stars, '5'); assert.equal(c.quote, 'Awesome job guys, love them.')
+  assert.equal(reviewAlert(mail({ From: 'businessprofile-noreply@google.com', To: 'me@example.com', Subject: 'Christmas Light Creations, are you open on Labor Day?', Date: DATE, 'Message-ID': '<r4@x>' }, 'Keep your listing up to date')), null)
+  assert.equal(reviewAlert(mail({ From: 'pat@example.com', To: 'info@christmas-light-creations.com', Subject: 'I left a review for Christmas Light Creations', Date: DATE, 'Message-ID': '<r5@x>' }, 'Just did!')), null, 'only Google’s own alerts count')
 })
 
 test('emails with people: direction, counterparts, newsletters skipped', () => {

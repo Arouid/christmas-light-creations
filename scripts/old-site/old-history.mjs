@@ -15,7 +15,7 @@ import { join } from 'node:path'
 import Papa from 'papaparse'
 import { phonesOf } from '../../functions/messageSync.js'
 import { readEmail, streamMbox, unfold } from './mbox.mjs'
-import { formRequest, paymentEntry, paymentOf, personEmail, requestEntry } from './oldHistory.mjs'
+import { formRequest, paymentEntry, paymentOf, personEmail, requestEntry, reviewAlert } from './oldHistory.mjs'
 import { namesToPhones } from './voiceTakeout.mjs'
 import { cleanRow } from '../../src/lib/oldEstimates.js'
 
@@ -41,10 +41,13 @@ const keep = (e, what) => {
 }
 const forms = []
 const payments = []
+const reviews = [] // Google review alerts, for the missing-reviews case
 const seenPay = new Set()
 
 function onMessage(raw) {
   const e = readEmail(raw)
+  const review = reviewAlert(e)
+  if (review) { reviews.push(review); return tally('google review alert') }
   const form = formRequest(e)
   if (form) {
     const entry = requestEntry(form)
@@ -116,6 +119,11 @@ try {
 
   const messages = [...entries.values()].sort((a, b) => a.data.at.localeCompare(b.data.at))
   writeFileSync(join(DIR, 'customer-history.json'), JSON.stringify({ builtAt: new Date().toISOString(), messages }))
+  // Review alerts, oldest first, one line per notification (duplicates across mailboxes collapse).
+  const seenReview = new Set()
+  const reviewRows = reviews.sort((a, b) => a.date.localeCompare(b.date)).filter((r) => { const k = `${r.date}|${r.reviewer}|${r.subject}`; if (seenReview.has(k)) return false; seenReview.add(k); return true })
+  writeFileSync(join(DIR, 'review-alerts.csv'), `\ufeff${Papa.unparse(reviewRows, { columns: ['date', 'reviewer', 'stars', 'quote', 'subject'] })}`)
+  console.log(`review-alerts.csv: ${reviewRows.length} Google review alerts`)
 
   // ---- Past requests + win-backs ----
   const extra = []
