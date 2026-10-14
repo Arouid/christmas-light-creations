@@ -39,10 +39,10 @@ export function Ad(props) {
       })}
       {list.slice(1).filter(({ key }) => key !== 'home').map(({ key, from }) => (
         <Sequence key={`sweep-${key}`} from={from - 4} durationInFrames={SWEEP} name={`sweep → ${key}`}>
-          <LightSweep dur={SWEEP} />
+          <LightSweep dur={SWEEP} data={props} />
         </Sequence>
       ))}
-      <FilmLook grain={props.look?.grain ?? 0.07} vignette={props.look?.vignette ?? 0.55} />
+      <FilmLook grain={props.look?.grain ?? 0.07} vignette={props.look?.vignette ?? 0.55} film={props.clips?.film || ''} filmStart={props.clipStart?.film || 0} />
       <Sound props={props} list={list} />
       {music.file ? <Audio src={staticFile(`music/${music.file}`)} trimBefore={Math.round((music.startFrom || 0) * fps)} volume={vol} /> : null}
     </AbsoluteFill>

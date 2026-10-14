@@ -154,8 +154,15 @@ const data = {
     reaction: 'person-in-car-on-rainy-night-105878-1080-#1.mp4', // her, in the car, turning to look out (same woman as the drive)
     snow: 'shimmering-gold-bokeh-lights-54198-1080.mp4',
     plan: 'falling-snowflakes-on-dark-bokeh-background-114577-1080.mp4', // behind the plan beats (owner: no still background between footage)
-    end: 'falling-snowflakes-overlay-86734-1080.mp4', // real snow behind the end card (black blended away)
-    snowOverlay: 'falling-snowflakes-overlay-86734-1080.mp4', // falling snow in front of the footage and photos (owner: "snow that looks real")
+    // Uppbeat motion packs (owner, 2026-10-13 night; copied from assets-source/ads/motion/ into clips/ with
+    // short names): pack-mix-normal-3 = a natural mixed-depth snowfall on black for the closing cards,
+    // pack-oncamera-normal-1 = soft near-lens flakes in front of her reaction, pack-light-05 = a warm
+    // light leak at each cut (replaces the drawn sweep), pack-film-1 = dust and scratches (replaces the
+    // drawn grain). Empty any of them to go back to the drawn version / the single overlay clip.
+    end: 'pack-mix-normal-3.mp4', // real snow behind the end card (black blended away)
+    snowOverlay: 'pack-oncamera-normal-1.mp4',
+    leak: 'pack-light-05.mp4',
+    film: '', // 'pack-film-1.mp4' tried 2026-10-13: its film-gate mark showed as a rounded box and the screen blend hazed the picture; the drawn grain stays // falling snow in front of the footage and photos (owner: "snow that looks real")
   },
   // How strong the falling snow is over the 5:41 pm scene and the closing shot (0 = none), and the
   // thinner layer that falls in front of the cottage and the words on the end card and the 5-second ad.

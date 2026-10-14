@@ -111,9 +111,19 @@ export function SceneFade({ dur, fadeInFrames = 6, fadeOutFrames = 8, children }
 }
 
 // Film look over the whole video: a soft vignette and fine moving grain.
-export function FilmLook({ grain = 0.07, vignette = 0.55 }) {
+// With film (data.clips.film, an Uppbeat dust-and-scratches clip on black): the real texture,
+// screen-blended at `grain`, instead of the drawn noise; the vignette stays.
+export function FilmLook({ grain = 0.07, vignette = 0.55, film = '', filmStart = 0 }) {
   const frame = useCurrentFrame()
   const { w, h } = useFmt()
+  if (film) {
+    return (
+      <>
+        <AbsoluteFill style={{ mixBlendMode: 'screen', opacity: grain * 4, pointerEvents: 'none' }}><Clip file={film} start={filmStart} /></AbsoluteFill>
+        <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,${vignette}) 100%)`, pointerEvents: 'none' }} />
+      </>
+    )
+  }
   return (
     <AbsoluteFill style={{ pointerEvents: 'none' }}>
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,${vignette}) 100%)` }} />
@@ -128,9 +138,19 @@ export function FilmLook({ grain = 0.07, vignette = 0.55 }) {
 }
 
 // A soft band of light that sweeps across the frame at a scene change.
-export function LightSweep({ dur = 14, color = 'rgba(255,224,138,0.22)' }) {
+// With data.clips.leak (an Uppbeat light-leak clip on black, about a second): the real leak,
+// screen-blended, instead of the drawn band.
+export function LightSweep({ dur = 14, color = 'rgba(255,224,138,0.22)', data }) {
   const frame = useCurrentFrame()
   const { w, h } = useFmt()
+  if (data?.clips?.leak) {
+    const o = interpolate(frame, [0, 3, dur - 4, dur], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+    return (
+      <AbsoluteFill style={{ mixBlendMode: 'screen', opacity: o * (data.leakOpacity ?? 0.55), pointerEvents: 'none' }}>
+        <Clip file={data.clips.leak} start={data.clipStart?.leak || 0} />
+      </AbsoluteFill>
+    )
+  }
   const x = interpolate(frame, [0, dur], [-w * 0.6, w * 1.2])
   // A side-to-side gradient, fully transparent at both ends, skewed for the diagonal look. A
   // diagonal gradient inside a tall box ended short of its sides and left a hard vertical edge
