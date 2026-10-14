@@ -161,11 +161,13 @@ const data = {
     // drawn grain). Empty any of them to go back to the drawn version / the single overlay clip.
     end: 'pack-mix-normal-3.mp4', // real snow behind the end card (black blended away)
     snowOverlay: 'pack-oncamera-normal-1.mp4',
-    leak: 'pack-light-05.mp4',
+    leak: 'pack-light-12.mp4', // 05 was a brighter wash; 12 reads as a leak at 28 %
     film: '', // 'pack-film-1.mp4' tried 2026-10-13: its film-gate mark showed as a rounded box and the screen blend hazed the picture; the drawn grain stays // falling snow in front of the footage and photos (owner: "snow that looks real")
   },
   // How strong the falling snow is over the 5:41 pm scene and the closing shot (0 = none), and the
   // thinner layer that falls in front of the cottage and the words on the end card and the 5-second ad.
+  // The light leak at each cut, 0..1 (0.55 bleached the ask card and the thread: owner's eye 2026-10-13).
+  leakOpacity: 0.28,
   snowOverlayOpacity: 0.6,
   snowFrontOpacity: 0.35,
   // Seconds to skip at the start of a clip (so the best stretch plays).
