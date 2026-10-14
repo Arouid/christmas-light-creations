@@ -21,6 +21,20 @@ Also: no merchandise where the item *is* the value (a poster of the image); a sh
 the item sits inside our own design is allowed. Items can contain third-party pieces under their
 own licence (a theme's demo photos, a GPL plugin): check the download's licence folder.
 
+## What counts as one project (from the Elements License FAQ, 2026-10-14)
+
+- A licence covers **one end product, wherever it runs**: platform and placement don't matter.
+- **Cuts, edits and sizes of the same end product are the same project**: Envato's own example is
+  a 30-second cut of a 2-minute video for the same campaign. So one ad's 16:9, 9:16 and 1:1
+  renders and its 6-second, 15-second and 30-second cuts are **one** licence.
+- **A new ad or campaign is a new project**: a different end product, even with the same track.
+  No re-download needed: My Downloads → the item → View licenses → Create new license, or
+  the item page → Licenses → Create new license.
+- Name projects after the ad: "CLC Google Ads: cottage teaser 2026". Everything that goes into
+  that ad (track, sound effects, overlays, b-roll) is licensed under that one name.
+- A logo *can* be an end product made from items, but then the items inside it can't be used as
+  merchandise and no trademark can be claimed over the item itself; for us the logo stays our own.
+
 ## How to use it without tripping over the rules
 
 1. Search Elements, pick the item, open its page.
