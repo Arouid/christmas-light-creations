@@ -54,6 +54,8 @@ assets-source/shirts/designs/*.png
 
 # Stock downloads (Vecteezy): licensed to us, never redistributed; the repo is public.
 assets-source/Vecteezy Downloads/
+# Envato Elements downloads: licensed per project to us, never redistributed (assets-source/envato/README.md).
+assets-source/envato/downloads/
 # Licensed downloads for the ads (Uppbeat music, sound effects, footage): per-licence, not redistributable
 assets-source/ads/clips/
 assets-source/ads/sfx/

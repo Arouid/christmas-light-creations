@@ -40,6 +40,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Mobile first: design for phones, then scale up with `sm:`/`md:`/`lg:`. No horizontal scroll at 375px. Tap targets at least 44px.
 - All copy, photos, reviews and FAQ live in `src/data/content.js`. Components hold layout only.
 - Images live in the repo under `public/images/` (nothing loaded from the old WordPress CDN). Full-size originals go in `assets-source/`, which isn't shipped.
+- Licensed stock (Vecteezy Pro, Envato Elements since 2026-10-14): raw downloads stay in their ignored folders (`assets-source/Vecteezy Downloads/`, `assets-source/envato/downloads/`), one Elements download is licensed to one named project (re-download from My Downloads for another), never as a logo or trademark, music never for TV/radio or streaming-TV use; the rules and the workflow are in `assets-source/envato/README.md`.
 - Colors come from the theme tokens in `src/index.css` (`night`, `glow`, `berry`, `pine`). Fonts: Fraunces (display), Inter (body).
 - No analytics scripts and no cookie banners. The one exception is the Google Ads conversion tag (`src/lib/ads.js`, owner decision 2026-10-11): public pages only, never `/leads/`, `/proposal/`, `/account/` or `/invoice/`; disclosed on `/privacy/`. One exception (owner, 2026-10-09): reCAPTCHA Enterprise for Firebase App Check (anti-spam), loaded only with Firebase (`APP_CHECK_SITE_KEY` in `src/lib/firebase.js`); badge hidden, `RecaptchaNote` shown instead.
 - Keep the phone number (281-819-0163) one tap away on every screen.
