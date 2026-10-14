@@ -43,6 +43,7 @@ export const STORIES = {
     clipStart: { whisper: 0 },
     home: { driveSeconds: 0, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0 },
     endCard: { classy: true }, // the perfume-ad close: the lights come up slowly, the line, the name small, the site and number quiet
+    adMix: { lightsOn: 0 }, // no switch, no harp at the close (owner): the music alone
     music: { startFrom: 1.7 }, // Sugar Plum's quiet celesta under the whisper; its rise under the house; the 14.5 s swell on the card's switch-on
   },
 }
