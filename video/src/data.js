@@ -159,9 +159,9 @@ const data = {
     // pack-oncamera-normal-1 = soft near-lens flakes in front of her reaction, pack-light-05 = a warm
     // light leak at each cut (replaces the drawn sweep), pack-film-1 = dust and scratches (replaces the
     // drawn grain). Empty any of them to go back to the drawn version / the single overlay clip.
-    end: 'pack-mix-normal-3.mp4', // real snow behind the end card (black blended away)
-    snowOverlay: 'pack-oncamera-normal-1.mp4',
-    leak: 'pack-light-12.mp4', // 05 was a brighter wash; 12 reads as a leak at 28 %
+    end: 'falling-snowflakes-overlay-86734-1080.mp4', // the packs are off again (owner 2026-10-13: "forget about the motion assets"); pack-mix-normal-3.mp4 was the try // real snow behind the end card (black blended away)
+    snowOverlay: 'falling-snowflakes-overlay-86734-1080.mp4', // pack-oncamera-normal-1.mp4 was the try
+    leak: '', // pack-light-12.mp4 at 28 % was the try
     film: '', // 'pack-film-1.mp4' tried 2026-10-13: its film-gate mark showed as a rounded box and the screen blend hazed the picture; the drawn grain stays // falling snow in front of the footage and photos (owner: "snow that looks real")
   },
   // How strong the falling snow is over the 5:41 pm scene and the closing shot (0 = none), and the

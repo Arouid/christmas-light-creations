@@ -46,6 +46,23 @@ export const STORIES = {
     adMix: { lightsOn: 0 }, // no switch, no harp at the close (owner): the music alone
     music: { startFrom: 1.7 }, // Sugar Plum's quiet celesta under the whisper; its rise under the house; the 14.5 s swell on the card's switch-on
   },
+  // 15 s, Halloween (owner 2026-10-13: "a get outta the way Halloween ad"): a vampire at her candlelit
+  // table licks the blood off her fingers and smiles at us with her fangs (owner's clip, 5 s, near
+  // silence), cut to black with the switch click, the house blazes on with a sleigh-bell stab,
+  // "Get outta the way, Halloween." with the October offer under it, the card.
+  halloween: {
+    label: 'Get outta the way, Halloween (15 s)',
+    file: 'clc-halloween-15s',
+    scenes: { whisper: 5, thread1: 0, plan: 0, home: 7, thread2: 0, ask: 0, pitch: 0, end: 3.53 },
+    story: { whisperLine: '', homeTime: '', homeLine: 'Get outta the way, Halloween.', homeSub: '10% off installs done by October 31' },
+    clips: { whisper: 'seductive-vampire-woman-with-blood-189499-4k.mp4', drive: '' },
+    clipStart: { whisper: 1.0 },
+    home: { driveSeconds: 0, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0, revealFrames: 8, lineDelay: 14 },
+    adMix: { pop: 0.6, typing: 0, lightsOn: 0.85, car: 0, reveal: 0, revealClick: 1, ambience: 0, beds: 0 },
+    // A Little Christmas: quiet under the vampire, its first sleigh-bell stab (11.6 s in the file) as the
+    // house blazes on at 5.33 s, more stabs every 3 s under the house and the card.
+    music: { file: 'a-little-christmas-ben-johnson-main-version-10155-02-35.wav', volume: 0.25, startFrom: 6.27 },
+  },
 }
 
 // data.js with one cut's overrides laid over it (one level deep for objects).

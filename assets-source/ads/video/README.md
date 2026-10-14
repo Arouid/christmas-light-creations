@@ -29,6 +29,7 @@ YouTube thumbnails), kept apart so later experiments (stop-motion elements) can'
 | `clc-bumper-6s-16x9.mp4`, `-9x16`, `-1x1` | the three shapes | **the 6-second bumper**: "🤫 She has no idea." pops in, then the cottage pops on, "We can keep a secret.", the number, the site; no music (`src/stories.js` → `bumper`) | YouTube bumper (6 s max) |
 | `clc-short-15s-16x9.mp4`, `-9x16`, `-1x1` | the three shapes | **the 15-second story**: two texts, her in the car, the house, "She's home.", the ask card, the closing card; Sugar Plum (`src/stories.js` → `short`) | YouTube non-skippable (15 s max), in-stream |
 | `clc-whisper-15s-16x9.mp4`, `-9x16`, `-1x1` | the three shapes | **the whisper**, the humorous cut: a perfume-ad close-up, he whispers, the words land one at a time: "I booked the lights." Her eyes open, the smile; the house opens out of the dark with the timer's click; the classy close (`endCard.classy`: the cottage's lights come up slowly, the line, a gold rule, the name small and letterspaced, the site and number under it, "Free 30-minute estimate" small below (a Gemini note the owner passed on: the contact line was thin for phones, and a quiet estimate line keeps a reason to act), no switch or harp, the music alone; owner: "something more classy"). Sugar Plum's quiet celesta under it (`src/stories.js` → `whisper`) | YouTube in-stream, non-skippable (15 s) |
+| `clc-halloween-15s-16x9.mp4`, `-9x16`, `-1x1` | the three shapes | **Get outta the way, Halloween**: a vampire licks the blood off her fingers and smiles at us (owner's clip, 5 s, near silence), cut to black with the click, the house blazes on with a sleigh-bell stab, the line with the October offer under it, the card; "A Little Christmas" (`src/stories.js` → `halloween`) | YouTube non-skippable (15 s), in-stream, through October |
 | `clc-ad-16x9-music-<name>.mp4` | 1920×1080 | the story ad with another music track, for comparison only (`render-all.mjs ad 16x9 --music=… --suffix=<name>`; `-music-sugarplum` is from the older 39 s cut) | not uploaded |
 
 All H.264, 30 fps. The story ad has music and sound effects (Uppbeat, below); the 5-second ad
@@ -112,6 +113,8 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 | `clips/person-smiling-in-warm-ambient-light-95610-1080.mp4` | `clips.reaction` (from 0.5 s: her face lit by the lights, outside the car) | "Person Smiling In Warm Ambient Light" (7.4 s) | same |
 | `clips/person-in-car-on-rainy-night-105878-1080-#1.mp4` | not used now (was the reaction, inside the car, before the door shot went in) | "Person In Car On Rainy Night" (14.7 s) | same |
 | `clips/shimmering-gold-bokeh-lights-54198-1080.mp4` | `clips.snow` (behind the second thread) | "Shimmering Gold Bokeh Lights" (9.6 s, looped) | same |
+| `clips/seductive-vampire-woman-with-blood-189499-4k.mp4` | `clips.whisper` in the Halloween cut (from 1.0 s: the lick, then the fanged smile to camera; 4K 10-bit HEVC) | "Seductive Vampire Woman With Blood" (13.6 s), owner's download 2026-10-13 | same |
+| `clips/sultry-woman-with-wine-in-candlelit-gothic-room-189476-4k.mp4` | not used (the owner's alternative for the Halloween cut: a wide candlelit lounge, less clearly Halloween) | "Sultry Woman With Wine In Candlelit Gothic Room" (28.6 s) | same |
 | `clips/intimate-whisper-4k.mp4` | `clips.whisper` (the humorous cut: he whispers in her ear, her eyes open, a smile; 4K 10-bit HEVC, 25 fps, plays from 0 for 6.8 s) | "Intimate Whisper" (8.2 s), owner's download 2026-10-13 | same |
 | other files in `clips/` and `sfx/welding-arc-…` | not used (downloaded as candidates) | | same |
 
@@ -227,7 +230,7 @@ line becomes the thing people remember. The cuts live in `video/src/stories.js`:
 per ad with only what differs from `data.js` (scene lengths, the texts, the car-shot timings, the
 music start, the card's compact mode). Adding an entry adds its compositions to the studio
 (`<Name>16x9` …) and a set to `render-all.mjs` (`node scripts/render-all.mjs <name>`), written as
-`clc-<file>-<shape>.mp4`. Built so far: `bumper` (6 s), `short` (15 s) and `whisper` (15 s, the humorous one: the owner asked
+`clc-<file>-<shape>.mp4`. Built so far: `bumper` (6 s), `short` (15 s), `halloween` (15 s, the October one) and `whisper` (15 s, the humorous one: the owner asked
 what a funny lights ad would do with a perfume-style whisper clip; the answer is that the whispered
 sweet nothing is "I booked the lights."). The stories that need
 their own arrival footage (a man, kids, an older couple, an older woman coming home) wait for clips

@@ -19,11 +19,17 @@ export function HomeReveal({ data, dur }) {
   const photo = photos.home
   const boxH = tall ? TALL_WINDOW : h
   const { driveEnd, revealStart, reactionStart, doorStart } = homeTiming(data, dur)
-  const iris = interpolate(frame, [revealStart, revealStart + 62], [0, 150], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: (t) => 1 - Math.pow(1 - t, 2) })
+  // home.revealFrames: how fast the house opens (62 = the soft iris; 8 = a pop, the Halloween cut).
+  // home.lineDelay: frames after the reveal before the line lands (70; 14 in the Halloween cut).
+  // story.homeSub: a small gold line under the big one (the Halloween cut's offer), empty = none.
+  const irisFrames = data.home?.revealFrames ?? 62
+  const iris = interpolate(frame, [revealStart, revealStart + irisFrames], [0, 150], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: (t) => 1 - Math.pow(1 - t, 2) })
   const mask = `radial-gradient(ellipse at 50% 45%, black ${iris}%, transparent ${iris + 28}%)`
   const scale = interpolate(frame, [revealStart, dur], [1.16, 1.02], { extrapolateLeft: 'clamp' })
-  const bright = interpolate(frame, [revealStart, revealStart + 72], [0.55, 0.92], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
-  const lineAt = revealStart + 70
+  const bright = interpolate(frame, [revealStart, revealStart + Math.max(irisFrames, 12) + 10], [0.55, 0.92], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+  const lineAt = revealStart + (data.home?.lineDelay ?? 70)
+  const subAt = lineAt + 12
+  const sub = pop(frame, fps, subAt, { damping: 14 })
   const line = pop(frame, fps, lineAt, { damping: 14 })
   const driveFade = driveEnd ? interpolate(frame, [driveEnd - 6, driveEnd + 4], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 0
   const doorIn = clips?.door && doorStart < dur ? fadeIn(frame, doorStart, 4) : 0
@@ -72,6 +78,11 @@ export function HomeReveal({ data, dur }) {
           <div style={{ ...display(type, tall ? 120 : square ? 100 : 136, { lineHeight: 1 }), color: colors.white, transform: `translateY(${(1 - line) * 60}px)`, opacity: fadeIn(frame, lineAt, 8) * (1 - lineOut), textShadow: '0 6px 40px rgba(0,0,0,0.8)' }}>
             {story.homeLine}
           </div>
+          {story.homeSub ? (
+            <div style={{ ...display(type, tall ? 54 : square ? 44 : 56), color: colors.goldSoft, transform: `translateY(${(1 - sub) * 30}px)`, opacity: fadeIn(frame, subAt, 8) * (1 - lineOut), textShadow: '0 4px 24px rgba(0,0,0,0.8)' }}>
+              {story.homeSub}
+            </div>
+          ) : null}
         </div>
       </AbsoluteFill>
     </SceneFade>
