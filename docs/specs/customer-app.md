@@ -17,8 +17,9 @@ The account page at `/account/` **is** the app. It's installed on a phone as a w
 
 How it installs:
 
+- **Sign-in** (three ways, no password): Google, the phone number on their record (a 6-digit code by text, `docs/specs/phone-sign-in.md`), or a one-time emailed link. All three land on the same records; the phone one is for the many customers with no email.
 - **Android (Chrome)**: *Install on Android* opens Chrome's install sheet when Chrome offers it (`beforeinstallprompt`); otherwise the steps (⋮ → Install app). The installed app shares Chrome's storage, so a customer signed in on the page stays signed in; emailed sign-in links open in Chrome and sign the app in too.
-- **iPhone (Safari)**: steps only (Share → Add to Home Screen). The home-screen app has its own storage: they sign in again inside it. Emailed links open in Safari, not the app, so the sign-in form says *Sign in with Google is the one that works* there. Google sign-in uses the redirect flow in standalone mode (`src/lib/googleSignIn.js`), the same fix as the staff app.
+- **iPhone (Safari)**: steps only (Share → Add to Home Screen). The home-screen app has its own storage: they sign in again inside it. Emailed links open in Safari, not the app, so the sign-in form says *use Google or your phone number* there; both work inside the app. Google sign-in uses the redirect flow in standalone mode (`src/lib/googleSignIn.js`), the same fix as the staff app.
 - Payments: the same PayPal buttons; checklist #75 covers paying from inside the installed app.
 
 ## Phase 2: Google Play listing (Trusted Web Activity)

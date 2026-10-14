@@ -275,7 +275,7 @@ export const faq = [
   {
     group: 'Your account & app',
     items: [
-      ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to: Sign in with Google, or we email you a one-tap link, no password. You’ll see your agreements, what’s due and what you’ve paid (and pay online), your install and takedown day, your yearly price, and you can report a problem with your lights, save your gate code, pets and HOA dates, choose which emails you get, and search the Help answers.'],
+      ['Can I see my account online?', 'Yes. Sign in at christmas-light-creations.com/account with the email we send your estimates to or the phone number we have for you: Sign in with Google, a 6-digit code by text, or a one-tap link by email, no password. You’ll see your agreements, what’s due and what you’ve paid (and pay online), your install and takedown day, your yearly price, and you can report a problem with your lights, save your gate code, pets and HOA dates, choose which emails you get, and search the Help answers.'],
       ['Is there an app?', 'Yes. On your account page tap Get the app: on Android tap Install; on an iPhone open it in Safari, tap Share, then Add to Home Screen. It opens full-screen, no password, always up to date. Phone notifications of any kind only work from the installed app; without it you get email.'],
       ['What emails will I get, and can I turn them off?', 'Your estimate and signed agreement, invoices and payment reminders, a text the day before we come, and weather heads-ups when storms, strong wind or a freeze are coming (what usually goes wrong and the one thing that fixes it). Weather heads-ups and tips can be switched off under Email preferences on your account page; agreements, bills, payment reminders and scheduling always come through. If one lands in spam, mark it Not spam so you don’t miss your install day.'],
       ['Something’s confusing. Who do I ask?', 'Your account page has a Help box with a search: signing in, paying, lights out, trees, dates and weather, boxes, HOA dates, the app. If that doesn’t cover it, call or text 281-819-0163 and a person answers, usually the same day.'],
@@ -312,7 +312,7 @@ export const recaptchaNote = {
 // Privacy policy (/privacy/). Plain words; keep it true to what the site does.
 // Owner to review (and the attorney along with the contract terms).
 export const privacy = {
-  updated: 'October 13, 2026',
+  updated: 'October 14, 2026',
   intro: 'We’re a family business. We only collect what we need to quote, install, service and bill your lights, and we never sell it. Here’s exactly what that means.',
   sections: [
     {
@@ -324,7 +324,7 @@ export const privacy = {
         '**When we bill you:** the invoices we send you (what for, amounts, due date), which emails we sent about them, when you first opened the invoice or proposal link, and how and when you paid.',
         '**When you pay online:** the amount, date and PayPal reference, and the email PayPal gives us. Card and bank details go to PayPal, never to us.',
         '**When we text, call or email each other:** we keep that conversation history (including the emails we send you, those we’ve scheduled to send you later, and which of us called, texted or emailed you, so we don’t double up, and whether an email we sent you came back undelivered, so we can fix the address) with your customer record so anyone on our team can help you. If we don’t know you yet, your text or email waits in a list our team goes through (obvious junk mail isn’t kept). When you write to us or ask for an estimate, our team’s phones may show a short notification (your name and the first words) so you hear back sooner; if an email to you comes back undelivered, they show your name and why.',
-        '**When you sign in to your account:** your email address, when you signed in, and, if you open the account as the installed app, the kind of device (for example “iPhone”). With “Sign in with Google”, Google tells us your name and email; we never see your Google password. If you report a problem with your lights from your account, what you picked and the note you typed go on your customer record as a service call, and our team’s phones get the same short notification as for a text.',
+        '**When you sign in to your account:** your email address or phone number, when you signed in, and, if you open the account as the installed app, the kind of device (for example “iPhone”). With “Sign in with Google”, Google tells us your name and email; we never see your Google password. With “Sign in with your phone number”, Google’s Firebase service texts you the code and checks it; we never see the code, and the number is used only to find your records. If you report a problem with your lights from your account, what you picked and the note you typed go on your customer record as a service call, and our team’s phones get the same short notification as for a text.',
         '**When you message us from your account (Chat with us):** what you write, and our replies, are kept as one conversation on your customer record (the last 200 messages), so anyone on our team can pick it up. Our team’s phones get the same short notification as for a text, and when we answer you get an email with the reply. We never share that conversation with anyone else.',
       ],
     },
@@ -353,7 +353,7 @@ export const privacy = {
     {
       title: 'What your browser keeps',
       items: [
-        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. Google’s ad tag (above) sets its own cookies on our public pages. Nothing else is stored.',
+        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you sign in with your phone number, Google’s reCAPTCHA check runs once on that screen (no checkbox unless it suspects a robot). If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. Google’s ad tag (above) sets its own cookies on our public pages. Nothing else is stored.',
       ],
     },
     {

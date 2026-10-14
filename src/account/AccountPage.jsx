@@ -15,14 +15,20 @@ import { TEXT_MAX as CHAT_MAX } from '../../functions/chat.js'
 import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
 import { searchHelp } from '../data/help.js'
 import { WEEKS } from '../../functions/rebook.js'
+import { demoCodeStep, demoPhoneStep, phoneError, prettyPhone } from './phoneSignIn.js'
 
-// The customer's own account: /account/ (sign in with Google or an emailed
-// link, no password). Lists every proposal sent to their email, what's paid and what's
-// due, and pays open amounts with the same PayPal panel as the proposal page.
-// Dev preview with sample data: /account/?demo
+// The customer's own account: /account/ (sign in with Google, a code texted
+// to their phone, or an emailed link; no password). Lists every proposal sent
+// to their email or phone, what's paid and what's due, and pays open amounts
+// with the same PayPal panel as the proposal page.
+// Dev preview with sample data: /account/?demo; the sign-in screens, with
+// nothing sent: /account/?demo=signin (any 6 digits sign in).
 const q = new URLSearchParams(window.location.search)
 const demo = import.meta.env.DEV && q.has('demo')
+const demoSignIn = demo && q.get('demo') === 'signin'
 const lib = demo ? null : import('../lib/account.js')
+// Where Firebase's invisible robot check for phone sign-in anchors (docs/specs/phone-sign-in.md).
+const RECAPTCHA_ID = 'phone-recaptcha'
 
 const PAY_TITLE = { deposit: 'Pay your deposit', balance: 'Pay your install balance', takedown: 'Pay for takedown' }
 const PAY_NOTE = { deposit: 'This holds your install date.', balance: 'Your lights are up. Thank you!', takedown: 'For taking your lights down and labeling and boxing them for you to keep.' }
@@ -45,6 +51,8 @@ const call = (
 export default function AccountPage() {
   const [view, setView] = useState({ name: 'checking' })
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('') // phone sign-in: the number, then the texted code
+  const [codeText, setCodeText] = useState('')
   const [busy, setBusy] = useState(false)
   const [menu, setMenu] = useState(false) // the ☰ drawer (AccountDrawer.jsx)
   const { installed } = useInstall()
@@ -80,7 +88,7 @@ export default function AccountPage() {
   }
 
   useEffect(() => {
-    if (demo) { const t = setTimeout(load, 0); return () => clearTimeout(t) }
+    if (demo) { const t = setTimeout(() => (demoSignIn ? setView({ name: 'signin' }) : load()), 0); return () => clearTimeout(t) }
     let unsub = () => {}
     let cancelled = false
     ;(async () => {
@@ -134,6 +142,52 @@ export default function AccountPage() {
     }
   }
 
+  // Sign in with your phone number: Firebase texts a 6-digit code and checks
+  // it (src/lib/account.js). In demo nothing is sent and any 6 digits work.
+  async function phoneSend(e) {
+    e?.preventDefault()
+    setBusy(true)
+    try {
+      if (demo) {
+        const r = demoPhoneStep(phone)
+        setView(r.error ? { name: 'phone', error: r.error } : { name: 'code', phone: r.phone })
+        return
+      }
+      const sent = await (await lib).sendPhoneCode(phone, RECAPTCHA_ID)
+      setCodeText('')
+      setView({ name: 'code', phone: sent })
+    } catch (err) {
+      setView((v) => ({ ...v, error: phoneError(err) }))
+    } finally {
+      setBusy(false)
+    }
+  }
+  async function phoneConfirm(e) {
+    e.preventDefault()
+    const r = demoCodeStep(codeText)
+    if (r.error) { setView((v) => ({ ...v, error: r.error })); return }
+    setBusy(true)
+    try {
+      if (demo) {
+        const { DEMO_ACCOUNT } = await import('./demoAccount.js')
+        setView({ name: 'account', data: { ...DEMO_ACCOUNT, email: '', phone: view.phone } })
+        return
+      }
+      await (await lib).confirmPhoneCode(codeText.replace(/\D/g, '')) // watchUser then loads the account
+      setCodeText('')
+    } catch (err) {
+      setView((v) => ({ ...v, error: phoneError(err) }))
+    } finally {
+      setBusy(false)
+    }
+  }
+  function phoneBack(to) {
+    setCodeText('')
+    if (!demo) lib.then((a) => a.cancelPhoneCode())
+    setView({ name: to })
+  }
+  const phoneUi = { phone, setPhone, codeText, setCodeText, send: phoneSend, confirm: phoneConfirm, back: phoneBack }
+
   async function logOut() {
     if (demo) return
     await (await lib).signOut()
@@ -153,34 +207,38 @@ export default function AccountPage() {
           <button type="button" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl print:hidden">☰</button>
         </div>
       </header>
-      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email ?? ''} onSignOut={data && !demo ? logOut : null} />
-      {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data</p>}
-      <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} reload={load} logOut={logOut} />
+      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo ? logOut : null} />
+      {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data{demoSignIn ? ': nothing is sent, any 6 digits sign in' : ''}</p>}
+      <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} phoneUi={phoneUi} reload={load} logOut={logOut} />
       <RecaptchaNote className="mt-10" />
     </main>
   )
 }
 
-function Body({ view, email, setEmail, busy, submit, google, reload, logOut }) {
+function Body({ view, email, setEmail, busy, submit, google, phoneUi, reload, logOut }) {
   if (view.name === 'checking' || view.name === 'loading') return <p className="py-20 text-center text-slate-400">Loading your account…</p>
   if (view.name === 'error') return <Notice title="We couldn’t load your account" text="Please refresh, or call or text us." />
   if (view.name === 'badLink') return <Notice title="This sign-in link has expired or was already used" text="Ask for a new one below." action={<a href={`${import.meta.env.BASE_URL}account/`} className={`${btn} bg-white text-night-950`}>Get a new link</a>} />
   if (view.name === 'sent') return <Notice title="Check your email" text="If that email is on one of your proposals, a sign-in link is on its way from info@christmas-light-creations.com. Open it on this phone or computer. Not there in a few minutes? Check spam, or call us." />
+  if (view.name === 'phone' || view.name === 'code') return <div className="space-y-6"><PhoneSignIn view={view} busy={busy} {...phoneUi} /><Help /></div>
   if (view.name === 'signin' || view.name === 'needEmail') {
     const finishing = view.name === 'needEmail'
     return (
       <div className="space-y-6">
       <form onSubmit={submit} className="space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
         <h1 className="font-display text-2xl font-extrabold">{finishing ? 'Confirm your email' : 'Sign in to your account'}</h1>
-        <p className="text-slate-300">{finishing ? 'Enter the email this link was sent to.' : 'See your agreements, what’s paid and anything due, and pay online. Use the email we sent your proposal to. No password needed.'}</p>
+        <p className="text-slate-300">{finishing ? 'Enter the email this link was sent to.' : 'See your agreements, what’s paid and anything due, and pay online. Use the email we sent your proposal to, or the phone number we have for you. No password needed.'}</p>
         {!finishing && (
           <>
             <button type="button" onClick={google} disabled={busy} className={`${btn} w-full bg-white text-night-950 disabled:opacity-60`}>
               <GoogleG /> Sign in with Google
             </button>
+            <button type="button" onClick={() => phoneUi.back('phone')} disabled={busy} className={`${btn} w-full border border-white/20 disabled:opacity-60`}>
+              <Icon name="phone" className="size-5" /> Sign in with your phone number
+            </button>
             <p className="text-center text-sm text-slate-400">or get a sign-in link by email</p>
             {/* iPhone opens emailed links in Safari, not in the home-screen app. */}
-            {isIos() && standalone() && <p className="text-sm text-slate-400">In the app on an iPhone, Sign in with Google is the one that works: an emailed link opens in Safari instead.</p>}
+            {isIos() && standalone() && <p className="text-sm text-slate-400">In the app on an iPhone, use Google or your phone number: an emailed link opens in Safari instead.</p>}
           </>
         )}
         <label className="block">
@@ -198,6 +256,43 @@ function Body({ view, email, setEmail, busy, submit, google, reload, logOut }) {
     )
   }
   return <Account data={view.data} reload={reload} logOut={logOut} />
+}
+
+// Sign in with your phone number (docs/specs/phone-sign-in.md): the number,
+// then the 6-digit code Firebase texted. The empty div is where Firebase's
+// invisible robot check anchors; it stays mounted through both steps so
+// "Send again" can use it. Its badge is hidden; RecaptchaNote says so.
+const field = 'min-h-11 w-full rounded-xl border border-white/20 bg-night-950 px-4 py-3 text-base'
+function PhoneSignIn({ view, busy, phone, setPhone, codeText, setCodeText, send, confirm, back }) {
+  const code = view.name === 'code'
+  return (
+    <form onSubmit={code ? confirm : send} className="space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h1 className="font-display text-2xl font-extrabold">{code ? 'Enter the code we texted you' : 'Sign in with your phone number'}</h1>
+      <p className="text-slate-300">{code ? `We sent a 6-digit code to ${prettyPhone(view.phone)}. It usually arrives within a minute.` : 'Type the mobile number we have for you and we’ll text you a 6-digit code. No password needed.'}</p>
+      {code ? (
+        <label className="block">
+          <span className="mb-1 block text-sm text-slate-300">6-digit code</span>
+          <input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={8} required autoFocus value={codeText} onChange={(e) => setCodeText(e.target.value)}
+            className={`${field} text-2xl tracking-[0.3em]`} />
+        </label>
+      ) : (
+        <label className="block">
+          <span className="mb-1 block text-sm text-slate-300">Mobile number</span>
+          <input type="tel" inputMode="tel" autoComplete="tel" required autoFocus placeholder="(281) 555-0101" value={phone} onChange={(e) => setPhone(e.target.value)} className={field} />
+        </label>
+      )}
+      <div id={RECAPTCHA_ID} />
+      {view.error && <p className="text-sm text-berry-500" role="alert">{view.error}</p>}
+      <button type="submit" disabled={busy} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-60`}>
+        {busy ? 'One moment…' : code ? 'Sign in' : 'Text me a code'}
+      </button>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
+        {code && <button type="button" onClick={() => send()} disabled={busy} className="min-h-11 underline disabled:opacity-60">Didn’t get it? Send again</button>}
+        <button type="button" onClick={() => back(code ? 'phone' : 'signin')} disabled={busy} className="min-h-11 text-slate-300 underline disabled:opacity-60">{code ? 'Use a different number' : 'Other ways to sign in'}</button>
+      </div>
+      <p className="text-xs text-slate-400">It must be a mobile number that gets texts (not a landline). Message and data rates may apply. No code? Use the email link, or call {business.phone}.</p>
+    </form>
+  )
 }
 
 // Google's "G" mark, as Google's sign-in button guidelines ask for.
@@ -233,7 +328,7 @@ function Account({ data, reload, logOut }) {
       <section className="space-y-1">
         <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : 'Your account'}</h1>
         {me?.address && <p className="text-slate-300">{me.address}</p>}
-        <p className="text-sm text-slate-400">Signed in as {data.email}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
+        <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
       {data.details && <DetailsNudge details={data.details} />}
       <Lights schedule={data.schedule} service={data.service} reload={reload} />
@@ -241,7 +336,7 @@ function Account({ data, reload, logOut }) {
       {data.details && <Details details={data.details} onSaved={reload} />}
       {data.details && <EmailPrefs details={data.details} onSaved={reload} />}
       {data.price && <YearlyPrice price={data.price} />}
-      {!list.length && !data.customer && !invoices.length && <Notice title="No proposals under this email" text={`Call or text us at ${business.phone} and we’ll update it.`} />}
+      {!list.length && !data.customer && !invoices.length && <Notice title={`Nothing under this ${data.email ? 'email' : 'phone number'} yet`} text={`If you’re a customer, call or text us at ${business.phone} and we’ll link it to your records.`} />}
       <div id="agreements" className="scroll-mt-24 space-y-6">
         {(list.length > 0 || invoices.length > 0) && (
           <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>

@@ -14,7 +14,7 @@ export const textMessages = {
   comeback: (c, year) => `Hi ${first(c)}, this is ${business.name}. It's been a while since we lit up your home, and we'd love to have you back! We're booking ${year} installs now. Want a quote?`,
   winback: (c, year) => `Hi ${first(c)}, this is ${business.name}. You asked us about Christmas lights a while back. We're booking ${year} installs now and would love to light up your home! Free estimate, no need to be home. Want one?`,
   // Their account link (the email template 'account-invite' says the same, longer).
-  account: (c) => `Hi ${first(c)}, ${business.name} here. Your account: https://christmas-light-creations.com/account/ (sign in with Google or a one-time email link, no password). Your install date, lights, invoices, payments and a chat to us are all there. Save it to your home screen and it works like an app.`,
+  account: (c) => `Hi ${first(c)}, ${business.name} here. Your account: https://christmas-light-creations.com/account/ (sign in with Google, your phone number, or a one-time email link; no password). Your install date, lights, invoices, payments and a chat to us are all there. Save it to your home screen and it works like an app.`,
   repaired: (c) => `Hi ${first(c)}, ${business.name} here. Your lights should be all set now. If anything else goes out, just text us! And if you have a minute, a Google review really helps: ${business.reviewLink}`,
 }
 

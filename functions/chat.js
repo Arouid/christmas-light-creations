@@ -60,10 +60,11 @@ export function customerView(doc) {
   return { messages, waiting: Boolean(doc?.waitingSince), dropped: Math.max(0, (Number(doc?.count) || 0) - messages.length) }
 }
 
-// Who gets the "new message" email: the address they wrote from, else the
+// Who gets the "new message" email: the address they wrote from (a phone
+// sign-in writes from a phone number, which can't take email), else the
 // first email on their record; '' when there is none.
 export function recipientFor(doc, record) {
-  const last = [...(doc?.messages ?? [])].reverse().find((m) => m.from === 'customer' && m.by)
+  const last = [...(doc?.messages ?? [])].reverse().find((m) => m.from === 'customer' && String(m.by ?? '').includes('@'))
   return String(last?.by ?? customerEmailKeys(record ?? {})[0] ?? '').toLowerCase()
 }
 

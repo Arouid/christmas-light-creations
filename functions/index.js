@@ -9,9 +9,10 @@
 //   and only this code can mark a deposit paid.
 // - proposalChanged: emails the customer their signed agreement link and
 //   tells staff when a proposal is signed or a deposit is paid.
-// - sendAccountLink / myAccount: customer accounts at /account/ (email-link
-//   sign-in; the account lists proposals and invoices sent to that verified
-//   email, plus this season's schedule and any open service call).
+// - sendAccountLink / myAccount: customer accounts at /account/ (Google,
+//   email-link or phone sign-in; the account lists proposals and invoices
+//   whose emailKeys / phoneKeys hold that verified email or phone, plus this
+//   season's schedule and any open service call; docs/specs/phone-sign-in.md).
 // - reportProblem: "Report a problem" on /account/ becomes a service call on
 //   the customer's record, like staff's Log call, and alerts staff
 //   (docs/specs/account-service.md).
@@ -95,7 +96,7 @@ import { DraftError, PRESENCE_ID, draftFor, threadFor } from './assistant/draft.
 import { askAllowed, askRequest } from './assistant/askPrompt.js'
 import { AskError, askFor } from './assistant/ask.js'
 import sharp from 'sharp'
-import { accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, providerName, sameKeys, shownInAccount } from './account.js'
+import { accountIdentity, accountQueries, accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, customerPhoneKeys, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, proposalPhoneKeys, providerName, sameKeys, shownInAccount } from './account.js'
 import { SERVICE_DAYS, openMessage, openReport, openSummary, reportCall, reportEmail, reportPush, reportRequest, scheduleFor } from './service.js'
 import { LIMITS as CHAT_LIMITS, appendMessage, chatAlertEmail, chatAllowed, chatPush, chatRequest, customerView, previewText, recipientFor, replyEmail } from './chat.js'
 import {
@@ -618,8 +619,8 @@ export const invoiceChanged = onDocumentWritten({ document: 'invoices/{token}', 
 async function invoiceSteps(ref, token) {
   let inv = (await ref.get()).data()
   if (!inv) return
-  const keys = proposalEmailKeys(inv) // same shape: customer.email
-  if (!sameKeys(keys, inv.emailKeys)) await ref.update({ emailKeys: keys })
+  const keyPatch = keysPatch(inv, PROPOSAL_KEYS) // same shape as a proposal: customer.email / customer.phone
+  if (keyPatch) await ref.update(keyPatch)
   if (inv.status !== 'open' && inv.status !== 'paid') return
   if (!inv.number) inv = await assignInvoiceNumber(ref)
   const link = invoiceLink(token)
@@ -740,13 +741,13 @@ ${PHONE}${textFooter()}`
 // things to avoid in the yard and pets; written onto every customer record
 // under their email, shown to staff under Edit details and in Recent activity.
 export const updateMyDetails = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
-  const email = normEmail(req.auth?.token?.email)
-  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const who = signedInCustomer(req)
+  const email = who.key
   const r = detailsRequest(req.data)
   if (r.error) throw new HttpsError(...r.error)
   const db = getFirestore()
-  const ids = await customersFor(email)
-  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll take care of it.')
+  const ids = await customersFor(who)
+  if (!ids.length) throw new HttpsError('failed-precondition', `${NO_RECORD(who)} and we’ll take care of it.`)
   let changed = []
   let name = ''
   for (const id of ids) {
@@ -767,13 +768,13 @@ export const updateMyDetails = onCall({ region: REGION, invoker: 'public', cors:
 // 2026-10-13): marks this season Confirmed on the customer's records, keeps
 // the week they'd like and a note, alerts staff, shows in Recent activity.
 export const rebookMe = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
-  const email = normEmail(req.auth?.token?.email)
-  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const who = signedInCustomer(req)
+  const email = who.key
   const r = rebookRequest(req.data)
   if (r.error) throw new HttpsError(...r.error)
   const db = getFirestore()
-  const ids = await customersFor(email)
-  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll book you.')
+  const ids = await customersFor(who)
+  if (!ids.length) throw new HttpsError('failed-precondition', `${NO_RECORD(who)} and we’ll book you.`)
   const now = new Date()
   const season = String(now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1)
   let customer = null
@@ -804,62 +805,93 @@ export const rebookMe = onCall({ region: REGION, invoker: 'public', secrets: [SM
 
 // ---- Customer accounts (/account/) ------------------------------------------
 
-// emailKeys: lowercase emails on each proposal and customer, written only by
-// the server (triggers below), so a lookup is one query instead of reading
-// every record. The first lookup after this went live fills in records saved
-// before it (serverState/emailIndex; no client rule matches serverState).
-const EMAIL_INDEX_VERSION = 1
-async function ensureEmailIndex() {
+// Who is calling an account function: the verified email and/or the phone
+// from the sign-in token (functions/account.js accountIdentity), or
+// "sign in again". `key` (email, else phone) is what records name them by.
+function signedInCustomer(req) {
+  const who = accountIdentity(req.auth?.token)
+  if (!who) throw new HttpsError('unauthenticated', 'Please sign in again')
+  return who
+}
+const NO_RECORD = (who) => `We couldn’t find your customer record under this ${who.email ? 'email' : 'phone number'}. Please call or text us at 281-819-0163`
+
+// emailKeys / phoneKeys: lowercase emails and E.164 phones on each proposal,
+// customer and invoice, written only by the server (triggers below), so a
+// lookup is one query per key instead of reading every record. The first
+// lookup after a new index version went live fills in records saved before
+// it (serverState/emailIndex; no client rule matches serverState). Version 2
+// added phoneKeys (docs/specs/phone-sign-in.md).
+const PROPOSAL_KEYS = { emailKeys: proposalEmailKeys, phoneKeys: proposalPhoneKeys }
+const CUSTOMER_KEYS = { emailKeys: customerEmailKeys, phoneKeys: customerPhoneKeys }
+// The fields whose stored keys differ from what the record says, or null.
+function keysPatch(data, keysOf) {
+  const patch = Object.fromEntries(Object.entries(keysOf).map(([field, of]) => [field, of(data)]).filter(([field, keys]) => !sameKeys(keys, data?.[field])))
+  return Object.keys(patch).length ? patch : null
+}
+const INDEX_VERSION = 2
+async function ensureAccountIndex() {
   const db = getFirestore()
   const flag = db.doc('serverState/emailIndex')
-  if ((await flag.get()).data()?.version === EMAIL_INDEX_VERSION) return
-  const [props, custs] = await Promise.all([
-    db.collection('proposals').select('customer.email', 'emailKeys').get(),
-    db.collection('customers').select('email', 'otherEmails', 'emailKeys').get(),
+  if ((await flag.get()).data()?.version === INDEX_VERSION) return
+  const [props, custs, invs] = await Promise.all([
+    db.collection('proposals').select('customer.email', 'customer.phone', 'emailKeys', 'phoneKeys').get(),
+    db.collection('customers').select('email', 'otherEmails', 'phone', 'otherPhones', 'emailKeys', 'phoneKeys').get(),
+    db.collection('invoices').select('customer.email', 'customer.phone', 'emailKeys', 'phoneKeys').get(),
   ])
   const writes = [
-    ...props.docs.map((d) => [d.ref, proposalEmailKeys(d.data()), d.get('emailKeys')]),
-    ...custs.docs.map((d) => [d.ref, customerEmailKeys(d.data()), d.get('emailKeys')]),
-  ].filter(([, keys, had]) => !sameKeys(keys, had))
+    ...props.docs.map((d) => [d.ref, keysPatch(d.data(), PROPOSAL_KEYS)]),
+    ...custs.docs.map((d) => [d.ref, keysPatch(d.data(), CUSTOMER_KEYS)]),
+    ...invs.docs.map((d) => [d.ref, keysPatch(d.data(), PROPOSAL_KEYS)]),
+  ].filter(([, patch]) => patch)
   for (let i = 0; i < writes.length; i += 400) {
     const batch = db.batch()
-    writes.slice(i, i + 400).forEach(([ref, keys]) => batch.update(ref, { emailKeys: keys }))
+    writes.slice(i, i + 400).forEach(([ref, patch]) => batch.update(ref, patch))
     await batch.commit()
   }
-  await flag.set({ version: EMAIL_INDEX_VERSION, at: new Date(), filled: writes.length })
-  logger.info(`Email index filled for ${writes.length} records`)
+  await flag.set({ version: INDEX_VERSION, at: new Date(), filled: writes.length })
+  logger.info(`Account index v${INDEX_VERSION} filled for ${writes.length} records`)
 }
 
-// Tokens of proposals sent to this email (any letter case).
-async function proposalTokensFor(email) {
-  await ensureEmailIndex()
-  const snap = await getFirestore().collection('proposals').where('emailKeys', 'array-contains', email).select().get()
-  return snap.docs.map((d) => d.id)
+// Ids of the documents in `name` whose keys hold any of this person's keys
+// (emailKeys for the email, phoneKeys for the phone), unique, in query order.
+async function accountDocsFor(name, who, select = true) {
+  const col = getFirestore().collection(name)
+  const seen = new Map()
+  for (const [field, value] of accountQueries(who)) {
+    const q = col.where(field, 'array-contains', value)
+    const snap = select ? await q.select().get() : await q.get()
+    for (const d of snap.docs) if (!seen.has(d.id)) seen.set(d.id, d)
+  }
+  return [...seen.values()]
 }
 
-// Sent invoices to this email (their emailKeys are set by invoiceChanged).
-async function invoicesFor(email) {
-  const snap = await getFirestore().collection('invoices').where('emailKeys', 'array-contains', email).get()
-  return snap.docs.filter((d) => shownInvoice(d.data()))
+// Tokens of proposals sent to this person (email in any letter case, or phone).
+async function proposalTokensFor(who) {
+  await ensureAccountIndex()
+  return (await accountDocsFor('proposals', who)).map((d) => d.id)
 }
 
-// Customer records (old sheet + staff app) listing this email, incl. linked other emails.
-async function customersFor(email) {
-  await ensureEmailIndex()
-  const snap = await getFirestore().collection('customers').where('emailKeys', 'array-contains', email).select().get()
-  return snap.docs.map((d) => d.id)
+// Sent invoices to this person (their keys are set by invoiceChanged).
+async function invoicesFor(who) {
+  return (await accountDocsFor('invoices', who, false)).filter((d) => shownInvoice(d.data()))
 }
 
-// Keep emailKeys right whenever a proposal or customer is saved (writes only
-// when the emails changed, so it doesn't loop).
-const keepEmailKeys = (keysOf) => async (event) => {
+// Customer records (old sheet + staff app) listing this person, incl. linked other emails and phones.
+async function customersFor(who) {
+  await ensureAccountIndex()
+  return (await accountDocsFor('customers', who)).map((d) => d.id)
+}
+
+// Keep emailKeys and phoneKeys right whenever a proposal or customer is saved
+// (writes only when they changed, so it doesn't loop).
+const keepKeys = (keysOf) => async (event) => {
   const after = event.data?.after
   if (!after?.exists) return
-  const keys = keysOf(after.data())
-  if (!sameKeys(keys, after.get('emailKeys'))) await after.ref.update({ emailKeys: keys })
+  const patch = keysPatch(after.data(), keysOf)
+  if (patch) await after.ref.update(patch)
 }
-export const proposalEmails = onDocumentWritten({ document: 'proposals/{token}', region: REGION }, keepEmailKeys(proposalEmailKeys))
-export const customerEmails = onDocumentWritten({ document: 'customers/{id}', region: REGION }, keepEmailKeys(customerEmailKeys))
+export const proposalEmails = onDocumentWritten({ document: 'proposals/{token}', region: REGION }, keepKeys(PROPOSAL_KEYS))
+export const customerEmails = onDocumentWritten({ document: 'customers/{id}', region: REGION }, keepKeys(CUSTOMER_KEYS))
 
 // Emails a one-time sign-in link from info@, but only to an email that has a
 // proposal or a customer record. The answer is the same either way, so nobody can test whether an
@@ -867,7 +899,8 @@ export const customerEmails = onDocumentWritten({ document: 'customers/{id}', re
 export const sendAccountLink = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
   const email = normEmail(req.data?.email)
   if (!EMAIL_RE.test(email) || email.length > 200) throw new HttpsError('invalid-argument', 'Please enter a valid email')
-  const [tokens, customerIds, invoices] = await Promise.all([proposalTokensFor(email), customersFor(email), invoicesFor(email)])
+  const who = { email, phone: '', key: email }
+  const [tokens, customerIds, invoices] = await Promise.all([proposalTokensFor(who), customersFor(who), invoicesFor(who)])
   if (!tokens.length && !customerIds.length && !invoices.length) { logger.info('Account link asked for an unknown email'); return { ok: true } }
 
   // Server-only bookkeeping (no client rule matches accountLinks, so browsers can't read it).
@@ -898,35 +931,35 @@ Christmas Light Creations
   return { ok: true }
 })
 
-// For staff (Accounts page): first and last sign-in per email. Times are
-// stored as Firestore timestamps; compared as milliseconds.
+// For staff (Accounts page): first and last sign-in per email, or per phone
+// for phone sign-ins (customerLogins/{key}). Times are stored as Firestore
+// timestamps; compared as milliseconds.
 // `app`: the device name when the page runs as the installed app (owner
 // 2026-10-12: "can we see who has chosen to install the app"), kept once set.
-async function recordLogin(db, email, token, app = '') {
-  if (email.includes('/')) return
-  const ref = db.doc(`customerLogins/${email}`)
+async function recordLogin(db, who, token, app = '') {
+  if (who.key.includes('/')) return
+  const ref = db.doc(`customerLogins/${who.key}`)
   await db.runTransaction(async (tx) => {
     const prev = (await tx.get(ref)).data()
     const ms = (t) => (t?.toMillis ? t.toMillis() : null)
     const rec = loginRecord(prev && { firstAt: ms(prev.firstAt), lastAt: ms(prev.lastAt), provider: prev.provider },
-      { email, authTime: Number(token.auth_time) * 1000, provider: providerName(token.firebase?.sign_in_provider) })
+      { email: who.email, phone: who.phone, authTime: Number(token.auth_time) * 1000, provider: providerName(token.firebase?.sign_in_provider) })
     tx.set(ref, { ...rec, firstAt: new Date(rec.firstAt), lastAt: new Date(rec.lastAt), ...(app ? { app: { device: app, at: new Date() } } : {}) }, { merge: true })
   })
 }
 
 // The signed-in customer's proposals with what's paid and what's due. Only
-// for a verified email (email-link sign-in always is); payment amounts come
-// from the stored proposals, same as the payment functions.
+// for a verified email (email-link sign-in always is) or a phone sign-in;
+// payment amounts come from the stored proposals, same as the payment functions.
 export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
-  const email = normEmail(req.auth?.token?.email)
-  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const who = signedInCustomer(req)
   const db = getFirestore()
-  await recordLogin(db, email, req.auth.token, String(req.data?.app ?? '').slice(0, 40)).catch((e) => logger.warn('recordLogin', e))
-  const tokens = await proposalTokensFor(email)
+  await recordLogin(db, who, req.auth.token, String(req.data?.app ?? '').slice(0, 40)).catch((e) => logger.warn('recordLogin', e))
+  const tokens = await proposalTokensFor(who)
   const docs = tokens.length ? await db.getAll(...tokens.map((t) => db.doc(`proposals/${t}`)), { fieldMask: ['status', 'title', 'season', 'customer', 'items', 'discountPct', 'depositPct', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt'] }) : []
   const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data(), centralDay())).sort(byNewest)
   // Yearly price breakdown from their customer record, once staff allow it.
-  const ids = await customersFor(email)
+  const ids = await customersFor(who)
   const recs = ids.length ? await db.getAll(...ids.map((id) => db.doc(`customers/${id}`)), { fieldMask: ['fullName', 'address', 'since', 'originalRate', 'addOns', 'priceShown', 'seasons'] }) : []
   const rec = recs.map((d) => d.data()).find(Boolean)
   const now = new Date()
@@ -934,7 +967,7 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const price = recs.map((d) => customerForAccount(d.data(), season)).find(Boolean) ?? null
   // Their invoices (sent or paid; never drafts or voided ones), newest first.
   const today = centralDay()
-  const invoices = (await invoicesFor(email)).map((d) => invoiceSummary(d.id, d.data(), today)).sort((a, b) => String(b.sentDay).localeCompare(String(a.sentDay)) || b.number.localeCompare(a.number))
+  const invoices = (await invoicesFor(who)).map((d) => invoiceSummary(d.id, d.data(), today)).sort((a, b) => String(b.sentDay).localeCompare(String(a.sentDay)) || b.number.localeCompare(a.number))
   // This season's schedule and any open service call (docs/specs/account-service.md).
   const schedule = rec ? scheduleFor(rec.seasons, season) : null
   const service = ids.length ? { days: SERVICE_DAYS, open: await openCallFor(db, ids) } : null
@@ -942,7 +975,7 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const details = rec ? detailsSummary(rec) : null
   // Chat with us (docs/specs/account-chat.md): the thread on their first record, staff emails stripped.
   const chat = ids.length ? customerView((await db.doc(`conversations/${ids[0]}`).get()).data()) : null
-  return { email, proposals, invoices, price, schedule, service, details, chat, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+  return { email: who.email, phone: who.phone, proposals, invoices, price, schedule, service, details, chat, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
 })
 
 // The newest Open / Scheduled service call on any of these customer records,
@@ -961,13 +994,13 @@ async function openCallFor(db, ids, tx = null) {
 // request. One open call per customer: the check and the write share a
 // transaction, so two taps can't make two. Logs carry no note text.
 export const reportProblem = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
-  const email = normEmail(req.auth?.token?.email)
-  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const who = signedInCustomer(req)
+  const email = who.key
   const r = reportRequest(req.data)
   if (r.error) throw new HttpsError(...r.error)
   const db = getFirestore()
-  const ids = await customersFor(email)
-  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll take care of it.')
+  const ids = await customersFor(who)
+  if (!ids.length) throw new HttpsError('failed-precondition', `${NO_RECORD(who)} and we’ll take care of it.`)
   const ref = db.collection('serviceCalls').doc()
   const day = centralDay()
   const result = await db.runTransaction(async (tx) => {
@@ -984,15 +1017,15 @@ export const reportProblem = onCall({ region: REGION, invoker: 'public', secrets
   const { call, customer } = result
   await logWebsite('service-reported', { type: 'customer', id: customer.id, name: customer.fullName }, call.issue)
   await alertStaff(reportPush(call, customer.id))
-  const who = customer.fullName || 'A customer'
+  const name = customer.fullName || 'A customer'
   const to = await staffEmails()
   if (!to.length) {
-    await reportIncident('service-alert', `${who} reported a problem from their account (it’s on the Service tab), but nobody is on the alert list (staff app → ⚙ Settings → New-request alerts).`)
+    await reportIncident('service-alert', `${name} reported a problem from their account (it’s on the Service tab), but nobody is on the alert list (staff app → ⚙ Settings → New-request alerts).`)
   } else {
     try {
       await mailer().sendMail({ from: `"CLC Website" <${FROM}>`, to, ...reportEmail(call, customer) })
     } catch (e) {
-      await reportIncident('service-alert', `${who} reported a problem from their account (it’s on the Service tab), but the alert email failed: ${e.message}`, { callId: ref.id })
+      await reportIncident('service-alert', `${name} reported a problem from their account (it’s on the Service tab), but the alert email failed: ${e.message}`, { callId: ref.id })
     }
   }
   logger.info('reportProblem', { issue: call.issue, note: Boolean(call.details), emailed: to.length })
@@ -1024,13 +1057,13 @@ async function appendChat(db, customerId, msg, who, limits, by) {
 // The customer wrote from their account: save it, show it in 💬, buzz staff
 // phones, and email the alert list when it starts a new unanswered thread.
 export const sendAccountMessage = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
-  const email = normEmail(req.auth?.token?.email)
-  if (!email || req.auth.token.email_verified !== true) throw new HttpsError('unauthenticated', 'Please sign in again')
+  const who = signedInCustomer(req)
+  const email = who.key // a phone for phone sign-ins: the chat's `by`; the reply email goes to the record's email (recipientFor)
   const r = chatRequest(req.data)
   if (r.error) throw new HttpsError(...r.error)
   const db = getFirestore()
-  const ids = await customersFor(email)
-  if (!ids.length) throw new HttpsError('failed-precondition', 'We couldn’t find your customer record under this email. Please call or text us at 281-819-0163 and we’ll take care of it.')
+  const ids = await customersFor(who)
+  if (!ids.length) throw new HttpsError('failed-precondition', `${NO_RECORD(who)} and we’ll take care of it.`)
   const { prev, next, customer } = await appendChat(db, ids[0], { from: 'customer', by: email, text: r.text }, email, CHAT_LIMITS.customer, 'website')
   await logWebsite('chat-message', { type: 'customer', id: customer.id, name: customer.fullName }, previewText(r.text))
   await alertStaff(chatPush(customer.id, customer.fullName ?? '', r.text))

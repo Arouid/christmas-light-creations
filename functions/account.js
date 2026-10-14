@@ -1,11 +1,12 @@
 // Customer accounts (/account/): pure helpers for the server functions
 // sendAccountLink and myAccount. No Firebase here, so tests can import it.
 //
-// A customer's account = every proposal whose customer.email matches their
-// verified sign-in email (any letter case). Later, PayPal subscriptions can
-// hang off the same email key.
+// A customer's account = every proposal, invoice and customer record whose
+// emailKeys hold their verified sign-in email (any letter case) or whose
+// phoneKeys hold their phone (phone sign-in, docs/specs/phone-sign-in.md).
 import { PARTS, partCents, paymentOf } from './proposalMath.js'
 import { centralDayOf, payIn3Due } from './payIn3.js'
+import { phonesIn } from './phone.js'
 
 export const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 export const normEmail = (e) => String(e ?? '').trim().toLowerCase()
@@ -92,16 +93,30 @@ export function customerForAccount(c, current) {
   }
 }
 
-// Staff see when a customer last signed in (customerLogins/{email}, written
-// only by the server). authTime = when that sign-in happened (token
-// auth_time), so reopening the page later doesn't count as a new sign-in.
-export function loginRecord(prev, { email, authTime, provider }) {
+// Staff see when a customer last signed in (customerLogins/{key}: the email,
+// or the E.164 phone for phone sign-ins; written only by the server).
+// authTime = when that sign-in happened (token auth_time), so reopening the
+// page later doesn't count as a new sign-in.
+export function loginRecord(prev, { email, phone, authTime, provider }) {
   const first = prev?.firstAt && prev.firstAt < authTime ? prev.firstAt : authTime
   const last = prev?.lastAt && prev.lastAt > authTime ? prev.lastAt : authTime
-  return { email, firstAt: first, lastAt: last, provider: last === authTime ? provider : prev?.provider ?? provider }
+  return { email, ...(phone ? { phone } : {}), firstAt: first, lastAt: last, provider: last === authTime ? provider : prev?.provider ?? provider }
 }
-const PROVIDER = { 'google.com': 'Google', password: 'email link', emailLink: 'email link' }
+const PROVIDER = { 'google.com': 'Google', password: 'email link', emailLink: 'email link', phone: 'phone' }
 export const providerName = (p) => PROVIDER[p] ?? p ?? ''
+
+// Who is signed in to the account (docs/specs/phone-sign-in.md): the verified
+// email (Google, the email link) and/or the phone (Firebase phone auth puts
+// it in the token as E.164). `key` names them in records (updatedBy, chat,
+// the login record): the email, else the phone. null = not signed in.
+export function accountIdentity(token) {
+  const email = token?.email_verified === true ? normEmail(token.email) : ''
+  const phone = typeof token?.phone_number === 'string' && /^\+\d{8,15}$/.test(token.phone_number) ? token.phone_number : ''
+  if (!email && !phone) return null
+  return { email, phone, key: email || phone }
+}
+// The index queries for an identity: [field, value] pairs, one per key it has.
+export const accountQueries = (who) => [who?.email && ['emailKeys', who.email], who?.phone && ['phoneKeys', who.phone]].filter(Boolean)
 
 // Newest first (signed or sent date).
 export const byNewest = (a, b) => String(b.signedAt ?? b.sentAt ?? '').localeCompare(String(a.signedAt ?? a.sentAt ?? ''))
@@ -111,4 +126,8 @@ export const byNewest = (a, b) => String(b.signedAt ?? b.sentAt ?? '').localeCom
 // record (security review risk 2).
 export const proposalEmailKeys = (p) => [normEmail(p?.customer?.email)].filter((e) => EMAIL_RE.test(e))
 export const customerEmailKeys = (c) => [...new Set([...emailsOf(c?.email), ...(c?.otherEmails ?? []).flatMap(emailsOf)])].filter((e) => EMAIL_RE.test(e))
+// The same for phones (phoneKeys, E.164): a proposal's or invoice's
+// customer.phone; a customer's phone plus the ones linked from old records.
+export const proposalPhoneKeys = (p) => phonesIn(p?.customer?.phone)
+export const customerPhoneKeys = (c) => [...new Set([...phonesIn(c?.phone), ...(c?.otherPhones ?? []).flatMap(phonesIn)])]
 export const sameKeys = (a, b) => (a ?? []).length === (b ?? []).length && (a ?? []).every((x, i) => x === b[i])

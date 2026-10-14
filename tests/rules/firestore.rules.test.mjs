@@ -19,8 +19,10 @@ const as = {
   staff: () => env.authenticatedContext('boss', { email: STAFF, email_verified: true, firebase: { sign_in_provider: 'google.com' } }).firestore(),
   staffEmailLink: () => env.authenticatedContext('boss3', { email: STAFF, email_verified: true, firebase: { sign_in_provider: 'password' } }).firestore(),
   staffUpper: () => env.authenticatedContext('boss2', { email: 'Boss@Example.com', email_verified: true, firebase: { sign_in_provider: 'google.com' } }).firestore(),
+  // A customer signed in by phone number (docs/specs/phone-sign-in.md): no email in the token at all.
+  phoneCustomer: () => env.authenticatedContext('ph1', { phone_number: '+12815550101', firebase: { sign_in_provider: 'phone' } }).firestore(),
 }
-const outsiders = ['anon', 'customer', 'unverified', 'stranger', 'staffEmailLink']
+const outsiders = ['anon', 'customer', 'unverified', 'stranger', 'staffEmailLink', 'phoneCustomer']
 
 const stamp = (email = STAFF) => ({ updatedAt: serverTimestamp(), updatedBy: email })
 const lead = (over = {}) => ({

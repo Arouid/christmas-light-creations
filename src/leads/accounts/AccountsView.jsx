@@ -6,7 +6,7 @@ import { money, parseMoney } from '../../lib/discounts'
 import { findCustomer } from '../../lib/oldEstimates'
 import { needsAddOnCheck } from '../../lib/addOns'
 import { LEAD_HINT } from '../../lib/bounces'
-import { getCustomerLogin, loginLine } from '../../lib/customerLogins'
+import { getLatestLogin, loginKeys, loginLine } from '../../lib/customerLogins'
 import AddOnsPanel from './AddOnsPanel'
 import { OldRecordsPanel, OldRecordsToFill } from './OldPayments'
 import Icon from '../../components/Icon'
@@ -142,7 +142,7 @@ function AddOnChecks({ customers, open }) {
   )
 }
 
-function Header({ name, kind, address, lines, loginEmail, record, children }) {
+function Header({ name, kind, address, lines, record, children }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-night-900">
       {address && <div className="[&_img]:max-h-80 [&_img]:w-full [&_img]:object-cover"><StreetViewPhoto address={address} /></div>}
@@ -155,7 +155,7 @@ function Header({ name, kind, address, lines, loginEmail, record, children }) {
           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${KIND[kind][1]}`}>{KIND[kind][0]}</span>
         </div>
         {lines.filter(Boolean).length > 0 && <p className="text-sm text-slate-400">{lines.filter(Boolean).join(' · ')}</p>}
-        <LoginLine email={loginEmail} />
+        <LoginLine record={record} />
         {record && <BounceNote record={record} hint={kind === 'lead' ? LEAD_HINT : undefined} />}
         <div className="flex flex-wrap gap-2">{children}</div>
       </div>
@@ -163,20 +163,23 @@ function Header({ name, kind, address, lines, loginEmail, record, children }) {
   )
 }
 
-// "Customer login: last signed in … · first …" / "never", matched by email.
-// Hidden when there's no email or it can't be read (rules not yet republished).
-function LoginLine({ email }) {
+// "Customer login: last signed in … · first …" / "never", matched by every
+// email and phone on the record (they may sign in by Google, the email link
+// or their phone number). Hidden when the record has no email or phone, or
+// it can't be read (rules not yet republished).
+function LoginLine({ record }) {
   const [state, setState] = useState(null)
+  const keys = loginKeys(record).join(' ')
   useEffect(() => {
-    if (!email) return
+    if (!keys) return
     let live = true
     const demo = { firstAt: new Date('2026-10-10T15:05:00'), lastAt: new Date('2026-10-12T14:40:00'), provider: 'Google' }
-    ;(demoMode ? Promise.resolve(demo) : getCustomerLogin(email))
-      .then((rec) => { if (live) setState({ email, text: loginLine(rec) }) })
+    ;(demoMode ? Promise.resolve(demo) : getLatestLogin(record))
+      .then((rec) => { if (live) setState({ keys, text: loginLine(rec) }) })
       .catch(() => { if (live) setState(null) })
     return () => { live = false }
-  }, [email])
-  if (!email || state?.email !== email) return null
+  }, [keys]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (!keys || state?.keys !== keys) return null
   return <p className="text-sm text-slate-400">{state.text}</p>
 }
 
@@ -205,7 +208,7 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
   const myPast = past.filter((p) => p.customerId === c.id || findCustomer(p, [c]))
   return (
     <div className="space-y-4">
-      <Header name={c.fullName} kind="customer" address={c.address} loginEmail={c.email} record={c}
+      <Header name={c.fullName} kind="customer" address={c.address} record={c}
         lines={[c.phone, c.email, (c.otherPhones?.length || c.otherEmails?.length) && `Also: ${[...(c.otherPhones ?? []), ...(c.otherEmails ?? [])].join(', ')}`, c.locationBlock, c.neighborhood && `Neighborhood: ${c.neighborhood}`, gate && `Gate ${gate.code}`, c.installType]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={c.phone} className={action} />
@@ -262,7 +265,7 @@ function LeadAccount({ l, season, user, onMakeCustomer, onOpenAccount }) {
   const [busy, setBusy] = useState(false)
   return (
     <div className="space-y-4">
-      <Header name={name} kind="lead" address={address} loginEmail={l.email} record={l} lines={[l.phone, l.email, l.contactMethod && `Prefers ${l.contactMethod}`, l.source && `Heard from: ${l.source}`, l.status]}>
+      <Header name={name} kind="lead" address={address} record={l} lines={[l.phone, l.email, l.contactMethod && `Prefers ${l.contactMethod}`, l.source && `Heard from: ${l.source}`, l.status]}>
         {phone && <a className={action} href={`tel:${phone}`}><Icon name="phone" className="size-4" /> Call</a>}
         <TextButton phone={l.phone} className={action} />
         <ComposeEmail person={{ fullName: name, firstName: l.firstName, email: l.email, address, bouncedEmails: l.bouncedEmails }} season={season} target={{ leadId: l.id }} start="estimate-thanks" className={action} />
