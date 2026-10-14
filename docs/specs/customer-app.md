@@ -14,6 +14,7 @@ The account page at `/account/` **is** the app. It's installed on a phone as a w
 | Offline page | `public/account/offline.html` | "You're offline" + Try again + call |
 | Get the app box | `AccountPage.jsx` → `GetTheApp` | on the signed-in account, hidden inside the installed app; buttons and steps shared with the staff app in `src/components/InstallApp.jsx` |
 | Test | `tests/installManifests.test.mjs` | both manifests complete, icons on disk, worker present |
+| First-sign-in tour | `src/account/AccountTour.jsx`, words in `src/data/accountTour.js` | up to five cards on their own page, once per device, again from ☰ → Take the tour; skips Get the app inside the installed app (`docs/specs/account-tour.md`) |
 
 How it installs:
 

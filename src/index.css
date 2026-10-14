@@ -162,3 +162,14 @@ body {
   outline-offset: 4px;
   border-radius: 9999px;
 }
+
+/* Customer account tour (src/account/AccountTour.jsx): the part of the page
+   the card talks about, lit up above a dimmed page. Screen only. */
+@media screen {
+  [data-tour-spot] {
+    position: relative;
+    z-index: 45;
+    border-radius: 1.5rem;
+    box-shadow: 0 0 0 3px var(--color-glow-400), 0 0 0 100vmax rgb(5 11 26 / 0.72);
+  }
+}

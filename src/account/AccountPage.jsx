@@ -17,6 +17,8 @@ import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
 import { searchHelp } from '../data/help.js'
 import { WEEKS } from '../../functions/rebook.js'
 import { demoCodeStep, demoPhoneStep, phoneError, prettyPhone } from './phoneSignIn.js'
+import AccountTour from './AccountTour.jsx'
+import { accountTourSteps, tourWorthOpening } from '../data/accountTour.js'
 
 // The customer's own account: /account/ (sign in with Google, a code texted
 // to their phone, or an emailed link; no password). Lists every proposal sent
@@ -42,6 +44,10 @@ const STATE_TEXT = { paid: 'Paid', due: 'Due now', later: 'Not due yet', none: '
 const STATE_CLASS = { paid: 'text-emerald-300', due: 'text-glow-300 font-semibold', later: 'text-slate-400', none: 'text-slate-400', free: '' }
 const proposalLink = (token) => `${import.meta.env.BASE_URL}proposal/?t=${token}`
 const btn = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold'
+// Has this phone/computer had the account tour? (docs/specs/account-tour.md)
+const TOUR_KEY = 'clcAccountTourDone'
+const tourDone = () => { try { return localStorage.getItem(TOUR_KEY) === '1' } catch { return true } }
+const markTourDone = () => { try { localStorage.setItem(TOUR_KEY, '1') } catch { /* private mode: it shows again next time, fine */ } }
 
 const call = (
   <a href={business.phoneHref} className={`${btn} border border-white/20`}>
@@ -58,6 +64,13 @@ export default function AccountPage() {
   const [menu, setMenu] = useState(false) // the ☰ drawer (AccountDrawer.jsx)
   const { installed } = useInstall()
   const data = view.name === 'account' ? view.data : null
+  // The tour: by itself once per device on the first signed-in visit, any
+  // time from ☰. null = not opened or closed by them yet on this visit.
+  const [tourSeen] = useState(tourDone)
+  const [tour, setTour] = useState(null)
+  const tourSteps = data ? accountTourSteps(data, { installed }) : []
+  const tourOpen = tour ?? (Boolean(data) && !tourSeen && tourWorthOpening(tourSteps))
+  const closeTour = () => { markTourDone(); setTour(false) }
   // What the drawer links to, by what's on the page (anchors below).
   const menuItems = data ? [
     (data.schedule || data.service) && { href: '#lights', label: 'Your lights', icon: '🎄' },
@@ -205,10 +218,11 @@ export default function AccountPage() {
           <a href={business.phoneHref} className={`${btn} bg-glow-400 px-4 text-night-950`} aria-label={`Call ${business.phone}`}>
             <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span><span className="sm:hidden">Call</span>
           </a>
-          <button type="button" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl print:hidden">☰</button>
+          <button type="button" id="account-menu" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl print:hidden">☰</button>
         </div>
       </header>
-      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo ? logOut : null} />
+      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo ? logOut : null} onTour={tourSteps.length ? () => setTour(true) : null} />
+      {tourOpen && tourSteps.length > 0 && <AccountTour steps={tourSteps} name={(data.proposals?.[0]?.customer ?? data.customer ?? data.invoices?.[0]?.customer)?.name} onClose={closeTour} />}
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data{demoSignIn ? ': nothing is sent, any 6 digits sign in' : ''}</p>}
       <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} phoneUi={phoneUi} reload={load} logOut={logOut} />
       <RecaptchaNote className="mt-10" />
