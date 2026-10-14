@@ -632,3 +632,8 @@ What was actually checked working, and how. Newest first.
 - Git: 96 exact renames (R100), the two edited READMEs (envato, svg-repo-icons), the new map; nothing staged under the ignored folders (no zip, mov, mp4, hi-res, Google Photos, Vecteezy, motion, clips, music, sfx). `.gitignore` points at the new ignored folders.
 - Every path a script reads exists at its new place (node check of 31 paths incl. the 12 logo files the print, shirt, icon and video scripts name). `git grep` finds no old path outside `decisions.md` and `verified.md`, which keep what was true when written. Memory notes updated.
 - Not run: the generators themselves (print, shirts, icons, account icons, the video's prepare-assets, ads-video.py), since they would rewrite their outputs; only their input paths were checked.
+
+## 2026-10-14 Firebase sign-in providers (owner's console screenshot)
+
+- Authentication → Sign-in method: **Email/Password, Phone and Google all Enabled** (Email/Password carries the email-link sign-in; Phone is the prerequisite for checklist #141–#145).
+- Banner on the same page: new projects with billing accounts have a **sent SMS daily quota of 1,000/day**; more needs the Identity Platform upgrade. Recorded in `docs/specs/phone-sign-in.md` → Cost; not upgrading.
