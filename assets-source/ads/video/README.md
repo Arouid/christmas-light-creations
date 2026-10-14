@@ -23,6 +23,8 @@ The story ad's MP4s are not in git (`.gitignore`: this folder except this README
 | `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, 30.5 s, with music and sound | YouTube in-stream, TV, desktop |
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | same | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
+| `clc-bumper-6s-16x9.mp4`, `-9x16`, `-1x1` | the three shapes | **the 6-second bumper**: "🤫 She has no idea." pops in, then the cottage pops on, "We can keep a secret.", the number, the site; no music (`src/stories.js` → `bumper`) | YouTube bumper (6 s max) |
+| `clc-short-15s-16x9.mp4`, `-9x16`, `-1x1` | the three shapes | **the 15-second story**: two texts, her in the car, the house, "She's home." with the ask, the full closing card; the waltz (`src/stories.js` → `short`) | YouTube non-skippable (15 s max), in-stream |
 | `clc-ad-16x9-music-<name>.mp4` | 1920×1080 | the story ad with another music track, for comparison only (`render-all.mjs ad 16x9 --music=… --suffix=<name>`; `-music-sugarplum` is from the older 39 s cut) | not uploaded |
 
 All H.264, 30 fps. The story ad has music and sound effects (Uppbeat, below); the 5-second ad
@@ -34,7 +36,7 @@ The story ad, scene by scene:
 |---|---|---|
 | 0–7.6 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
 | 7.6–9.7 | Time card | One line over the snow footage: "Thursday 3:48 pm · Done. Timer set for dusk." (The three-beat scene with the cottage popping on was cut: owner, "this scene just feels so forced into it". More entries in `story.plan` bring the beats back; `planCottage: true` brings the cottage.) |
-| 9.5–20.9 | 5:41 pm | Her in the red car at night (clip, wipers under it), the big two-storey house (photo 32, owner's pick) opens out of the dark at 12.2 s with the switch click of the dusk timer, settles, "She's home." (14.5 s), her reaction in the car (1.2 s, same woman, real snow in front), then the car door closes as she gets out (2.6 s; the line fades as this shot starts; the slam lands at about 19.2 s, synced to the shot, and a second door closes at about 20.3 s, just before we cut away: two of them got out, owner's ask). Beds: the wipers and a muffled street under her in the car, the quiet street under her reaction and the door, nothing under the still house (owner). |
+| 9.5–20.9 | 5:41 pm | Her in the red car at night (clip, wipers under it), the big two-storey house (photo 32, owner's pick) opens out of the dark at 12.2 s with the switch click of the dusk timer, settles, "She's home." (14.5 s) with "Surprise someone this year." under it half a second later, her reaction in the car (1.2 s, same woman, real snow in front), then the car door closes as she gets out (2.6 s; the line fades as this shot starts; the slam lands at about 19.2 s, synced to the shot, and a second door closes at about 20.3 s, just before we cut away: two of them got out, owner's ask). Beds: the wipers and a muffled street under her in the car, the quiet street under her reaction and the door, nothing under the still house (owner). |
 | 20.6–24.8 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
 | 24.5–30.5 | The one closing card | The photoreal cottage pops its lights on (click + harp), real snow; **"We can keep a secret."** (the campaign line, `words.tagline`; owner: "the whole idea", the "He went to Jared" of these ads: the same last beat on every one), "Surprise someone this year." under it, the offer pill (while `offer.enabled`) and "Free 30-minute estimate", 281-819-0163, the site. Held to the end. (`endCardAsk: false` in `data.js` brings back the two closing screens: the ask over the three-gable house (34) for 5 s, then the number card for 4 s.) |
 
@@ -211,6 +213,17 @@ pops at 60 %, the switch-on at 85 %, the car doors at 100 %, the timer's click a
 sound efx fit poorly for the full ad", then "turn the volume up on the sfx some, everything but the ambient", so
 `sfx.volume` went 0.8 → 1.0 and the beds stayed at 0.35). The 5-second ad has no music and uses the full levels, so its
 next render will be a quarter louder than the one in git (`ad-teaser-5s-v4`).
+
+## The other "We can keep a secret" cuts
+
+Every cut ends on the same card the same way (the cottage pops on, the line, the number), so the
+line becomes the thing people remember. The cuts live in `video/src/stories.js`: one named entry
+per ad with only what differs from `data.js` (scene lengths, the texts, the car-shot timings, the
+music start, the card's compact mode). Adding an entry adds its compositions to the studio
+(`<Name>16x9` …) and a set to `render-all.mjs` (`node scripts/render-all.mjs <name>`), written as
+`clc-<file>-<shape>.mp4`. Built so far: `bumper` (6 s) and `short` (15 s). The stories that need
+their own arrival footage (a man, kids, an older couple, an older woman coming home) wait for clips
+in `clips/`; the woman-in-the-red-car set only fits stories where she comes home.
 
 ## Licence
 

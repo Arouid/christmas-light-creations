@@ -3,6 +3,7 @@ import { Ad } from './Ad.jsx'
 import { Teaser } from './Teaser.jsx'
 import { Banner, Profile } from './Banner.jsx'
 import data from './data.js'
+import { STORIES, storyId, withStory } from './stories.js'
 import { totalFrames } from './timeline.js'
 
 const SHAPES = [
@@ -15,6 +16,7 @@ const teaserFrames = (props) => Math.round((props.teaser?.seconds ?? 5) * (props
 const teaserProps = { ...data, intro: { onAt: data.teaser.onAt } }
 
 // Teaser*: the 5-second ad (scene 1 alone) in three shapes. Ad*: the full ad in the same shapes.
+// Bumper*, Short*, …: the other "We can keep a secret" cuts (stories.js), same shapes.
 // The props panel in Remotion Studio edits a copy of data.js live; lengths follow the timings.
 export function Root() {
   return (
@@ -47,6 +49,22 @@ export function Root() {
           calculateMetadata={({ props }) => ({ durationInFrames: totalFrames(props), fps: props.fps || 30 })}
         />
       ))}
+      {Object.entries(STORIES).map(([name, over]) => {
+        const props = withStory(data, over)
+        return SHAPES.map((s) => (
+          <Composition
+            key={`${name}-${s.id}`}
+            id={s.id.replace('Ad', storyId(name))}
+            component={Ad}
+            width={s.width}
+            height={s.height}
+            fps={data.fps}
+            durationInFrames={totalFrames(props)}
+            defaultProps={props}
+            calculateMetadata={({ props: p }) => ({ durationInFrames: totalFrames(p), fps: p.fps || 30 })}
+          />
+        ))
+      })}
     </>
   )
 }

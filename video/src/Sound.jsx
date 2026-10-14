@@ -69,7 +69,7 @@ export function Sound({ props, list }) {
       if (reactionStart < dur) hits.push(<Bed key="bed-night" file={sfx.nightOutside} from={from + reactionStart - 6} frames={dur - reactionStart + 6} volume={bed} name="bed: outside at night (her reaction, the door)" />)
       if (lv('car') > 0 && slamAt > 0) hits.push(<Hit key="car" file={sfx.car} at={from + slamAt} volume={lv('car')} name="car door" />)
       const second = props.home?.secondSlamFromEnd ?? 0
-      if (lv('car') > 0 && second > 0) hits.push(<Hit key="car2" file={sfx.car} at={from + dur - Math.round(second * fps)} volume={lv('car') * 0.9} name="second car door" />)
+      if (lv('car') > 0 && slamAt > 0 && second > 0) hits.push(<Hit key="car2" file={sfx.car} at={from + dur - Math.round(second * fps)} volume={lv('car') * 0.9} name="second car door" />)
       if (lv('reveal') > 0) hits.push(<Hit key="reveal" file={sfx.reveal} at={from + revealStart} volume={lv('reveal')} name="reveal" />)
       // The dusk timer clicking the lights on, as the house appears (the switch click alone, no harp).
       if (lv('revealClick') > 0) hits.push(<Hit key="reveal-click" file={sfx.lightsOn} at={from + revealStart - 1} volume={lv('revealClick')} name="the timer clicks the lights on" />)

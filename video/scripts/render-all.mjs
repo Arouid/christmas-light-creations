@@ -1,6 +1,6 @@
 // Renders the ads into assets-source/ads/video/ (gitignored).
 //   node scripts/render-all.mjs                 everything: the 5-second ad and the full ad, three shapes each
-//   node scripts/render-all.mjs teaser          the 5-second ad only (or: ad)
+//   node scripts/render-all.mjs teaser          the 5-second ad only (or: ad, bumper, short: see src/stories.js)
 //   node scripts/render-all.mjs 9x16            one shape only (16x9, 9x16, 1x1); combine: teaser 9x16
 //   node scripts/render-all.mjs ad 16x9 --music=<file in public/music> --start=<seconds> --volume=<0..1> --suffix=<name>
 //                                               the full ad with another music track, written as clc-ad-<shape>-music-<name>.mp4
@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { STORIES, storyId } from '../src/stories.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const videoRoot = resolve(here, '..')
@@ -15,6 +16,7 @@ const outDir = resolve(videoRoot, '..', 'assets-source', 'ads', 'video')
 mkdirSync(outDir, { recursive: true })
 
 const SETS = { teaser: { prefix: 'Teaser', file: 'clc-teaser-5s' }, ad: { prefix: 'Ad', file: 'clc-ad' } }
+for (const [name, s] of Object.entries(STORIES)) SETS[name] = { prefix: storyId(name), file: s.file }
 const SHAPES = ['16x9', '9x16', '1x1']
 const args = process.argv.slice(2)
 const sets = Object.keys(SETS).filter((s) => args.includes(s))
