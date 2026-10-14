@@ -25,6 +25,12 @@ The Google Business Profile shows 3 reviews. The old ones were lost in the 2024 
 
 **Season tab**: the Review column says "asked Oct 15", "text to send" or "reviewed ✓" instead of only the hand-ask date.
 
+**On the account page** (owner 2026-10-14: "I would like the review request to show up now for any past customers, which is all of them"): a ★ card right under the greeting on `/account/`, the same for everyone: "Enjoying your lights? Thank you for choosing Christmas Light Creations. If you have a minute, a Google review helps a small family business more than anything." (the middle sentence is the email's `REVIEW_LINE`; words in `accountReviewCard`, `src/data/content.js`), a **★ Leave a Google review** button (`REVIEW_URL`, new tab) and **Not now**.
+- Who: `accountReview(customer, season)` (this file, tested), returned by `myAccount` as `review`: anyone with a season before this one on their record (the imported customers), a season marked Install Completed, or a customer-since year before this season. A first-season customer sees it only once their install is completed. Nobody whose record has **They reviewed** on any season.
+- On the device (`src/account/reviewCard.js`, localStorage `clcReviewCard`): tapping the button says "Thank you!" and hides it there for good; **Not now** hides it for 30 days. The privacy page says so.
+- It is not mail, so it shows whatever the Email preferences say; it never offers anything, and staff see no record of a tap (we can't read Google; They reviewed stays the staff's call).
+- Needs the `myAccount` deploy; until then `review` is missing and the card stays hidden.
+
 ## What we DON'T do
 
 | Never | Why |
@@ -58,6 +64,7 @@ The Google Business Profile shows 3 reviews. The old ones were lost in the 2024 
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-14 | Every past customer sees a ★ review card on their account page until They reviewed; a tap or Not now is remembered on the device only | Owner: "show up now for any past customers, which is all of them". Signed-in customers are the warmest people we have; the email only goes after this season's installs |
 | 2026-10-13 | Ask everyone, 2 days after the install is marked completed, by email; one reminder 4 days later; never an incentive, never only the happy ones | Owner: get from 3 to ~40 reviews within Google's rules. Two days: the lights have been on a couple of nights, problems have surfaced and been fixed |
 | 2026-10-13 | The clock starts when the **server first sees** Install Completed (`seenAt`), not from a status timestamp | Nothing records when the status changed today (staff pick it from a list; a route's ✓ Done writes it too); a server-side "seen" needs no client change and is the same for every path. Cost: ≤ 1 day of slack |
 | 2026-10-13 | Texts are queued for staff in 💬, never sent by the server | Google Voice has no sending API (decision 2026-10-08); the owner wanted texts for people who prefer them |

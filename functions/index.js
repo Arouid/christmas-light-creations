@@ -81,7 +81,7 @@ import { blockedReason } from './blocklist.js'
 import { giftWrappingOn } from './giftWrapping.js'
 import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
 import { NWS_POINTS_URL, NWS_USER_AGENT, WATCH_SCHEDULE, badDays, lightsHeadsUp, lightsUp, noticesOn, pruneSent, routeHeadsUp, sentKey, staffWeather, tipsOk, weatherLine } from './weather.js'
-import { ASK_SCHEDULE, DONE_STATUS, askEmail, replied, reminderEmail, reviewAsksOn, reviewPlan, seasonOf } from './reviewAsk.js'
+import { ASK_SCHEDULE, DONE_STATUS, accountReview, askEmail, replied, reminderEmail, reviewAsksOn, reviewPlan, seasonOf } from './reviewAsk.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
 import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
@@ -975,7 +975,9 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const details = rec ? detailsSummary(rec) : null
   // Chat with us (docs/specs/account-chat.md): the thread on their first record, staff emails stripped.
   const chat = ids.length ? customerView((await db.doc(`conversations/${ids[0]}`).get()).data()) : null
-  return { email: who.email, phone: who.phone, proposals, invoices, price, schedule, service, details, chat, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+  // The Google review card for past customers (functions/reviewAsk.js accountReview).
+  const review = rec ? accountReview(rec, season) : null
+  return { email: who.email, phone: who.phone, proposals, invoices, price, schedule, service, details, chat, review, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
 })
 
 // The newest Open / Scheduled service call on any of these customer records,

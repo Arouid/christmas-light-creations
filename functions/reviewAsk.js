@@ -64,6 +64,22 @@ export const byText = (channel) => String(channel ?? '').includes('text')
 // The latest season whose install is completed (where the ★ box shows).
 export const reviewSeasonOf = (customer) => Object.keys(customer?.seasons ?? {}).sort().reverse().find((y) => customer.seasons[y]?.installStatus === DONE_STATUS) ?? null
 
+// The ★ card on the customer's own account page (owner 2026-10-14: "I would
+// like the review request to show up now for any past customers"): anyone who
+// has had an install with us (a season before this one, a season marked
+// Install Completed, or customer since before this season), until staff mark
+// They reviewed on any season. Same card for everyone; nothing offered.
+// myAccount returns it as `review`.
+export function accountReview(customer, season) {
+  const seasons = customer?.seasons ?? {}
+  const years = Object.keys(seasons)
+  if (years.some((y) => askRecord(seasons[y]).reviewedAt)) return null
+  const now = String(season)
+  const since = parseInt(String(customer?.since ?? ''), 10)
+  const past = years.some((y) => y < now) || years.some((y) => seasons[y]?.installStatus === DONE_STATUS) || (since > 2000 && String(since) < now)
+  return past ? { show: true } : null
+}
+
 // ---- Who gets what ---------------------------------------------------------------
 
 // How to reach them: { email, phone, channel }; channel null = no way.

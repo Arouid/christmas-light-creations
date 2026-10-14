@@ -657,3 +657,9 @@ What was actually checked working, and how. Newest first.
 - `findByHash` tests (`tests/jobRecord.test.mjs`); lint clean.
 - Browser pane, `/leads/?demo#customers` → Example Family at 375 px, one generated JPEG used throughout: added under Photos → 1 photo; card **📷 Use our own photo** opens "Pick one of their photos, or add a new one" → tapping it makes it the house photo, still 1 photo, chooser closes; the same file again under Photos → still 1, "That picture is already here, so it wasn't added again."; the same file from the card → still 1, house photo kept. Hint line under the thumbnails shows; no sideways scroll. At 1440 px the viewer shows the photo 864×576 in the middle and "🗑 Remove photo" centered right under it. Console: no errors after a reload (two from a half-saved file during editing, before the reload).
 - Not checked: the live duplicate on Ashley Ashna (owner removes it: open the copy without the 🏠 badge → 🗑 Remove photo).
+
+## 2026-10-14 Google review card on the account page (past customers)
+
+- `accountReview` tests (earlier season with any status, this season's install completed, customer-since before this season, first-season not yet done, empty record, They reviewed on any season) and the card test (same sentence as the email's `REVIEW_LINE`, nothing offered, a tap hides for good, Not now for 30 days then back) in `tests/reviewAsk.test.mjs`. Lint clean.
+- Browser pane, `/account/?demo` at 375 px: the card sits right under "Hi, Pat" with the email's sentence, **★ Leave a Google review** (48 px, opens https://g.page/r/CWKRhzePqUvIEAI/review in a new tab) and **Not now**; no sideways scroll. Tap (navigation blocked for the test) → "Thank you! It means a lot to our family.", stored `done`, hidden after a reload; cleared → shows again; **Not now** → gone, stored `later:…` (30 days), still hidden after a reload. Console clean.
+- Not checked: the live card, which needs the `myAccount` deploy (checklist #149).

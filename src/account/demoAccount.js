@@ -6,6 +6,7 @@ export const DEMO_ACCOUNT = {
   email: 'pat@example.com',
   customer: { name: customer.name, address: customer.address },
   // Your schedule + Report a problem (docs/specs/account-service.md).
+  review: { show: true }, // a past customer: the Google review card shows (functions/reviewAsk.js accountReview)
   schedule: { season: '2026', installStatus: 'Install Scheduled', day: 'Thursday', plannedDate: 'Nov 13', weekOf: 'Nov 9-15', timeframe: '', takedownStatus: '' },
   service: { days: 2, open: null },
   // Chat with us (docs/specs/account-chat.md): a thread answered yesterday.

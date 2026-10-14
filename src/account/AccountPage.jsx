@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { business } from '../data/content'
+import { accountReviewCard, business } from '../data/content'
+import { laterValue, reviewCardHidden, saveReviewCard } from './reviewCard'
 import DepositPanel from '../proposal/DepositPanel.jsx'
 import { STATUS_LABEL, dueText, fmt, isPayIn3, partLabel } from '../proposals/model.js'
 import Icon from '../components/Icon'
@@ -330,6 +331,7 @@ function Account({ data, reload, logOut }) {
         {me?.address && <p className="text-slate-300">{me.address}</p>}
         <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
       </section>
+      {data.review?.show && <ReviewCard />}
       {data.details && <DetailsNudge details={data.details} />}
       <Lights schedule={data.schedule} service={data.service} reload={reload} />
       {data.chat && <Chat chat={data.chat} reload={reload} />}
@@ -485,6 +487,31 @@ const DETAIL_INPUTS = [
   ['hazards', 'Things in the yard we should avoid', 'textarea', 'Sprinkler heads, landscape lights and their wires, pet-fence wire, cameras, fragile plants…'],
   ['pets', 'Pets', 'input', 'e.g. two dogs, friendly; keep the gate shut'],
 ]
+// Google review card for past customers (docs/specs/review-ask.md → On the
+// account page). Shown when the server says so (myAccount → review), until
+// staff mark They reviewed; this device remembers a tap or "Not now" (reviewCard.js).
+function ReviewCard() {
+  const [off, setOff] = useState(reviewCardHidden)
+  const [thanked, setThanked] = useState(false)
+  if (off) return null
+  const tapped = () => { setThanked(true); saveReviewCard('done') }
+  const later = () => { setOff(true); saveReviewCard(laterValue()) }
+  return (
+    <section aria-label="Google review" className="space-y-3 rounded-3xl border border-glow-400/40 bg-glow-400/10 p-5">
+      <h2 className="font-display text-xl font-extrabold">{accountReviewCard.title}</h2>
+      {thanked
+        ? <p className="text-glow-300">{accountReviewCard.thanks}</p>
+        : <>
+          <p className="text-slate-200">{accountReviewCard.text}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <a href={business.reviewLink} target="_blank" rel="noreferrer" onClick={tapped} className={`${btn} bg-glow-400 px-5 py-3 text-night-950`}>{accountReviewCard.button}</a>
+            <button type="button" onClick={later} className="min-h-11 px-2 text-slate-400 underline">{accountReviewCard.later}</button>
+          </div>
+        </>}
+    </section>
+  )
+}
+
 // First sign-in nudge (owner 2026-10-12): most customers get their account
 // before the crew comes, so ask once for the details while they're here.
 // Goes away once anything is filled in, or when dismissed on this device.

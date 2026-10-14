@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import {
-  ASK_AFTER_DAYS, ASK_SCHEDULE, MAX_PER_RUN, REMIND_AFTER_DAYS, REVIEW_LINE, askEmail, askRecord, askText, channelFor, replied, reminderEmail,
+  ASK_AFTER_DAYS, ASK_SCHEDULE, MAX_PER_RUN, REMIND_AFTER_DAYS, REVIEW_LINE, accountReview, askEmail, askRecord, askText, channelFor, replied, reminderEmail,
   reviewAsksOn, reviewPlan, reviewSeasonOf, reviewShort, reviewStats, reviewTextItems, reviewWords, seasonOf,
 } from '../functions/reviewAsk.js'
 import { ACCOUNT_URL, LOGO_URL, OPT_OUT_LINE, REVIEW_URL } from '../functions/brand.js'
@@ -10,6 +10,8 @@ import { KIND_WORD, isAlert } from '../functions/staffPush.js'
 import { needsSomeone, recentIncoming } from '../functions/nudge.js'
 import { ACTIONS, describe } from '../src/lib/activity.js'
 import { CONTACT_METHODS, leadToCustomer } from '../src/lib/customers.js'
+import { LATER_DAYS, laterValue, reviewCardOff } from '../src/account/reviewCard.js'
+import { accountReviewCard } from '../src/data/content.js'
 import { business } from '../src/data/content.js'
 import { textMessages } from '../src/lib/messages.js'
 import { STOCK_TEMPLATES } from '../src/lib/emailTemplates.js'
@@ -210,4 +212,33 @@ test('activity words, the Settings switch, the guide, and the lead’s contact c
   assert.equal(leadToCustomer({ firstName: 'A', lastName: 'B', contactMethod: 'Text' }, '2026').contactMethod, 'Text')
   assert.equal(leadToCustomer({ firstName: 'A', lastName: 'B', contactMethod: 'Carrier pigeon' }, '2026').contactMethod, undefined)
   assert.equal(leadToCustomer({ firstName: 'A', lastName: 'B' }, '2026').contactMethod, undefined)
+})
+
+test('accountReview: every past customer sees the account-page card until staff mark They reviewed', () => {
+  const season = '2026'
+  // An earlier season on file (the imported customers), whatever its status.
+  assert.deepEqual(accountReview({ seasons: { 2024: { installStatus: '' }, 2026: { installStatus: 'Confirmed - Needs to be Scheduled' } } }, season), { show: true })
+  // This season's install done.
+  assert.deepEqual(accountReview({ seasons: { 2026: { installStatus: 'Install Completed' } } }, season), { show: true })
+  // Customer since an earlier year, with no seasons on file.
+  assert.deepEqual(accountReview({ since: '2019', seasons: {} }, season), { show: true })
+  // First season with us, install not done yet: not a past customer.
+  assert.equal(accountReview({ seasons: { 2026: { installStatus: 'Install Scheduled' } } }, season), null)
+  assert.equal(accountReview({ since: '2026', seasons: { 2026: {} } }, season), null)
+  assert.equal(accountReview({}, season), null)
+  // Staff marked They reviewed (any season): gone.
+  assert.equal(accountReview({ seasons: { 2025: { installStatus: 'Install Completed', reviewAsk: { reviewedAt: '2026-10-10T15:00:00Z' } }, 2026: {} } }, season), null)
+  assert.equal(accountReview(null, season), null)
+})
+
+test('account review card: same sentence as the email, nothing offered; a tap hides it for good, Not now for 30 days', () => {
+  assert.ok(accountReviewCard.text.includes(REVIEW_LINE))
+  assert.doesNotMatch(Object.values(accountReviewCard).join(' '), /discount|free|gift|coupon|off your|\$/i)
+  const now = Date.parse('2026-10-14T18:00:00Z')
+  assert.equal(reviewCardOff('', now), false)
+  assert.equal(reviewCardOff('done', now), true)
+  const later = laterValue(now)
+  assert.equal(reviewCardOff(later, now + 86_400_000), true)
+  assert.equal(reviewCardOff(later, now + (LATER_DAYS + 1) * 86_400_000), false)
+  assert.equal(reviewCardOff('later:garbage', now), false)
 })
