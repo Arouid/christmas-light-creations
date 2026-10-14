@@ -1,5 +1,6 @@
 // Customer accounts (/account/): pure helpers for the server functions
-// sendAccountLink and myAccount. No Firebase here, so tests can import it.
+// sendAccountLink, myAccount and accountPreview. No Firebase here, so tests
+// can import it.
 //
 // A customer's account = every proposal, invoice and customer record whose
 // emailKeys hold their verified sign-in email (any letter case) or whose
@@ -115,8 +116,38 @@ export function accountIdentity(token) {
   if (!email && !phone) return null
   return { email, phone, key: email || phone }
 }
-// The index queries for an identity: [field, value] pairs, one per key it has.
-export const accountQueries = (who) => [who?.email && ['emailKeys', who.email], who?.phone && ['phoneKeys', who.phone]].filter(Boolean)
+// The index queries for an identity: [field, value] pairs, one per key it has
+// (a staff preview's identity has lists: previewIdentity below).
+const keyList = (one, many) => [...new Set([one, ...(many ?? [])].filter(Boolean))]
+export const accountQueries = (who) => [
+  ...keyList(who?.email, who?.emails).map((e) => ['emailKeys', e]),
+  ...keyList(who?.phone, who?.phones).map((p) => ['phoneKeys', p]),
+]
+
+// Staff seeing a customer's account as them (accountPreview,
+// docs/specs/account-preview.md): every email and phone on their customer
+// record, so the preview holds what any of their sign-ins would show. "Signed
+// in as" shows the first email, else the first phone. key '' = nothing they
+// could sign in with yet.
+export function previewIdentity(c) {
+  const emails = customerEmailKeys(c)
+  const phones = customerPhoneKeys(c)
+  return { email: emails[0] ?? '', phone: phones[0] ?? '', key: emails[0] || phones[0] || '', emails, phones }
+}
+// Browser request → { id } of the customer record, or { error }.
+export function previewRequest(data) {
+  const id = typeof data?.id === 'string' ? data.id.trim() : ''
+  if (!id || id.length > 200 || id.includes('/')) return { error: ['invalid-argument', 'Which customer? Open the preview from their account in the staff app.'] }
+  return { id }
+}
+
+// Staff callables (functions/index.js isStaffToken): only a verified Google
+// sign-in counts, and its email must then be on the `staff` list. The email
+// to look up, or '' (an email link or phone sign-in is never staff).
+export function staffTokenEmail(token) {
+  if (token?.email_verified !== true || token.firebase?.sign_in_provider !== 'google.com' || !token.email) return ''
+  return normEmail(token.email)
+}
 
 // Newest first (signed or sent date).
 export const byNewest = (a, b) => String(b.signedAt ?? b.sentAt ?? '').localeCompare(String(a.signedAt ?? a.sentAt ?? ''))

@@ -19,6 +19,8 @@ import DiscountSuggestion from './DiscountSuggestion'
 import PhotosPanel from './photos/PhotosPanel'
 import WhatsUpEditor from './WhatsUp'
 import { installedLines, photoList } from '../lib/jobRecord'
+import { PREVIEW_BUTTON, accountPreviewLink } from '../lib/accountPreview'
+import { demoMode } from './demo'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
 
@@ -126,6 +128,8 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             <a className={action} target="_blank" rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}`}>Map</a>
           )}
+          {/* Their /account/ page as they see it, read-only (docs/specs/account-preview.md). */}
+          <a className={action} href={accountPreviewLink(customer.id, { base: import.meta.env.BASE_URL, demo: demoMode })} target="_blank" rel="noreferrer">{PREVIEW_BUTTON}</a>
         </div>
         <BounceNote record={customer} hint="Fix it under Contact below, then send it again." />
         {gate && (

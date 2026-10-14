@@ -29,6 +29,7 @@ import ChatPanel from '../ChatPanel'
 import { Grid } from '../CustomerDetail'
 import ReviewAskBox from '../ReviewAsk'
 import { SEASON } from '../seasonFields'
+import { PREVIEW_BUTTON, accountPreviewLink } from '../../lib/accountPreview'
 
 const KIND = { customer: ['Customer', 'bg-emerald-500/20 text-emerald-300'], lead: ['Website lead', 'bg-glow-400/20 text-glow-300'], past: ['Past request', 'bg-white/10 text-slate-300'] }
 const shape = 'inline-flex items-center justify-center gap-1.5 rounded-full px-3.5 py-2.5 text-sm font-medium'
@@ -218,6 +219,8 @@ export function CustomerAccount({ c, customers, leads = [], past = [], calls = [
         {/* Their account link (owner 2026-10-14): the email template, or the same words as a text. */}
         <ComposeEmail person={c} season={season} target={{ customerId: c.id }} start="account-invite" label="✉️ Account link" className={action} />
         <TextButton phone={c.phone} className={action} label="Text account link" message={textMessages.account(c)} />
+        {/* Their account page as they see it, read-only (docs/specs/account-preview.md). */}
+        <a className={action} href={accountPreviewLink(c.id, { base: import.meta.env.BASE_URL, demo: demoMode })} target="_blank" rel="noreferrer">{PREVIEW_BUTTON}</a>
         {c.address && <a className={action} href={mapLink(c.address)} target="_blank" rel="noreferrer">Map</a>}
         <AddToRoute customers={[c]} className={action} />
         {onOpenCustomer && <button type="button" onClick={() => onOpenCustomer(c.id)} className={primary}>Edit details</button>}

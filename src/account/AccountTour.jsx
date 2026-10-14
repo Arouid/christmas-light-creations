@@ -23,8 +23,10 @@ export default function AccountTour({ steps, name = '', onClose }) {
     const el = step?.anchor && document.getElementById(step.anchor)
     if (!el) return
     el.setAttribute('data-tour-spot', '')
-    // Just above the section (not its scroll margin), so the card covers less of it.
-    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 16) })
+    // Just above the section (not its scroll margin), so the card covers less
+    // of it; below the staff preview banner when there is one (AccountPage.jsx).
+    const banner = document.querySelector('[data-preview-banner]')?.offsetHeight ?? 0
+    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 16 - banner) })
     return () => el.removeAttribute('data-tour-spot')
   }, [step?.anchor])
   useEffect(() => {

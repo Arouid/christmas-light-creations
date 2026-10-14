@@ -90,6 +90,10 @@ export async function signOut() {
 
 // `app`: the device name when this runs as the installed app, so staff can see who has it (customerLogins).
 export const loadAccount = () => callDeposit('myAccount', { app: standalone() ? deviceName(navigator.userAgent) : '' })
+// Staff seeing a customer's account as they do (docs/specs/account-preview.md):
+// the same answer as myAccount, for that customer record; staff only, and it
+// never counts as the customer signing in.
+export const loadPreview = (id) => callDeposit('accountPreview', { id })
 
 // Report a problem with their lights (docs/specs/account-service.md): the
 // server logs the service call and alerts staff; the browser never writes it.

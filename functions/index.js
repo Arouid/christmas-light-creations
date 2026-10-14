@@ -13,6 +13,8 @@
 //   email-link or phone sign-in; the account lists proposals and invoices
 //   whose emailKeys / phoneKeys hold that verified email or phone, plus this
 //   season's schedule and any open service call; docs/specs/phone-sign-in.md).
+// - accountPreview: staff see a customer's account page as the customer does
+//   (same payload as myAccount, reads only; docs/specs/account-preview.md).
 // - reportProblem: "Report a problem" on /account/ becomes a service call on
 //   the customer's record, like staff's Log call, and alerts staff
 //   (docs/specs/account-service.md).
@@ -70,7 +72,7 @@ import { adsQuery, adsSpend, billingQuery, googleSpend as googleSpendOf, isMissi
 import { PARTS, dollars, partCents, paymentOf } from './proposalMath.js'
 import { captureProblem, customIdFor, lockProblem, orderProblem, partLabel, payableProblem, validOrderId } from './payments.js'
 import { centralDayOf, dueText, payIn3Due, payIn3Reminder } from './payIn3.js'
-import { detailsChanged, detailsRequest, detailsSummary } from './propertyDetails.js'
+import { detailsChanged, detailsRequest } from './propertyDetails.js'
 import { rebookEmail, rebookPatch, rebookPush, rebookRequest } from './rebook.js'
 import { brandText, textFooter } from './brand.js'
 import { fromHeader, staffName, staffNamesMap } from './staffNames.js'
@@ -81,7 +83,7 @@ import { blockedReason } from './blocklist.js'
 import { giftWrappingOn } from './giftWrapping.js'
 import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
 import { NWS_POINTS_URL, NWS_USER_AGENT, WATCH_SCHEDULE, badDays, lightsHeadsUp, lightsUp, noticesOn, pruneSent, routeHeadsUp, sentKey, staffWeather, tipsOk, weatherLine } from './weather.js'
-import { ASK_SCHEDULE, DONE_STATUS, accountReview, askEmail, replied, reminderEmail, reviewAsksOn, reviewPlan, seasonOf } from './reviewAsk.js'
+import { ASK_SCHEDULE, DONE_STATUS, askEmail, replied, reminderEmail, reviewAsksOn, reviewPlan, seasonOf } from './reviewAsk.js'
 import { appSentKeys, badBatch, buildDirectory, docsFor, dryRunSummary } from './messageSync.js'
 import { bounceFields, bounceIncident, bouncePush, bounceSummary, parseSyncItem, pickBounced, recordsOf } from './bounces.js'
 import { historyEntry, recipientsOf, sendAllowed, staffEmailRequest } from './staffEmail.js'
@@ -96,11 +98,12 @@ import { DraftError, PRESENCE_ID, draftFor, threadFor } from './assistant/draft.
 import { askAllowed, askRequest } from './assistant/askPrompt.js'
 import { AskError, askFor } from './assistant/ask.js'
 import sharp from 'sharp'
-import { accountIdentity, accountQueries, accountSummary, accountUrl, addOnFromProposal, byNewest, customerEmailKeys, customerForAccount, customerPhoneKeys, EMAIL_RE, loginRecord, normEmail, proposalEmailKeys, proposalPhoneKeys, providerName, sameKeys, shownInAccount } from './account.js'
-import { SERVICE_DAYS, openMessage, openReport, openSummary, reportCall, reportEmail, reportPush, reportRequest, scheduleFor } from './service.js'
+import { accountIdentity, accountQueries, accountUrl, addOnFromProposal, customerEmailKeys, customerPhoneKeys, EMAIL_RE, loginRecord, normEmail, previewIdentity, previewRequest, proposalEmailKeys, proposalPhoneKeys, providerName, sameKeys, staffTokenEmail } from './account.js'
+import { CUSTOMER_FIELDS, PROPOSAL_FIELDS, accountPayload } from './accountPayload.js'
+import { SERVICE_DAYS, openMessage, openReport, openSummary, reportCall, reportEmail, reportPush, reportRequest } from './service.js'
 import { LIMITS as CHAT_LIMITS, appendMessage, chatAlertEmail, chatAllowed, chatPush, chatRequest, customerView, previewText, recipientFor, replyEmail } from './chat.js'
 import {
-  centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceState, invoiceSummary, KIND_SHORT, paidInfo,
+  centralDay, emailOk, invoiceCents, invoiceCustomId, invoiceEmail, invoiceNumber, invoiceState, KIND_SHORT, paidInfo,
   payableInvoiceProblem, receiptEmail, reminderDue, seasonFillsOnPaid, seasonFillsOnSend, shownInvoice, staffPaidEmail, toMs, validToken,
 } from './invoices.js'
 
@@ -948,6 +951,27 @@ async function recordLogin(db, who, token, app = '') {
   })
 }
 
+// Everything the account page shows for this person, read once here and
+// built by accountPayload (functions/accountPayload.js) for both myAccount
+// and accountPreview, so the customer and the staff preview can't drift.
+// Reads only, apart from the one-time index fill (fill: false skips it).
+// firstId: the record staff opened, put first when the lookup didn't find it
+// (no email or phone on it yet, so the customer couldn't sign in).
+async function accountFor(db, who, { firstId = '', fill = true } = {}) {
+  if (fill) await ensureAccountIndex()
+  const [props, custs, invoices] = await Promise.all([accountDocsFor('proposals', who), accountDocsFor('customers', who), invoicesFor(who)])
+  const found = custs.map((d) => d.id)
+  const ids = firstId && !found.includes(firstId) ? [firstId, ...found] : found
+  const [proposals, customers, openCall, conversation] = await Promise.all([
+    props.length ? db.getAll(...props.map((d) => d.ref), { fieldMask: PROPOSAL_FIELDS }) : [],
+    ids.length ? db.getAll(...ids.map((id) => db.doc(`customers/${id}`)), { fieldMask: CUSTOMER_FIELDS }) : [],
+    ids.length ? openCallFor(db, ids) : null,
+    ids.length ? db.doc(`conversations/${ids[0]}`).get() : null,
+  ])
+  const rows = (docs) => docs.map((d) => ({ id: d.id, data: d.data() }))
+  return accountPayload({ who, proposals: rows(proposals), invoices: rows(invoices), customers: rows(customers), openCall, conversation: conversation?.data() ?? null })
+}
+
 // The signed-in customer's proposals with what's paid and what's due. Only
 // for a verified email (email-link sign-in always is) or a phone sign-in;
 // payment amounts come from the stored proposals, same as the payment functions.
@@ -955,29 +979,26 @@ export const myAccount = onCall({ region: REGION, invoker: 'public', cors: [SITE
   const who = signedInCustomer(req)
   const db = getFirestore()
   await recordLogin(db, who, req.auth.token, String(req.data?.app ?? '').slice(0, 40)).catch((e) => logger.warn('recordLogin', e))
-  const tokens = await proposalTokensFor(who)
-  const docs = tokens.length ? await db.getAll(...tokens.map((t) => db.doc(`proposals/${t}`)), { fieldMask: ['status', 'title', 'season', 'customer', 'items', 'discountPct', 'depositPct', 'deposit', 'payments', 'requests', 'sentAt', 'signedAt'] }) : []
-  const proposals = docs.filter((d) => shownInAccount(d.data())).map((d) => accountSummary(d.id, d.data(), centralDay())).sort(byNewest)
-  // Yearly price breakdown from their customer record, once staff allow it.
-  const ids = await customersFor(who)
-  const recs = ids.length ? await db.getAll(...ids.map((id) => db.doc(`customers/${id}`)), { fieldMask: ['fullName', 'address', 'since', 'originalRate', 'addOns', 'priceShown', 'seasons'] }) : []
-  const rec = recs.map((d) => d.data()).find(Boolean)
-  const now = new Date()
-  const season = String(now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1) // same as src/lib/customers.js seasonYear (server clock is UTC; fine for a July 1 cutover)
-  const price = recs.map((d) => customerForAccount(d.data(), season)).find(Boolean) ?? null
-  // Their invoices (sent or paid; never drafts or voided ones), newest first.
-  const today = centralDay()
-  const invoices = (await invoicesFor(who)).map((d) => invoiceSummary(d.id, d.data(), today)).sort((a, b) => String(b.sentDay).localeCompare(String(a.sentDay)) || b.number.localeCompare(a.number))
-  // This season's schedule and any open service call (docs/specs/account-service.md).
-  const schedule = rec ? scheduleFor(rec.seasons, season) : null
-  const service = ids.length ? { days: SERVICE_DAYS, open: await openCallFor(db, ids) } : null
-  // Property details the customer may fill in themselves (functions/propertyDetails.js).
-  const details = rec ? detailsSummary(rec) : null
-  // Chat with us (docs/specs/account-chat.md): the thread on their first record, staff emails stripped.
-  const chat = ids.length ? customerView((await db.doc(`conversations/${ids[0]}`).get()).data()) : null
-  // The Google review card for past customers (functions/reviewAsk.js accountReview).
-  const review = rec ? accountReview(rec, season) : null
-  return { email: who.email, phone: who.phone, proposals, invoices, price, schedule, service, details, chat, review, customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null }
+  return accountFor(db, who)
+})
+
+// Staff see a customer's account page exactly as the customer does
+// (👁 View their account → /account/?preview=<customer id>,
+// docs/specs/account-preview.md): myAccount's payload for every email and
+// phone on that record. Staff only, checked like every staff callable. Reads
+// only: no login record, no index fill, no activity line, nothing to the customer.
+export const accountPreview = onCall({ region: REGION, invoker: 'public', cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {
+  if (!req.auth) throw new HttpsError('unauthenticated', 'Please sign in again.')
+  if (!(await isStaffToken(req.auth.token))) throw new HttpsError('permission-denied', 'Staff only.')
+  const r = previewRequest(req.data)
+  if (r.error) throw new HttpsError(...r.error)
+  const db = getFirestore()
+  const snap = await db.doc(`customers/${r.id}`).get()
+  if (!snap.exists) throw new HttpsError('not-found', 'That customer record is gone. Refresh the staff app and try again.')
+  const who = previewIdentity(snap.data())
+  const account = await accountFor(db, who, { firstId: r.id, fill: false })
+  logger.info('accountPreview', { customer: r.id })
+  return { ...account, preview: { id: r.id, name: snap.data().fullName ?? '', canSignIn: Boolean(who.key) } }
 })
 
 // The newest Open / Scheduled service call on any of these customer records,
@@ -1365,9 +1386,12 @@ async function senderFrom(db, staffEmail) {
   }
 }
 
+// A verified Google sign-in whose email is on the `staff` list
+// (functions/account.js staffTokenEmail, tested).
 async function isStaffToken(token) {
-  if (token?.email_verified !== true || token.firebase?.sign_in_provider !== 'google.com' || !token.email) return false
-  return (await getFirestore().doc(`staff/${normEmail(token.email)}`).get()).exists
+  const email = staffTokenEmail(token)
+  if (!email) return false
+  return (await getFirestore().doc(`staff/${email}`).get()).exists
 }
 
 export const sendStaffEmail = onCall({ region: REGION, invoker: 'public', secrets: [SMTP_PASSWORD], cors: [SITE, 'http://localhost:5173'], enforceAppCheck: ENFORCE_APP_CHECK }, async (req) => {

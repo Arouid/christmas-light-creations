@@ -15,6 +15,7 @@ The account page at `/account/` **is** the app. It's installed on a phone as a w
 | Get the app box | `AccountPage.jsx` → `GetTheApp` | on the signed-in account, hidden inside the installed app; buttons and steps shared with the staff app in `src/components/InstallApp.jsx` |
 | Test | `tests/installManifests.test.mjs` | both manifests complete, icons on disk, worker present |
 | First-sign-in tour | `src/account/AccountTour.jsx`, words in `src/data/accountTour.js` | up to five cards on their own page, once per device, again from ☰ → Take the tour; skips Get the app inside the installed app (`docs/specs/account-tour.md`) |
+| Staff preview | `?preview=<customer id>` on the same page, server `accountPreview` | staff see a customer's page exactly as they do, every action greyed out, nothing sent or kept; 👁 View their account in the staff app (`docs/specs/account-preview.md`) |
 
 How it installs:
 

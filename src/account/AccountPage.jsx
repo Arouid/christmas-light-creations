@@ -19,6 +19,7 @@ import { WEEKS } from '../../functions/rebook.js'
 import { demoCodeStep, demoPhoneStep, phoneError, prettyPhone } from './phoneSignIn.js'
 import AccountTour from './AccountTour.jsx'
 import { accountTourSteps, tourWorthOpening } from '../data/accountTour.js'
+import { PREVIEW_NO_SIGN_IN, PREVIEW_OFF, PREVIEW_PARAM, previewBanner, previewProblem } from '../lib/accountPreview.js'
 
 // The customer's own account: /account/ (sign in with Google, a code texted
 // to their phone, or an emailed link; no password). Lists every proposal sent
@@ -26,9 +27,16 @@ import { accountTourSteps, tourWorthOpening } from '../data/accountTour.js'
 // with the same PayPal panel as the proposal page.
 // Dev preview with sample data: /account/?demo; the sign-in screens, with
 // nothing sent: /account/?demo=signin (any 6 digits sign in).
+// Staff seeing a customer's account as they do (docs/specs/account-preview.md):
+// /account/?preview=<customer id>, from 👁 View their account in the staff
+// app. Staff Google sign-in; the server's accountPreview answers instead of
+// myAccount; every action is greyed out and nothing is kept on this device.
+// /account/?demo&preview=x shows it with the sample data.
 const q = new URLSearchParams(window.location.search)
 const demo = import.meta.env.DEV && q.has('demo')
 const demoSignIn = demo && q.get('demo') === 'signin'
+const preview = q.has(PREVIEW_PARAM)
+const previewId = q.get(PREVIEW_PARAM) ?? ''
 const lib = demo ? null : import('../lib/account.js')
 // Where Firebase's invisible robot check for phone sign-in anchors (docs/specs/phone-sign-in.md).
 const RECAPTCHA_ID = 'phone-recaptcha'
@@ -55,6 +63,26 @@ const call = (
   </a>
 )
 
+// Staff preview: every control that would act for the customer shows, greyed
+// out (disabled, or a <fieldset disabled> around a form), with this tooltip.
+const offTip = preview ? PREVIEW_OFF : undefined
+// A link that acts for them (sign, review): greyed out and going nowhere in a preview.
+function ActLink({ className, children, ...props }) {
+  if (preview) return <span aria-disabled="true" title={PREVIEW_OFF} className={`${className} cursor-not-allowed opacity-60`}>{children}</span>
+  return <a className={className} {...props}>{children}</a>
+}
+// Pay: in a preview the same panel, with a greyed-out stand-in for PayPal's buttons (PayPal isn't loaded).
+function PayPanel(props) {
+  if (!preview) return <DepositPanel {...props} />
+  return (
+    <section className="space-y-3 rounded-3xl border border-glow-400/40 bg-night-900 p-5 print:hidden">
+      <h2 className="font-display text-2xl font-extrabold">{props.title}: {props.amountLabel}</h2>
+      <p className="text-sm text-slate-300">{props.note} Pay with PayPal, Venmo or a card.</p>
+      <button type="button" disabled title={PREVIEW_OFF} className="min-h-11 w-full rounded-2xl bg-white p-3 font-semibold text-night-950 opacity-60">PayPal · Venmo · Card</button>
+    </section>
+  )
+}
+
 export default function AccountPage() {
   const [view, setView] = useState({ name: 'checking' })
   const [email, setEmail] = useState('')
@@ -66,11 +94,12 @@ export default function AccountPage() {
   const data = view.name === 'account' ? view.data : null
   // The tour: by itself once per device on the first signed-in visit, any
   // time from ☰. null = not opened or closed by them yet on this visit.
+  // A staff preview shows it as on their first visit and remembers nothing.
   const [tourSeen] = useState(tourDone)
   const [tour, setTour] = useState(null)
   const tourSteps = data ? accountTourSteps(data, { installed }) : []
-  const tourOpen = tour ?? (Boolean(data) && !tourSeen && tourWorthOpening(tourSteps))
-  const closeTour = () => { markTourDone(); setTour(false) }
+  const tourOpen = tour ?? (Boolean(data) && (preview || !tourSeen) && tourWorthOpening(tourSteps))
+  const closeTour = () => { if (!preview) markTourDone(); setTour(false) }
   // What the drawer links to, by what's on the page (anchors below).
   const menuItems = data ? [
     (data.schedule || data.service) && { href: '#lights', label: 'Your lights', icon: '🎄' },
@@ -90,14 +119,15 @@ export default function AccountPage() {
       const { DEMO_ACCOUNT } = await import('./demoAccount.js')
       // ?demo=rebook: a returning customer who isn't on this season's list yet.
       const rebook = q.get('demo') === 'rebook' ? { ...DEMO_ACCOUNT, schedule: { ...DEMO_ACCOUNT.schedule, installStatus: '', day: '', plannedDate: '', weekOf: '' } } : DEMO_ACCOUNT
-      setView({ name: 'account', data: rebook })
+      setView({ name: 'account', data: preview ? { ...rebook, preview: { id: previewId, name: rebook.customer?.name ?? '', canSignIn: true } } : rebook })
       return
     }
     setView((v) => (v.name === 'account' ? v : { name: 'loading' }))
     try {
-      setView({ name: 'account', data: await (await lib).loadAccount() })
-    } catch {
-      setView({ name: 'error' })
+      const a = await lib
+      setView({ name: 'account', data: await (preview ? a.loadPreview(previewId) : a.loadAccount()) })
+    } catch (err) {
+      setView(preview ? { name: 'previewProblem', ...previewProblem(err) } : { name: 'error' })
     }
   }
 
@@ -108,7 +138,7 @@ export default function AccountPage() {
     ;(async () => {
       const a = await lib
       let waiting = false // link opened on another phone/computer: ask which email it went to
-      if (await a.isLinkInUrl()) {
+      if (!preview && await a.isLinkInUrl()) {
         const saved = a.rememberedEmail()
         if (saved) {
           try { await a.finishLink(saved) } catch { if (!cancelled) setView({ name: 'badLink' }); return }
@@ -120,6 +150,7 @@ export default function AccountPage() {
       // Signs in later (needEmail form) also land here.
       const off = await a.watchUser((user) => {
         if (user) load()
+        else if (preview) setView({ name: 'staffSignIn' })
         else if (!waiting) { setEmail(a.rememberedEmail()); setView({ name: 'signin' }) }
       })
       if (cancelled) off(); else unsub = off
@@ -150,7 +181,7 @@ export default function AccountPage() {
     try {
       await (await lib).signInGoogle()
     } catch {
-      setView((v) => ({ ...v, error: 'Google sign-in didn’t work. Try the email link below, or call us.' }))
+      setView((v) => ({ ...v, error: preview ? 'Google sign-in didn’t work. Please try again.' : 'Google sign-in didn’t work. Try the email link below, or call us.' }))
     } finally {
       setBusy(false)
     }
@@ -203,11 +234,13 @@ export default function AccountPage() {
   const phoneUi = { phone, setPhone, codeText, setCodeText, send: phoneSend, confirm: phoneConfirm, back: phoneBack }
 
   async function logOut() {
-    if (demo) return
+    if (demo || preview) return // a preview would sign the staff member out of the staff app too
     await (await lib).signOut()
   }
 
   return (
+    <>
+    {preview && <PreviewBanner name={data?.preview?.name} noSignIn={data?.preview?.canSignIn === false} raised={tourOpen && tourSteps.length > 0 && !menu} />}
     <main className="mx-auto min-h-svh max-w-3xl px-4 pb-24 pt-6">
       <header className="mb-6 flex items-center justify-between gap-3">
         <a href={`${import.meta.env.BASE_URL}account/`} className="flex items-center gap-2">
@@ -221,17 +254,49 @@ export default function AccountPage() {
           <button type="button" id="account-menu" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl print:hidden">☰</button>
         </div>
       </header>
-      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo ? logOut : null} onTour={tourSteps.length ? () => setTour(true) : null} />
+      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo && !preview ? logOut : null} onTour={tourSteps.length ? () => setTour(true) : null} />
       {tourOpen && tourSteps.length > 0 && <AccountTour steps={tourSteps} name={(data.proposals?.[0]?.customer ?? data.customer ?? data.invoices?.[0]?.customer)?.name} onClose={closeTour} />}
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data{demoSignIn ? ': nothing is sent, any 6 digits sign in' : ''}</p>}
       <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} phoneUi={phoneUi} reload={load} logOut={logOut} />
       <RecaptchaNote className="mt-10" />
     </main>
+    </>
+  )
+}
+
+// Staff preview (docs/specs/account-preview.md): stays at the top while
+// scrolling; under the ☰ drawer (z-40, its ✕ is up there), above the tour's
+// dimming while the tour is open (raised, z-46 > the lit section's 45).
+// AccountTour scrolls sections to just below it ([data-preview-banner]).
+function PreviewBanner({ name, noSignIn, raised }) {
+  return (
+    <div data-preview-banner="" role="status" className={`sticky top-0 ${raised ? 'z-[46]' : 'z-30'} bg-berry-600 px-4 py-2 text-center text-sm font-semibold text-white shadow-lg print:hidden`}>
+      <p className="mx-auto max-w-3xl">{previewBanner(name)}</p>
+      {noSignIn && <p className="mx-auto max-w-3xl font-normal">{PREVIEW_NO_SIGN_IN}</p>}
+    </div>
+  )
+}
+
+// Before a staff preview loads: staff Google sign-in, or why it didn't load.
+function StaffCard({ title, text, error, google, busy }) {
+  return (
+    <div className="space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
+      <h1 className="font-display text-2xl font-extrabold">{title}</h1>
+      <p className="text-slate-300">{text}</p>
+      {error && <p className="text-sm text-berry-500" role="alert">{error}</p>}
+      {google && (
+        <button type="button" onClick={google} disabled={busy} className={`${btn} w-full bg-white text-night-950 disabled:opacity-60`}>
+          <GoogleG /> Sign in with Google
+        </button>
+      )}
+    </div>
   )
 }
 
 function Body({ view, email, setEmail, busy, submit, google, phoneUi, reload, logOut }) {
-  if (view.name === 'checking' || view.name === 'loading') return <p className="py-20 text-center text-slate-400">Loading your account…</p>
+  if (view.name === 'checking' || view.name === 'loading') return <p className="py-20 text-center text-slate-400">{preview ? 'Loading their account…' : 'Loading your account…'}</p>
+  if (view.name === 'staffSignIn') return <StaffCard title="See their account as they do" text="Sign in with the Google account you use for the staff app. Nothing you do here is sent." error={view.error} google={google} busy={busy} />
+  if (view.name === 'previewProblem') return <StaffCard title={view.title} text={view.text} error={view.error} google={view.signIn ? google : null} busy={busy} />
   if (view.name === 'error') return <Notice title="We couldn’t load your account" text="Please refresh, or call or text us." />
   if (view.name === 'badLink') return <Notice title="This sign-in link has expired or was already used" text="Ask for a new one below." action={<a href={`${import.meta.env.BASE_URL}account/`} className={`${btn} bg-white text-night-950`}>Get a new link</a>} />
   if (view.name === 'sent') return <Notice title="Check your email" text="If that email is on one of your proposals, a sign-in link is on its way from info@christmas-light-creations.com. Open it on this phone or computer. Not there in a few minutes? Check spam, or call us." />
@@ -343,7 +408,7 @@ function Account({ data, reload, logOut }) {
       <section className="space-y-1">
         <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : 'Your account'}</h1>
         {me?.address && <p className="text-slate-300">{me.address}</p>}
-        <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} className="min-h-11 underline">Sign out</button></p>
+        <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
       </section>
       {data.review?.show && <ReviewCard />}
       {data.details && <DetailsNudge details={data.details} />}
@@ -428,6 +493,7 @@ function Chat({ chat, reload }) {
 
   async function send(e) {
     e.preventDefault()
+    if (preview) return
     const body = text.trim()
     if (!body) { setState({ error: 'Write a message first.' }); return }
     setState('sending')
@@ -473,7 +539,8 @@ function Chat({ chat, reload }) {
         </div>
       )}
       {thread.waiting && <p className="text-sm text-glow-300">We’ve got your message and will answer soon.</p>}
-      <form onSubmit={send} className="space-y-2">
+      <form onSubmit={send}>
+        <fieldset disabled={preview} title={offTip} className="min-w-0 space-y-2">
         <label className="block">
           <span className="sr-only">Your message</span>
           <textarea value={text} onChange={(e) => { setText(e.target.value.slice(0, CHAT_MAX)); if (state !== 'sending') setState(null) }} rows={3} maxLength={CHAT_MAX} placeholder="Type your message…"
@@ -485,6 +552,7 @@ function Chat({ chat, reload }) {
           {state === 'sent' && <span className="text-sm text-emerald-300">Sent ✓ We’ll answer here and by email.</span>}
           {text.length > CHAT_MAX - 100 && <span className="text-xs text-slate-400">{CHAT_MAX - text.length} characters left</span>}
         </div>
+        </fieldset>
       </form>
     </section>
   )
@@ -504,12 +572,13 @@ const DETAIL_INPUTS = [
 // Google review card for past customers (docs/specs/review-ask.md → On the
 // account page). Shown when the server says so (myAccount → review), until
 // staff mark They reviewed; this device remembers a tap or "Not now" (reviewCard.js).
+// A staff preview shows it whatever this device remembers, buttons greyed out.
 function ReviewCard() {
-  const [off, setOff] = useState(reviewCardHidden)
+  const [off, setOff] = useState(() => !preview && reviewCardHidden())
   const [thanked, setThanked] = useState(false)
   if (off) return null
   const tapped = () => { setThanked(true); saveReviewCard('done') }
-  const later = () => { setOff(true); saveReviewCard(laterValue()) }
+  const later = () => { if (preview) return; setOff(true); saveReviewCard(laterValue()) }
   return (
     <section aria-label="Google review" className="space-y-3 rounded-3xl border border-glow-400/40 bg-glow-400/10 p-5">
       <h2 className="font-display text-xl font-extrabold">{accountReviewCard.title}</h2>
@@ -518,8 +587,8 @@ function ReviewCard() {
         : <>
           <p className="text-slate-200">{accountReviewCard.text}</p>
           <div className="flex flex-wrap items-center gap-3">
-            <a href={business.reviewLink} target="_blank" rel="noreferrer" onClick={tapped} className={`${btn} bg-glow-400 px-5 py-3 text-night-950`}>{accountReviewCard.button}</a>
-            <button type="button" onClick={later} className="min-h-11 px-2 text-slate-400 underline">{accountReviewCard.later}</button>
+            <ActLink href={business.reviewLink} target="_blank" rel="noreferrer" onClick={tapped} className={`${btn} bg-glow-400 px-5 py-3 text-night-950`}>{accountReviewCard.button}</ActLink>
+            <button type="button" onClick={later} disabled={preview} title={offTip} className="min-h-11 px-2 text-slate-400 underline disabled:opacity-60">{accountReviewCard.later}</button>
           </div>
         </>}
     </section>
@@ -531,15 +600,15 @@ function ReviewCard() {
 // Goes away once anything is filled in, or when dismissed on this device.
 const NUDGE_KEY = 'clcDetailsNudgeOff'
 function DetailsNudge({ details }) {
-  const [off, setOff] = useState(() => { try { return localStorage.getItem(NUDGE_KEY) === '1' } catch { return false } })
+  const [off, setOff] = useState(() => { if (preview) return false; try { return localStorage.getItem(NUDGE_KEY) === '1' } catch { return false } })
   const empty = DETAIL_INPUTS.every(([k]) => !String(details?.[k] ?? '').trim())
   if (!empty || off) return null
-  const dismiss = () => { setOff(true); try { localStorage.setItem(NUDGE_KEY, '1') } catch { /* fine */ } }
+  const dismiss = () => { if (preview) return; setOff(true); try { localStorage.setItem(NUDGE_KEY, '1') } catch { /* fine */ } }
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-glow-400/50 bg-glow-400/10 px-4 py-3">
       <p className="min-w-0 flex-1 text-sm text-slate-200"><strong className="text-glow-300">Two minutes before we come:</strong> add your gate code, anything in the yard we should avoid, and pets, so the crew is ready.</p>
       <a href="#property-details" className={`${btn} bg-glow-400 px-4 py-2 text-night-950`}>Fill it in</a>
-      <button type="button" onClick={dismiss} aria-label="Not now" className="min-h-11 px-2 text-slate-400">✕</button>
+      <button type="button" onClick={dismiss} disabled={preview} title={offTip} aria-label="Not now" className="min-h-11 px-2 text-slate-400 disabled:opacity-60">✕</button>
     </div>
   )
 }
@@ -550,6 +619,7 @@ function Details({ details, onSaved }) {
   const changed = DETAIL_INPUTS.some(([k]) => (v[k] ?? '') !== (details[k] ?? ''))
   async function save(e) {
     e.preventDefault()
+    if (preview) return
     setState('saving')
     try {
       // Only the text fields: the email switch (EmailPrefs) saves itself.
@@ -565,6 +635,7 @@ function Details({ details, onSaved }) {
     <form id="property-details" onSubmit={save} className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Your property details</h2>
       <p className="text-sm text-slate-300">Helps our crew do a clean job: they see this on the day. Change it any time.</p>
+      <fieldset disabled={preview} title={offTip} className="min-w-0 space-y-3">
       {DETAIL_INPUTS.map(([k, label, kind, placeholder]) => (
         <label key={k} className="block text-sm text-slate-300">{label}
           {kind === 'textarea'
@@ -577,6 +648,7 @@ function Details({ details, onSaved }) {
         <button type="submit" disabled={!changed || state === 'saving'} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-50`}>{state === 'saving' ? 'Saving…' : 'Save'}</button>
         {state === 'saved' && <span className="text-sm text-emerald-300">Saved ✓ Thank you.</span>}
       </div>
+      </fieldset>
     </form>
   )
 }
@@ -593,6 +665,7 @@ function ReportProblem({ service }) {
 
   async function send(e) {
     e.preventDefault()
+    if (preview) return
     if (!problem) { setError('Pick what’s wrong first.'); return }
     setBusy(true)
     setError('')
@@ -648,7 +721,7 @@ function ReportProblem({ service }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="text-slate-300">Something out? Tell us and we’ll fix it, free.</p>
-      <button type="button" onClick={() => setMode('form')} className={`${btn} bg-white text-night-950`}>🛠 Report a problem</button>
+      <button type="button" onClick={() => setMode('form')} disabled={preview} title={offTip} className={`${btn} bg-white text-night-950 disabled:opacity-60`}>🛠 Report a problem</button>
     </div>
   )
 }
@@ -663,7 +736,9 @@ function GetTheApp() {
       <h2 className="font-display text-xl font-extrabold">Get the app</h2>
       <p className="text-sm text-slate-300">Put Christmas Light Creations on your phone’s home screen: opens full-screen, no password, always up to date.</p>
       <p className="text-sm text-glow-300">Phone notifications of any kind only work from the installed app. Without it, you get email only.</p>
-      <InstallButtons app="Christmas Light Creations" signIn="sign in the same way" />
+      <fieldset disabled={preview} title={offTip} className="min-w-0 disabled:opacity-60">
+        <InstallButtons app="Christmas Light Creations" signIn="sign in the same way" />
+      </fieldset>
     </section>
   )
 }
@@ -733,7 +808,8 @@ function PaymentHistory({ history }) {
 }
 
 // An invoice still to pay: what it's for, when it's due, Pay (same PayPal buttons).
-const invoiceLink = (token) => `${import.meta.env.BASE_URL}invoice/?t=${token}`
+// From a staff preview the invoice page opens as staff's own preview (not marked viewed).
+const invoiceLink = (token) => `${import.meta.env.BASE_URL}invoice/?t=${token}${preview ? '&preview=1' : ''}`
 function InvoiceCard({ i, reload }) {
   const late = i.state === 'overdue'
   return (
@@ -747,7 +823,7 @@ function InvoiceCard({ i, reload }) {
       </div>
       <p className="flex justify-between gap-3 font-semibold"><span>{late ? `Was due ${longDate(i.dueDate)}` : i.dueDate > i.sentDay ? `Due ${longDate(i.dueDate)}` : 'Due on receipt'}</span><span className="tabular-nums">{fmt(i.cents)}</span></p>
       <a href={invoiceLink(i.token)} className={`${btn} bg-white text-night-950`}>View or print the invoice</a>
-      <DepositPanel token={i.token} of="invoice" title={`Pay invoice ${i.number}`} note={`${late ? 'Past due.' : 'Thank you!'} By paying you agree to the seasonal service terms on your invoice.`} amountLabel={fmt(i.cents)} onPaid={reload} />
+      <PayPanel token={i.token} of="invoice" title={`Pay invoice ${i.number}`} note={`${late ? 'Past due.' : 'Thank you!'} By paying you agree to the seasonal service terms on your invoice.`} amountLabel={fmt(i.cents)} onPaid={reload} />
     </section>
   )
 }
@@ -797,11 +873,11 @@ function ProposalCard({ p, reload }) {
         </tbody>
       </table>
       {unsigned && <p className="text-glow-300">This proposal is ready for your signature.</p>}
-      <a href={proposalLink(p.token)} className={`${btn} ${unsigned ? 'bg-glow-400 text-night-950' : 'bg-white text-night-950'}`}>
-        {unsigned ? 'Review and sign' : 'View or print your agreement'}
-      </a>
+      {unsigned
+        ? <ActLink href={proposalLink(p.token)} className={`${btn} bg-glow-400 text-night-950`}>Review and sign</ActLink>
+        : <a href={proposalLink(p.token)} className={`${btn} bg-white text-night-950`}>View or print your agreement</a>}
       {due.map((x) => (
-        <DepositPanel key={x.part} token={p.token} part={x.part} title={payTitle(p, x.part)} note={payNote(p, x.part)} amountLabel={fmt(x.amount)} onPaid={reload} />
+        <PayPanel key={x.part} token={p.token} part={x.part} title={payTitle(p, x.part)} note={payNote(p, x.part)} amountLabel={fmt(x.amount)} onPaid={reload} />
       ))}
     </section>
   )
@@ -814,6 +890,7 @@ function EmailPrefs({ details, onSaved }) {
   const [on, setOn] = useState(details.emailNotices !== false)
   const [state, setState] = useState(null) // null | 'saving' | 'saved' | { error }
   async function toggle(next) {
+    if (preview) return
     setOn(next)
     setState('saving')
     try {
@@ -829,7 +906,7 @@ function EmailPrefs({ details, onSaved }) {
     <section id="emails" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Email preferences</h2>
       <label className="flex min-h-11 cursor-pointer items-start gap-3">
-        <input type="checkbox" checked={on} disabled={state === 'saving'} onChange={(e) => toggle(e.target.checked)} className="mt-1 size-5 accent-glow-400" />
+        <input type="checkbox" checked={on} disabled={preview || state === 'saving'} title={offTip} onChange={(e) => toggle(e.target.checked)} className="mt-1 size-5 accent-glow-400 disabled:opacity-60" />
         <span className="text-slate-200"><span className="font-semibold">Weather heads-ups and seasonal tips</span><span className="block text-sm text-slate-400">When storms, strong wind or a freeze are coming: what usually goes wrong with lights and the one thing that fixes it.</span></span>
       </label>
       <p className="text-sm text-slate-400">Agreements, bills, payment reminders, scheduling and replies to you always come through.</p>
@@ -876,6 +953,7 @@ function Rebook({ onDone }) {
   const [note, setNote] = useState('')
   const [state, setState] = useState(null) // null | 'sending' | 'done' | 'already' | { error }
   async function go() {
+    if (preview) return
     setState('sending')
     try {
       const r = demo ? { booked: true } : await (await lib).rebookMe(week, note)
@@ -888,7 +966,7 @@ function Rebook({ onDone }) {
   if (state === 'done') return <p className="rounded-2xl bg-pine-500/15 px-4 py-3 text-pine-500"><strong>You’re on the list ✓</strong> We’ll text you your install date as the schedule fills in.</p>
   if (state === 'already') return <p className="rounded-2xl bg-pine-500/15 px-4 py-3 text-pine-500">You’re already on this season’s list. We’ll text you your date.</p>
   return (
-    <div className="space-y-3 rounded-2xl border border-glow-400/40 bg-glow-400/10 p-4">
+    <fieldset disabled={preview} title={offTip} className="min-w-0 space-y-3 rounded-2xl border border-glow-400/40 bg-glow-400/10 p-4">
       <p className="text-slate-200"><strong className="text-glow-300">Want your lights back up this season?</strong> One tap and you’re on the list; no call needed.</p>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Which week suits you?">
         {WEEKS.map((w) => (
@@ -902,6 +980,6 @@ function Rebook({ onDone }) {
       <button type="button" onClick={go} disabled={state === 'sending'} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-50`}>
         {state === 'sending' ? 'One moment…' : 'Yes, put my lights back up'}
       </button>
-    </div>
+    </fieldset>
   )
 }
