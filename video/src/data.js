@@ -47,13 +47,15 @@ const data = {
   // The story ad (Ad compositions). Scene lengths in seconds; the length is their sum minus the
   // 8-frame cross-dissolves between scenes.
   // Trimmed 2026-10-13 to about 30 s (Gemini's review via the owner): was 8.5 / 2.6 / 12 / 4.5 / 5 / 4.
+  // ask = the whole screen says "Surprise someone this year.", then slides away for the closing card.
   scenes: {
     thread1: 7.6,
     plan: 2.4, // the time card (6.5 with three beats and the cottage)
-    home: 11.4, // drive 2.5 s → reveal → reaction 1.2 s → door 2.6 s (6.5 without the clips)
+    home: 11, // drive 2.5 s → reveal → reaction 1.2 s → door 2.6 s (6.5 without the clips)
     thread2: 4.2,
+    ask: 2,
     pitch: 5, // skipped while endCardAsk is true
-    end: 6, // the one closing card (4 when the pitch scene is on)
+    end: 4.8, // the closing card (4 when the pitch scene is on)
   },
   // The story: a husband texts the business to install while his wife is at work on her birthday.
   story: {
@@ -106,7 +108,11 @@ const data = {
   // (sleigh-bell stabs at 11.6 / 14.6 / 17.6 / 20.5 s, full band from 22 s; loud: volume ~0.25, startFrom 2.45 puts a
   // stab on the house) and 'guess-who-flew-in-for-christmas-sky-toes-main-version-02-23-10383.wav' (near-silent start,
   // builds, lifts at 17.8 s, hit at 20 s; volume ~0.45, startFrom 5.6 puts the lift on the house).
-  music: { file: 'wintertime-waltz-albert-behar-main-version-46196-02-05.wav', volume: 0.6, startFrom: 2.9 },
+  // Owner's pick 2026-10-13 (from four comparison renders): Dance of the Sugar Plum Fairies. Quiet celesta for
+  // 8 s under the texts, its first swell (14.5 s in the file) as the house appears at 12.2 s, the second
+  // (16.8 s) under "She's home.", a lull under the door slams, a build under the closing card. The track is
+  // about half the waltz's level, hence volume 1. Wintertime Waltz: volume 0.6, startFrom 2.9.
+  music: { file: 'dance-of-the-sugar-plum-fairies-kevin-macleod-main-version-9984-01-46.wav', volume: 1, startFrom: 2.3 },
   // Sound effects: files in assets-source/ads/sfx/. Empty = none. Each plays at its moment:
   // pop = a text bubble lands (both sides); typing = the dots start; lightsOn = the cottage flickers
   // on (plan beat 3, end card, the 5-second ad); lightsChime = a second layer as the glow settles;

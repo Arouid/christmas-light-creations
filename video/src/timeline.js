@@ -1,6 +1,6 @@
 // Scene order and frame maths, shared by the composition, its metadata (duration) and the
 // sound layer (which needs to know when things happen inside scenes).
-export const ORDER = ['thread1', 'plan', 'home', 'thread2', 'pitch', 'end']
+export const ORDER = ['thread1', 'plan', 'home', 'thread2', 'ask', 'pitch', 'end']
 // Scenes overlap by this many frames: the outgoing fade-out and the incoming fade-in cross-dissolve.
 export const OVERLAP = 8
 // Length of the light sweep that crosses the frame at each scene change.

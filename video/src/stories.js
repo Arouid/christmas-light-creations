@@ -10,18 +10,18 @@ export const STORIES = {
   bumper: {
     label: 'We can keep a secret · 6 s bumper',
     file: 'clc-bumper-6s',
-    scenes: { thread1: 2.6, plan: 0, home: 0, thread2: 0, pitch: 0, end: 3.67 },
+    scenes: { thread1: 2.6, plan: 0, home: 0, thread2: 0, ask: 0, pitch: 0, end: 3.67 },
     story: { thread1Header: '', thread1: [{ from: 'them', at: 1.0, text: '🤫 She has no idea.' }] },
     endCard: { compact: true }, // the line, the number, the site; the words land faster
     music: { file: '' },
     adMix: { pop: 1, typing: 0, lightsOn: 1, car: 0, reveal: 0, revealClick: 0, ambience: 0, beds: 0 },
   },
   // 15 s, the non-skippable slot (15 s max): two texts, her in the car, the house opens out of the
-  // dark, "She's home." with the ask under it, the card. The waltz's first hit lands on the house.
+  // dark, "She's home.", the ask card, the closing card. The music's first swell lands on the house.
   short: {
     label: 'We can keep a secret · 15 s story',
     file: 'clc-short-15s',
-    scenes: { thread1: 4.4, plan: 0, home: 7.2, thread2: 0, pitch: 0, end: 3.93 },
+    scenes: { thread1: 4.2, plan: 0, home: 6.4, thread2: 0, ask: 1.6, pitch: 0, end: 3.6 },
     story: {
       thread1: [
         { from: 'them', at: 1.0, text: 'Can you do my house Thursday while she’s at work? It’s her birthday 🎂' },
@@ -29,7 +29,7 @@ export const STORIES = {
       ],
     },
     home: { driveSeconds: 1.6, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0 },
-    music: { startFrom: 3.6 }, // the waltz's 9.5 s hit as the house appears (5.9 s in)
+    music: { startFrom: 8.7 }, // Sugar Plum's first swell (14.5 s in the file) as the house appears (5.7 s in); the waltz: 3.8
   },
 }
 

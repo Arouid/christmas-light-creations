@@ -10,7 +10,8 @@ import { fadeIn, pop } from '../lib/motion.js'
 // The closing card: the cottage flickers on like a neon sign, snow falls, the words roll in and
 // stay. Held for the rest of the video (no fade out: the last frame is the card). With endCardAsk
 // (the current cut) it is the one closing screen: the campaign line ("We can keep a secret."), the
-// ask under it, the offer and estimate pills, the phone number, the site. Without it: the number, the site and the estimate pill (the pitch scene
+// offer and estimate pills, the phone number, the site. The ask ("Surprise someone this year.")
+// sits above "She's home." in the 5:41 pm scene instead (owner: not in both places). Without it: the number, the site and the estimate pill (the pitch scene
 // before it carries the ask). endCard.compact (the 6-second bumper): the line, the number and the
 // site only, landing faster.
 const FLICKER = [0, 0, 0.9, 0.2, 0.9, 0.1, 0.95, 0.9, 0.3, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1]
@@ -26,22 +27,20 @@ export function EndCard({ data }) {
   const glow = flick * (0.8 + Math.sin(frame / 9) * 0.2)
   const img = data.cottageImage
   const wide = !tall && !square && data.cottageImageWide ? data.cottageImageWide : ''
-  const logoH = img ? (tall ? (ask && !compact ? 640 : 720) : square ? (ask && !compact ? (tagline ? 330 : 360) : 420) : 520) : tall ? 620 : square ? 360 : 440
+  const logoH = img ? (tall ? (ask && !compact ? 640 : 720) : square ? (ask && !compact ? 360 : 420) : 520) : tall ? 620 : square ? 360 : 440
   const logoW = logoH * (img ? 1 : 0.886)
   // When each word lands (frames into the card): the ask first, then the pills, the number, the site.
   const head = pop(frame, fps, compact ? 10 : 12, { damping: 14 })
-  const askLine = fadeIn(frame, 26, 10)
-  const pills = fadeIn(frame, tagline ? 38 : 28, 10)
-  const phoneAt = compact ? 28 : ask ? (tagline ? 52 : 42) : 16
+  const pills = fadeIn(frame, 28, 10)
+  const phoneAt = compact ? 28 : ask ? 42 : 16
   const phone = pop(frame, fps, phoneAt, { damping: 13 })
-  const site = fadeIn(frame, compact ? 42 : ask ? (tagline ? 66 : 56) : 30, 10)
+  const site = fadeIn(frame, compact ? 42 : ask ? 56 : 30, 10)
   const line = fadeIn(frame, 40, 10)
   const phoneSize = ask ? (tall ? 110 : square ? 92 : 104) : tall ? 124 : square ? 106 : 146
   const headSize = tall ? 92 : square ? 68 : 88
-  const askSize = tall ? 54 : square ? 40 : 50
   const stack = tall || square
   const logoX = stack ? (w - logoW) / 2 : 150
-  const logoY = img ? (tall ? (ask && !compact ? (tagline ? 250 : 300) : 120) : square ? 24 : (h - logoH) / 2 - 10) : tall ? 170 : square ? 70 : (h - logoH) / 2 - 20
+  const logoY = img ? (tall ? (ask && !compact ? 300 : 120) : square ? 24 : (h - logoH) / 2 - 10) : tall ? 170 : square ? 70 : (h - logoH) / 2 - 20
   const textX = stack ? 0 : logoX + logoW + 90
   const textY = tall ? logoY + logoH + (img ? 10 : 80) : square ? logoY + logoH + (img ? -20 : 40) : h / 2 - 170
   const pill = { fontFamily: BODY, fontWeight: 600, fontSize: tall ? 34 : square ? 28 : 32, color: colors.gold, padding: '10px 26px', border: '2px solid rgba(255,207,77,0.55)', borderRadius: 999, whiteSpace: 'nowrap' }
@@ -58,9 +57,6 @@ export function EndCard({ data }) {
           <div style={{ ...display(type, headSize), color: colors.white, maxWidth: tall ? 760 : square ? 1000 : 720, transform: `translateY(${(1 - head) * 60}px)`, opacity: fadeIn(frame, 12, 8), textShadow: '0 4px 30px rgba(0,0,0,0.6)', marginBottom: 6 }}>
             {tagline || story.pitchLine}
           </div>
-        )}
-        {ask && tagline && !compact && (
-          <div style={{ ...display(type, askSize), color: colors.goldSoft, opacity: askLine, transform: `translateY(${(1 - askLine) * 20}px)`, textShadow: '0 2px 16px rgba(0,0,0,0.6)', marginBottom: 4 }}>{story.pitchLine}</div>
         )}
         {ask && !compact && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, justifyContent: stack ? 'center' : 'flex-start', opacity: pills, transform: `translateY(${(1 - pills) * 20}px)`, marginBottom: 10 }}>

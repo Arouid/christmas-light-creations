@@ -3,13 +3,14 @@ import { Thread1, Thread2 } from './scenes/Thread.jsx'
 import { Plan } from './scenes/Plan.jsx'
 import { HomeReveal } from './scenes/HomeReveal.jsx'
 import { Pitch } from './scenes/Pitch.jsx'
+import { AskCard } from './scenes/AskCard.jsx'
 import { EndCard } from './scenes/EndCard.jsx'
 import { FilmLook, LightSweep } from './lib/Stage.jsx'
 import { loadFonts } from './lib/fonts.js'
 import { Sound } from './Sound.jsx'
 import { sceneList, SWEEP } from './timeline.js'
 
-const SCENES = { thread1: Thread1, plan: Plan, home: HomeReveal, thread2: Thread2, pitch: Pitch, end: EndCard }
+const SCENES = { thread1: Thread1, plan: Plan, home: HomeReveal, thread2: Thread2, ask: AskCard, pitch: Pitch, end: EndCard }
 
 // The story ad: one Sequence per scene (cross-dissolved, with a light sweep at each change),
 // the film look over everything, the sound effects, and the music bed (when on) fading out at

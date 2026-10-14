@@ -34,10 +34,12 @@ phone number and the website close it and stay on screen 6 s.
 
 ## Sound and footage (2026-10-13, owner's Uppbeat Pro)
 
-Music: "Wintertime Waltz" (Albert Behar) from the top, quiet under the first texts, peaking at
-15–17 s as she pulls up and the house appears (chosen 2026-10-13 from four tracks the owner
-downloaded, by loudness shape; a Sugar Plum Fairies comparison render exists). Fades out over the
-last 2.5 s. Effects: a pop as each bubble lands, typing under the dots,
+Music: "Dance of the Sugar Plum Fairies" (Kevin MacLeod), the owner's pick on 2026-10-13 night from
+four comparison renders ("the 16x9 sugar plum is great"): quiet celesta under the texts, its first
+swell as the house appears, the second under "She's home.", a lull under the door slams, a build
+under the closing card (startFrom 2.3; volume 1 because the track sits about half as loud as the
+waltz). Before that: "Wintertime Waltz" (Albert Behar, startFrom 2.9, volume 0.6), picked by
+loudness shape from four tracks the owner downloaded. Fades out over the last 2.5 s. Effects: a pop as each bubble lands, typing under the dots,
 a switch click + harp pluck as the cottage comes on (end card, the 5-second ad; the first flicker file was ~20 dB too quiet: owner "can't hear it switch on"), the chime again
 as the house appears, a very low wind loop under everything. Then thinned for the full ad (`adMix`): pops at 60 %, the
 switch-on at 85 %, a car door slam synced to the door-closing shot and a second slam just before the cut (owner:
@@ -58,10 +60,11 @@ lifted toward navy, gold warmth) so the sources read as one film. Files and lice
 |---|---|---|---|---|---|
 | 1 | 0–7.6 | **Tuesday 8:14 pm** | Night; warm bokeh lights behind (Uppbeat clip, dimmed; the owner preferred it to hands on a phone). A text thread: typing dots, then each bubble springs in. Customer bubbles dark on the left with a person silhouette as avatar, ours gold on the right with the cottage as avatar. | "Can you do my house Thursday while she's at work? It's her birthday 🎂" / "Done by 4. We'll be gone before she's home." / "🤫 She has no idea." | none |
 | 2 | 7.6–9.7 | **Time card** | One line over falling-snow footage: Thursday 3:48 pm · Done. Timer set for dusk. The three-beat version (with a clock, then with the cottage popping on) was cut on 2026-10-13: "this scene just feels so forced into it"; the texts already tell the plan, and the mascot in the middle of a realistic story broke the tone. `story.plan` with several entries and `planCottage` bring the old versions back. The dark cottage that switched on here in the first version was cut on 2026-10-13 (owner: a still background between footage was jarring); the owner then asked for the beats one at a time again and something in the right-hand space. | Thursday 9:02 am · Everyone's gone. / 9:30 am · We're on the roof. / 3:48 pm · Done. Timer set for dusk. | snow footage |
-| 3 | 9.5–20.9 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s, the wipers and a muffled street under it; the sharper city-driving clip was "too jarring"), the time. The dusk timer's switch click as the house appears (12.2 s). "She's home." with "Surprise someone this year." under it (owner 2026-10-13); both fade as the door shot starts. Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
-| 4 | 20.6–24.8 | **Thursday 5:52 pm** | The thread again, two bubbles, gold bokeh behind (Uppbeat clip). | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
+| 3 | 9.5–20.5 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s, the wipers and a muffled street under it; the sharper city-driving clip was "too jarring"), the time. The dusk timer's switch click as the house appears (12.2 s). "She's home." fades as the door shot starts. (The ask sat under, then above, the line for an hour on 2026-10-13; the owner then gave it its own card.) Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
+| 4 | 20.2–24.4 | **Thursday 5:52 pm** | The thread again, two bubbles, gold bokeh behind (Uppbeat clip). | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
 | 5 | (off) | **The ask** | Skipped since 2026-10-13 (`endCardAsk`): its words moved onto the closing card. With `endCardAsk: false`: stone house, slow push-in; big line, the estimate line, the offer pill (while enabled), 5 s. | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 34 (or a clip) |
-| 6 | 24.5–30.5 | **The closing card** | The photoreal cottage pops its lights on (the only time in the ad), real falling snow behind it (Uppbeat clip, screen-blended over the navy); the campaign line big, the ask under it, the offer and estimate pills, the phone number large, the website. Held 6 s. | We can keep a secret. / Surprise someone this year. / 10% off installs done by October 31 · Free 30-minute estimate / 281-819-0163 / christmas-light-creations.com | logo |
+| 5b | 24.1–26.1 | **The ask card** | The whole screen: "Surprise someone this year." in gold, centred over the snow footage, springs in, holds, then slides up and fades out as the closing card comes in (owner: "first have the whole screen just say Surprise Someone This Year, fade, slide, whatever out, and then bring in the final CTA"). `scenes.ask`. | Surprise someone this year. | snow footage |
+| 6 | 25.9–30.7 | **The closing card** | The photoreal cottage pops its lights on (the only time in the ad), real falling snow behind it (Uppbeat clip, screen-blended over the navy); the campaign line big, the offer and estimate pills, the phone number large, the website. Held 4.8 s. | We can keep a secret. / 10% off installs done by October 31 · Free 30-minute estimate / 281-819-0163 / christmas-light-creations.com | logo |
 
 ## Gemini's review (2026-10-13, the owner ran the 35 s cut through Gemini)
 
@@ -70,9 +73,9 @@ lifted toward navy, gold warmth) so the sources read as one film. Files and lice
 | A vertical seam on the right third at 0:08 (into the time card) | Real: the light sweep at every scene change was a diagonal gradient inside a tall box, which ended short of the box's sides and left a hard vertical edge (visible at 8.3, 22.3 and 31.3 s). | The sweep is a side-to-side gradient, transparent at both ends, skewed for the diagonal look. |
 | "She's home." frozen bottom-left through the second thread (0:16–0:26) | Partly: it stayed to 22.5 s, over her reaction and the door shot, and left with the dissolve; it never sat over the thread. | The line fades out once the door shot is in (gone about 0.6 s after it starts). |
 | The headline ghost-fades over the closing card (0:30–0:31) | The 8-frame cross-dissolve from the ask to the end card. | Gone with the one closing card. |
-| Two closing screens "stutter"; make one 5–6 s card: ask, offer + estimate, number, site on the cottage | Agreed. | `endCardAsk`: the pitch scene is skipped, the closing card carries the words, 6 s. The three-gable house (34) is off while it is on. The first version dropped "We can keep a secret." with the pitch scene; the owner: "We can keep a secret is the whole idea", so it is the card's headline now (`words.tagline`), the ask under it. |
+| Two closing screens "stutter"; make one 5–6 s card: ask, offer + estimate, number, site on the cottage | Agreed. | `endCardAsk`: the pitch scene is skipped, the closing card carries the words, 6 s. The three-gable house (34) is off while it is on. The first version dropped "We can keep a secret." with the pitch scene; the owner: "We can keep a secret is the whole idea", so it is the card's headline now (`words.tagline`); the ask went under, then above, "She's home.", then onto its own full-screen card right before the CTA (owner, same evening). |
 | A click or chime as the lit house appears (the dusk timer) | The reveal chime had been turned off (owner: effects "fit poorly"). | The switch click alone, at 45 % (`adMix.revealClick`). |
-| Trim 2–3 s to about 30 s | 35.3 s before. | 30.5 s: 7.6 / 2.4 / 11.4 / 4.2 / 6 s scenes; the music start moved (2.9 s) so the waltz's peak still lands on the house. |
+| Trim 2–3 s to about 30 s | 35.3 s before. | 30.5 s: 7.6 / 2.4 / 11.4 / 4.2 / 6 s scenes; the music start moved so its peak still lands on the house. Later the same night 30.7 s with the ask card: 7.6 / 2.4 / 11 / 4.2 / 2 / 4.8. |
 
 ## The campaign: "We can keep a secret." (owner, 2026-10-13)
 
@@ -100,7 +103,7 @@ for each, `render-all.mjs <name>` renders it as `clc-<file>-<shape>.mp4`. The ba
 | Cut | Length | Scenes | Sound |
 |---|---|---|---|
 | `bumper` | 6.00 s (180 frames) | one bubble "🤫 She has no idea." (2.6 s), the card in compact mode: the line, the number, the site (3.67 s) | no music; the pop, the switch click and the harp at full level |
-| `short` | 15.00 s (450 frames) | two texts (4.4 s), her in the car 1.6 s → the house → "She's home." + the ask (7.2 s, no reaction or door shot), the full card (3.93 s) | the waltz from 3.6 s so its first hit lands as the house appears (5.9 s), the timer's click, the wipers under the car |
+| `short` | 15.00 s (450 frames) | two texts (4.2 s), her in the car 1.6 s → the house → "She's home." (6.4 s, no reaction or door shot), the ask card (1.6 s), the closing card (3.6 s) | Sugar Plum from 8.7 s so its first swell lands as the house appears (5.7 s), the timer's click, the wipers under the car |
 
 The owner's question "wouldn't I need to change the stock video?": yes for the stories where
 someone other than the woman in the red car comes home (her turn, the kids, the parents, Mom's
