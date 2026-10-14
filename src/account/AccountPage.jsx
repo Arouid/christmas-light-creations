@@ -896,7 +896,7 @@ function Rebook({ onDone }) {
             className={`min-h-11 rounded-full border px-4 text-sm font-medium ${week === w ? 'border-glow-400 bg-glow-400/20 text-glow-300' : 'border-white/15 text-slate-200'}`}>{w}</button>
         ))}
       </div>
-      <input value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder="Anything changed? New color, more lights, a gate code… (optional)"
+      <input value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder="Anything changed? More lights, a gate code… (optional)"
         className="block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100" />
       {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
       <button type="button" onClick={go} disabled={state === 'sending'} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-50`}>
