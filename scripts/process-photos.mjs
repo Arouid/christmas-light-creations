@@ -2,6 +2,11 @@
 // photos in public/images/gallery/: resized, compressed, metadata (incl. any
 // GPS location) stripped, descriptive file names. Run: node scripts/process-photos.mjs
 // The order and captions live in src/data/content.js (gallery).
+// Superseded for the gallery on 2026-10-14: the owner rescanned every photo in hi-res and
+// scripts/process-gallery.mjs now builds public/images/gallery/ from assets-source/gallery-hi-res/.
+// Don't re-run this for the gallery (it would bring the 2026-10-08 web-size photos back; only
+// friendswood-warm-white-ivy-home from MAP is still in use).
+// Kept for the gift-wrapping photos (docs/specs/gift-wrapping.md) and as the record of the old names.
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 

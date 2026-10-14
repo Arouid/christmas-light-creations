@@ -64,3 +64,7 @@ assets-source/ads/music/
 # Uppbeat motion-graphics downloads (overlays, transitions; GBs, licensed): never commit
 assets-source/ads/Mothion Graphics/
 assets-source/ads/motion/
+# Install photos the owner downloads from Google Photos (originals, 2026-10-14): customers' houses, never committed.
+assets-source/Photos-Downloads/
+# Hi-res gallery originals (owner, 2026-10-14, 3 MB each): the web copies in public/images/gallery/ are made from these.
+assets-source/gallery-hi-res/
