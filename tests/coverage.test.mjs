@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { COVER_MS, coverage, coveredBy, needsSomeone, personKey, waiting } from '../functions/nudge.js'
+import { COVER_MS, GAP_MS, coverage, coveredBy, needsSomeone, personKey, waiting } from '../functions/nudge.js'
 
 const H = 3600000
 const now = Date.parse('2026-10-14T19:00:00Z')
@@ -45,4 +45,26 @@ test('the still-waiting list uses the same coverage', () => {
   assert.equal(waiting({ messages: old, leads: [], calls: [], activity: [], now }).length, 5)
   const activity = [{ action: 'call', by: 'lacie@x', at: now - 2 * H, target: { type: 'customer', id: 'tracie' } }]
   assert.equal(waiting({ messages: old, leads: [], calls: [], activity, now }).length, 0)
+})
+
+test('the claim follows the conversation: minutes apart stays covered, an hour of quiet ends it (owner 2026-10-14)', () => {
+  const T = now - 5 * H // the tap, five hours ago
+  const tap = { action: 'handling', by: 'lacie@x', at: T, target: { type: 'customer', id: 'tracie' } }
+  const mk = (id, minutesAfterTap) => ({ id, kind: 'text', direction: 'in', customerId: 'tracie', at: iso(T + minutesAfterTap * 60000), syncedAt: T + minutesAfterTap * 60000 })
+  // A back-and-forth: texts 20, 45, 70 and 100 minutes after the tap, never more than an hour apart.
+  const burst = [mk('b1', 20), mk('b2', 45), mk('b3', 70), mk('b4', 100)]
+  const c1 = coverage({ activity: [tap], items: burst, outgoing: [], now })
+  for (const m of burst) assert.equal(needsSomeone(m, c1), false, m.id)
+  // Then nothing for two hours: the next text is a fresh conversation.
+  const later = mk('fresh', 100 + 130)
+  const c2 = coverage({ activity: [tap], items: [...burst, later], outgoing: [], now })
+  assert.equal(needsSomeone(later, c2), true, 'two hours of quiet, then a new text')
+  for (const m of burst) assert.equal(needsSomeone(m, c2), false, 'the burst stays covered')
+  // A first reply that itself comes 90 minutes after the tap, with nothing in between, needs someone too.
+  const slow = mk('slow', 90)
+  assert.equal(needsSomeone(slow, coverage({ activity: [tap], items: [slow], outgoing: [], now })), true)
+  assert.equal(GAP_MS, H)
+  // Replies (an email sent after their text) still cover what came before them, gap or not.
+  const sent = { id: 'em', kind: 'email', direction: 'out', customerId: 'tracie', at: iso(now - 10 * 60000), syncedAt: now - 10 * 60000 }
+  assert.equal(needsSomeone(later, coverage({ activity: [], items: [later], outgoing: [sent], now })), false)
 })

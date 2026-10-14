@@ -82,11 +82,15 @@ export function recentIncoming(items, now = Date.now()) {
 // “Needs someone” texts from her, because Voice never emails outgoing texts and each claim was
 // per message). Two kinds of staff action cover a person:
 // - live ones (I've got it / Take it over on any of their messages, a text or a call to them from
-//   the app): the conversation is theirs for COVER_MS either side, so the person's messages up to
-//   six hours before and after need nobody (our Voice replies in between are invisible to us);
+//   the app): the conversation is theirs. Everything the person sent before the action is handled,
+//   and what they send after it stays covered while the conversation keeps going: for up to
+//   COVER_MS, as long as no gap between their messages exceeds GAP_MS (owner 2026-10-14: "what if
+//   they finish talking and a new text comes two hours later?": that one needs someone again,
+//   one tap per burst, not per message). Our Voice replies in between are invisible to us;
 // - replies (an email, chat reply or Claude draft sent to them, an invoice or proposal, a stored
 //   outgoing message): they answer what came before them, never what comes after.
 export const COVER_MS = 6 * 60 * 60 * 1000
+export const GAP_MS = 60 * 60 * 1000 // an hour's quiet ends the covered conversation
 export const LIVE_ACTIONS = ['handling', 'takeover', 'text', 'call']
 export const REPLY_ACTIONS = ['email', 'chat-reply', 'ai-draft', 'email-scheduled', 'invoice-sent', 'proposal-sent']
 // Who a message is with: the customer, else the lead, else the number or address, else itself.
@@ -94,7 +98,7 @@ export const personKey = (m) => m?.customerId ? `customer:${m.customerId}` : m?.
 const atOf = (m) => Date.parse(m?.at) || toMs(m?.syncedAt) || 0
 // activity: the last days' entries; items: the incoming list (to turn a claim on a message into its
 // person); outgoing: stored messages, the direction 'out' ones count as replies.
-// -> { live: Map key -> { at, by }, replied: Map key -> { at, by } }, the latest per key.
+// -> { live, replied: Map key -> { at, by } (the latest per key), incoming: Map key -> sorted times }.
 export function coverage({ activity, items, outgoing, now = Date.now() }) {
   const live = new Map()
   const replied = new Map()
@@ -119,7 +123,27 @@ export function coverage({ activity, items, outgoing, now = Date.now() }) {
     }
   }
   for (const m of outgoing ?? []) if (m?.direction === 'out') note(replied, personKey(m), atOf(m), m.updatedBy || m.by)
-  return { live, replied }
+  const incoming = new Map()
+  for (const m of items ?? []) {
+    if (m?.direction && m.direction !== 'in') continue
+    const key = personKey(m)
+    if (!incoming.has(key)) incoming.set(key, [])
+    incoming.get(key).push(atOf(m))
+  }
+  for (const list of incoming.values()) list.sort((a, b) => a - b)
+  return { live, replied, incoming }
+}
+// From a live action at `from` to a message at `to`: true while the person's messages in between
+// never went quiet for more than GAP_MS (the action itself starts the chain).
+function unbroken(times, from, to) {
+  let last = from
+  for (const t of times ?? []) {
+    if (t <= from) continue
+    if (t > to) break
+    if (t - last > GAP_MS) return false
+    last = t
+  }
+  return to - last <= GAP_MS
 }
 // The claim or reply that covers this message: { at, by }, or null when it needs someone.
 // Also takes the older shape, a Set or Map of claimed message ids (the app's handlers()).
@@ -131,7 +155,7 @@ export function coveredBy(m, cover) {
   const key = personKey(m)
   const t = atOf(m)
   const l = cover.live?.get(key)
-  if (l && l.at >= t - COVER_MS) return l
+  if (l && (l.at >= t || (t - l.at <= COVER_MS && unbroken(cover.incoming?.get(key), l.at, t)))) return l
   const r = cover.replied?.get(key)
   return r && r.at >= t ? r : null
 }
