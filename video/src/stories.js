@@ -58,7 +58,7 @@ export const STORIES = {
     // muted), the offer once (on the card), and the card headed by this ad's own line rather than the
     // campaign signature (empty `words.tagline` here restores "We can keep a secret.").
     story: { whisperLine: '', whisperCaption: '[ Christmas music playing aggressively ]', homeTime: '', homeLine: 'Get outta the way, Halloween.', homeSub: 'Christmas lights, installed · Pearland, TX' },
-    words: { tagline: 'Get outta the way, Halloween.' },
+    words: { tagline: 'Take a bite out of Christmas early.' }, // the card's line (owner 2026-10-13)
     clips: { whisper: 'seductive-vampire-woman-with-blood-189499-4k.mp4', drive: '' },
     clipStart: { whisper: 1.0 },
     home: { driveSeconds: 0, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0, revealFrames: 8, lineDelay: 14 },
