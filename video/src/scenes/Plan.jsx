@@ -8,9 +8,9 @@ import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
 import { planTiming } from '../timeline.js'
 
-// The plan: three time-stamped beats, one after another, over the snow footage. The photoreal
-// cottage stands beside them with its lights off and pops them on with the last beat ("timer set
-// for dusk"). Without a cottage image, a clock sweeps its hands to each beat's time instead.
+// The plan. With one beat and no cottage (the current cut): a single time card over the snow
+// footage. With several beats: one after another; the photoreal cottage beside them pops its
+// lights on with the last (planCottage), or a clock sweeps its hands to each time.
 const parseTime = (t) => {
   const m = /(\d{1,2}):(\d{2})\s*(am|pm)?/i.exec(t)
   if (!m) return null
@@ -49,13 +49,16 @@ export function Plan({ data, dur }) {
   const { colors, story, type } = data
   const beats = story.plan
   const { step, beats: at, on: ON } = planTiming(dur, beats.length)
-  const img = data.cottageImage
+  const img = data.planCottage ? data.cottageImage : ''
+  const card = beats.length === 1 && !img
   const timeSize = tall ? 34 : square ? 28 : 32
   const lineSize = tall ? 84 : square ? 62 : 76
   // The cottage (or the clock) on the right in 16:9, on top in the other shapes.
   const side = img ? (tall ? 640 : square ? 460 : 640) : (tall ? 460 : square ? 340 : 460)
   const box = tall ? { x: (w - side) / 2, y: 250 } : square ? { x: w - side - 40, y: 40 } : { x: w - side - 150, y: (h - side) / 2 }
-  const text = tall ? { x: 80, y: 250 + side + 110, w: w - 160 } : square ? { x: 72, y: 500, w: w - 144 } : { x: 150, y: h / 2 - 190, w: w - side - 420 }
+  const text = card
+    ? { x: tall ? 80 : square ? 72 : 150, y: 0, w: w - (tall ? 160 : square ? 144 : 300) }
+    : tall ? { x: 80, y: 250 + side + 110, w: w - 160 } : square ? { x: 72, y: 500, w: w - 144 } : { x: 150, y: h / 2 - 190, w: w - side - 420 }
   // Cottage: lights off until the last beat, then the flicker and a brief warm flash.
   const on = flickerOn(frame - ON)
   const glow = 0.85 + Math.sin(frame / 8) * 0.15
@@ -83,7 +86,7 @@ export function Plan({ data, dur }) {
         ) : (
           <Snow count={80} opacity={0.6} />
         )}
-        {img ? (
+        {card ? null : img ? (
           <>
             <Cottage image={img} x={box.x} y={box.y} height={side} on={on} glow={glow} style={{ opacity: fadeIn(frame, 2, 10) }} />
             <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at ${(cx / w) * 100}% ${((box.y + side * 0.6) / h) * 100}%, rgba(255,224,138,${flash}) 0%, transparent 45%)` }} />
@@ -95,7 +98,7 @@ export function Plan({ data, dur }) {
             </g>
           </svg>
         )}
-        <div style={{ position: 'absolute', left: text.x, top: text.y, width: text.w, display: 'flex', flexDirection: 'column', gap: tall ? 34 : square ? 24 : 30 }}>
+        <div style={{ position: 'absolute', left: text.x, top: text.y, width: text.w, height: card ? h : 'auto', justifyContent: card ? 'center' : 'flex-start', display: 'flex', flexDirection: 'column', gap: tall ? 34 : square ? 24 : 30 }}>
           {beats.map((b, i) => {
             const s = pop(frame, fps, at[i])
             const isLast = i === beats.length - 1
@@ -104,7 +107,7 @@ export function Plan({ data, dur }) {
             return (
               <div key={i} style={{ opacity: fadeIn(frame, at[i], 6) * dim, transform: `translateX(${(1 - s) * -40}px)` }}>
                 <div style={{ fontFamily: BODY, fontWeight: 600, fontSize: timeSize, color: colors.gold, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>{b.time}</div>
-                <div style={{ ...display(type, lineSize), color: colors.white, textShadow: '0 4px 30px rgba(0,0,0,0.6)' }}>{b.line}</div>
+                <div style={{ ...display(type, card ? lineSize * 1.15 : lineSize), color: colors.white, textShadow: '0 4px 30px rgba(0,0,0,0.6)' }}>{b.line}</div>
               </div>
             )
           })}

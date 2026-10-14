@@ -54,15 +54,16 @@ export function Sound({ props, list }) {
         if (lv('pop') > 0) hits.push(<Hit key={`${key}-pop-${i}`} file={sfx.pop} at={land} volume={lv('pop')} name={`pop ${key} ${i + 1}`} />)
       })
     }
-    if (key === 'plan' && props.cottageImage) {
+    if (key === 'plan' && props.cottageImage && props.planCottage) {
       const { on } = planTiming(dur, props.story.plan.length)
       if (lv('lightsOn') > 0) hits.push(<LightsOn key="lightsOn-plan" sfx={sfx} at={from + on} v={lv('lightsOn')} keyPrefix="plan: lights on" />)
     }
     if (key === 'home') {
-      const { doorEnd, slamAt, revealStart } = homeTiming(props, dur)
+      const { driveEnd, slamAt, revealStart, doorStart } = homeTiming(props, dur)
       const bed = (sfx.bedVolume ?? 0.35) * (mix.beds ?? 1)
-      if (doorEnd > 0) hits.push(<Bed key="bed-car" file={sfx.carInterior} from={from} frames={doorEnd + 6} volume={bed} name="bed: inside the car" />)
+      if (driveEnd > 0) hits.push(<Bed key="bed-car" file={sfx.carInterior} from={from} frames={driveEnd + 8} volume={bed} name="bed: inside the car" />)
       hits.push(<Bed key="bed-night" file={sfx.nightOutside} from={from + revealStart - 8} frames={dur - revealStart + 8} volume={bed} name="bed: outside at night" />)
+      void doorStart
       if (lv('car') > 0 && slamAt > 0) hits.push(<Hit key="car" file={sfx.car} at={from + slamAt} volume={lv('car')} name="car door" />)
       if (lv('reveal') > 0) hits.push(<Hit key="reveal" file={sfx.reveal} at={from + revealStart} volume={lv('reveal')} name="reveal" />)
     }

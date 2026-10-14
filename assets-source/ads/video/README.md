@@ -20,7 +20,7 @@ The story ad's MP4s are not in git (`.gitignore`: this folder except this README
 | `clc-teaser-5s-16x9.mp4` | 1920×1080, landscape | **the 5-second ad**, silent | YouTube bumper (6 s max), in-stream, TV |
 | `clc-teaser-5s-9x16.mp4` | 1080×1920, vertical | same | Shorts, phone feeds |
 | `clc-teaser-5s-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
-| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 39 s, with music and sound | YouTube in-stream, TV, desktop |
+| `clc-ad-16x9.mp4` | 1920×1080, landscape | **the story ad**, about 35 s, with music and sound | YouTube in-stream, TV, desktop |
 | `clc-ad-9x16.mp4` | 1080×1920, vertical | same | YouTube Shorts, phone feeds |
 | `clc-ad-1x1.mp4` | 1080×1080, square | same | Discover, Gmail, square feeds |
 
@@ -32,11 +32,11 @@ The story ad, scene by scene:
 | Seconds | Scene | What happens |
 |---|---|---|
 | 0–8.5 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
-| 8.5–15 | The plan | Three beats, one after another, over snow footage: "Thursday 9:02 am · Everyone's gone." "9:30 am · We're on the roof." "3:48 pm · Done. Timer set for dusk." The photoreal cottage stands on the right with its lights off and pops them on with the last beat (click + harp). Without a cottage image, a clock sweeps to each time instead. |
-| 15–27 | 5:41 pm | Her in the red car at night (clip), she closes the car door (clip, same shoot, with the slam), then the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", then her face lit by warm light (clip) with real falling snow over that part only. Ambience beds under the footage when set: inside the car until the door, outside at night from the house on (`sfx.carInterior`, `sfx.nightOutside`). |
-| 27–31.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
-| 31.5–36.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
-| 36.5–40 | End card | The photoreal cottage already lit (it popped on in the plan scene; `endCardLit`), real snow, 281-819-0163, the site, Free 30-minute estimate. |
+| 8.5–11 | Time card | One line over the snow footage: "Thursday 3:48 pm · Done. Timer set for dusk." (The three-beat scene with the cottage popping on was cut: owner, "this scene just feels so forced into it". More entries in `story.plan` bring the beats back; `planCottage: true` brings the cottage.) |
+| 11–23 | 5:41 pm | Her in the red car at night (clip, wipers under it), the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", her reaction in the car (clip, same woman, real snow in front), then the car door closes as she gets out (clip, the slam synced to it) and we cut away. A quiet street at night under everything from the house on. |
+| 23–27.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
+| 27.5–32.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
+| 32.5–36 | End card | The photoreal cottage pops its lights on (click + harp), real snow, 281-819-0163, the site, Free 30-minute estimate. |
 
 Every word of the story is in `video/src/data.js` → `story` (bubbles with their timing, the three
 beats, the two lines, the ask). Photos: 32 (the reveal; a 1024×576 file, upscaled) and 34 (the ask).
@@ -78,7 +78,13 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 
 | File | Slot | Uppbeat title, artist | Licence |
 |---|---|---|---|
-| `music/anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav` | `music.file`, from 4.4 s so its hit at 22 s lands on the reveal | "Anticipation And Joy", Giulio Fazio (58 s) | Uppbeat Pro (Solo Professional), downloaded 2026-10-13 |
+| `music/wintertime-waltz-albert-behar-main-version-46196-02-05.wav` | `music.file` (from 0: quiet under the first texts, peaks at 15–17 s as the house appears) | "Wintertime Waltz", Albert Behar (2:05) | Uppbeat Pro (Solo Professional), downloaded 2026-10-13 |
+| `music/dance-of-the-sugar-plum-fairies-kevin-macleod-main-version-9984-01-46.wav` | alternative (a 16:9 comparison render `clc-ad-16x9-music-sugarplum.mp4`) | "Dance of the Sugar Plum Fairies", Kevin MacLeod (1:46) | same |
+| `music/it-s-christmas-corals-main-version-35993-01-57.wav` | not used (loud from the first second, no build) | "It's Christmas", Corals (1:57) | same |
+| `music/anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav` | not used now (was the first bed; its swell at 22 s needed re-timing after every edit: startFrom 4.3) | "Anticipation And Joy", Giulio Fazio (58 s) | same |
+| `sfx/windshield-wipers-jeff-kaale-1-00-07.wav` | `sfx.carInterior` (under her in the car: rain on the windows) | "Windshield Wipers", Jeff Kaale | same |
+| `sfx/city-street-ambience-light-wind-traffic-jam-fx-quiet-park-ambience-on-a-spring-morning-1-0m13s.wav` | `sfx.nightOutside` (under the house and the closing shot) | "City Street Ambience Light Wind", Traffic Jam FX | same |
+| `sfx/car-fuel-pump-inserted-jeff-kaale-1-00-03.wav` | not used | "Car Fuel Pump Inserted", Jeff Kaale | same |
 | `sfx/notification-bubble-pop-message-epic-stock-media-1-00-00.mp3` | `sfx.pop` | "Notification Bubble Pop Message", Epic Stock Media | same |
 | `sfx/smartphone-typing-message-gfx-sounds-2-2-00-04.mp3` | `sfx.typing` (first second, faded) | "Smartphone Typing Message", GFX Sounds | same |
 | `sfx/switch-turned-on-epic-stock-media-1-00-00.wav` | `sfx.lightsOn` (the click as the cottage comes on) | "Switch Turned On", Epic Stock Media | same |

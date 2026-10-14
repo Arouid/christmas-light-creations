@@ -32,13 +32,15 @@ export function planTiming(durFrames, beatCount) {
   return { step, beats, on: beats[beatCount - 1] + 14 }
 }
 
-// The 5:41 pm scene: where the drive clip ends and the reveal starts (frames into the scene).
+// The 5:41 pm scene (frames into the scene): the drive ends, the house appears, her reaction starts,
+// the door shot starts (and the slam within it).
 export function homeTiming(props, durFrames) {
   const fps = props.fps || 30
   const drive = props.clips?.drive ? Math.round((props.home?.driveSeconds ?? 2.5) * fps) : 0
-  const door = props.clips?.door ? Math.round((props.home?.doorSeconds ?? 1.7) * fps) : 0
-  const slam = props.clips?.door ? drive + Math.round((props.home?.doorSlamAt ?? 1.0) * fps) : drive - 10
+  const door = props.clips?.door ? Math.round((props.home?.doorSeconds ?? 1.6) * fps) : 0
   const reaction = props.clips?.reaction ? Math.round((props.home?.reactionSeconds ?? 2.2) * fps) : 0
-  const doorEnd = drive + door
-  return { driveEnd: drive, doorEnd, slamAt: slam, revealStart: doorEnd ? doorEnd + 6 : 18, reactionStart: durFrames - reaction }
+  const doorStart = durFrames - door
+  const reactionStart = doorStart - reaction
+  const slam = door ? doorStart + Math.round((props.home?.doorSlamAt ?? 1.0) * fps) : -1
+  return { driveEnd: drive, revealStart: drive ? drive + 6 : 18, reactionStart, doorStart, slamAt: slam }
 }

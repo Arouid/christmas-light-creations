@@ -24,9 +24,9 @@ const data = {
   // The 16:9 render: fills the wide (16:9) teaser and end card, cottage right of centre, words on
   // the dark sky to its left. Empty = the square render feathered in, as in the other shapes.
   cottageImageWide: 'Gemini_Generated_Image_9rw9cv9rw9cv9rw9.jpg',
-  // The story ad: the cottage pops its lights on in the plan scene ("timer set for dusk"), so the
-  // end card shows it already lit. false = the end card flickers on too.
-  endCardLit: true,
+  // true = the end card shows the cottage already lit (when it pops on earlier in the ad);
+  // false = the end card flickers it on.
+  endCardLit: false, // the cottage no longer pops on in the plan scene, so the end card does it
   // Type: the site's fonts (Fraunces extrabold, tight tracking, for headlines; Inter for the rest).
   type: { displayWeight: 800, displayTracking: '-0.02em' },
   photos: {
@@ -43,8 +43,8 @@ const data = {
   // 8-frame cross-dissolves between scenes.
   scenes: {
     thread1: 8.5,
-    plan: 6.5,
-    home: 12, // drive 2.5 s → door 1.7 s → reveal → reaction 2.2 s (6.5 without the clips)
+    plan: 2.6, // the time card (6.5 with three beats and the cottage)
+    home: 12, // drive 2.5 s → reveal → reaction 2.2 s → door 1.6 s (6.5 without the clips)
     thread2: 4.5,
     pitch: 5,
     end: 4,
@@ -60,10 +60,10 @@ const data = {
       { from: 'them', at: 6.0, text: '🤫 She has no idea.' },
     ],
     // The plan: three beats, one after another. The cottage lights come on with the last one.
+    // One time card now (owner 2026-10-13: the three-beat scene with the cottage "feels so forced
+    // into it"). More entries bring the beats back, one after another.
     plan: [
-      { time: 'Thursday 9:02 am', line: 'Everyone’s gone.' },
-      { time: '9:30 am', line: 'We’re on the roof.' },
-      { time: '3:48 pm', line: 'Done. Timer set for dusk.' },
+      { time: 'Thursday 3:48 pm', line: 'Done. Timer set for dusk.' },
     ],
     homeTime: '5:41 pm',
     homeLine: 'She’s home.',
@@ -89,7 +89,10 @@ const data = {
   // Music bed: a file in assets-source/ads/music/ (copied to video/public/music/ by prepare-assets).
   // Source and licence go in assets-source/ads/video/README.md. Empty = silent.
   // startFrom: seconds into the track; the bed fades out over the last 2.5 s of the video.
-  music: { file: 'anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav', volume: 0.6, startFrom: 4.4 },
+  // Wintertime Waltz: quiet for 6 s under the first texts, builds through the time card, its 15 s peak
+  // lands as the house appears (startFrom lines them up: house at ~13.2 s into the video). Others on disk: 'dance-of-the-sugar-plum-fairies-kevin-macleod-main-version-9984-01-46.wav'
+  // (quiet 9 s, playful from 17 s), 'anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav' (swell at 22 s: startFrom 4.3).
+  music: { file: 'wintertime-waltz-albert-behar-main-version-46196-02-05.wav', volume: 0.6, startFrom: 1.8 },
   // Sound effects: files in assets-source/ads/sfx/. Empty = none. Each plays at its moment:
   // pop = a text bubble lands (both sides); typing = the dots start; lightsOn = the cottage flickers
   // on (plan beat 3, end card, the 5-second ad); lightsChime = a second layer as the glow settles;
@@ -105,8 +108,8 @@ const data = {
     ambience: 'wind-ambience-howling-during-snowstorm-vincentmets-1-00-20.mp3',
     // Beds under the real footage so it sounds like a place: inside the car (her driving, her
     // reaction) and outside at night (the house appearing, the closing house). Looped, faded.
-    carInterior: '',
-    nightOutside: '',
+    carInterior: 'windshield-wipers-jeff-kaale-1-00-07.wav', // rain on her windows in the car shots: wipers
+    nightOutside: 'city-street-ambience-light-wind-traffic-jam-fx-quiet-park-ambience-on-a-spring-morning-1-0m13s.wav', // a quiet street at night
     bedVolume: 0.35,
     volume: 0.8,
     ambienceVolume: 0.12,
@@ -124,7 +127,7 @@ const data = {
     texting: 'warm-golden-bokeh-background-55540-1080.mp4', // owner 2026-10-13: bokeh lights rather than the hands on a phone
     drive: 'person-smiling-in-car-at-night-red-light-105845-1080.mp4', // owner's pick 2026-10-13: same shoot as the reaction clip
     door: 'person-closes-car-door-at-night-105855-1080.mp4', // she closes the car door (same shoot), with the slam
-    reaction: 'person-smiling-in-warm-ambient-light-95610-1080.mp4', // her face lit by the lights, outside the car now
+    reaction: 'person-in-car-on-rainy-night-105878-1080-#1.mp4', // her, in the car, turning to look out (same woman as the drive)
     snow: 'shimmering-gold-bokeh-lights-54198-1080.mp4',
     plan: 'falling-snowflakes-on-dark-bokeh-background-114577-1080.mp4', // behind the plan beats (owner: no still background between footage)
     end: 'falling-snowflakes-overlay-86734-1080.mp4', // real snow behind the end card (black blended away)
@@ -135,12 +138,14 @@ const data = {
   snowOverlayOpacity: 0.6,
   snowFrontOpacity: 0.35,
   // Seconds to skip at the start of a clip (so the best stretch plays).
-  clipStart: { reaction: 0.5, drive: 0.5, door: 0.3 },
+  clipStart: { reaction: 2.4, drive: 0.5, door: 0.3 },
+  // The plan scene shows the cottage popping on beside the beats only when planCottage is true.
+  planCottage: false,
   // The 5:41 pm scene: how long the drive clip plays, then the door clip, before the house appears,
   // and how long the reaction clip holds at the end (only when those clips are set).
-  // doorSeconds: how long the door clip plays after the drive; doorSlamAt: seconds into it when
-  // the door shuts (the slam sound lands there).
-  home: { driveSeconds: 2.5, doorSeconds: 1.7, doorSlamAt: 1.0, reactionSeconds: 2.2 },
+  // Order: drive → the house → her reaction in the car → the door closes as she gets out (the slam
+  // lands doorSlamAt seconds into that last shot).
+  home: { driveSeconds: 2.5, doorSeconds: 1.6, doorSlamAt: 1.0, reactionSeconds: 2.2 },
   // Film look: grain strength (0 = off), vignette strength, and the grade over every clip and
   // photo so footage from different shoots feels like one film: saturate/contrast (CSS filter),
   // lift = how far blacks rise toward navy (0–1), warm = gold in the mids and highlights (0–1).
