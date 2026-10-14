@@ -89,6 +89,9 @@ const data = {
     phone: '281-819-0163',
     site: 'christmas-light-creations.com',
     endLine: 'Free 30-minute estimate',
+    // The campaign line (owner 2026-10-13: "We can keep a secret is the whole idea"): the headline of the
+    // closing card, with the ask under it. Empty = the ask alone as the headline.
+    tagline: 'We can keep a secret.',
   },
   // Turn off when the October offer ends: the offer line disappears from the closing scene.
   offer: { enabled: true },

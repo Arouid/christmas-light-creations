@@ -61,7 +61,7 @@ lifted toward navy, gold warmth) so the sources read as one film. Files and lice
 | 3 | 9.5–20.9 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s, the wipers and a muffled street under it; the sharper city-driving clip was "too jarring"), the time. The dusk timer's switch click as the house appears (12.2 s). "She's home." fades as the door shot starts. Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
 | 4 | 20.6–24.8 | **Thursday 5:52 pm** | The thread again, two bubbles, gold bokeh behind (Uppbeat clip). | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
 | 5 | (off) | **The ask** | Skipped since 2026-10-13 (`endCardAsk`): its words moved onto the closing card. With `endCardAsk: false`: stone house, slow push-in; big line, the estimate line, the offer pill (while enabled), 5 s. | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 34 (or a clip) |
-| 6 | 24.5–30.5 | **The closing card** | The photoreal cottage pops its lights on (the only time in the ad), real falling snow behind it (Uppbeat clip, screen-blended over the navy); the ask line, the offer and estimate pills, the phone number large, the website. Held 6 s. | Surprise someone this year. / 10% off installs done by October 31 · Free 30-minute estimate / 281-819-0163 / christmas-light-creations.com | logo |
+| 6 | 24.5–30.5 | **The closing card** | The photoreal cottage pops its lights on (the only time in the ad), real falling snow behind it (Uppbeat clip, screen-blended over the navy); the campaign line big, the ask under it, the offer and estimate pills, the phone number large, the website. Held 6 s. | We can keep a secret. / Surprise someone this year. / 10% off installs done by October 31 · Free 30-minute estimate / 281-819-0163 / christmas-light-creations.com | logo |
 
 ## Gemini's review (2026-10-13, the owner ran the 35 s cut through Gemini)
 
@@ -70,7 +70,30 @@ lifted toward navy, gold warmth) so the sources read as one film. Files and lice
 | A vertical seam on the right third at 0:08 (into the time card) | Real: the light sweep at every scene change was a diagonal gradient inside a tall box, which ended short of the box's sides and left a hard vertical edge (visible at 8.3, 22.3 and 31.3 s). | The sweep is a side-to-side gradient, transparent at both ends, skewed for the diagonal look. |
 | "She's home." frozen bottom-left through the second thread (0:16–0:26) | Partly: it stayed to 22.5 s, over her reaction and the door shot, and left with the dissolve; it never sat over the thread. | The line fades out once the door shot is in (gone about 0.6 s after it starts). |
 | The headline ghost-fades over the closing card (0:30–0:31) | The 8-frame cross-dissolve from the ask to the end card. | Gone with the one closing card. |
-| Two closing screens "stutter"; make one 5–6 s card: ask, offer + estimate, number, site on the cottage | Agreed. | `endCardAsk`: the pitch scene is skipped, the closing card carries the ask, the two pills, the number and the site, 6 s. The three-gable house (34) and "We can keep a secret." are off while it is on. |
+| Two closing screens "stutter"; make one 5–6 s card: ask, offer + estimate, number, site on the cottage | Agreed. | `endCardAsk`: the pitch scene is skipped, the closing card carries the words, 6 s. The three-gable house (34) is off while it is on. The first version dropped "We can keep a secret." with the pitch scene; the owner: "We can keep a secret is the whole idea", so it is the card's headline now (`words.tagline`), the ask under it. |
+
+## The campaign: "We can keep a secret." (owner, 2026-10-13)
+
+The owner wants "a bunch of 'We can keep a secret' ads": the line is the campaign's signature,
+the way "He went to Jared" was (his words: "She went to Jared == We can keep a secret"). So every
+ad ends on the same beat, the same way: the cottage pops on, the line lands, the number. The
+story in front of it changes. Ideas offered (not built; the owner picks), all from pieces that
+exist, the words to be his:
+
+| Ad | Length | What happens before the line |
+|---|---|---|
+| The bumper | 6 s | Bokeh, one bubble pops in: "🤫 She has no idea." Cut: the cottage pops on, the line, the number. |
+| The 15-second story | 15 s | Two bubbles, her in the car, the house opens, "She's home.", the card. For the non-skippable slot. |
+| The anniversary | 30 s | "Can you do our house while she's at her sister's? Twenty years Saturday." Same reveal, the card. |
+| The kids | 30 s | "Can you come while the kids are at school? They've been begging." The house, the card. |
+| The parents' house | 30 s | "My parents land Friday. Can you do their place before we pick them up?" The house, the card. |
+| Her turn | 30 s | "Don't tell my husband. He thinks we're doing it ourselves this year." The house, the card. |
+| Mom's house | 30 s | "Can you do my mom's house? She says she's too old for the ladder." The house, the card. |
+
+How they would be built: a `video/src/stories.js` with one named entry per ad (the thread, the
+time card, the line, which scenes play), `render-all.mjs --story=<name>` writing
+`clc-ad-<shape>-<name>.mp4`; the base story stays in `data.js`; the closing card is shared, so the
+line is always the same.
 | A click or chime as the lit house appears (the dusk timer) | The reveal chime had been turned off (owner: effects "fit poorly"). | The switch click alone, at 45 % (`adMix.revealClick`). |
 | Trim 2–3 s to about 30 s | 35.3 s before. | 30.5 s: 7.6 / 2.4 / 11.4 / 4.2 / 6 s scenes; the music start moved (2.9 s) so the waltz's peak still lands on the house. |
 
