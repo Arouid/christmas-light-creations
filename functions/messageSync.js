@@ -3,6 +3,7 @@
 // matches them to customers/leads. Pure: no Firebase. Spec:
 // docs/specs/message-sync.md. Tested in tests/messageSync.test.mjs.
 import { createHash } from 'node:crypto'
+import { phoneKey, phonesIn } from './phone.js'
 
 export const OUR_EMAILS = ['info@christmas-light-creations.com', 'clc.voicemail.01@gmail.com']
 export const OUR_PHONES = ['+12818190163']
@@ -14,19 +15,10 @@ const SKIP_SUBJECTS = [/^Your Christmas Light Creations sign-in link$/i]
 const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 20)
 const lower = (s) => String(s ?? '').trim().toLowerCase()
 
-// "(281) 555-0101" / "+1 281.555.0101" / "12815550101" -> "+12815550101"; else ''.
-export function e164(raw) {
-  const d = String(raw ?? '').replace(/\D/g, '')
-  if (d.length === 10) return `+1${d}`
-  if (d.length === 11 && d.startsWith('1')) return `+${d}`
-  return ''
-}
-
-// Every US phone number in a free-text field ("281-555-0101 / 832 555 0102").
-export function phonesOf(field) {
-  const found = String(field ?? '').match(/(?:\+?1[\s.-]*)?\(?\d{3}\)?[\s.-]*\d{3}[\s.-]*\d{4}/g) ?? []
-  return [...new Set(found.map(e164).filter(Boolean))]
-}
+// "(281) 555-0101" -> "+12815550101" and every number in a free-text field:
+// the same helpers the account lookup uses (phone.js), under their old names.
+export const e164 = phoneKey
+export const phonesOf = phonesIn
 
 // Addresses in a header like `"Pat" <Pat@Example.com>, b@x.com` -> lowercase list.
 export function addressesOf(header) {

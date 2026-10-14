@@ -8,10 +8,12 @@ import { GFCI_TIP } from '../../functions/notices.js'
 const PHONE = '281-819-0163'
 
 export const HELP = [
-  { id: 'sign-in', q: 'How do I sign in?', tags: 'login password link google email',
-    a: `There is no password. Tap Sign in with Google, or type the email we have for you and tap Email me a link: the email has a one-tap link that signs you in. Use the same email your estimate or invoice was sent to.` },
+  { id: 'sign-in', q: 'How do I sign in?', tags: 'login password link google email phone number code text',
+    a: `There is no password. Tap Sign in with Google; or tap Sign in with your phone number, type the mobile number we have for you and then the 6-digit code we text you; or type your email and tap Email me a link, and the email has a one-tap link that signs you in. Use the same email or phone your estimate or invoice went to.` },
   { id: 'no-link', q: 'The sign-in email never came', tags: 'spam junk promotions link expired once',
-    a: `Check your spam or promotions folder and mark it "Not spam" so the next one lands in your inbox. The link works once; ask for a new one if you used it already. If the email we have for you is different from the one you typed, nothing is sent: call or text ${PHONE} and we will fix the address.` },
+    a: `Check your spam or promotions folder and mark it "Not spam" so the next one lands in your inbox. The link works once; ask for a new one if you used it already. If the email we have for you is different from the one you typed, nothing is sent: call or text ${PHONE} and we will fix the address, or sign in with your phone number instead.` },
+  { id: 'no-code', q: 'The text with the code never came', tags: 'sms code phone number landline wrong expired resend',
+    a: `Give it a minute, then tap Send again. The code only goes to a mobile number that gets texts (not a landline), and it expires after a few minutes. If the number we have for you is old, sign in with Google or the email link, or call or text ${PHONE} and we will update it. If the screen says phone sign-in is not switched on yet, use Google or the email link.` },
   { id: 'pay', q: 'How do I pay?', tags: 'payment paypal venmo card zelle cash check invoice deposit balance',
     a: `Under Agreements & payments, tap Pay on anything due: PayPal, Venmo or a card. Zelle, Cash App, check or cash work too (text us and we mark it paid). A payment made online shows as paid within a minute.` },
   { id: 'payin3', q: 'What is Pay in 3?', tags: 'payments monthly plan thirds installments',

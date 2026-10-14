@@ -128,7 +128,7 @@ Just reply to this email, or call or text {businessPhone}. If you're all set, no
 
 Your account is ready: {website}/account/
 
-Sign in with Google, or with a one-time link we email you (no password to remember), using the email address this message came to. Inside: your install date, your lights and the lifetime warranty, your proposal and invoices with online payment, a chat box straight to us, and a Report a problem button for the season.
+Sign in with Google, with your phone number (we text you a 6-digit code), or with a one-time link we email you: no password to remember. Use the email address this message came to, or the mobile number we have for you. Inside: your install date, your lights and the lifetime warranty, your proposal and invoices with online payment, a chat box straight to us, and a Report a problem button for the season.
 
 On your phone, open it once and tap Get the app: it saves to your home screen and works like an app.${sign}`,
   },
