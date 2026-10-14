@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { business, gallery, heroHighlights } from '../data/content'
+import { business, heroHighlights, heroPhotos } from '../data/content'
+import { HERO_KEY, HERO_VAR, heroBackground, showHero } from '../lib/heroPhoto'
 import { useToday } from '../lib/prerendered'
 import { bookLine, fetchBooking, seasonBadge } from '../lib/urgency'
 import Availability from './Availability'
@@ -13,9 +14,15 @@ export default function Hero() {
     const t = setTimeout(() => { fetchBooking().then((b) => setStatus(b.status)) }, 1200)
     return () => clearTimeout(t)
   }, [])
+  // The built page picked the photo in its <head>; `npm run dev` has no built page, so pick here.
+  useEffect(() => {
+    const root = document.documentElement
+    if (!root.style.getPropertyValue(HERO_VAR)) showHero(heroPhotos, HERO_KEY, HERO_VAR, document, () => window.localStorage, Math.random)
+  }, [])
   return (
     <section id="top" className="relative isolate overflow-hidden pt-16">
-      <img src={gallery[0].src} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover object-[65%_center] opacity-60 md:opacity-90" fetchPriority="high" />
+      {/* A different photo each visit, picked before it downloads (lib/heroPhoto.js). */}
+      <div aria-hidden="true" style={heroBackground(heroPhotos)} className="absolute inset-0 -z-20 bg-cover bg-no-repeat opacity-60 md:opacity-90" />
       {/* Phones: darken evenly for the text. Desktop: dark behind the text on the left, house shows on the right. */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-night-950/70 via-night-950/55 to-night-950 md:bg-gradient-to-r md:from-night-950 md:via-night-950/70 md:to-night-950/10" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-night-950 to-transparent" />

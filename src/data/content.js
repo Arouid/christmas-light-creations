@@ -283,6 +283,17 @@ export const gallery = [
   { src: photo('pasadena-christmas-install.jpg'), place: 'Pasadena', alt: 'Warm white roofline and garage lights on a two-story home in Pasadena' },
 ]
 
+// The hero's background: a different one of these on every visit (owner
+// 2026-10-14, src/lib/heroPhoto.js). Wide night shots with the whole house lit;
+// every one is also in `gallery` (tests/heroPhoto.test.mjs). The first is the
+// one shown without JavaScript, so keep a strong one there.
+export const heroPhotos = [
+  'shadow-creek-ranch-pearland-02.jpg', 'victory-lakes-league-city-04.jpg', 'stonebridge-pearland-04.jpg',
+  'friendswood-lakes-friendswood.jpg', 'southwyck-pearland.jpg', 'stonebridge-pearland-10.jpg',
+  'victory-lakes-league-city.jpg', 'eagle-lakes-friendswood.jpg', 'pomona-pearland.jpg',
+  'southern-trails-pearland-christmas-install-02.jpg',
+].map(photo)
+
 // FAQ, rewritten from scratch with the owner (2026-10-09). Keep answers short
 // and true to how we work now; no prices, percentages or formulas that would
 // tie our hands (owner: "I don't want to ball and chain myself").
@@ -401,7 +412,7 @@ export const privacy = {
     {
       title: 'What your browser keeps',
       items: [
-        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you sign in with your phone number, Google’s reCAPTCHA check runs once on that screen (no checkbox unless it suspects a robot). If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. Google’s ad tag (above) sets its own cookies on our public pages. Nothing else is stored.',
+        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you sign in with your phone number, Google’s reCAPTCHA check runs once on that screen (no checkbox unless it suspects a robot). If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. The home page remembers which of its photos it showed you last (just that number), so your next visit opens on a different one. Google’s ad tag (above) sets its own cookies on our public pages. Nothing else is stored.',
       ],
     },
     {

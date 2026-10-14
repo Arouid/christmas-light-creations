@@ -7,9 +7,10 @@ export const pagePath = (a) => `christmas-light-installation/${a.slug}/`
 
 // Drawn at build time; `expect` must be in the drawn HTML, `absent` must not
 // (gift wrapping is drawn only after the page asks the server whether it is
-// switched on, lib/giftWrapping.js).
+// switched on, lib/giftWrapping.js). `hero`: the page gets the hero-photo picker
+// in its <head> (src/lib/heroPhoto.js), so each visit downloads one photo.
 export const PRERENDERED = [
-  { html: 'index.html', module: '/src/App.jsx', expect: 'Holiday lights', absent: 'ift wrapping' },
+  { html: 'index.html', module: '/src/App.jsx', expect: 'Holiday lights', absent: 'ift wrapping', hero: true },
   { html: 'design/index.html', module: '/src/design/DesignPage.jsx', expect: 'sample-design.webp', absent: 'ift wrapping' },
   { html: 'cost/index.html', module: '/src/cost/CostPage.jsx', expect: 'What sets the price' },
 ]
