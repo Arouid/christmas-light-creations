@@ -675,3 +675,7 @@ What was actually checked working, and how. Newest first.
 - Owner deployed `myAccount` + `accountPreview` from main 313b878 (Terminal: both "Successful update operation", "Deploy complete!"; an earlier second run in another tab got a harmless 409 while the first was updating), after enabling the IAM Service Account Credentials API and granting `448935757441-compute@developer.gserviceaccount.com` the Service Account Token Creator role on itself (TODO #78).
 - Owner, live staff app → Ashley Ashna → **👁 View their account**: "it shows the house photo now". So the staff preview opens, `accountPreview` answers, and the 1-hour signed link to the 🏠 house photo works against real Storage (checklist #154 done). TODO #77 and #78 done.
 - Still open: #151 (the customer's login line unchanged after a preview), #152 (a non-staff Google account gets "Staff only"), #153 (tax / Pay-in-3 amounts and saved details on a real account), #155 (Street View for a customer with no house photo), #149 (the review card signed in as a real past customer).
+
+## 2026-10-14 Property details save is deployed (TODO #60 closed)
+
+- Anonymous empty POST to the callables (no data read or written): `updateMyDetails` and `myAccount` answer HTTP 401 "Please sign in again" (deployed, refusing strangers); a made-up name answers 404. So the account page's **Your property details** Save has its function live; the rest of #60 was client-side and went out with the site pushes. TODO #60 removed. Still open: checklist #97 (a real customer saves details from /account/ and staff see them).
