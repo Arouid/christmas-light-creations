@@ -2,7 +2,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion'
 import { useFmt } from '../lib/format.js'
 import { Graded, SceneFade } from '../lib/Stage.jsx'
 import { Clip } from '../lib/Clip.jsx'
-import { display } from '../lib/fonts.js'
+import { BODY, display } from '../lib/fonts.js'
 import { fadeIn, pop } from '../lib/motion.js'
 
 // The whisper (the humorous cut, owner's clip 2026-10-13): a perfume-ad close-up, he leans in to
@@ -18,6 +18,10 @@ export function Whisper({ data, dur }) {
   const step = Math.round((story.whisperStep ?? 0.55) * fps)
   const size = tall ? 84 : square ? 72 : 92
   const shade = fadeIn(frame, at0 - 10, 12)
+  // story.whisperCaption: a small bracketed caption top-left while the clip plays (the Halloween cut's
+  // sound-off joke), from 1 s to the scene's last half second.
+  const caption = story.whisperCaption || ''
+  const capOn = caption ? fadeIn(frame, fps, 8) * (1 - fadeIn(frame, dur - 14, 8)) : 0
   // Tall and square: the 16:9 close-up as a wide band (a light crop keeps both faces; a full
   // cover crop showed only her eye and lost the whisper), the words under it on black.
   const band = tall || square
@@ -52,6 +56,9 @@ export function Whisper({ data, dur }) {
           </>
         )}
         {wordRow}
+        {caption ? (
+          <div style={{ position: 'absolute', left: tall ? 70 : square ? 72 : 96, top: band ? bandY - (tall ? 90 : 70) : tall ? 120 : square ? 60 : 72, fontFamily: BODY, fontWeight: 500, fontSize: tall ? 38 : square ? 32 : 36, color: 'rgba(255,255,255,0.9)', opacity: capOn, textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}>{caption}</div>
+        ) : null}
       </AbsoluteFill>
     </SceneFade>
   )

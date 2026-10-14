@@ -54,7 +54,11 @@ export const STORIES = {
     label: 'Get outta the way, Halloween (15 s)',
     file: 'clc-halloween-15s',
     scenes: { whisper: 5, thread1: 0, plan: 0, home: 7, thread2: 0, ask: 0, pitch: 0, end: 3.53 },
-    story: { whisperLine: '', homeTime: '', homeLine: 'Get outta the way, Halloween.', homeSub: '10% off installs done by October 31' },
+    // Gemini's notes via the owner (2026-10-13): the sound-off caption over the vampire (most feeds play
+    // muted), the offer once (on the card), and the card headed by this ad's own line rather than the
+    // campaign signature (empty `words.tagline` here restores "We can keep a secret.").
+    story: { whisperLine: '', whisperCaption: '[ Christmas music playing aggressively ]', homeTime: '', homeLine: 'Get outta the way, Halloween.', homeSub: 'Christmas lights, installed · Pearland, TX' },
+    words: { tagline: 'Get outta the way, Halloween.' },
     clips: { whisper: 'seductive-vampire-woman-with-blood-189499-4k.mp4', drive: '' },
     clipStart: { whisper: 1.0 },
     home: { driveSeconds: 0, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0, revealFrames: 8, lineDelay: 14 },
