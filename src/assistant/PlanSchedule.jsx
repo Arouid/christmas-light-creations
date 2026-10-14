@@ -138,7 +138,7 @@ export default function PlanSchedule({ customers, season, onUpdate, onClose }) {
             </div>
             {candidates.length === 0 ? (
               <p className="rounded-2xl border border-white/10 bg-night-900 p-4 text-sm text-slate-300">
-                Nobody needs a day: everyone who said yes this season already has a planned date or week. Confirm more people in the Season list first (Wants lights? = Confirmed).
+                Nobody needs a day: everyone who said yes this season already has a planned date or week. Set Install status to “Confirmed - Needs to be Scheduled” (or Wants lights? to Confirmed) for the people to plan.
               </p>
             ) : (
               <div className="rounded-2xl border border-white/10 bg-night-900 p-3">

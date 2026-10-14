@@ -57,12 +57,16 @@ export function defaultRange(today, season, bounds = SEASON_BOUNDS) {
 // ---- Who needs a day ------------------------------------------------------------
 
 const SKIP_STATUS = new Set(['Not Servicing', 'Off Scheduler', 'Install Completed'])
+export const NEEDS_DAY = 'Confirmed - Needs to be Scheduled'
 
-// Confirmed this season, nothing planned yet, still being serviced.
+// Said yes this season, nothing planned yet, still being serviced. Either field
+// is enough (owner 2026-10-14): Install status "Confirmed - Needs to be Scheduled"
+// is what staff set on the Season tab; Wants lights? = Confirmed comes from the
+// sheet import and the account's one-tap yes.
 export function unscheduled(customers = [], season) {
   return customers.filter((c) => {
     const s = c.seasons?.[season] ?? {}
-    if (s.firstContact !== 'Confirmed') return false
+    if (s.installStatus !== NEEDS_DAY && s.firstContact !== 'Confirmed') return false
     if (s.plannedDate || s.weekOf) return false
     return !SKIP_STATUS.has(s.installStatus ?? '')
   })

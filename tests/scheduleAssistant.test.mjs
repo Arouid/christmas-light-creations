@@ -13,6 +13,11 @@ const c = (id, s, extra = {}) => ({ id, fullName: id, seasons: { [season]: s }, 
 test('unscheduled: confirmed this season, nothing planned, still serviced', () => {
   const list = [
     c('yes', { firstContact: 'Confirmed' }),
+    c('status-only', { installStatus: 'Confirmed - Needs to be Scheduled' }),
+    c('status-dated', { installStatus: 'Confirmed - Needs to be Scheduled', plannedDate: 'Oct 20' }),
+    c('status-blank-yes', { installStatus: '', firstContact: 'Confirmed' }),
+    c('not-confirmed', { installStatus: 'Not Confirmed' }),
+    c('off', { firstContact: 'Confirmed', installStatus: 'Off Scheduler' }),
     c('dated', { firstContact: 'Confirmed', plannedDate: 'Oct 15' }),
     c('weeked', { firstContact: 'Confirmed', weekOf: 'Oct 11-17' }),
     c('undecided', { firstContact: 'Undecided' }),
@@ -20,7 +25,7 @@ test('unscheduled: confirmed this season, nothing planned, still serviced', () =
     c('done', { firstContact: 'Confirmed', installStatus: 'Install Completed' }),
     { id: 'lastyear', seasons: { 2025: { firstContact: 'Confirmed' } } },
   ]
-  assert.deepEqual(unscheduled(list, season).map((x) => x.id), ['yes'])
+  assert.deepEqual(unscheduled(list, season).map((x) => x.id), ['yes', 'status-only', 'status-blank-yes'])
 })
 
 test('requests: a sane range inside the season and a short list of ids', () => {

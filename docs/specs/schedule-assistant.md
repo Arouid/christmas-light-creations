@@ -8,7 +8,7 @@ Every October the owner sits with the Season list and a calendar and works out w
 
 ## What we want
 
-A **✨ Plan with Claude** button on the **Season** tab (installs). Staff pick a date range (default: tomorrow to two weeks out, inside the install season) and see how many unscheduled people are in it: by default this season's customers who said yes (Wants lights? = Confirmed) and have no planned date or week yet. They can untick anyone.
+A **✨ Plan with Claude** button on the **Season** tab (installs). Staff pick a date range (default: tomorrow to two weeks out, inside the install season) and see how many unscheduled people are in it: by default this season's customers who said yes (Install status Confirmed - Needs to be Scheduled, or Wants lights? = Confirmed: either is enough, owner 2026-10-14) and have no planned date or week yet. They can untick anyone.
 
 Claude comes back in under a minute with a **day plan**: for each day in the range the people proposed for it, grouped by area, with a one-line reason each ("Shadow Creek with the Smiths; asked for the week of the 19th"), and a short paragraph explaining the plan as a whole. People who couldn't be fitted are listed separately with the reason (no open day left before the deadline, asked for a date outside the range, no address).
 
@@ -66,7 +66,7 @@ Nothing is written until Apply. Nothing is sent until the email flow's own Send.
 
 ## Acceptance criteria
 
-1. [test] `unscheduled(customers, season)` returns only customers with `firstContact` Confirmed and no `plannedDate`/`weekOf` this season, excluding Not Servicing / Off Scheduler. → `tests/scheduleAssistant.test.mjs`
+1. [test] `unscheduled(customers, season)` returns only customers with `installStatus` Confirmed - Needs to be Scheduled or `firstContact` Confirmed, and no `plannedDate`/`weekOf` this season, excluding Not Servicing / Off Scheduler / Install Completed. → `tests/scheduleAssistant.test.mjs`
 2. [test] `scheduleRequest()` refuses a bad or over-long range, more than 60 ids, non-string ids; `scheduleAllowed()` allows 20 a Central day, then refuses. → same file
 3. [test] `dayList()` lists each day in the range with weekday, capacity (settings and overrides) and booked count, and says which are open. → same file
 4. [test] The rows sent to the model carry name, address, city, neighborhood, block, install type, notes, timeframe and incoming message text, but no gate code, phone or email. → same file

@@ -616,3 +616,10 @@ What was actually checked working, and how. Newest first.
 - `npm run check`: lint clean, 485 tests pass (`tests/areaPhotos.test.mjs` rewritten: list ↔ folder agree, every page's first photo is local, the Highland Glen special case gone), build + prerender + sitemap (11 URLs) fine.
 - Browser pane, `http://localhost:5173/#gallery` at 375 px: the nine thumbnails come from the new files (first `shadow-creek-ranch-pearland-02.jpg`), the button reads "Show all 76 photos", `scrollWidth` 375, console clean; screenshot shows the first three photos rendered.
 - Not checked: the live site after push (photo URLs change, old image URLs 404: nothing links to them but Google Images; the sitemap has no image entries). Owner to confirm two captions: `west-ranch-pearland-02.jpg` is captioned "West Ranch, Friendswood" (West Ranch is in Friendswood; the file says Pearland) and `friendswood-forest-friendswood.jpg` is treated as The Forest of Friendswood.
+
+## 2026-10-14 Plan with Claude: Install status alone qualifies
+
+- `unscheduled()` (functions/assistant/schedulePrompt.js, used only by the Season tab and the planner panel; the `proposeSchedule` callable plans whatever ids the panel sends, so no functions deploy) now takes Install status "Confirmed - Needs to be Scheduled" or Wants lights? = Confirmed. Test: status-only counts, status with a planned date doesn't, Not Confirmed alone doesn't, Off Scheduler doesn't (`tests/scheduleAssistant.test.mjs`).
+- `npm run check`: lint clean, 485 tests pass, build fine.
+- Browser pane, `/leads/?demo#season` at 375 px: "✨ Plan with Claude (1)" (Example Family). Test Homeowner's Install status set to Confirmed - Needs to be Scheduled with Wants lights? left blank → "(2)", and the panel reads "2 of 2 to plan" with Example Family and Test Homeowner; console clean, no sideways scroll. Set back to Not contacted → "(1)".
+- Not checked: the live staff app with real customers (checklist #146).
