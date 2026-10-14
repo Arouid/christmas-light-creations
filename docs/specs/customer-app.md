@@ -9,7 +9,7 @@ The account page at `/account/` **is** the app. It's installed on a phone as a w
 | Piece | File | Notes |
 |---|---|---|
 | Web app manifest | `public/account/manifest.webmanifest` | name *Christmas Light Creations*, home-screen label *CLC Lights*, `scope`/`start_url` `/account/`, standalone, navy theme |
-| Icons | `public/account/icons/` (`icon-192`, `icon-512`, `maskable-512`, `apple-touch-icon`) | made by `node scripts/make-account-icons.mjs` from `assets-source/logo-vector/clc-cottage-tile-1080.png`; the maskable one keeps the cottage in the middle 70% (Android cuts a circle out of it) |
+| Icons | `public/account/icons/` (`icon-192`, `icon-512`, `maskable-512`, `apple-touch-icon`) | made by `node scripts/make-account-icons.mjs` from `assets-source/brand/logo-vector/clc-cottage-tile-1080.png`; the maskable one keeps the cottage in the middle 70% (Android cuts a circle out of it) |
 | Service worker | `public/account/sw.js` | registered by `src/account/main.jsx`; caches only `offline.html`; navigations fall back to it with no network. Chrome needs a fetch handler before it offers one-tap install |
 | Offline page | `public/account/offline.html` | "You're offline" + Try again + call |
 | Get the app box | `AccountPage.jsx` → `GetTheApp` | on the signed-in account, hidden inside the installed app; buttons and steps shared with the staff app in `src/components/InstallApp.jsx` |

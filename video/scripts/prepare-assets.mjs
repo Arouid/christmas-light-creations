@@ -48,7 +48,7 @@ for (const f of ['fraunces-latin.woff2', 'inter-latin.woff2']) {
   if (fresh(src, dst)) { copyFileSync(src, dst); console.log('font', f) }
 }
 for (const f of ['clc-cottage-color.svg', 'clc-cottage-one-color-white.svg']) {
-  const src = join(repoRoot, 'assets-source', 'logo-vector', f)
+  const src = join(repoRoot, 'assets-source', 'brand', 'logo-vector', f)
   const dst = join(out, 'logo', f)
   if (fresh(src, dst)) { copyFileSync(src, dst); console.log('logo', f) }
 }
@@ -88,8 +88,8 @@ for (const photo of Object.values(data.photos)) {
   }
 }
 
-// The owner's Gemini renders (assets-source/Gemini/, e.g. the photoreal cottage) → public/gemini/.
-const geminiDir = join(repoRoot, 'assets-source', 'Gemini')
+// The owner's Gemini renders (assets-source/ads/gemini/, e.g. the photoreal cottage) → public/gemini/.
+const geminiDir = join(repoRoot, 'assets-source', 'ads', 'gemini')
 mkdirSync(join(out, 'gemini'), { recursive: true })
 if (existsSync(geminiDir)) {
   for (const f of readdirSync(geminiDir)) {
@@ -99,7 +99,7 @@ if (existsSync(geminiDir)) {
     if (fresh(src, dst)) { copyFileSync(src, dst); console.log('gemini', f) }
   }
 }
-for (const k of ['cottageImage', 'cottageImageWide']) if (data[k] && !existsSync(join(out, 'gemini', data[k]))) { console.error(`${k} ${data[k]} is missing from assets-source/Gemini/`); process.exitCode = 1 }
+for (const k of ['cottageImage', 'cottageImageWide']) if (data[k] && !existsSync(join(out, 'gemini', data[k]))) { console.error(`${k} ${data[k]} is missing from assets-source/ads/gemini/`); process.exitCode = 1 }
 
 // "Lights off" copies of the cottage renders: the neon tubes, the warm door and window and the
 // chimney (saturated pixels, plus bright pixels right next to them) go dark; a wider, softer mask

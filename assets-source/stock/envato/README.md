@@ -40,7 +40,7 @@ own licence (a theme's demo photos, a GPL plugin): check the download's licence 
 1. Search Elements, pick the item, open its page.
 2. **Download at the moment you commit to the project**, and pick the project name in the
    prompt (new project = new name). The licence certificate is created then.
-3. Save the file under `assets-source/envato/downloads/<project>/` (ignored by git).
+3. Save the file under `assets-source/stock/envato/downloads/<project>/` (ignored by git).
 4. Note the item in the project's own README or spec (item name + Elements URL + project name), so
    the licence can be found again in **My Downloads** if YouTube or anyone asks.
 5. Reusing the item elsewhere later: My Downloads → the item → Download → *new* project.

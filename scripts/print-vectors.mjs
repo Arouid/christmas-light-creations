@@ -1,4 +1,4 @@
-// Print-ready vector files from the logo vectors (assets-source/logo-vector): road sign,
+// Print-ready vector files from the logo vectors (assets-source/brand/logo-vector): road sign,
 // yard sign, vehicle magnet, cut-vinyl door decals, banner, business card and sticker,
 // written to assets-source/print/ (not shipped) as SVG, vector PDF (headless Chrome)
 // and a PNG preview each, plus preview-sheet.png.

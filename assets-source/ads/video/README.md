@@ -126,13 +126,15 @@ Claude cannot generate video or actors itself; it cuts whatever is dropped in.
 
 ## Motion-graphics downloads (Uppbeat, 2026-10-13)
 
-`assets-source/ads/Mothion Graphics/` (2.4 GB, gitignored) holds the owner's Uppbeat downloads:
+`assets-source/ads/motion/` (gitignored) holds the owner's Uppbeat downloads, extracted (the zips
+were removed on 2026-10-14 after checking every file was in here):
 two snowfall overlay movies (one ProRes 4444 **with alpha**, 1080p, 5.5 s loop; one 4K
 Animation-codec 8.5 s), a 1.9 GB snowfall pack (70 4K MP4s on black: close, mid, far, bird's-eye,
 mix, blizzard, slow motion), 30 light-leak transitions (4K, about 1 s each), 5 vintage film
 overlays (4K, 15 s) and a rain-on-glass kit (DaVinci Resolve `.drfx` + window PNGs: not usable in
-Remotion as is). A few representative files are extracted into `assets-source/ads/motion/`
-(also gitignored) for use. Likely uses: the alpha snow loop in front of scenes instead of the
+Remotion as is; its tutorial is `Support/rain-drop-on-glass-tutorial.mp4`). The two overlay
+movies are in `snow/`, the light leaks in `light/`, the film overlays in `film/`, the packs as
+they unzipped in `Assets/`. Likely uses: the alpha snow loop in front of scenes instead of the
 screen-blended clip (true transparency, so it works over bright areas too), a light-leak
 transition in place of the drawn light sweep, the film overlay instead of the drawn grain. Not
 wired yet.
@@ -141,7 +143,7 @@ wired yet.
 
 The owner had Gemini render the cottage logo photoreal (snow-draped roof, magenta neon trim,
 green chimney, warm door) from a prompt Claude wrote with the logo attached. Two renders live in
-`assets-source/Gemini/` (in git; the owner's own generated images): a square one
+`assets-source/ads/gemini/` (in git; the owner's own generated images): a square one
 (`…1oiptx….jpg`, 2048²) and a 16:9 one (`…9rw9cv….jpg`, 2752×1536). `prepare-assets` copies
 them to `video/public/gemini/`. Named in `data.js` as `cottageImage` and `cottageImageWide`.
 
@@ -154,9 +156,9 @@ the render's dark blue sky is keyed from the edges, the biggest remaining piece,
 mound, is kept with a soft edge and a faded bottom; written as `…-cut.png` / `…-cut-off.png`), so
 the scene's own sky and snow show around it instead of the render's (owner: the feathered version
 looked "plastered over the top"), the YouTube banner
-(`assets-source/ads/youtube-banner-2048x1152.png`: the square render small in the middle so it
+(`assets-source/ads/youtube/youtube-banner-2048x1152.png`: the square render small in the middle so it
 sits in the strip phones and desktops show) and the profile picture
-(`assets-source/ads/youtube-profile-1080.png`). Clear `cottageImage` in `data.js` to go back to the
+(`assets-source/ads/youtube/youtube-profile-1080.png`). Clear `cottageImage` in `data.js` to go back to the
 vector logo.
 
 ## Open the studio (scrub, change words, see it live)
@@ -187,7 +189,7 @@ Chrome and encodes with its own ffmpeg). Only some: `npm --prefix video run rend
 Before either command, `video/scripts/prepare-assets.mjs` runs on its own and copies what the
 video needs into `video/public/` (gitignored): the photos named in `data.js` from
 `photos-incoming/` (resized to 1920 wide, EXIF and GPS stripped), the cottage logo SVG from
-`assets-source/logo-vector/` and the site's two fonts. First run of Remotion downloads a
+`assets-source/brand/logo-vector/` and the site's two fonts. First run of Remotion downloads a
 headless Chrome (~150 MB) into `video/node_modules/.remotion`; nothing else is installed.
 
 Setup once on a new PC: `cd video && npm install`.

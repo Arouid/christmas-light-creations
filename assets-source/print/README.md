@@ -1,7 +1,7 @@
 # Print-ready vector files
 
 Signs, truck graphics, a banner, business cards and a sticker, made from the logo vectors in
-`../logo-vector/` by `node scripts/print-vectors.mjs` (about 12 s; needs Chrome for the PDFs and
+`../brand/logo-vector/` by `node scripts/print-vectors.mjs` (about 12 s; needs Chrome for the PDFs and
 Python with fontTools for the text, both already here). Not shipped with the site.
 
 Each item is three files: **`.pdf`** (vector, text as outlines: the file to send to the shop),

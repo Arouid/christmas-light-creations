@@ -31,8 +31,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX = os.path.join(ROOT, 'assets-source', 'ads', 'contact-sheet-index.txt')
 OUT_DIR = os.path.join(ROOT, 'assets-source', 'ads', 'video')
 FONT_DIR = os.path.join(ROOT, 'public', 'fonts')
-LOGO_LANDSCAPE = os.path.join(ROOT, 'assets-source', 'ads', 'logo-landscape-1200x300.png')
-LOGO_SQUARE = os.path.join(ROOT, 'assets-source', 'ads', 'logo-square-1200.png')
+LOGO_LANDSCAPE = os.path.join(ROOT, 'assets-source', 'ads', 'image-assets', 'logo-landscape-1200x300.png')
+LOGO_SQUARE = os.path.join(ROOT, 'assets-source', 'ads', 'image-assets', 'logo-square-1200.png')
 
 NAVY = (5, 11, 26)       # night-950
 GOLD = (255, 207, 77)    # glow-400

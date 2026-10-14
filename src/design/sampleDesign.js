@@ -1,5 +1,5 @@
 // The sample house the public designer opens on (public/images/design/,
-// drawn from assets-source/sample-house.svg), with warm white C9s already on
+// drawn from assets-source/site/sample-house.svg), with warm white C9s already on
 // its rooflines and a wreath, so visitors see the idea before they touch it.
 import { newDecoration, newDesign, newStrand } from '../designer/model.js'
 

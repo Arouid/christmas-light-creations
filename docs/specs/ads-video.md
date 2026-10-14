@@ -120,7 +120,7 @@ illustrated street) were deleted in cut 3; git history (commit b485d58) has them
 
 The owner asked for "a real life rendering of the cottage logo"; Claude has no image generator, so
 it wrote the prompt and the owner generated it in Gemini (square and 16:9 renders in
-`assets-source/Gemini/`). The 5-second ad, the end card, the YouTube banner and the profile picture
+`assets-source/ads/gemini/`). The 5-second ad, the end card, the YouTube banner and the profile picture
 now use it (`cottageImage`, `cottageImageWide` in data.js); the vector logo stays as the fallback.
 The switch-on: `prepare-assets` builds a "lights off" copy of each render (a colour mask finds the
 neon, the warm door and window and the green chimney, excluding anything blue-leaning like the

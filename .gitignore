@@ -33,7 +33,7 @@ old-site-backup/
 docs/security-review.md
 
 # Upscaled (3x) copies of the 2012 backdrop art: 13 MB, rebuildable from the originals next to them
-assets-source/2012-backdrop/hi-res-3x/
+assets-source/brand/2012-backdrop/hi-res-3x/
 
 # Google Ads video: rebuildable with scripts/ads-video.py; MP4s are big, keep only the README
 assets-source/ads/video/*
@@ -53,18 +53,17 @@ assets-source/shirts/designs/*.png
 !assets-source/shirts/designs/preview-sheet.png
 
 # Stock downloads (Vecteezy): licensed to us, never redistributed; the repo is public.
-assets-source/Vecteezy Downloads/
-# Envato Elements downloads: licensed per project to us, never redistributed (assets-source/envato/README.md).
-assets-source/envato/downloads/
+assets-source/stock/vecteezy/
+# Envato Elements downloads: licensed per project to us, never redistributed (assets-source/stock/envato/README.md).
+assets-source/stock/envato/downloads/
 # Licensed downloads for the ads (Uppbeat music, sound effects, footage): per-licence, not redistributable
 assets-source/ads/clips/
 assets-source/ads/sfx/
 assets-source/ads/music/
 
-# Uppbeat motion-graphics downloads (overlays, transitions; GBs, licensed): never commit
-assets-source/ads/Mothion Graphics/
+# Uppbeat motion-graphics downloads (overlays, transitions; GBs, licensed), extracted: never commit
 assets-source/ads/motion/
 # Install photos the owner downloads from Google Photos (originals, 2026-10-14): customers' houses, never committed.
-assets-source/Photos-Downloads/
+assets-source/photos/google-photos/
 # Hi-res gallery originals (owner, 2026-10-14, 3 MB each): the web copies in public/images/gallery/ are made from these.
-assets-source/gallery-hi-res/
+assets-source/photos/gallery-hi-res/

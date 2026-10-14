@@ -18,7 +18,7 @@ const data = {
     red: '#d7263d',
     white: '#f5f7fa',
   },
-  // The photoreal cottage (Gemini render of the logo, in assets-source/Gemini/): used by the 5-second
+  // The photoreal cottage (Gemini render of the logo, in assets-source/ads/gemini/): used by the 5-second
   // ad, the end card, the banner and the profile picture. Empty = the vector logo.
   cottageImage: 'Gemini_Generated_Image_1oiptx1oiptx1oip.jpg',
   // The 16:9 render: fills the wide (16:9) teaser and end card, cottage right of centre, words on

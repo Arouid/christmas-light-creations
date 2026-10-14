@@ -1,4 +1,4 @@
-// Print-ready crew-shirt artwork from the vector logo (assets-source/logo-vector),
+// Print-ready crew-shirt artwork from the vector logo (assets-source/brand/logo-vector),
 // written to assets-source/shirts/ (not shipped). Run: node scripts/shirt-art.mjs
 //
 // Makes, at 300 dpi on a transparent background:

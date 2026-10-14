@@ -1,4 +1,4 @@
-# untouched-svg: 16 holiday icons from SVG Repo (downloaded 2026-10-13)
+# svg-repo-icons: 16 holiday icons from SVG Repo (downloaded 2026-10-13; this folder was `untouched-svg` until 2026-10-14)
 
 Owner 2026-10-13: all sixteen were downloaded under licenses that are free to use with no credit needed. They may be used anywhere on the site, in emails and on print; none of them may become part of the logo or a trademark.
 

@@ -1,12 +1,12 @@
 // Shared by scripts/shirt-art.mjs and scripts/print-vectors.mjs: reads the logo SVGs in
-// assets-source/logo-vector, prepares the cottage for a print size (thin lines thickened
+// assets-source/brand/logo-vector, prepares the cottage for a print size (thin lines thickened
 // or dropped, the blurred glow drawn solid) and sets text as outlines from the site's own
 // font files (scripts/lib/text-outlines.py, fontTools), so no fonts need installing.
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-export const VEC = fileURLToPath(new URL('../../assets-source/logo-vector/', import.meta.url))
+export const VEC = fileURLToPath(new URL('../../assets-source/brand/logo-vector/', import.meta.url))
 export const FONTS = {
   inter: fileURLToPath(new URL('../../public/fonts/inter-latin.woff2', import.meta.url)),
   fraunces: fileURLToPath(new URL('../../public/fonts/fraunces-latin.woff2', import.meta.url)),

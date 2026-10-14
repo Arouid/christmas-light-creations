@@ -21,7 +21,7 @@ export const business = {
   // Google review link for the main Business Profile (listing without a store
   // code); one place for the site, the staff templates and the server (docs/specs/review-ask.md).
   reviewLink: REVIEW_URL,
-  // The neon cottage from the 2012 site (assets-source/2012-backdrop); square, transparent.
+  // The neon cottage from the 2012 site (assets-source/brand/2012-backdrop); square, transparent.
   logo: `${base}images/clc-cottage.png`, // square cottage: documents, app icons, small spots
   logoWide: `${base}images/clc-logo-wide.png`, // cottage + name (owner's pick 2026-10-11): site header and footer
 }

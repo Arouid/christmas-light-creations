@@ -1,10 +1,10 @@
 // Icons for the customers' installable app (/account/, docs/specs/customer-app.md),
-// from the cottage tile in assets-source/logo-vector. Run once after the tile changes:
+// from the cottage tile in assets-source/brand/logo-vector. Run once after the tile changes:
 //   node scripts/make-account-icons.mjs
 import { mkdirSync } from 'node:fs'
 import sharp from 'sharp'
 
-const TILE = 'assets-source/logo-vector/clc-cottage-tile-1080.png'
+const TILE = 'assets-source/brand/logo-vector/clc-cottage-tile-1080.png'
 const OUT = 'public/account/icons'
 const NAVY = { r: 5, g: 11, b: 26, alpha: 1 } // the tile's own navy (#050b1a)
 

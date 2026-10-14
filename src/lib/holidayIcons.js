@@ -1,4 +1,4 @@
-// Holiday icons (assets-source/untouched-svg, SVG Repo, free with no credit:
+// Holiday icons (assets-source/stock/svg-repo-icons, SVG Repo, free with no credit:
 // owner 2026-10-13) repainted in the site's palette by scripts/holiday-icons.mjs
 // into public/images/holiday/. The stock files are red/green/yellow with a
 // black outline; on the site every fill becomes gold, white, berry or pine by

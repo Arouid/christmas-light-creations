@@ -1,4 +1,4 @@
-// Repaints the SVG Repo holiday icons in assets-source/untouched-svg into the
+// Repaints the SVG Repo holiday icons in assets-source/stock/svg-repo-icons into the
 // site's palette (src/lib/holidayIcons.js) and writes them to
 // public/images/holiday/<name>.svg, plus a contact sheet in dist/ to look at.
 //   node scripts/holiday-icons.mjs
@@ -6,7 +6,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import sharp from 'sharp'
 import { repaint } from '../src/lib/holidayIcons.js'
 
-const src = 'assets-source/untouched-svg'
+const src = 'assets-source/stock/svg-repo-icons'
 const out = 'public/images/holiday'
 mkdirSync(out, { recursive: true })
 mkdirSync('dist', { recursive: true })

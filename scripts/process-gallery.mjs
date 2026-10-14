@@ -1,4 +1,4 @@
-// Hi-res gallery originals (assets-source/gallery-hi-res/, not in git; the owner's rescans of
+// Hi-res gallery originals (assets-source/photos/gallery-hi-res/, not in git; the owner's rescans of
 // 2026-10-14, about 3 MB each, named by neighborhood and town) -> the web copies in
 // public/images/gallery/: file name lowercased with the owner's typos fixed, camera orientation
 // applied, 1600 px wide, JPEG quality 82 (mozjpeg), metadata stripped. The one older web-size
@@ -9,7 +9,7 @@ import { readdir, stat, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
-const SRC = new URL('../assets-source/gallery-hi-res/', import.meta.url)
+const SRC = new URL('../assets-source/photos/gallery-hi-res/', import.meta.url)
 const OUT = new URL('../public/images/gallery/', import.meta.url)
 const WIDTH = 1600
 const KEEP = ['friendswood-warm-white-ivy-home.jpg']

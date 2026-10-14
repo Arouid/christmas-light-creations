@@ -1,7 +1,7 @@
 # Crew shirt artwork
 
 Print-ready files for the crew t-shirts (navy Bella+Canvas tee at Uberprints), made from the
-vector logo in `../logo-vector/` by `node scripts/shirt-art.mjs` (rebuilds everything here in
+vector logo in `../brand/logo-vector/` by `node scripts/shirt-art.mjs` (rebuilds everything here in
 a few seconds; needs Python with fontTools for the text, already installed). Not shipped with the site.
 
 Every PNG is 300 dpi, sRGB, on a transparent background. The logo wasn't redrawn: lines
