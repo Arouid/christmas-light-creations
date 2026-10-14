@@ -4,7 +4,7 @@
 
 ## What we want
 
-The signed-in customer sees **the same picture of their house staff see on the customer card**, at the top of their account page, under "Hi, Pat" and the address.
+The signed-in customer sees **the same picture of their house staff see on the customer card**, at the top of their account page. Owner, same evening, with a screenshot of the staff Accounts card: "the customer's view should look similar to this, minus any admin buttons": so the greeting is one card, the picture edge to edge on top, then "Hi, Pat" (big), the full address, and "Signed in as … Sign out"; no badge, no buttons.
 
 | Staff picked a 🏠 house photo | Street View has the address | The customer sees |
 |---|---|---|
@@ -12,7 +12,7 @@ The signed-in customer sees **the same picture of their house staff see on the c
 | no | yes | **Google Street View** facing the house, captioned "Google Street View" (owner 2026-10-14: Street View rather than nothing) |
 | no | no / Google doesn't answer in 10 s | nothing (no "not found" notice, no empty box) |
 
-- Rounded box, full width of the page, 3:2 on phones and 2:1 from `sm:` up, cropped to fill (`object-cover`). The box holds its shape while the picture loads, so the page doesn't jump; a grey pulse stands in while Street View is looked up.
+- The card is rounded (`rounded-3xl`, like the Accounts card) and clips the picture: 3:2 on phones and 2:1 from `sm:` up, cropped to fill (`object-cover`). With no picture the card is just the greeting. The box holds its shape while the picture loads, so the page doesn't jump; a grey pulse stands in while Street View is looked up.
 - Alt text: "Your house at 123 Example St, Pearland, TX 77581" (our photo), "Google Street View of your house" (Street View). `loading="lazy"`, `decoding="async"`. Not a link (nothing to tap).
 - Words in `accountHouse` (`src/data/content.js`).
 - The address used is the one shown under the greeting (their newest proposal's, else their customer record's), the same as the page already shows.
@@ -51,11 +51,11 @@ Nothing new to tap: the 🏠 house photo staff pick on the customer card (`House
 |---|---|
 | Which file may be linked (pure) | `functions/account.js` `housePhotoFile` · `tests/account.test.mjs` |
 | The 1-hour link, `house` in the answer | `functions/index.js` `accountFor` → `houseLink`; fields in `CUSTOMER_FIELDS` (`functions/accountPayload.js`) |
-| The picture | `src/account/AccountHouse.jsx`, placed in `AccountPage.jsx` under the address |
+| The picture | `src/account/AccountHouse.jsx`, the top of the greeting card in `AccountPage.jsx` |
 | Words | `accountHouse` in `src/data/content.js` |
 | Demo | `src/account/demoAccount.js` `house` (a gallery photo); `/account/?demo=street` = no photo of ours (Street View only works on `localhost:5173`) |
 
 ## Acceptance (who checks)
 
-- `/account/?demo` at 375 px and desktop: the photo under the address, caption "📷 Our photo · Dec 2, 2025", no sideways scroll, no Google request; `?demo=street` on another port: grey box, gone after 10 s. Claude, browser pane (2026-10-14).
+- `/account/?demo` at 375 px and desktop: the photo across the top of the greeting card, name and address under it, caption "📷 Our photo · Dec 2, 2025", no sideways scroll, no Google request; `?demo=street` on another port: grey box, gone after 10 s. Claude, browser pane (2026-10-14).
 - Live, after the owner grants the role and deploys `myAccount` + `accountPreview` (TODO #78): a customer with a 🏠 house photo sees it on their account (and the link stops working after an hour); a customer without one sees Street View; the staff card shows the same picture. Test checklist #154–#155.

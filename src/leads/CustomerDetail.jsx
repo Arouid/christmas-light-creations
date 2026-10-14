@@ -10,6 +10,7 @@ import Field from './Field'
 import { TextButton } from './Reach'
 import { LogCallForm, ServiceCallCard } from './ServiceView'
 import HousePicture from './photos/HousePicture'
+import AddressFields from './AddressFields'
 import TextHistory from './TextHistory'
 import ChatPanel from './ChatPanel'
 import DesignsPanel from './designs/DesignsPanel'
@@ -34,7 +35,8 @@ const GROUPS = [
     ['textOptOut', 'Opted out of texts (replied STOP)', { options: ['', 'Yes'], blankLabel: 'No' }],
   ]],
   ['Property', [
-    ['address', 'Address'], ['city', 'City'], ['neighborhood', 'Neighborhood'], ['gateCode', 'Gate code'],
+    // Street, City, State and ZIP come first, from AddressFields (the one address line, src/lib/address.js).
+    ['neighborhood', 'Neighborhood'], ['gateCode', 'Gate code'],
     // HOA (owner 2026-10-12): the contract makes customers tell us a lights-down-by date; keep it where the crew plans takedowns.
     ['hoa', 'HOA (name, rules)'], ['lightsDownBy', 'HOA: lights down by'], ['hazards', 'Things to avoid in the yard'], ['pets', 'Pets'],
     ['locationBlock', 'Location block'], ['installType', 'Install type', { options: INSTALL_TYPES }],
@@ -192,6 +194,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
 
         {GROUPS.map(([title, fields]) => (
           <Section key={title} title={title} open={title !== 'Account'}>
+            {title === 'Property' && <AddressFields customer={customer} onUpdate={onUpdate} />}
             <Grid customer={customer} fields={fields} onUpdate={onUpdate} suggestions={{ neighborhood: neighborhoods }} />
           </Section>
         ))}

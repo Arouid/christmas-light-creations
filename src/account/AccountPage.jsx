@@ -409,11 +409,14 @@ function Account({ data, reload, logOut }) {
   const owed = list.flatMap((p) => p.parts.filter((x) => x.state === 'due')).reduce((t, x) => t + x.amount, 0) + unpaid.reduce((t, i) => t + i.cents, 0)
   return (
     <div className="space-y-6">
-      <section className="space-y-1">
-        <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : 'Your account'}</h1>
-        {me?.address && <p className="text-slate-300">{me.address}</p>}
-        {(data.house || me?.address) && <AccountHouse house={data.house} address={me?.address} className="mb-2 mt-3" />}
-        <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
+      {/* Their house on top, like the staff Accounts card (owner 2026-10-14), without its buttons. */}
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-night-900">
+        {(data.house || me?.address) && <AccountHouse house={data.house} address={me?.address} />}
+        <div className="space-y-1 p-4 sm:p-5">
+          <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : 'Your account'}</h1>
+          {me?.address && <p className="text-slate-300">{me.address}</p>}
+          <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
+        </div>
       </section>
       {data.review?.show && <ReviewCard />}
       {data.details && <DetailsNudge details={data.details} />}

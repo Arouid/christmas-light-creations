@@ -295,7 +295,7 @@ export const accountReviewCard = {
   thanks: 'Thank you! It means a lot to our family.',
 }
 
-// The picture of their house under "Hi, <name>" on /account/
+// The picture of their house on top of the "Hi, <name>" card on /account/
 // (docs/specs/account-house-photo.md, owner 2026-10-14): our own photo when
 // staff picked one, else Google Street View of the address, else nothing.
 export const accountHouse = {
