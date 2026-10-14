@@ -9,7 +9,7 @@ import Icon from '../components/Icon'
 import Field from './Field'
 import { TextButton } from './Reach'
 import { LogCallForm, ServiceCallCard } from './ServiceView'
-import StreetViewPhoto from './StreetViewPhoto'
+import HousePicture from './photos/HousePicture'
 import TextHistory from './TextHistory'
 import ChatPanel from './ChatPanel'
 import DesignsPanel from './designs/DesignsPanel'
@@ -134,7 +134,7 @@ export default function CustomerDetail({ customer, season, onUpdate, onClose, ga
             {gate.source !== 'customer' && <span className="block text-sm text-glow-300/80">{gate.source} neighborhood gate{gate.notes ? ` · ${gate.notes}` : ''}</span>}
           </p>
         )}
-        {customer.address && <StreetViewPhoto address={customer.address} />}
+        <HousePicture customer={customer} season={season} address={customer.address} />
 
         {/* The Google review ask (docs/specs/review-ask.md): the website asks by itself; this box says where it stands. */}
         <ReviewAskBox customer={customer} />

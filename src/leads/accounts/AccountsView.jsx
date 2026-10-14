@@ -22,7 +22,7 @@ import { textMessages } from '../../lib/messages'
 import StreetViewPhoto from '../StreetViewPhoto'
 import PhotosPanel from '../photos/PhotosPanel'
 import { WhatsUpSummary } from '../WhatsUp'
-import { installedLines, photoList } from '../../lib/jobRecord'
+import { housePhotoOf, installedLines, photoList } from '../../lib/jobRecord'
 import { noAutofill } from '../ui'
 import TextHistory from '../TextHistory'
 import ChatPanel from '../ChatPanel'
@@ -145,7 +145,9 @@ function AddOnChecks({ customers, open }) {
 function Header({ name, kind, address, lines, record, children }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-night-900">
-      {address && <div className="[&_img]:max-h-80 [&_img]:w-full [&_img]:object-cover"><StreetViewPhoto address={address} /></div>}
+      {housePhotoOf(record)
+        ? <img src={housePhotoOf(record).url} alt={`Our photo of the house at ${address || name}`} className="max-h-80 w-full object-cover" />
+        : address && <div className="[&_img]:max-h-80 [&_img]:w-full [&_img]:object-cover"><StreetViewPhoto address={address} /></div>}
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { canDeletePhoto, photoDate, photosBySeason, storageProblem } from '../../lib/jobRecord'
 import { staffName, staffNamesMap } from '../../lib/activity'
 import { useStaff } from '../staffContext'
-import { addPhoto, removePhoto, storageEnabled, useIsOwner } from './photoStore'
+import { addPhoto, removePhoto, setHousePhoto, storageEnabled, useIsOwner } from './photoStore'
 
 const btn = 'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15 disabled:opacity-50'
 
@@ -54,7 +54,19 @@ export default function PhotosPanel({ customer, season }) {
     }
   }
 
+  // The card shows this photo instead of Street View (HousePicture.jsx).
+  async function makeHouse(photo) {
+    setError('')
+    try {
+      await setHousePhoto(user, customer, photo.id)
+    } catch (err) {
+      console.warn('House photo change failed', err)
+      setError('Couldn’t change it. Check your signal and try again.')
+    }
+  }
+
   const who = (p) => staffName(p.by, names)
+  const isHouse = (p) => Boolean(p?.id) && p.id === customer.housePhoto
 
   return (
     <div className="space-y-3">
@@ -79,8 +91,9 @@ export default function PhotosPanel({ customer, season }) {
             <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {list.map((p) => (
                 <li key={p.id}>
-                  <button type="button" onClick={() => setOpen(p)} className="block w-full text-left" aria-label={`Photo from ${photoDate(p.at)} by ${who(p)}`}>
+                  <button type="button" onClick={() => setOpen(p)} className="relative block w-full text-left" aria-label={`Photo from ${photoDate(p.at)} by ${who(p)}${isHouse(p) ? ', the house photo' : ''}`}>
                     <img src={p.thumbUrl || p.url} alt="" loading="lazy" className="aspect-square w-full rounded-xl bg-white/5 object-cover" />
+                    {isHouse(p) && <span className="absolute left-1.5 top-1.5 rounded-full bg-night-950/80 px-2 py-0.5 text-xs font-medium">🏠 House</span>}
                     <span className="mt-1 block truncate text-xs text-slate-400">{photoDate(p.at)} · {who(p)}</span>
                   </button>
                 </li>
@@ -91,8 +104,11 @@ export default function PhotosPanel({ customer, season }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex flex-col bg-night-950/95 backdrop-blur" role="dialog" aria-modal="true" aria-label="Photo">
-          <div className="flex items-center gap-2 px-4 py-3">
-            <p className="min-w-0 flex-1 truncate text-sm text-slate-300">{photoDate(open.at)} · {who(open)} · {open.season} season</p>
+          <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+            <p className="min-w-0 flex-1 basis-full truncate text-sm text-slate-300 sm:basis-auto">{photoDate(open.at)} · {who(open)} · {open.season} season</p>
+            {isHouse(open)
+              ? <span className="px-2 text-sm font-semibold text-glow-300">🏠 The house photo</span>
+              : <button type="button" onClick={() => makeHouse(open)} disabled={!user} className={btn}>🏠 Use as house photo</button>}
             {canDeletePhoto(open, user?.email, isOwner)
               ? <button type="button" onClick={() => remove(open)} className={`${btn} text-berry-500`}>Remove</button>
               : <span className="text-xs text-slate-500">Only {who(open)} or the owner can remove it</span>}

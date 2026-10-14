@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  amountText, canDeletePhoto, colorIn, fitWithin, installedFromProposal, installedLine, installedSummary,
+  amountText, canDeletePhoto, colorIn, fitWithin, housePhotoOf, installedFromProposal, installedLine, installedSummary,
   latestSigned, photoDate, photoList, photoPaths, photosBySeason, storageProblem,
 } from '../src/lib/jobRecord.js'
 import { newItem, newProposal, takedownItem } from '../src/proposals/model.js'
@@ -118,4 +118,18 @@ test('the newest signed or countersigned proposal wins; drafts and sent ones do 
   assert.equal(latestSigned(list).id, 'cs')
   assert.equal(latestSigned([list[0], list[3]]), null)
   assert.equal(latestSigned(undefined), null)
+})
+
+test('housePhotoOf: the picked photo stands for the house; none picked, or the photo gone, means Street View', () => {
+  const photos = {
+    a: { url: 'https://x/a.jpg', at: 1, season: '2025' },
+    b: { url: 'https://x/b.jpg', at: 2, season: '2026' },
+  }
+  assert.equal(housePhotoOf({ photos, housePhoto: 'b' })?.url, 'https://x/b.jpg')
+  assert.equal(housePhotoOf({ photos, housePhoto: 'b' })?.id, 'b')
+  assert.equal(housePhotoOf({ photos }), null)
+  assert.equal(housePhotoOf({ photos, housePhoto: 'gone' }), null)
+  assert.equal(housePhotoOf({ housePhoto: 'b' }), null)
+  assert.equal(housePhotoOf({ photos: { c: { at: 3 } }, housePhoto: 'c' }), null) // an entry with no file
+  assert.equal(housePhotoOf(undefined), null)
 })

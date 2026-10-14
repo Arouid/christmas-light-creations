@@ -60,6 +60,16 @@ The app shows **Remove** only when the rules would allow it (same test in `canDe
 
 Storage isn't turned on for the project yet (the bucket answers 404). Until it is, the Photos section says so and the buttons are hidden on the live site; the demo works without it. Steps in `docs/TODO.md` #51.
 
+### House photo (owner 2026-10-14)
+
+Owner: "I want that photo to show as the house. Can we get a place to upload a photo that changes the street view photo?"
+
+- `customers/{id}.housePhoto` = the id of one of its `photos`. The card's house picture (`src/leads/photos/HousePicture.jsx`, top of the customer detail) shows that photo instead of Google Street View, labelled "🏠 House photo · Oct 14"; tap opens it full size. `housePhotoOf(customer)` (`src/lib/jobRecord.js`, tested) returns it, or null when none is picked or the photo is gone (then Street View shows as before).
+- Pick one: open a photo under 📷 Photos → **🏠 Use as house photo** (the thumbnail then wears a 🏠 House badge). Or **📷 Use our own photo** / **📷 Change house photo** under the house picture: takes or picks one picture, files it under this season's Photos like any other and sets `housePhoto` in the same write.
+- **🗺 Street View** peeks at Google's picture without changing anything; **Use Street View instead** clears `housePhoto`. Removing the house photo clears it too.
+- The Accounts page header shows the house photo when there is one (display only).
+- Same stamped merge write as the photos map, so no rules change; leads keep Street View (they have no photos).
+
 ## What's up
 
 ### Data (Firestore `customers/{id}`)

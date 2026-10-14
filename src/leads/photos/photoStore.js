@@ -44,7 +44,8 @@ async function shrink(file, max, quality = PHOTO_QUALITY) {
 }
 
 // Upload one picture for a customer and season; resolves to the saved entry.
-export async function addPhoto(user, customer, season, file) {
+// `house: true` also makes it the house photo (customer.housePhoto), in the same write.
+export async function addPhoto(user, customer, season, file, { house = false } = {}) {
   const id = photoId()
   const paths = photoPaths(customer.id, season, id)
   const [full, thumb] = await Promise.all([shrink(file, MAX_PHOTO_PX), shrink(file, THUMB_PX, 0.8)])
@@ -67,8 +68,13 @@ export async function addPhoto(user, customer, season, file) {
     const [url, thumbUrl] = await Promise.all([getDownloadURL(fullRef), getDownloadURL(thumbRef)])
     entry = { ...base, url, thumbUrl }
   }
-  await mergePaths(user, 'customers', customer.id, { [`photos.${id}`]: entry })
+  await mergePaths(user, 'customers', customer.id, { [`photos.${id}`]: entry, ...(house ? { housePhoto: id } : {}) })
   return { id, ...entry }
+}
+
+// Pick the photo that stands for the house on the card (null = back to Street View).
+export async function setHousePhoto(user, customer, id) {
+  await mergePaths(user, 'customers', customer.id, { housePhoto: id || null })
 }
 
 // Remove a photo: both files, then the entry on the record.
@@ -79,7 +85,8 @@ export async function removePhoto(user, customer, photo) {
     await deleteObject(ref(st, photo.path)).catch(gone)
     await deleteObject(ref(st, photo.path.replace(/\.jpg$/, '-thumb.jpg'))).catch(gone)
   }
-  await mergePaths(user, 'customers', customer.id, { [`photos.${photo.id}`]: null })
+  // Removing the house photo puts Street View back.
+  await mergePaths(user, 'customers', customer.id, { [`photos.${photo.id}`]: null, ...(customer.housePhoto === photo.id ? { housePhoto: null } : {}) })
 }
 
 // Does the project's bucket exist yet? Storage has to be turned on once in the

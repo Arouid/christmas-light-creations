@@ -42,6 +42,15 @@ export function photosBySeason(photos) {
   return [...groups].toSorted((a, b) => b[0].localeCompare(a[0]))
 }
 
+// The photo staff picked to stand for the house (customer.housePhoto = a photo
+// id; owner 2026-10-14): shown at the top of the card instead of Street View.
+// null when none is picked, or when that photo is gone.
+export function housePhotoOf(customer) {
+  const id = customer?.housePhoto
+  if (!id) return null
+  return photoList(customer.photos).find((p) => p.id === id) ?? null
+}
+
 // Same rule as storage.rules: the person who added it, or the owner.
 export function canDeletePhoto(photo, email, isOwner = false) {
   if (isOwner) return true
