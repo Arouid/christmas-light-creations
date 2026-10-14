@@ -94,6 +94,23 @@ export function customerForAccount(c, current) {
   }
 }
 
+// The house photo staff picked for this customer (customers/{id}.housePhoto,
+// docs/specs/account-house-photo.md): which Storage file myAccount may hand
+// out a short-lived link to, or null. Only that one photo, and only a file in
+// this customer's own folder (customers/{id}/{season}/{photo}.jpg, as the
+// staff app saves it), so a stray path never opens anything else.
+const PHOTO_FILE = /^20\d{2}\/[A-Za-z0-9_-]+\.jpg$/
+export function housePhotoFile(customerId, c) {
+  const id = c?.housePhoto
+  if (!customerId || !id || typeof id !== 'string') return null
+  const photos = c.photos ?? {}
+  const p = Array.isArray(photos) ? photos.find((x) => x?.id === id) : photos[id]
+  const path = typeof p?.path === 'string' ? p.path : ''
+  const dir = `customers/${customerId}/`
+  if (!path.startsWith(dir) || !PHOTO_FILE.test(path.slice(dir.length))) return null
+  return { id, path, at: Number(p.at) || null }
+}
+
 // Staff see when a customer last signed in (customerLogins/{key}: the email,
 // or the E.164 phone for phone sign-ins; written only by the server).
 // authTime = when that sign-in happened (token auth_time), so reopening the

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { accountSummary, accountUrl, loginRecord, normEmail, providerName, shownInAccount } from '../functions/account.js'
+import { accountSummary, accountUrl, housePhotoFile, loginRecord, normEmail, providerName, shownInAccount } from '../functions/account.js'
 import { itemsFromDesign, newProposal, partAmount } from '../src/proposals/model.js'
 
 const base = () => ({ ...newProposal({ customer: { name: 'Pat', email: 'Pat@Example.com' }, items: itemsFromDesign({ feet: 100, pricePerFoot: 5 }), depositPct: 50 }), status: 'signed' })
@@ -44,6 +44,28 @@ test('login record keeps the first sign-in and the latest one', () => {
   assert.deepEqual([c.firstAt, c.lastAt, c.provider], [1000, 5000, 'email link'])
   assert.equal(providerName('google.com'), 'Google')
   assert.equal(providerName('password'), 'email link')
+})
+
+test('house photo: only the picked photo, only from the customer’s own folder', () => {
+  const photos = {
+    pA1: { path: 'customers/pat-sample/2025/pA1.jpg', url: 'https://x/a', at: 1733000000000 },
+    pB2: { path: 'customers/pat-sample/2026/pB2.jpg', url: 'https://x/b', at: 1760000000000 },
+    pX: { path: 'customers/someone-else/2026/pX.jpg' },
+    pUp: { path: 'customers/pat-sample/../someone-else/2026/pUp.jpg' },
+    pThumb: { path: 'customers/pat-sample/2026/pThumb.png' },
+  }
+  assert.deepEqual(housePhotoFile('pat-sample', { photos, housePhoto: 'pB2' }), { id: 'pB2', path: 'customers/pat-sample/2026/pB2.jpg', at: 1760000000000 })
+  assert.equal(housePhotoFile('pat-sample', { photos }), null) // none picked: the page shows Street View
+  assert.equal(housePhotoFile('pat-sample', { photos, housePhoto: 'gone' }), null) // the photo was removed
+  assert.equal(housePhotoFile('pat-sample', { photos, housePhoto: 'pX' }), null) // another customer's folder
+  assert.equal(housePhotoFile('pat-sample', { photos, housePhoto: 'pUp' }), null) // no climbing out of the folder
+  assert.equal(housePhotoFile('pat-sample', { photos, housePhoto: 'pThumb' }), null) // not a saved JPEG
+  assert.equal(housePhotoFile('pat', { photos, housePhoto: 'pB2' }), null) // a customer id that only starts the same
+  assert.equal(housePhotoFile('', { photos, housePhoto: 'pB2' }), null)
+  assert.equal(housePhotoFile('pat-sample', { housePhoto: 'pB2' }), null)
+  assert.equal(housePhotoFile('pat-sample', undefined), null)
+  // An older record with the photos as a list; a photo with no date.
+  assert.deepEqual(housePhotoFile('pat-sample', { photos: [{ id: 'pC', path: 'customers/pat-sample/2024/pC.jpg' }], housePhoto: 'pC' }), { id: 'pC', path: 'customers/pat-sample/2024/pC.jpg', at: null })
 })
 
 test('email keys: lowercase, every email on a customer incl. linked ones, compared in order', async () => {
