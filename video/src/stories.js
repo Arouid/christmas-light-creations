@@ -57,9 +57,10 @@ export const STORIES = {
     // Gemini's notes via the owner (2026-10-13): the sound-off caption over the vampire (most feeds play
     // muted), the offer once (on the card), and the card headed by this ad's own line rather than the
     // campaign signature (empty `words.tagline` here restores "We can keep a secret.").
-    // Owner 2026-10-13: the line fades in, in gold, over the vampire a little before the cut
-    // (whisperLead), then the house shows it big with the brand line under it, as before.
-    story: { whisperLine: '', whisperLead: 'Get outta the way, Halloween.', whisperLeadAt: 3.3, whisperCaption: '[ Christmas music playing aggressively ]', homeTime: '', homeLine: 'Get outta the way, Halloween.', homeSub: 'Christmas lights, installed · Pearland, TX' },
+    // Owner 2026-10-13: the line spans both scenes: it fades in, in gold, over the vampire at 3.3 s and
+    // stays through the cut and over the house (SpanLine, above the scenes); the brand line joins under
+    // it when the house is up. The scenes themselves carry no words.
+    story: { whisperLine: '', whisperCaption: '[ Christmas music playing aggressively ]', spanLine: 'Get outta the way, Halloween.', spanAt: 3.3, spanSub: 'Christmas lights, installed · Pearland, TX', homeTime: '', homeLine: '', homeSub: '' },
     words: { tagline: 'Take a bite out of Christmas early.', endLine: '10% off installs done by October 31 · Free 30-minute estimate' }, // the card's line and its small last line (owner 2026-10-13)
     endCard: { classy: true }, // the whisper's centred close (owner: "I like this layout of the card better for the halloween ad")
     clips: { whisper: 'seductive-vampire-woman-with-blood-189499-4k.mp4', drive: '' },

@@ -5,6 +5,7 @@ import { HomeReveal } from './scenes/HomeReveal.jsx'
 import { Pitch } from './scenes/Pitch.jsx'
 import { AskCard } from './scenes/AskCard.jsx'
 import { Whisper } from './scenes/Whisper.jsx'
+import { SpanLine } from './scenes/SpanLine.jsx'
 import { EndCard } from './scenes/EndCard.jsx'
 import { FilmLook, LightSweep } from './lib/Stage.jsx'
 import { loadFonts } from './lib/fonts.js'
@@ -42,6 +43,7 @@ export function Ad(props) {
           <LightSweep dur={SWEEP} data={props} />
         </Sequence>
       ))}
+      <SpanLine data={props} list={list} />
       <FilmLook grain={props.look?.grain ?? 0.07} vignette={props.look?.vignette ?? 0.55} film={props.clips?.film || ''} filmStart={props.clipStart?.film || 0} />
       <Sound props={props} list={list} />
       {music.file ? <Audio src={staticFile(`music/${music.file}`)} trimBefore={Math.round((music.startFrom || 0) * fps)} volume={vol} /> : null}
