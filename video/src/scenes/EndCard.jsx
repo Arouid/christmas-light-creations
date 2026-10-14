@@ -37,6 +37,7 @@ function ClassyCard({ data }) {
   const rule = ease(48, 70)
   const brand = ease(58, 84)
   const site = ease(70, 96)
+  const est = ease(84, 110)
   return (
     <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 40%, ${colors.navyLight}, ${colors.navy} 70%)`, opacity: fadeIn(frame, 0, 10) }}>
       {data.clips?.end ? (
@@ -49,7 +50,8 @@ function ClassyCard({ data }) {
         <div style={{ ...display(type, lineSize), color: colors.white, opacity: line, transform: rise(line), textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}>{words.tagline || words.brand}</div>
         <div style={{ width: 72, height: 2, background: colors.gold, opacity: rule, transform: `scaleX(${rule})` }} />
         <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 30 : square ? 24 : 26, letterSpacing: '0.32em', textTransform: 'uppercase', color: colors.goldSoft, opacity: brand, transform: rise(brand), marginLeft: '0.32em' }}>{words.brand}</div>
-        <div style={{ fontFamily: BODY, fontWeight: 400, fontSize: tall ? 36 : square ? 28 : 30, color: 'rgba(255,255,255,0.82)', opacity: site, transform: rise(site) }}>{words.site} · {words.phone}</div>
+        <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 42 : square ? 33 : 36, color: 'rgba(255,255,255,0.92)', opacity: site, transform: rise(site) }}>{words.site} · {words.phone}</div>
+        <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 30 : square ? 24 : 26, letterSpacing: '0.08em', color: colors.goldSoft, opacity: est, transform: rise(est) }}>{words.endLine}</div>
       </div>
       {data.clips?.end && (data.snowFrontOpacity ?? 0) > 0 ? <SnowOverlay data={{ ...data, clips: { snowOverlay: data.clips.end } }} start={30} opacity={data.snowFrontOpacity * 0.7} /> : null}
     </AbsoluteFill>
