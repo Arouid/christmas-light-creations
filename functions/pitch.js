@@ -21,7 +21,17 @@ const TELLS = [
   ['offers a free bid', /\b(offer|provid|giv|send|schedul)\w* (you |your (company|business|team|office) )?(a |an |some |our )?(complimentary|free|no[- ]obligation|no[- ]cost)\b/i, 1],
   ['“help local companies”', /\b(help|serv|work with|support|partner with)\w* (many |other |local |small |area |hundreds of |dozens of |several |businesses like )*(companies|businesses|business owners|contractors|clients|organizations)\b/i, 1],
   ['signs with a sales title', /\b(VP|Vice President|General Manager|Sales (Manager|Director|Rep|Representative|Executive)|Account (Executive|Manager)|Business Development|Marketing (Manager|Director)|Founder|CEO)\b/, 1],
+  // 2026-10-13, the second one through: a freelance writer from Philadelphia with a Calendly link.
+  ['offers freelance work', /\b(freelance|copywrit\w*|ghostwrit\w*|content (writ\w*|creat\w*|strateg\w*)|blog posts?|case studies|press releases?|thought leadership|white ?papers?|graphic design(er)?|video edit\w*|voice ?over)\b/i, 2],
+  ['asks to book a call', /\b(book|schedule|grab|set up) (a|some) (time|call|meeting|slot|chat|quick call)\b|calendly\.com|cal\.com\/|hubspot\.com\/meetings|acuityscheduling|zcal\.co|savvycal/i, 2],
+  ['looking for clients', /\blooking for (new )?(opportunities|clients|projects|work|partners)\b|\bhoping to connect\b/i, 1],
+  ['sells experience', /\b(nearly|over|more than|almost)? ?(a decade|\d+\+? years) of experience\b/i, 1],
 ]
+// Every address we serve is a 77xxx ZIP (Pearland to Galveston County); a request with a
+// ZIP from elsewhere is far more often a form-filler than a customer (the Philadelphia one came
+// in as "Philadelphia, TX 19102"). Counts like a strong tell, never files on its own.
+const OUT_OF_AREA_POINTS = 2
+const outOfArea = (zip) => { const z = String(zip ?? '').replace(/\D/g, '').slice(0, 5); return z.length === 5 && !z.startsWith('77') }
 // Words a real request uses. The "light installers" phrase is removed first
 // so a pitch aimed at us doesn't count as a customer talking about lights.
 const CUSTOMER_WORDS = /\b(lights?|lighting|christmas|holiday|xmas|roof|roofline|install\w*|decorat\w*|wreaths?|garland|trees?|bushes|house|home|yard|hoa|gutters?|eaves|columns?|windows?|my (house|home|property|place))\b/i
@@ -33,6 +43,7 @@ export function pitchReason(lead) {
   const text = String(lead?.message ?? '')
   if (!text.trim()) return ''
   const hits = TELLS.filter(([, re]) => re.test(text))
+  if (hits.length && outOfArea(lead?.zip)) hits.push(['an address outside our area', null, OUT_OF_AREA_POINTS])
   const points = hits.reduce((n, [, , p]) => n + p, 0)
   const customer = CUSTOMER_WORDS.test(text.replace(TELLS[1][2], ' '))
   if (points < FILE_AT || (customer && points < FILE_ANYWAY)) return ''

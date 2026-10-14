@@ -36,6 +36,19 @@ Tells, with points: an opt-out line (3); pitching to "christmas light installers
 - Older leads have no `spamReason`; the card shows nothing extra.
 - An incoming customer email that happens to carry a `List-Unsubscribe` header (a company mailbox behind a marketing tool) is dropped; known customers' emails are never filtered, only unknown senders'.
 
+## Spam button and blocked senders (2026-10-13, later the same day)
+
+Owner, with a marketing text from an unknown number and the Constant Contact email still sitting in Unmatched (stored before the sync fix): “we need a spam/report button”.
+
+- **🚫 Spam** on each entry in “messages from people we don’t know yet” (Leads tab): one tap sets `dismissed: true, spam: true` on the message and adds the sender to `settings/app.blockedSenders` (E.164 phone or lowercase email, `functions/blocklist.js`), then logs `spam` (“marked as spam and blocked”) in Recent activity.
+- **The sync drops blocked senders** before anything is stored: `syncBatch` reads `settings/app.blockedSenders` once per call and answers `dropped / blocked` for an incoming text, voicemail or email from a blocked key. Outgoing mail and bounces are never blocked. Known customers' numbers can be blocked too (a customer's spoofed number, say); unblock in Settings.
+- **Gmail learns**: the Apps Script moves every email the function answered `blocked` to Gmail's spam folder (`moveToSpam`), once the owner pastes the updated script. Google Voice has no API, so a blocked number is simply never shown; marking it spam inside Voice is still by hand.
+- **⚙ Settings → Blocked senders**: the list, as people write numbers, with **Unblock**. Capped at 500.
+- **No reporting on anyone's behalf**: there is no API to report a text or email as spam to a carrier or to Google; the button is a block, and the Gmail spam move is the one “report” that exists.
+- Messages stored before the block stay as they were (dismissed by the tap); the block is for what comes next.
+
+Tests: `tests/blocklist.test.mjs`. Deploy: `functions:messageSync`. No rules change (settings are staff-writable; the message update rule allows `dismissed: true`).
+
 ## Decisions
 
 | Date | Decision | Why |
@@ -44,6 +57,8 @@ Tells, with points: an opt-out line (3); pitching to "christmas light installers
 | 2026-10-13 | Points with a customer-words guard, thresholds 3 / 5 | The Jan-Pro text scores 8; a manager asking for lights scores 2; nothing files on one tell |
 | 2026-10-13 | Email: relay domains + footer words + the optional `List-Unsubscribe` header | Gmail's plain body loses the links the old rule needed; the header is the honest signal when the script sends it |
 | 2026-10-13 | The switch lives in the Automatic emails box | Same place as the other things the website does by itself |
+| 2026-10-13 | Spam button = dismiss + block the sender in `settings/app.blockedSenders`; the sync drops blocked senders; the script moves blocked emails to Gmail spam | Owner: “we need a spam/report button”. No API exists to report texts or emails; blocking is what we can do, and settings need no rules change |
+| 2026-10-13 | More pitch tells after the second one through (freelance work, booking links, “looking for clients”, “years of experience”) and a ZIP outside 77xxx as a strong tell that never files alone | The Philadelphia freelance-writer request scored 0 on the first list; every address we serve is 77xxx |
 
 ## Acceptance criteria
 

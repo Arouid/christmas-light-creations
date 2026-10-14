@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { describeKey, withoutBlocked } from '../lib/blocklist'
 import { DEFAULT_SCHEDULE } from '../lib/discounts'
 import { STAFF_NAMES, staffName, staffTitle } from '../lib/activity'
 import { useStaff } from './staffContext'
@@ -260,6 +261,35 @@ const AUTO_EMAILS = [
   ['pitchFilter', 'File sales pitches as spam', 'A request that reads like a cold pitch to a business (an opt-out line, “we help local companies”, a free cleaning / SEO / marketing bid…) goes straight under Leads → Spam / test with the reason: no alert, no “Got your request”. Home’s Recent activity notes it; one tap (It’s a real request) brings a wrong one back.'],
   ['reviewAsks', 'Review request after install', 'Two days after an install is marked Install Completed, the customer gets one “thank you, a Google review helps a small family business more than anything” email with the review link (same words for everyone, nothing offered), and one reminder four days later unless they wrote back or you tapped ★ They reviewed. People who prefer texts get a ⭐ Review text to send item in 💬 for you to send from Voice. Never while a service call is open, never to anyone who turned optional emails off.'],
 ]
+// Blocked senders (docs/specs/spam-filters.md): the 🚫 Spam button on an unmatched text or
+// email (Leads tab) adds the sender here; the sync drops their next messages before they
+// are stored. settings/app.blockedSenders, keys from functions/blocklist.js.
+function BlockedSenders({ settings, onSave }) {
+  const list = Array.isArray(settings.blockedSenders) ? settings.blockedSenders : []
+  const [msg, setMsg] = useState(null)
+  async function unblock(key) {
+    await onSave({ blockedSenders: withoutBlocked(list, key) })
+    setMsg('Unblocked ✓')
+  }
+  return (
+    <div className={box}>
+      <p className="font-semibold">🚫 Blocked senders</p>
+      <p className="text-sm text-slate-400">Numbers and addresses marked <b>Spam</b> on the Leads tab (“messages from people we don’t know yet”). Their next texts and emails are dropped by the sync before anyone sees them, and blocked emails go to Gmail’s spam folder.</p>
+      {list.length ? (
+        <ul className="space-y-1">
+          {list.map((k) => (
+            <li key={k} className="flex items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm">
+              <span className="break-all">{describeKey(k)}</span>
+              <button type="button" onClick={() => unblock(k)} className="min-h-11 shrink-0 rounded-full bg-white/10 px-4 text-sm font-semibold hover:bg-white/15">Unblock</button>
+            </li>
+          ))}
+        </ul>
+      ) : <p className="text-sm text-slate-500">Nobody blocked yet.</p>}
+      {msg && <span className="text-sm text-emerald-400">{msg}</span>}
+    </div>
+  )
+}
+
 function AutoEmails({ settings, onSave }) {
   const [msg, setMsg] = useState(null)
   async function toggle(key, on) {
@@ -376,6 +406,7 @@ export default function SettingsPanel({ settings, onSave, textFrom, onTextFrom, 
 
         <AlertEmails settings={settings} onSave={onSave} />
         <AutoEmails settings={settings} onSave={onSave} />
+        <BlockedSenders settings={settings} onSave={onSave} />
 
         <StaffNames settings={settings} onSave={onSave} />
 

@@ -4,7 +4,9 @@ import { gmailUrl } from '../lib/messages'
 import Icon from '../components/Icon'
 import { TextButton, pill } from './Reach'
 import { Bubble } from './TextHistory'
-import { saveRecord, useLiveQuery } from './staffStore'
+import { saveRecord, useLiveDoc, useLiveQuery } from './staffStore'
+import { logActivity } from './activity'
+import { senderKey, withBlocked } from '../lib/blocklist'
 import Handling from './Handling'
 import SuggestReply from '../assistant/SuggestReply'
 
@@ -37,12 +39,24 @@ function LinkPicker({ customers, onPick, onCancel }) {
   )
 }
 
-function Row({ m, user, customers, feed }) {
+function Row({ m, user, customers, feed, blocked }) {
   const [linking, setLinking] = useState(false)
   const [busy, setBusy] = useState(false)
   const save = async (data) => {
     setBusy(true)
     try { await saveRecord(user, 'messages', m.id, data) } finally { setBusy(false) }
+  }
+  const who = m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'
+  // 🚫 Spam (owner 2026-10-13, docs/specs/spam-filters.md): dismiss and block the sender, so the
+  // sync drops their next texts and emails before anyone sees them. Undo: ⚙ Settings → Blocked senders.
+  async function spam() {
+    const key = senderKey(m)
+    setBusy(true)
+    try {
+      await saveRecord(user, 'messages', m.id, { dismissed: true, spam: true })
+      if (key) await saveRecord(user, 'settings', 'app', { blockedSenders: withBlocked(blocked, key) })
+      logActivity('spam', { type: 'message', id: m.id, name: who }, key)
+    } finally { setBusy(false) }
   }
   const digits = String(m.phone ?? '').replace(/\D/g, '')
   return (
@@ -55,6 +69,7 @@ function Row({ m, user, customers, feed }) {
         {m.email && <a className={pill} href={gmailUrl({ to: m.email, subject: m.subject && !/^re:/i.test(m.subject) ? `Re: ${m.subject}` : m.subject ?? '' })} target="_blank" rel="noreferrer">✉️ Reply in Gmail</a>}
         {customers && <button type="button" disabled={busy} onClick={() => setLinking(!linking)} className={pill}>Link to customer</button>}
         <button type="button" disabled={busy} onClick={() => save({ dismissed: true })} className={pill}>Dismiss</button>
+        <button type="button" disabled={busy} onClick={spam} className={pill} title="Dismiss and block this sender">🚫 Spam</button>
       </div>
       <Handling m={m} who={m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'} feed={feed} user={user} />
       <div className="mt-2"><SuggestReply target={{ messageId: m.id }} /></div>
@@ -69,6 +84,7 @@ function Row({ m, user, customers, feed }) {
 // 2026-10-09). Staff link one to a customer or dismiss it.
 export default function UnmatchedMessages({ user, customers, feed }) {
   const items = useLiveQuery(user, 'messages', 'unmatched', true, newestFirst)
+  const { data: settings } = useLiveDoc(user, 'settings', 'app')
   const open = (items ?? []).filter((m) => !m.dismissed)
   if (!open.length) return null
   return (
@@ -77,7 +93,7 @@ export default function UnmatchedMessages({ user, customers, feed }) {
         📥 {open.length} {open.length === 1 ? 'message' : 'messages'} from people we don’t know yet
       </summary>
       <ul className="mt-2 space-y-3">
-        {open.map((m) => <Row key={m.id} m={m} user={user} customers={customers} feed={feed} />)}
+        {open.map((m) => <Row key={m.id} m={m} user={user} customers={customers} feed={feed} blocked={settings?.blockedSenders} />)}
       </ul>
     </details>
   )

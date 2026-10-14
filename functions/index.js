@@ -76,6 +76,7 @@ import { fromHeader, staffName, staffNamesMap } from './staffNames.js'
 import { TREE_NOTICE, TREE_TITLE } from './notices.js'
 import { ACK_TEMPLATE, ackAddress, ackEmail, ackOn, ackedRecently } from './ack.js'
 import { pitchFilterOn, pitchReason } from './pitch.js'
+import { blockedReason } from './blocklist.js'
 import { giftWrappingOn } from './giftWrapping.js'
 import { NUDGE_HOURS, listSince, nudgeDue, nudgeKey, nudgeMessage, waiting } from './nudge.js'
 import { NWS_POINTS_URL, NWS_USER_AGENT, WATCH_SCHEDULE, badDays, lightsHeadsUp, lightsUp, noticesOn, pruneSent, routeHeadsUp, sentKey, staffWeather, tipsOk, weatherLine } from './weather.js'
@@ -1116,6 +1117,8 @@ async function syncBatch(req, res) {
     : [{ docs: [] }, { docs: [] }]
   const dir = buildDirectory(cust.docs.map((d) => ({ id: d.id, ...d.data() })), leads.docs.map((d) => ({ id: d.id, ...d.data() })))
   const fromApp = await sentFromApp(db, events)
+  // Blocked senders (🚫 Spam in the staff app, functions/blocklist.js): dropped before anything is stored.
+  const blockedSenders = needDir ? ((await db.doc('settings/app').get()).data() ?? {}).blockedSenders : []
 
   const count = { saved: 0, duplicate: 0, skipped: 0, unmatched: 0, dropped: 0, bounced: 0 }
   const results = []
@@ -1134,6 +1137,7 @@ async function syncBatch(req, res) {
     const docs = event.skip ? [] : docsFor(event, dir)
     if (req.body.dryRun === true) { results.push({ gmailId, ...dryRunSummary(event, docs) }); continue }
     if (event.skip) { count.skipped++; results.push({ gmailId, status: 'skipped', reason: event.skip }); continue }
+    if (blockedReason(event, blockedSenders)) { count.dropped++; results.push({ gmailId, status: 'dropped', reason: 'blocked' }); continue }
     const ours = fromApp(event)
     if (ours.length) {
       count.duplicate++

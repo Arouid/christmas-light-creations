@@ -60,7 +60,7 @@ const VERB = {
   'proposal-sent': 'sent a proposal to', 'proposal-void': 'voided the proposal for', 'proposal-countersigned': 'countersigned the proposal for',
   'lead-status': 'updated', 'make-customer': 'made a customer of', 'service-logged': 'logged a service call for',
   'service-done': 'finished the service call for', handling: 'is on the message from', takeover: 'took over the message from', text: 'started a text to', call: 'started a call to',
-  'ai-draft': 'sent a Claude-drafted reply to', 'email-scheduled': 'scheduled an email to', reviewed: 'noted a Google review from',
+  'ai-draft': 'sent a Claude-drafted reply to', spam: 'marked as spam and blocked', 'email-scheduled': 'scheduled an email to', reviewed: 'noted a Google review from',
 }
 export const ACTIONS = [...Object.keys(VERB), ...Object.keys(WEBSITE)]
 

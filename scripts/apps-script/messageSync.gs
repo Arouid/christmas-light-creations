@@ -59,6 +59,10 @@ function syncMessages() {
     for (let i = 0; i < items.length; i += BATCH) {
       const r = post_({ items: items.slice(i, i + BATCH) })
       Object.keys(totals).forEach((k) => { totals[k] += r[k] || 0 })
+      // Blocked senders (staff app ⚙ Settings → Blocked senders): the function drops them; Gmail learns too.
+      ;(r.results || []).forEach((x) => {
+        if (x.reason === 'blocked' && x.gmailId) { try { GmailApp.getMessageById(x.gmailId).moveToSpam() } catch (e) { Logger.log('spam: ' + e.message) } }
+      })
     }
     props.setProperty('SYNC_CURSOR', String(started))
     Logger.log(`${items.length} emails: ${JSON.stringify(totals)}`)
