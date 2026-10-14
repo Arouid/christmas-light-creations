@@ -26,7 +26,7 @@ export function HomeReveal({ data, dur }) {
   const lineAt = revealStart + 70
   const line = pop(frame, fps, lineAt, { damping: 14 })
   const driveFade = driveEnd ? interpolate(frame, [driveEnd - 6, driveEnd + 4], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 0
-  const doorIn = clips?.door && doorStart < dur ? fadeIn(frame, doorStart, 6) : 0
+  const doorIn = clips?.door && doorStart < dur ? fadeIn(frame, doorStart, 4) : 0
   const reactionIn = clips?.reaction ? fadeIn(frame, reactionStart, 10) : 0
   const media = {
     width: '100%', height: '100%', objectFit: 'cover',
@@ -61,7 +61,7 @@ export function HomeReveal({ data, dur }) {
           )}
           {clips?.door && frame >= doorStart && (
             <div style={{ position: 'absolute', inset: 0, opacity: doorIn }}>
-              <Clip file={clips.door} start={data.clipStart?.door || 0} brightness={0.85} />
+              <Clip file={clips.door} start={data.clipStart?.door || 0} brightness={1.05} />
             </div>
           )}
         </div>

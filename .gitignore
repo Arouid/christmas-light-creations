@@ -58,3 +58,7 @@ assets-source/Vecteezy Downloads/
 assets-source/ads/clips/
 assets-source/ads/sfx/
 assets-source/ads/music/
+
+# Uppbeat motion-graphics downloads (overlays, transitions; GBs, licensed): never commit
+assets-source/ads/Mothion Graphics/
+assets-source/ads/motion/

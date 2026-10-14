@@ -111,12 +111,13 @@ const data = {
     carInterior: 'windshield-wipers-jeff-kaale-1-00-07.wav', // rain on her windows in the car shots: wipers
     nightOutside: 'city-street-ambience-light-wind-traffic-jam-fx-quiet-park-ambience-on-a-spring-morning-1-0m13s.wav', // a quiet street at night
     bedVolume: 0.35,
-    volume: 0.8,
+    wipersVolume: 0.7, // the wipers under her driving shot, clearly audible (about level with the music)
+    volume: 1.0, // effects level (owner 2026-10-13: louder, everything but the ambience)
     ambienceVolume: 0.12,
   },
   // How loud each effect is in the full ad, under the music, as a share of its level above (0 = off).
   // The 5-second ad has no music and uses the levels above as they are.
-  adMix: { pop: 0.45, typing: 0, lightsOn: 0.5, car: 0.9, reveal: 0, ambience: 0, beds: 1 },
+  adMix: { pop: 0.6, typing: 0, lightsOn: 0.85, car: 1, reveal: 0, ambience: 0, beds: 1 },
   // Footage: files in assets-source/ads/clips/ (MP4, 1080p or 4K). Empty = the scene uses its
   // graphic or photo instead. texting = hands on a phone at night, behind the first thread;
   // drive = headlights on a dark street / through the windshield, opens the 5:41 pm scene;
@@ -138,14 +139,16 @@ const data = {
   snowOverlayOpacity: 0.6,
   snowFrontOpacity: 0.35,
   // Seconds to skip at the start of a clip (so the best stretch plays).
-  clipStart: { reaction: 2.4, drive: 0.5, door: 0.3 },
+  clipStart: { reaction: 2.4, drive: 0.5, door: 0.9 },
   // The plan scene shows the cottage popping on beside the beats only when planCottage is true.
   planCottage: false,
   // The 5:41 pm scene: how long the drive clip plays, then the door clip, before the house appears,
   // and how long the reaction clip holds at the end (only when those clips are set).
   // Order: drive → the house → her reaction in the car → the door closes as she gets out (the slam
   // lands doorSlamAt seconds into that last shot).
-  home: { driveSeconds: 2.5, doorSeconds: 1.6, doorSlamAt: 1.0, reactionSeconds: 2.2 },
+  // secondSlamFromEnd: a second door closing this many seconds before the scene cuts away (two of
+  // them got out). 0 = none. The slam file's bang sits 0.33 s in, so the sound lands that much later.
+  home: { driveSeconds: 2.5, doorSeconds: 2.6, doorSlamAt: 0.6, reactionSeconds: 1.2, secondSlamFromEnd: 0.9 },
   // Film look: grain strength (0 = off), vignette strength, and the grade over every clip and
   // photo so footage from different shoots feels like one film: saturate/contrast (CSS filter),
   // lift = how far blacks rise toward navy (0–1), warm = gold in the mids and highlights (0–1).

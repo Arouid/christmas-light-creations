@@ -33,7 +33,7 @@ The story ad, scene by scene:
 |---|---|---|
 | 0–8.5 | Text thread, Tuesday 8:14 pm (warm bokeh behind it) | Customer: "Can you do my house Thursday while she's at work? It's her birthday 🎂" · Us: "Done by 4. We'll be gone before she's home." · Customer: "🤫 She has no idea." Typing dots before each bubble. |
 | 8.5–11 | Time card | One line over the snow footage: "Thursday 3:48 pm · Done. Timer set for dusk." (The three-beat scene with the cottage popping on was cut: owner, "this scene just feels so forced into it". More entries in `story.plan` bring the beats back; `planCottage: true` brings the cottage.) |
-| 11–23 | 5:41 pm | Her in the red car at night (clip, wipers under it), the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", her reaction in the car (clip, same woman, real snow in front), then the car door closes as she gets out (clip, the slam synced to it) and we cut away. A quiet street at night under everything from the house on. |
+| 11–23 | 5:41 pm | Her in the red car at night (clip, wipers under it), the big two-storey house (photo 32, owner's pick) opens out of the dark and settles, "She's home.", her reaction in the car (1.2 s, same woman, real snow in front), then the car door closes as she gets out (2.6 s; the slam lands at about 20.9 s, synced to the shot, and a second door closes at about 22.0 s, just before we cut away: two of them got out, owner's ask). Beds: the wipers and a muffled street under her in the car, the quiet street under her reaction and the door, nothing under the still house (owner). |
 | 23–27.5 | Text thread, Thursday 5:52 pm | "She cried. Thank you." · "Happy birthday to her. 🎄" |
 | 27.5–32.5 | The ask | Over the three-gable house (34), snow falling: "Surprise someone this year." / "Free 30-minute estimate. We can keep a secret." / the October offer line (while `offer.enabled`). |
 | 32.5–36 | End card | The photoreal cottage pops its lights on (click + harp), real snow, 281-819-0163, the site, Free 30-minute estimate. |
@@ -82,15 +82,15 @@ reaction). Record every file here with its Uppbeat track or clip name and artist
 | `music/dance-of-the-sugar-plum-fairies-kevin-macleod-main-version-9984-01-46.wav` | alternative (a 16:9 comparison render `clc-ad-16x9-music-sugarplum.mp4`) | "Dance of the Sugar Plum Fairies", Kevin MacLeod (1:46) | same |
 | `music/it-s-christmas-corals-main-version-35993-01-57.wav` | not used (loud from the first second, no build) | "It's Christmas", Corals (1:57) | same |
 | `music/anticipation-and-joy-giulio-fazio-main-version-29590-00-58.wav` | not used now (was the first bed; its swell at 22 s needed re-timing after every edit: startFrom 4.3) | "Anticipation And Joy", Giulio Fazio (58 s) | same |
-| `sfx/windshield-wipers-jeff-kaale-1-00-07.wav` | `sfx.carInterior` (under her in the car: rain on the windows) | "Windshield Wipers", Jeff Kaale | same |
-| `sfx/city-street-ambience-light-wind-traffic-jam-fx-quiet-park-ambience-on-a-spring-morning-1-0m13s.wav` | `sfx.nightOutside` (under the house and the closing shot) | "City Street Ambience Light Wind", Traffic Jam FX | same |
+| `sfx/windshield-wipers-jeff-kaale-1-00-07.wav` | `sfx.carInterior` (the wipers under her driving shot, `sfx.wipersVolume` 0.7: about level with the music) | "Windshield Wipers", Jeff Kaale | same |
+| `sfx/city-street-ambience-light-wind-traffic-jam-fx-quiet-park-ambience-on-a-spring-morning-1-0m13s.wav` | `sfx.nightOutside` (muffled under her in the car, full under her reaction and the door; never under the still house) | "City Street Ambience Light Wind", Traffic Jam FX | same |
 | `sfx/car-fuel-pump-inserted-jeff-kaale-1-00-03.wav` | not used | "Car Fuel Pump Inserted", Jeff Kaale | same |
 | `sfx/notification-bubble-pop-message-epic-stock-media-1-00-00.mp3` | `sfx.pop` | "Notification Bubble Pop Message", Epic Stock Media | same |
 | `sfx/smartphone-typing-message-gfx-sounds-2-2-00-04.mp3` | `sfx.typing` (first second, faded) | "Smartphone Typing Message", GFX Sounds | same |
 | `sfx/switch-turned-on-epic-stock-media-1-00-00.wav` | `sfx.lightsOn` (the click as the cottage comes on) | "Switch Turned On", Epic Stock Media | same |
 | `sfx/alert-magic-chime-pluck-albert-behar-harp-chime-pluck-1-0m06s.wav` | `sfx.lightsChime` (the harp pluck right after the click; owner's pick) | "Alert Magic Chime Pluck", Albert Behar | same |
 | `sfx/fantasy-game-whoosh-harp-sweep-bosnow-harp-impact-big-upbeat-1-0m03s.wav` | not used (tried as the sweep after the click) | "Fantasy Game Whoosh Harp Sweep", Bosnow | same |
-| `sfx/car-door-slammed-shut-fascinatedsound-1-00-01.wav` | `sfx.car` (synced to the door clip: `home.doorSlamAt`) | "Car Door Slammed Shut", Fascinatedsound | same |
+| `sfx/car-door-slammed-shut-fascinatedsound-1-00-01.wav` | `sfx.car` (synced to the door clip: `home.doorSlamAt`; played again `home.secondSlamFromEnd` seconds before the scene ends; the bang sits 0.33 s into the file) | "Car Door Slammed Shut", Fascinatedsound | same |
 | `sfx/light-switch-button-soft-betacut-1-00-00.wav` | not used yet (a softer switch, an alternative to the click) | "Light Switch Button Soft", Betacut | same |
 | `sfx/harp-chime-alert-magical-bright-bosnow-harp-logo-with-chimes-impact-upbeat-1-0m03s.mp3` | `sfx.reveal` (as the house appears) | "Harp Chime Alert Magical Bright", Bosnow | same |
 | `sfx/fluorescent-tube-light-flicker-bosnow-1-00-47.mp3` | not used (about 20 dB quieter than the rest: inaudible as the switch-on) | "Fluorescent Tube Light Flicker", Bosnow | same |
@@ -110,6 +110,19 @@ contrast 1.06, blacks lifted toward navy 0.55, gold warmth 0.22) so the five sou
 one film; the owner's idea ("hide flaws with some color grading").
 
 Claude cannot generate video or actors itself; it cuts whatever is dropped in.
+
+## Motion-graphics downloads (Uppbeat, 2026-10-13)
+
+`assets-source/ads/Mothion Graphics/` (2.4 GB, gitignored) holds the owner's Uppbeat downloads:
+two snowfall overlay movies (one ProRes 4444 **with alpha**, 1080p, 5.5 s loop; one 4K
+Animation-codec 8.5 s), a 1.9 GB snowfall pack (70 4K MP4s on black: close, mid, far, bird's-eye,
+mix, blizzard, slow motion), 30 light-leak transitions (4K, about 1 s each), 5 vintage film
+overlays (4K, 15 s) and a rain-on-glass kit (DaVinci Resolve `.drfx` + window PNGs: not usable in
+Remotion as is). A few representative files are extracted into `assets-source/ads/motion/`
+(also gitignored) for use. Likely uses: the alpha snow loop in front of scenes instead of the
+screen-blended clip (true transparency, so it works over bright areas too), a light-leak
+transition in place of the drawn light sweep, the film overlay instead of the drawn grain. Not
+wired yet.
 
 ## The photoreal cottage (Gemini, 2026-10-13)
 
@@ -192,8 +205,10 @@ file into `video/public/music/`, set `music.file` in `data.js`, render, and reco
 | "Little Swallow (Carol Of The Bells) – Ukrainian New Years Song" by JuliusH, 1:04, instrumental | https://pixabay.com/music/special-occasions-little-swallow-carol-of-the-bells-ukrainian-new-years-song-5821/ (downloaded 2026-10-11 to `video/public/music/carol-of-the-bells-juliush.mp3`, not in git) | Pixabay Content License: free for commercial use, no attribution required, not for resale as-is. Picked over the other Carol of the Bells tracks because its page shows no "Content ID Registered" badge (those can trigger YouTube copyright claims on an ad). The melody itself (Leontovych, 1914) is public domain. |
 
 In the full ad the effects sit under the music at a fraction of their level (`adMix` in `data.js`:
-pops at 45 %, the switch-on at 50 %, the car door at 90 %, no typing, no reveal chime, no wind; owner 2026-10-13: "the
-sound efx fit poorly for the full ad"). The 5-second ad has no music and uses the full levels.
+pops at 60 %, the switch-on at 85 %, the car doors at 100 %, no typing, no reveal chime, no wind; owner 2026-10-13: "the
+sound efx fit poorly for the full ad", then "turn the volume up on the sfx some, everything but the ambient", so
+`sfx.volume` went 0.8 → 1.0 and the beds stayed at 0.35). The 5-second ad has no music and uses the full levels, so its
+next render will be a quarter louder than the one in git (`ad-teaser-5s-v4`).
 
 ## Licence
 

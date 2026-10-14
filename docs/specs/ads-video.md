@@ -39,11 +39,15 @@ Music: "Wintertime Waltz" (Albert Behar) from the top, quiet under the first tex
 downloaded, by loudness shape; a Sugar Plum Fairies comparison render exists). Fades out over the
 last 2.5 s. Effects: a pop as each bubble lands, typing under the dots,
 a switch click + harp pluck as the cottage comes on (end card, the 5-second ad; the first flicker file was ~20 dB too quiet: owner "can't hear it switch on"), the chime again
-as the house appears, a very low wind loop under everything. Then thinned for the full ad (`adMix`): quiet pops, a soft
-switch-on, a car door slam synced to the door-closing shot, and ambience beds under the footage so the real
-shots sound like places between the graphic ones (owner: "we need the video scenes to sound like
-they're real in between non real shots"; car interior and night-outside beds, slots waiting for files), no typing, no reveal chime, no wind, because the music carries it (owner: the effects
-"fit poorly for the full ad"); the 5-second ad keeps the full levels. Footage in four slots (texting,
+as the house appears, a very low wind loop under everything. Then thinned for the full ad (`adMix`): pops at 60 %, the
+switch-on at 85 %, a car door slam synced to the door-closing shot and a second slam just before the cut (owner:
+"so we'll have two"), and ambience beds under the moving footage only, never under the still house photos (owner: "we need
+the video scenes to sound like they're real in between non real shots"; "don't have the ambient
+sounds playing on the still frames"): the wipers clearly audible and a muffled street under her in the car (owner:
+"add the windshield wiper sound to the scene around 12 seconds and give it some ambient noise"), the quiet street under her
+reaction and the door, no typing, no reveal chime, no wind, because the music carries it (owner: the effects
+"fit poorly for the full ad", then "turn the volume up on the sfx some, everything but the ambient": `sfx.volume`
+0.8 → 1.0, beds unchanged); the 5-second ad keeps the full levels. Footage in four slots (texting,
 drive, reaction, bokeh), all under one grade (`look.grade`: saturation 0.8, contrast 1.06, blacks
 lifted toward navy, gold warmth) so the sources read as one film. Files and licences in
 `assets-source/ads/video/README.md`.
@@ -54,7 +58,7 @@ lifted toward navy, gold warmth) so the sources read as one film. Files and lice
 |---|---|---|---|---|---|
 | 1 | 0–8.5 | **Tuesday 8:14 pm** | Night; warm bokeh lights behind (Uppbeat clip, dimmed; the owner preferred it to hands on a phone). A text thread: typing dots, then each bubble springs in. Customer bubbles dark on the left with a person silhouette as avatar, ours gold on the right with the cottage as avatar. | "Can you do my house Thursday while she's at work? It's her birthday 🎂" / "Done by 4. We'll be gone before she's home." / "🤫 She has no idea." | none |
 | 2 | 8.5–11 | **Time card** | One line over falling-snow footage: Thursday 3:48 pm · Done. Timer set for dusk. The three-beat version (with a clock, then with the cottage popping on) was cut on 2026-10-13: "this scene just feels so forced into it"; the texts already tell the plan, and the mascot in the middle of a realistic story broke the tone. `story.plan` with several entries and `planCottage` bring the old versions back. The dark cottage that switched on here in the first version was cut on 2026-10-13 (owner: a still background between footage was jarring); the owner then asked for the beats one at a time again and something in the right-hand space. | Thursday 9:02 am · Everyone's gone. / 9:30 am · We're on the roof. / 3:48 pm · Done. Timer set for dusk. | snow footage |
-| 3 | 11–23 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s, wipers under it; the sharper city-driving clip was "too jarring"), the time. Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
+| 3 | 11–23 | **5:41 pm** | Her in the red car at night, looking out (Uppbeat clip, 2.5 s, the wipers and a muffled street under it; the sharper city-driving clip was "too jarring"), the time. Real falling snow (overlay clip, screen-blended) over her reaction only; over the house it "looks like an overlay" (owner), so it's off there. The closing shot and the end card have it. The house opens out of the dark in a soft iris and settles (pull-back, brightening); the line lands at the bottom; then her in the car turning to look out of the window (Uppbeat clip, 2.2 s). No light sweep into this scene. Without the clips: black, the time, the reveal, the line. | She's home. | 32 + two clips |
 | 4 | 23–27.5 | **Thursday 5:52 pm** | The thread again, two bubbles, gold bokeh behind (Uppbeat clip). | "She cried. Thank you." / "Happy birthday to her. 🎄" | none |
 | 5 | 27.5–32.5 | **The ask** | Stone house, slow push-in; big line, the estimate line, the offer pill (while enabled). | Surprise someone this year. / Free 30-minute estimate. We can keep a secret. / 10% off installs done by October 31 | 34 (or a clip) |
 | 6 | 32.5–36 | **End card** | The photoreal cottage pops its lights on (the only time in the ad), real falling snow behind it (Uppbeat clip, screen-blended over the navy), phone number large, website, estimate line. Held 4 s. | 281-819-0163 / christmas-light-creations.com / Free 30-minute estimate | logo |
