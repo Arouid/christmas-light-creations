@@ -36,7 +36,9 @@ const data = {
   type: { displayWeight: 800, displayTracking: '-0.02em' },
   photos: {
     // The reveal: what she sees when she turns onto the street.
-    home: { number: 32, aspect: 1024 / 576, focus: [0.5, 0.45], clip: '' }, // owner's pick 2026-10-13 (small file, upscaled)
+    // focus x 0.78 centres the tall and square crops on the entry gable (the photo's middle put the door
+    // at the right edge: owner 2026-10-13, "the crops on the house isn't centered"); 16:9 shows it all.
+    home: { number: 32, aspect: 1024 / 576, focus: [0.78, 0.45], clip: '' }, // owner's pick 2026-10-13 (small file, upscaled)
     // Behind the closing line.
     pitch: { number: 34, aspect: 2159 / 1486, focus: [0.52, 0.42] },
   },
