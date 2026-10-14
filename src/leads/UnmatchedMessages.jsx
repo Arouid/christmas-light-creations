@@ -4,7 +4,8 @@ import { gmailUrl } from '../lib/messages'
 import Icon from '../components/Icon'
 import { TextButton, pill } from './Reach'
 import { Bubble } from './TextHistory'
-import { saveRecord, useLiveDoc, useLiveQuery } from './staffStore'
+import { saveRecord, updateField, useLiveDoc, useLiveQuery } from './staffStore'
+import { contactPatch, sameSender } from '../lib/linkSender'
 import { logActivity } from './activity'
 import { senderKey, withBlocked } from '../lib/blocklist'
 import Handling from './Handling'
@@ -39,7 +40,7 @@ function LinkPicker({ customers, onPick, onCancel }) {
   )
 }
 
-function Row({ m, user, customers, feed, blocked }) {
+function Row({ m, user, customers, feed, blocked, siblings }) {
   const [linking, setLinking] = useState(false)
   const [busy, setBusy] = useState(false)
   const save = async (data) => {
@@ -58,6 +59,18 @@ function Row({ m, user, customers, feed, blocked }) {
       logActivity('spam', { type: 'message', id: m.id, name: who }, key)
     } finally { setBusy(false) }
   }
+  // Link to customer (owner 2026-10-14, docs/specs/message-sync.md): this message, the sender's other open
+  // messages, and the number or address onto the customer's record so the next one lands there by itself.
+  async function link(customerId) {
+    setBusy(true)
+    try {
+      const patch = { customerId, unmatched: false, dismissed: false }
+      await saveRecord(user, 'messages', m.id, patch)
+      for (const other of sameSender(siblings, m)) await saveRecord(user, 'messages', other.id, patch)
+      const c = (customers ?? []).find((x) => x.id === customerId)
+      for (const [field, value] of Object.entries(contactPatch(c, m))) await updateField(user, 'customers', customerId, field, value)
+    } finally { setBusy(false) }
+  }
   const digits = String(m.phone ?? '').replace(/\D/g, '')
   return (
     <li className="rounded-2xl bg-white/5 p-3">
@@ -74,7 +87,7 @@ function Row({ m, user, customers, feed, blocked }) {
       <Handling m={m} who={m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'} feed={feed} user={user} />
       <div className="mt-2"><SuggestReply target={{ messageId: m.id }} /></div>
       {linking && <LinkPicker customers={customers} onCancel={() => setLinking(false)}
-        onPick={(customerId) => save({ customerId, unmatched: false, dismissed: false })} />}
+        onPick={link} />}
     </li>
   )
 }
@@ -93,7 +106,7 @@ export default function UnmatchedMessages({ user, customers, feed }) {
         📥 {open.length} {open.length === 1 ? 'message' : 'messages'} from people we don’t know yet
       </summary>
       <ul className="mt-2 space-y-3">
-        {open.map((m) => <Row key={m.id} m={m} user={user} customers={customers} feed={feed} blocked={settings?.blockedSenders} />)}
+        {open.map((m) => <Row key={m.id} m={m} user={user} customers={customers} feed={feed} blocked={settings?.blockedSenders} siblings={open} />)}
       </ul>
     </details>
   )

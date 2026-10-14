@@ -1113,7 +1113,7 @@ async function syncBatch(req, res) {
   const events = req.body.items.map(parseSyncItem)
   const needDir = events.some((e) => !e.skip)
   const [cust, leads] = needDir
-    ? await Promise.all([db.collection('customers').select('phone', 'email', 'fullName').get(), db.collection('leads').select('phone', 'email', 'customerId', 'firstName', 'lastName').get()])
+    ? await Promise.all([db.collection('customers').select('phone', 'otherPhones', 'email', 'otherEmails', 'fullName').get(), db.collection('leads').select('phone', 'email', 'customerId', 'firstName', 'lastName').get()])
     : [{ docs: [] }, { docs: [] }]
   const dir = buildDirectory(cust.docs.map((d) => ({ id: d.id, ...d.data() })), leads.docs.map((d) => ({ id: d.id, ...d.data() })))
   const fromApp = await sentFromApp(db, events)

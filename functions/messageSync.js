@@ -198,8 +198,9 @@ export function buildDirectory(customers = [], leads = []) {
   }
   for (const c of customers) {
     const t = { type: 'customer', id: c.id }
-    phonesOf(c.phone).forEach((p) => add(phone, p, t))
-    addressesOf(c.email).forEach((e) => add(email, e, t))
+    // otherPhones / otherEmails: linked from old records or from an unmatched message (src/lib/linkSender.js).
+    phonesOf([c.phone, ...(c.otherPhones ?? [])].join(' / ')).forEach((p) => add(phone, p, t))
+    addressesOf([c.email, ...(c.otherEmails ?? [])].join(',')).forEach((e) => add(email, e, t))
   }
   for (const l of leads) {
     const t = l.customerId ? { type: 'customer', id: l.customerId } : { type: 'lead', id: l.id }
