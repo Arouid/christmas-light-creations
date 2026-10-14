@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame } from 'remotion'
+import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion'
 import { useFmt } from '../lib/format.js'
 import { Snow, SnowOverlay } from '../lib/Stage.jsx'
 import { Clip } from '../lib/Clip.jsx'
@@ -13,13 +13,54 @@ import { fadeIn, pop } from '../lib/motion.js'
 // offer and estimate pills, the phone number, the site. The ask ("Surprise someone this year.")
 // sits above "She's home." in the 5:41 pm scene instead (owner: not in both places). Without it: the number, the site and the estimate pill (the pitch scene
 // before it carries the ask). endCard.compact (the 6-second bumper): the line, the number and the
-// site only, landing faster.
+// site only, landing faster. endCard.classy (the whisper): the perfume-ad close, below.
 const FLICKER = [0, 0, 0.9, 0.2, 0.9, 0.1, 0.95, 0.9, 0.3, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1]
+
+// The classy close (owner 2026-10-13: "something more classy" for the whisper): the cottage centred,
+// its lights coming up slowly instead of flickering, then the line, a thin gold rule, the name small
+// and letterspaced, the site and the number quiet under it. Everything fades, nothing springs.
+function ClassyCard({ data }) {
+  const frame = useCurrentFrame()
+  const { w, tall, square } = useFmt()
+  const { colors, words, type } = data
+  const ease = (a, b) => interpolate(frame, [a, b], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: (t) => 1 - Math.pow(1 - t, 3) })
+  const on = ease(4, 40)
+  const glow = 0.7 + Math.sin(frame / 11) * 0.15
+  const img = data.cottageImage
+  const logoH = tall ? 560 : square ? 380 : 430
+  const logoW = logoH
+  const logoY = tall ? 330 : square ? 90 : 150
+  const textTop = logoY + logoH + (tall ? 40 : square ? 10 : 20)
+  const lineSize = tall ? 84 : square ? 64 : 76
+  const rise = (t) => `translateY(${(1 - t) * 14}px)`
+  const line = ease(26, 54)
+  const rule = ease(48, 70)
+  const brand = ease(58, 84)
+  const site = ease(70, 96)
+  return (
+    <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 40%, ${colors.navyLight}, ${colors.navy} 70%)`, opacity: fadeIn(frame, 0, 10) }}>
+      {data.clips?.end ? (
+        <AbsoluteFill style={{ mixBlendMode: 'screen', opacity: 0.35 }}><Clip file={data.clips.end} start={data.clipStart?.end || 0} /></AbsoluteFill>
+      ) : (
+        <Snow count={50} opacity={0.4} />
+      )}
+      <Cottage image={img} x={(w - logoW) / 2} y={logoY} height={logoH} on={on} dark={0.22} glow={glow} />
+      <div style={{ position: 'absolute', left: 60, right: 60, top: textTop, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: tall ? 26 : 20 }}>
+        <div style={{ ...display(type, lineSize), color: colors.white, opacity: line, transform: rise(line), textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}>{words.tagline || words.brand}</div>
+        <div style={{ width: 72, height: 2, background: colors.gold, opacity: rule, transform: `scaleX(${rule})` }} />
+        <div style={{ fontFamily: BODY, fontWeight: 500, fontSize: tall ? 30 : square ? 24 : 26, letterSpacing: '0.32em', textTransform: 'uppercase', color: colors.goldSoft, opacity: brand, transform: rise(brand), marginLeft: '0.32em' }}>{words.brand}</div>
+        <div style={{ fontFamily: BODY, fontWeight: 400, fontSize: tall ? 36 : square ? 28 : 30, color: 'rgba(255,255,255,0.82)', opacity: site, transform: rise(site) }}>{words.site} · {words.phone}</div>
+      </div>
+      {data.clips?.end && (data.snowFrontOpacity ?? 0) > 0 ? <SnowOverlay data={{ ...data, clips: { snowOverlay: data.clips.end } }} start={30} opacity={data.snowFrontOpacity * 0.7} /> : null}
+    </AbsoluteFill>
+  )
+}
 
 export function EndCard({ data }) {
   const frame = useCurrentFrame()
   const { w, h, fps, tall, square } = useFmt()
   const { colors, words, story, type, offer } = data
+  if (data.endCard?.classy) return <ClassyCard data={data} />
   const ask = !!data.endCardAsk
   const tagline = ask ? words.tagline || '' : ''
   const compact = ask && !!data.endCard?.compact

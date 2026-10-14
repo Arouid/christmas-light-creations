@@ -74,7 +74,10 @@ export function Sound({ props, list }) {
       // The dusk timer clicking the lights on, as the house appears (the switch click alone, no harp).
       if (lv('revealClick') > 0) hits.push(<Hit key="reveal-click" file={sfx.lightsOn} at={from + revealStart - 1} volume={lv('revealClick')} name="the timer clicks the lights on" />)
     }
-    if (key === 'end' && !(props.cottageImage && props.endCardLit)) {
+    if (key === 'end' && props.endCard?.classy) {
+      // The classy close: the harp alone as the lights come up, no switch click.
+      if (lv('lightsOn') > 0) hits.push(<Hit key="classy-chime" file={sfx.lightsChime} at={from + 8} volume={lv('lightsOn') * 0.5} name="end card: the harp" />)
+    } else if (key === 'end' && !(props.cottageImage && props.endCardLit)) {
       if (lv('lightsOn') > 0) hits.push(<LightsOn key="lightsOn-end" sfx={sfx} at={from + 4} v={lv('lightsOn')} keyPrefix="end card" scale={0.6} />)
     }
   }

@@ -37,11 +37,12 @@ export const STORIES = {
   whisper: {
     label: 'We can keep a secret · the whisper (15 s)',
     file: 'clc-whisper-15s',
-    scenes: { whisper: 6.8, thread1: 0, plan: 0, home: 4.6, thread2: 0, ask: 0, pitch: 0, end: 4.13 },
+    scenes: { whisper: 6.3, thread1: 0, plan: 0, home: 4.3, thread2: 0, ask: 0, pitch: 0, end: 4.93 },
     story: { whisperLine: 'I booked the lights.', whisperAt: 1.4, whisperStep: 0.55, homeTime: '', homeLine: '' },
     clips: { whisper: 'intimate-whisper-4k.mp4', drive: '' },
     clipStart: { whisper: 0 },
     home: { driveSeconds: 0, reactionSeconds: 0, doorSeconds: 0, secondSlamFromEnd: 0 },
+    endCard: { classy: true }, // the perfume-ad close: the lights come up slowly, the line, the name small, the site and number quiet
     music: { startFrom: 1.7 }, // Sugar Plum's quiet celesta under the whisper; its rise under the house; the 14.5 s swell on the card's switch-on
   },
 }
