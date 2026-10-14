@@ -11,31 +11,47 @@ import { fadeIn, pop } from '../lib/motion.js'
 // into the scene when the first word lands), story.whisperStep (seconds between words).
 export function Whisper({ data, dur }) {
   const frame = useCurrentFrame()
-  const { fps, tall, square } = useFmt()
+  const { w, h, fps, tall, square } = useFmt()
   const { colors, story, type, clips } = data
   const words = (story.whisperLine || '').split(' ').filter(Boolean)
   const at0 = Math.round((story.whisperAt ?? 1.4) * fps)
   const step = Math.round((story.whisperStep ?? 0.55) * fps)
   const size = tall ? 84 : square ? 72 : 92
   const shade = fadeIn(frame, at0 - 10, 12)
+  // Tall and square: the 16:9 close-up as a wide band (a light crop keeps both faces; a full
+  // cover crop showed only her eye and lost the whisper), the words under it on black.
+  const band = tall || square
+  const bandH = tall ? 780 : 700
+  const bandY = tall ? (h - bandH) / 2 - 160 : 110
+  // In the band the window sits a little right of centre so his face stays in it with hers.
+  const clip = clips?.whisper ? <Clip file={clips.whisper} start={data.clipStart?.whisper || 0} brightness={0.92} focus={band ? [tall ? 0.58 : 0.55, 0.5] : [0.5, 0.5]} /> : null
+  const wordRow = (
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: band ? 'auto' : 120, top: band ? bandY + bandH + (tall ? 70 : 44) : 'auto', display: 'flex', justifyContent: 'center', gap: tall ? 22 : 26, flexWrap: 'wrap', padding: '0 80px' }}>
+      {words.map((wd, i) => {
+        const land = at0 + i * step
+        const sp = pop(frame, fps, land, { damping: 14 })
+        return (
+          <span key={i} style={{ ...display(type, size), color: colors.white, opacity: fadeIn(frame, land, 8), transform: `translateY(${(1 - sp) * 24}px)`, textShadow: '0 4px 30px rgba(0,0,0,0.8)' }}>
+            {wd}
+          </span>
+        )
+      })}
+    </div>
+  )
   return (
     <SceneFade dur={dur} fadeInFrames={14}>
       <AbsoluteFill style={{ background: '#000' }}>
-        <Graded look={data.look}>
-          {clips?.whisper ? <Clip file={clips.whisper} start={data.clipStart?.whisper || 0} brightness={0.92} /> : null}
-        </Graded>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 40%)', opacity: shade }} />
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: tall ? 300 : square ? 110 : 120, display: 'flex', justifyContent: 'center', gap: tall ? 22 : 26, flexWrap: 'wrap', padding: '0 80px' }}>
-          {words.map((w, i) => {
-            const land = at0 + i * step
-            const s = pop(frame, fps, land, { damping: 14 })
-            return (
-              <span key={i} style={{ ...display(type, size), color: colors.white, opacity: fadeIn(frame, land, 8), transform: `translateY(${(1 - s) * 24}px)`, textShadow: '0 4px 30px rgba(0,0,0,0.8)' }}>
-                {w}
-              </span>
-            )
-          })}
-        </div>
+        {band ? (
+          <div style={{ position: 'absolute', left: 0, top: bandY, width: w, height: bandH, overflow: 'hidden' }}>
+            <Graded look={data.look}>{clip}</Graded>
+          </div>
+        ) : (
+          <>
+            <Graded look={data.look}>{clip}</Graded>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 40%)', opacity: shade }} />
+          </>
+        )}
+        {wordRow}
       </AbsoluteFill>
     </SceneFade>
   )
