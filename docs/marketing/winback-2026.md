@@ -1,6 +1,6 @@
 # Win-back 2026: old-site requests before October 31
 
-Owner (2026-10-15): "when is small business going to work on past leads". This is the plan: who gets an email, in what order, on which day, and what we count. **Claude sends nothing.** The team sends from the staff app (Leads → Old-site requests → ✉ Email these), and only after Scott has read and OK'd the three emails (📣 Marketing job `w1-winback-ok`). The jobs are in the 📣 Marketing tab, week by week (`src/data/marketingPlan.js`).
+Owner (2026-10-15): "when is small business going to work on past leads". This is the plan: who gets an email, in what order, on which day, and what we count. **Claude sends nothing.** The team sends from the staff app (Leads → Old-site requests → ✉ Email these), and only after Scott has read and OK'd the three emails (📣 Marketing job `w1-winback-ok`). The jobs are in the 📣 Marketing tab, week by week (`src/data/marketingPlan.js`). Owner's page with the three emails as sent: https://claude.ai/artifact/PNELH7FqoebqKuLwgBvN7t
 
 Counts come from the local backup (`old-site-backup/past-requests-plus.csv`, 2026-10-14) run through the app's own cleaning (`cleanRow`, `mergePeople`, `pastArea`). The live tab will show fewer: it also leaves out current customers (matched by email, phone or name), anyone with a status (Not interested, Moved, Deceased, Personal / junk) and anyone already emailed this season.
 
