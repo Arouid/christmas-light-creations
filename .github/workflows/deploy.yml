@@ -18,14 +18,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - run: npm run build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}/
@@ -35,9 +35,11 @@ jobs:
       - name: Changed pages
         continue-on-error: true
         run: node scripts/indexnow.mjs --compare
-      - uses: actions/upload-pages-artifact@v3
+      # Since v4 dotfiles are left out unless asked for; dist/.well-known/tdmrep.json (the AI opt-out) must ship.
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+          include-hidden-files: true
       # The sitemap and the list, for the IndexNow ping after the deploy (the Pages artifact can't be read there).
       - uses: actions/upload-artifact@v7
         with:
@@ -55,10 +57,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       # Once the site is live, tell Bing and the other IndexNow engines which pages changed
       # (scripts/indexnow.mjs, docs/specs/indexnow.md); none, no ping. Best effort: none of this can fail the deploy.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         continue-on-error: true
         with:
           persist-credentials: false
