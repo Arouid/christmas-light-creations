@@ -2,7 +2,8 @@
   "_comment": "dev-workflow-core guardrails (plugin from the owner's wow-addon-workspace marketplace). Limits measured 2026-10-14 on 418 JS/JSX/MJS files: file lines median 66, p90 209, p95 269, max 2133; function lines median 7, p95 31, p99 88. Existing debt is in the baseline: only new or growing violations are reported. Patterns are wildcards, not regexes.",
 
   "fileSizeGuard": {
-    "enabled": true,
+    "_comment_off": "Off (owner 2026-10-14): the line limit comes from the plugin's WoW Lua roots, where big functions hit the interpreter's own limits; JavaScript has none, so here it was only a readability nudge. Limits and baseline kept in case it is turned back on.",
+    "enabled": false,
     "maxFileLines": 400,
     "maxFunctionLines": 100,
     "include": ["*.js", "*.jsx", "*.mjs"],
