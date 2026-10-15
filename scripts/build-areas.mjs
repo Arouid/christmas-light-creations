@@ -3,7 +3,7 @@
 // Run by `npm run build`.
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { areas } from '../src/data/areas.js'
-import { business, footerLinks, included } from '../src/data/content.js'
+import { business, footerLinks, included, nav } from '../src/data/content.js'
 import { GRID_SIZES, GRID_SIZES_WIDE, gallerySrcSet } from '../src/lib/thumb.js'
 import { BUSINESS_ID, SITE, areaDescription, pagePath, sitemapUrls, townName } from './pages.mjs'
 
@@ -12,13 +12,63 @@ const dist = new URL('../dist/', import.meta.url)
 const today = new Date().toISOString().slice(0, 10)
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-// The same footer links as the home page (content.js hrefs start at '/'; the build's base may not).
-const footer = footerLinks.map((l) => `<a href="${base}${l.href.replace(/^\//, '')}" class="hover:text-glow-300">${esc(l.label)}</a>`).join(' · ')
+// content.js hrefs start at '/' or '#' (the home page's sections); the build's base may not be '/'.
+const href = (h) => (h.startsWith('#') ? `${base}${h}` : `${base}${h.replace(/^\//, '')}`)
 
-// The header matches the home page's on phones (owner 2026-10-14, "phone number is all I see"):
-// the wide logo, a call button (the number shows from sm up) and Free estimate. The phone icon
-// is Icon.jsx's, inlined since these pages carry no JavaScript.
-const PHONE_ICON = '<svg viewBox="0 0 24 24" class="size-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>'
+// Icon.jsx's icons, inlined since these pages carry no JavaScript.
+const icon = (d, cls = 'size-5') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}" /></svg>`
+const PHONE = 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2'
+const CHAT = 'M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z'
+const USER = 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
+const MENU = 'M4 7h16M4 12h16M4 17h16'
+const CLOSE = 'M6 6l12 12M18 6L6 18'
+const TEL = 'tel:+12818190163'
+
+// The header is the site's (src/components/Header.jsx, design review 2026-10-14): the wide logo,
+// ☎ and ☰ on phones and tablets, the menu, the number and Free estimate from lg up. It sticks to
+// the top, so the phone is one tap away all the way down. The phone menu is a <details>, so it
+// opens without JavaScript.
+const header = `<header class="sticky top-0 z-40 border-b border-white/10 bg-night-950/90 backdrop-blur">
+  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
+    <a href="${base}" class="flex min-w-0 shrink-0 items-center"><img src="${base}images/clc-logo-wide.png" alt="${esc(business.name)}" width="517" height="168" class="h-12 w-auto sm:h-14" /></a>
+    <nav class="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Main">
+      ${nav.map((n) => `<a href="${href(n.href)}" class="whitespace-nowrap text-sm font-medium text-slate-300 hover:text-glow-300">${esc(n.label)}</a>`).join('\n      ')}
+      <a href="${TEL}" class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-glow-300 hover:text-white">${icon(PHONE, 'size-4')} ${business.phone}</a>
+      <a href="${base}#estimate" class="whitespace-nowrap rounded-full bg-glow-400 px-5 py-2 text-sm font-semibold text-night-950 shadow-[0_0_24px_-4px] shadow-glow-400/70 hover:bg-glow-300">Free estimate</a>
+    </nav>
+    <div class="flex items-center gap-1 lg:hidden">
+      <a href="${TEL}" aria-label="Call ${business.phone}" class="grid size-11 place-items-center rounded-full text-glow-300">${icon(PHONE, 'size-6')}</a>
+      <details class="group">
+        <summary aria-label="Menu" class="grid size-11 cursor-pointer list-none place-items-center rounded-full [&::-webkit-details-marker]:hidden"><span class="group-open:hidden">${icon(MENU, 'size-6')}</span><span class="hidden group-open:block">${icon(CLOSE, 'size-6')}</span></summary>
+        <nav class="absolute inset-x-0 top-16 flex h-[calc(100svh-4rem)] flex-col overflow-y-auto border-t border-white/10 bg-night-950 px-4 pb-6 pt-2" aria-label="Mobile">
+          ${nav.map((n) => `<a href="${href(n.href)}" class="block border-b border-white/5 py-4 text-lg font-medium">${esc(n.label)}</a>`).join('\n          ')}
+          <a href="${base}account/" class="flex items-center gap-3 border-b border-white/5 py-4 text-lg font-medium"><span class="text-glow-300">${icon(USER)}</span><span>Your account <span class="block text-sm font-normal text-slate-400">Sign in, pay, your install day</span></span></a>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <a href="${TEL}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 py-3 font-semibold">${icon(PHONE)} Call</a>
+            <a href="${business.smsHref}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 py-3 font-semibold">${icon(CHAT)} Text us</a>
+          </div>
+          <a href="${base}#estimate" class="mt-3 block rounded-full bg-glow-400 py-3.5 text-center font-semibold text-night-950">Get a free estimate</a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>`
+
+// The home page's thumb-reach bar (MobileCta.jsx), always shown here (no JavaScript to watch the
+// page's own buttons); hidden while the menu is open.
+const bar = `<div class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t border-white/10 bg-night-950/90 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden [body:has(details[open])_&]:hidden">
+  <a href="${TEL}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white/10 py-3 font-semibold">${icon(PHONE)} Call</a>
+  <a href="${base}#estimate" class="inline-flex min-h-11 items-center justify-center rounded-full bg-glow-400 py-3 font-semibold text-night-950">Free estimate</a>
+</div>`
+
+// The same footer links as the home page, 44 px tall.
+const footer = `<footer class="border-t border-white/10 px-4 pb-28 pt-8 text-sm text-slate-400 lg:pb-10">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6">
+    <span class="inline-flex min-h-11 items-center">© ${new Date().getFullYear()} ${esc(business.name)} · ${esc(business.city)}</span>
+    <a href="${TEL}" class="inline-flex min-h-11 items-center gap-2 font-semibold text-glow-300">${icon(PHONE)} ${business.phone}</a>
+    ${footerLinks.map((l) => `<a href="${href(l.href)}" class="inline-flex min-h-11 items-center hover:text-glow-300">${esc(l.label)}</a>`).join('\n    ')}
+  </div>
+</footer>`
 
 // Reuse the main page's stylesheet(s) so the area pages match the site.
 const mainHtml = await readFile(new URL('index.html', dist), 'utf8')
@@ -75,15 +125,7 @@ function page(a) {
 <html lang="en">
 ${head(a)}<body>
 <a href="#main" class="skip-link">Skip to main content</a>
-<header class="border-b border-white/10 bg-night-950/90">
-  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
-    <a href="${base}" class="flex min-w-0 items-center"><img src="${base}images/clc-logo-wide.png" alt="${esc(business.name)}" width="517" height="168" class="h-12 w-auto sm:h-14" /></a>
-    <div class="flex shrink-0 items-center gap-2">
-      <a href="tel:+12818190163" aria-label="Call ${business.phone}" class="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/20 px-3 text-sm font-semibold text-glow-300 sm:px-4 sm:text-white">${PHONE_ICON}<span class="hidden sm:inline">${business.phone}</span></a>
-      <a href="${base}#estimate" class="inline-flex min-h-11 items-center rounded-full bg-glow-400 px-4 text-sm font-semibold text-night-950">Free estimate</a>
-    </div>
-  </div>
-</header>
+${header}
 <main id="main" tabindex="-1">
   <section class="px-4 py-14 md:py-20">
     <div class="mx-auto max-w-6xl">
@@ -141,16 +183,14 @@ ${head(a)}<body>
     <div class="mx-auto max-w-6xl">
       <p class="text-sm font-semibold uppercase tracking-wider text-slate-400">Other areas we serve</p>
       <ul class="mt-3 flex flex-wrap gap-2">
-        ${others.map((o) => `<li><a href="${base}${pagePath(o)}" class="inline-block rounded-full bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10">${esc(o.name)}</a></li>`).join('\n        ')}
-        <li><a href="${base}" class="inline-block rounded-full bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10">Home page</a></li>
+        ${others.map((o) => `<li><a href="${base}${pagePath(o)}" class="inline-flex min-h-11 items-center rounded-full bg-white/5 px-4 text-sm hover:bg-white/10">${esc(o.name)}</a></li>`).join('\n        ')}
+        <li><a href="${base}" class="inline-flex min-h-11 items-center rounded-full bg-white/5 px-4 text-sm hover:bg-white/10">Home page</a></li>
       </ul>
     </div>
   </nav>
 </main>
-<footer class="border-t border-white/10 px-4 py-8 text-center text-xs text-slate-400">
-  © ${new Date().getFullYear()} ${esc(business.name)} · ${esc(business.city)} · ${business.phone}
-  · ${footer}
-</footer>
+${footer}
+${bar}
 </body>
 </html>
 `
