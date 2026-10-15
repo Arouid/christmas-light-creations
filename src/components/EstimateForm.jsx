@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { HEARD_FROM, business, designPage, estimateForm as words, giftWrapping, urgency } from '../data/content'
+import { keepContactForAds } from '../lib/ads'
 import { firebaseReady, getFirebaseApp, submitLead } from '../lib/firebase'
 import { SERVICES, useGiftWrapping } from '../lib/giftWrapping'
 import { useSign, useTakenOver } from '../lib/prerendered'
@@ -57,6 +58,8 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
     try {
       await submitLead(data, design && attach ? await design.get() : null)
       // Its own page, so Google Ads can count the request (src/lib/ads.js); bots above never get here.
+      // A hash of the email and phone goes along for that page (enhanced conversions); never throws.
+      await keepContactForAds({ email: data.get('email'), phone: data.get('phone') })
       window.location.assign(`${import.meta.env.BASE_URL}thanks/`)
       setStatus('sent')
     } catch {

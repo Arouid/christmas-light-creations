@@ -1,9 +1,12 @@
 // After `vite build`: writes the area pages as static HTML (fast, fully
 // readable by Google without running JavaScript) plus sitemap.xml.
-// Run by `npm run build`.
+// Run by `npm run build`; tests import areaPage.
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { areas } from '../src/data/areas.js'
 import { business, footerLinks, included, nav } from '../src/data/content.js'
+import { adsLoaderScript } from '../src/lib/ads.js'
 import { GRID_SIZES, GRID_SIZES_WIDE, gallerySrcSet } from '../src/lib/thumb.js'
 import { BUSINESS_ID, SITE, areaDescription, pagePath, sitemapUrls, townName } from './pages.mjs'
 
@@ -15,7 +18,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 // content.js hrefs start at '/' or '#' (the home page's sections); the build's base may not be '/'.
 const href = (h) => (h.startsWith('#') ? `${base}${h}` : `${base}${h.replace(/^\//, '')}`)
 
-// Icon.jsx's icons, inlined since these pages carry no JavaScript.
+// Icon.jsx's icons, inlined since these pages carry no JavaScript bundle.
 const icon = (d, cls = 'size-5') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}" /></svg>`
 const PHONE = 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2'
 const CHAT = 'M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z'
@@ -70,13 +73,10 @@ const footer = `<footer class="border-t border-white/10 px-4 pb-28 pt-8 text-sm 
   </div>
 </footer>`
 
-// Reuse the main page's stylesheet(s) so the area pages match the site.
-const mainHtml = await readFile(new URL('index.html', dist), 'utf8')
-const styles = [...mainHtml.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+\.css)"/g)].map((m) => m[1])
-
 // An area page's <head>: title, description (pages.mjs), the share picture (its first photo) and
 // the Service structured data, whose provider is the business described on the home page.
-function head(a) {
+// `styles`: the main page's stylesheet(s), so the area pages match the site.
+function head(a, styles) {
   const url = `${SITE}/${pagePath(a)}`
   const title = `Christmas Light Installation in ${a.name}, TX | ${business.name}`
   const description = areaDescription(a, business)
@@ -118,12 +118,15 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 `
 }
 
-function page(a) {
+// The page's one script is the Google Ads loader (src/lib/ads.js), so an ad click
+// that lands here keeps its click id; nothing at all when the tag is off.
+export function areaPage(a, styles = []) {
   const others = areas.filter((o) => o.slug !== a.slug)
+  const ads = adsLoaderScript()
 
   return `<!doctype html>
 <html lang="en">
-${head(a)}<body>
+${head(a, styles)}<body>
 <a href="#main" class="skip-link">Skip to main content</a>
 ${header}
 <main id="main" tabindex="-1">
@@ -191,15 +194,9 @@ ${header}
 </main>
 ${footer}
 ${bar}
-</body>
+${ads ? `<script>${ads}</script>\n` : ''}</body>
 </html>
 `
-}
-
-for (const a of areas) {
-  const dir = new URL(pagePath(a), dist)
-  await mkdir(dir, { recursive: true })
-  await writeFile(new URL('index.html', dir), page(a))
 }
 
 // Old WordPress pages -> their new home, so old links and Google results keep working.
@@ -217,22 +214,37 @@ const REDIRECTS = {
   // Typed from a road sign (QR codes carry their own ?sign=corner).
   'sign': '?sign=typed', 'signs': '?sign=typed', 'lights': '?sign=typed',
 }
-for (const [from, to] of Object.entries(REDIRECTS)) {
-  const target = `${base}${to}`
-  const dir = new URL(`${from}/`, dist)
-  await mkdir(dir, { recursive: true })
-  await writeFile(new URL('index.html', dir), `<!doctype html><meta charset="utf-8"><title>Moved</title>`
-    + `<link rel="canonical" href="${SITE}/${/^[#?]/.test(to) ? '' : to}"><meta name="robots" content="noindex, noai, noimageai">`
-    + `<meta http-equiv="refresh" content="0; url=${target}"><script>location.replace(${JSON.stringify(target)})</script>`
-    + `<a href="${target}">Continue to Christmas Light Creations</a>
-`)
-}
 
-const urls = sitemapUrls(areas)
-await writeFile(new URL('sitemap.xml', dist), `<?xml version="1.0" encoding="UTF-8"?>
+async function build() {
+  // Reuse the main page's stylesheet(s) so the area pages match the site.
+  const mainHtml = await readFile(new URL('index.html', dist), 'utf8')
+  const styles = [...mainHtml.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+\.css)"/g)].map((m) => m[1])
+
+  for (const a of areas) {
+    const dir = new URL(pagePath(a), dist)
+    await mkdir(dir, { recursive: true })
+    await writeFile(new URL('index.html', dir), areaPage(a, styles))
+  }
+
+  for (const [from, to] of Object.entries(REDIRECTS)) {
+    const target = `${base}${to}`
+    const dir = new URL(`${from}/`, dist)
+    await mkdir(dir, { recursive: true })
+    await writeFile(new URL('index.html', dir), `<!doctype html><meta charset="utf-8"><title>Moved</title>`
+      + `<link rel="canonical" href="${SITE}/${/^[#?]/.test(to) ? '' : to}"><meta name="robots" content="noindex, noai, noimageai">`
+      + `<meta http-equiv="refresh" content="0; url=${target}"><script>location.replace(${JSON.stringify(target)})</script>`
+      + `<a href="${target}">Continue to Christmas Light Creations</a>
+`)
+  }
+
+  const urls = sitemapUrls(areas)
+  await writeFile(new URL('sitemap.xml', dist), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod></url>`).join('\n')}
 </urlset>
 `)
 
-console.log(`area pages: ${areas.length}, redirects: ${Object.keys(REDIRECTS).length}, sitemap: ${urls.length} urls, styles: ${styles.length}`)
+  console.log(`area pages: ${areas.length}, redirects: ${Object.keys(REDIRECTS).length}, sitemap: ${urls.length} urls, styles: ${styles.length}`)
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await build()

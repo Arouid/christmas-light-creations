@@ -1,14 +1,18 @@
 import { useEffect } from 'react'
 import { business } from '../data/content'
 import Icon from '../components/Icon'
-import { loadAdsTag, reportConversion } from '../lib/ads'
+import { loadAdsTag, reportConversion, takeContactForAds } from '../lib/ads'
 
 // /thanks/: where the estimate form lands after a successful send. Its own
 // address so Google Ads can count it as a lead (src/lib/ads.js).
 export default function ThanksPage() {
   // Load the tag here too (a "page reached /thanks/" conversion needs it on this page);
-  // reportConversion adds the event once a conversion label is set.
-  useEffect(() => { loadAdsTag().then(() => reportConversion('estimate')) }, [])
+  // reportConversion adds the event once a conversion label is set, with the hashed
+  // email and phone the form left (taken and cleared at once: a reload sends none).
+  useEffect(() => {
+    const userData = takeContactForAds()
+    loadAdsTag().then(() => reportConversion('estimate', userData))
+  }, [])
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-6 px-4 py-10 text-center">
       <a href={import.meta.env.BASE_URL} className="flex items-center gap-2">
