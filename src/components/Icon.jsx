@@ -30,6 +30,8 @@ const paths = {
   logout: 'M15 4h3.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H15M10 16l-4-4 4-4M6 12h10',
   // The staff app's ☰ menu: Settings (owner 2026-10-15, the account menu's icons there too)
   sliders: 'M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4',
+  // The staff app's ☰ menu: Reports (2026-10-15)
+  chart: 'M4 20.5h16M6.5 17V11M11 17V6M15.5 17v-4M20 17V8.5',
   // Home page: the four "Why Christmas Light Creations" cards and the four "How it works" steps (owner-approved set, 2026-10-10)
   'house-lights': 'M3 11 12 3.5 21 11M5.5 11.5V20h13v-8.5M10.5 20v-4.5h3V20M6.2 10.2h.01M9 7.9h.01M15 7.9h.01M17.8 10.2h.01',
   'c9-bulb': 'M12 1.5V3M9.5 3h5v3.5h-5zM10 6.5c-2.8 2.4-4.2 5-4.2 7.8a6.2 6.2 0 0 0 12.4 0c0-2.8-1.4-5.4-4.2-7.8M9.2 13.8c0-1.4.6-2.6 1.6-3.6M3.4 9.5l-1.6-.9M20.6 9.5l1.6-.9M3.2 14.5H1.5M22.5 14.5h-1.7',

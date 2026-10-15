@@ -1,5 +1,5 @@
 import { setSender } from '../lib/messages'
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { business } from '../data/content'
 import { ALL_TABS, BEFORE, LABEL, MORE, ON_HOME } from '../lib/staffMenu'
 import Drawer from './Drawer'
@@ -29,6 +29,8 @@ import AccountsView from './accounts/AccountsView'
 import SignsView from './SignsView'
 import NotesView from './NotesView'
 import MarketingView from './marketing/MarketingView'
+// Reports carry ~186 KB of docs: their own chunk, loaded when Reports opens (docs/specs/reports.md).
+const ReportsView = lazy(() => import('./reports/ReportsView'))
 import RoutesView from './RoutesView'
 import { RoutesContext } from './routesContext'
 import { StaffContext } from './staffContext'
@@ -69,6 +71,7 @@ const tabFromHash = () => {
   const h = window.location.hash.slice(1)
   if (h.startsWith('route-')) return 'route' // #route-<id> (installer) or #route-<id>~edit
   if (h.startsWith('accounts/') || h.startsWith('accounts?')) return 'accounts' // #accounts/<kind>/<id>, #accounts?q=<search>
+  if (h.startsWith('reports/')) return 'reports' // #reports/<id>: one report
   return h.startsWith('view-') || ALL_TABS.some(([k]) => k === h) ? h : 'home'
 }
 const routeFromHash = () => {
@@ -415,6 +418,12 @@ export default function LeadsApp() {
               onAdd={signsApi.add} onUpdate={signsApi.update} onRemove={signsApi.remove} onUpdateLead={updateLead} />
           : loading)}
         {tab === 'marketing' && <MarketingView user={user} settings={settingsApi.settings ?? {}} names={feed.names} onOpenMessages={() => setShowMessages(true)} />}
+        {tab === 'reports' && (
+          <Suspense fallback={<p className="mt-6 text-slate-400">Loading reports…</p>}>
+            <ReportsView requests={pastApi.error === 'not-staff' ? [] : pastApi.requests} pastError={pastApi.error === 'not-staff' ? null : pastApi.error}
+              customers={customers} season={season} settings={settingsApi.settings ?? {}} />
+          </Suspense>
+        )}
         {tab === 'notes' && <NotesView mine={notesApi.mine} shared={notesApi.shared} email={user?.email} names={feed.names} onAdd={notesApi.add} onSave={notesApi.save} onRemove={notesApi.remove} />}
         {tab === 'past' && (customers
           ? <PastRequestsView requests={pastApi.error === 'not-staff' ? [] : pastApi.requests} error={pastApi.error === 'not-staff' ? null : pastApi.error}

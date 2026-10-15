@@ -37,7 +37,7 @@ test('drawer search → Accounts: the term rides in the hash and comes back out'
   assert.equal(searchFromHash('#accounts?q=%E0%A4%A'), '') // bad encoding: no crash
 })
 
-test('Marketing and Notes: buttons on Home, not in the computer tab row; still in the phone menu', async () => {
+test('Marketing, Reports and Notes: buttons on Home, not in the computer tab row; still in the phone menu', async () => {
   const { BEFORE, MORE, ON_HOME } = await import('../src/lib/staffMenu.js')
   const row = [...BEFORE, ...MORE].map(([k]) => k)
   for (const k of ON_HOME) {

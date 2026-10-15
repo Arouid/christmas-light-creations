@@ -7,11 +7,11 @@
 // got too long: owner 2026-10-10); Past requests lives inside Leads.
 export const BEFORE = [['home', 'Home'], ['ask', '🤖 Ask Claude'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes'], ['service', 'Service']]
 export const MORE = [['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
-// Not in the row: Past requests lives inside Leads; Marketing and Notes are
-// buttons on Home next to Arrange (owner 2026-10-15), and the Home tab stays
-// lit while you're in them.
-export const ON_HOME = ['marketing', 'notes']
-export const HIDDEN = [['past', 'Past requests'], ['marketing', '📣 Marketing'], ['notes', 'Notes']]
+// Not in the row: Past requests lives inside Leads; Marketing, Reports and
+// Notes are buttons on Home next to Arrange (owner 2026-10-15), and the Home
+// tab stays lit while you're in them.
+export const ON_HOME = ['marketing', 'reports', 'notes']
+export const HIDDEN = [['past', 'Past requests'], ['marketing', '📣 Marketing'], ['reports', '📊 Reports'], ['notes', 'Notes']]
 export const ALL_TABS = [...BEFORE, ...MORE, ...HIDDEN]
 export const LABEL = Object.fromEntries(ALL_TABS)
 
@@ -29,6 +29,8 @@ export const GROUPS = [
   ['Prices & money', ['invoices'], 'receipt'],
   ['Installs, takedowns & service', ['season', 'route', 'service'], 'tree'],
   ['Marketing & reviews', ['marketing'], 'star'],
+  // The claude.ai reports, kept current (owner 2026-10-15: "Reports should live under reports")
+  ['Reports', ['reports'], 'chart'],
   ['Tools', ['notes', 'signs', 'gates', 'import'], 'wrench'],
 ]
 export const groupOf = (tab) => GROUPS.find(([, keys]) => keys.includes(tab))?.[0] ?? null

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { todayISO } from '../lib/customers'
-import { FILED_STATUSES as FILED, FOLLOW_UP_DAYS, findCustomer, followUpTooSoon, lastEmailed, pastArea, pastGroup } from '../lib/oldEstimates'
+import { FILED_STATUSES as FILED, FOLLOW_UP_DAYS, followUpTooSoon, lastEmailed, pastArea, pastGroup } from '../lib/oldEstimates'
+import { DO_NOT_CONTACT, customerOf, pastState } from '../lib/pastStates'
 import { textMessages } from '../lib/messages'
 import { winbackTemplate } from '../lib/emailTemplates'
 import Icon from '../components/Icon'
@@ -11,18 +12,9 @@ import { select } from './ui'
 
 const action = 'inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-3 py-2.5 text-sm font-medium hover:bg-white/15'
 const PAST_STATUSES = ['', 'Interested', 'Estimate booked', 'Not interested', 'Moved / bad info', 'Deceased', 'Personal (family/friends)', 'Junk / spam']
-// Never contacted again: no text, email or "Email these".
-const DO_NOT_CONTACT = ['customer', 'Not interested', 'Moved / bad info', ...FILED]
 const STATUS_LABEL = { '': 'Not contacted yet' }
-
-// Where each person stands: became a customer, a status staff set, or
-// emailed from the list (any template this season). Filed-away statuses win over all.
-function stateOf(r, customer, season) {
-  if (FILED.includes(r.status)) return r.status
-  if (customer) return 'customer'
-  if (r.status) return r.status
-  return r.seasons?.[season]?.emailsSent ? 'Emailed' : ''
-}
+// Where each person stands and who is never contacted again: src/lib/pastStates.js
+// (shared with Reports → Win-back, so both count the same way).
 
 // Who they were to us: paid or were invoiced before (win-backs), asked for an
 // estimate, or only texted/called the business line.
@@ -163,8 +155,8 @@ export default function PastRequestsView({ requests, error, customers, season, o
   const [emailing, setEmailing] = useState(false)
 
   const rows = useMemo(() => (requests ?? []).map((r) => {
-    const customer = (r.customerId && customers.find((c) => c.id === r.customerId)) || findCustomer(r, customers)
-    return { r, customer, state: stateOf(r, customer, season), area: pastArea(r) || 'unknown' }
+    const customer = customerOf(r, customers)
+    return { r, customer, state: pastState(r, customer, season), area: pastArea(r) || 'unknown' }
   }), [requests, customers, season])
 
   const years = useMemo(() => [...new Set(rows.map(({ r }) => r.year).filter(Boolean))].sort().reverse(), [rows])

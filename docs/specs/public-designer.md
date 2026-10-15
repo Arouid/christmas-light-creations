@@ -52,7 +52,7 @@ What this does: copying now looks like what it is, and a lawyer has something to
 
 ## Usability round (audit 2026-10-14)
 
-An in-depth audit of the designer (report: https://claude.ai/artifact/2QMZLAjfAi9ya2vAC8mac2, 19 findings) and the owner's "lets fix everything". What it changed:
+An in-depth audit of the designer (19 findings, now in `docs/reviews/designer-2026-10.md` and the staff app's 📊 Reports → Design; the Oct 14 report with screenshots: https://claude.ai/artifact/2QMZLAjfAi9ya2vAC8mac2) and the owner's "lets fix everything". What it changed:
 
 - **Nothing drawn gets lost.** ✕, Save and the picture take the line being drawn with them (2+ taps; `withDraft` in `src/designer/model.js`). The phone's **Back** closes the designer instead of leaving the page: opening adds a history entry (`backCloses`), ✕ and Estimate → leave through it. The design, and their photo, stay in the **browser tab** (`sessionStorage`, `SAVED_KEYS` / `savedDesign` in `src/lib/publicDesign.js`, tested) so a reload or Back then Forward opens it again; gone when the tab closes (privacy page says so). A new photo over a design with lights asks first (**Start over** / **Keep this one**).
 - **Undo** while a line is being drawn takes back the last tap (↶ and Ctrl+Z), never the strand before it. Sliders and typed numbers save as they change (arrow keys included) and one drag is one undo step (`pushStep` merge in `src/designer/history.js`, tested).

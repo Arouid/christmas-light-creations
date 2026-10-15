@@ -1,6 +1,6 @@
 # Marketing
 
-Plans and ready-to-use drafts for promoting Christmas Light Creations. Drafts only: the owner posts, sends from the app, or changes Google Ads; Claude drafts and checks. The owner's report (2026-10-14): https://claude.ai/artifact/F3eVNmDJ81gXxyQDc4K2sZ. Open items: TODO #80.
+Plans and ready-to-use drafts for promoting Christmas Light Creations. Drafts only: the owner posts, sends from the app, or changes Google Ads; Claude drafts and checks. The owner's report: the staff app's 📊 Reports → Season plan 2026, drawn from these files (the claude.ai page of 2026-10-14, https://claude.ai/artifact/F3eVNmDJ81gXxyQDc4K2sZ, is a snapshot). Open items: TODO #80.
 
 | File | What |
 |---|---|
