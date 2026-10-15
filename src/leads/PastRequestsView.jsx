@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { todayISO } from '../lib/customers'
 import { FILED_STATUSES as FILED, FOLLOW_UP_DAYS, findCustomer, followUpTooSoon, lastEmailed, pastArea, pastGroup } from '../lib/oldEstimates'
 import { textMessages } from '../lib/messages'
+import { winbackTemplate } from '../lib/emailTemplates'
 import Icon from '../components/Icon'
 import { EmailQueue } from './BulkEmail'
 import ComposeEmail from './ComposeEmail'
@@ -104,7 +105,7 @@ function PastCard({ r, customer, state, area, season, onUpdate, onMakeCustomer, 
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {r.phone && !filed && <a className={action} href={`tel:${r.phone.replace(/\D/g, '')}`}><Icon name="phone" className="size-4" /> Call</a>}
             {!filed && <TextButton phone={r.phone} className={action} message={(r.payments?.length ? textMessages.comeback : textMessages.winback)(r, season)} />}
-            {!filed && <ComposeEmail person={r} season={season} target={{ pastRequestId: r.id }} start={r.payments?.length ? 'comeback' : 'winback'} className={action} />}
+            {!filed && <ComposeEmail person={r} season={season} target={{ pastRequestId: r.id }} start={winbackTemplate(r, season)} className={action} />}
             {!customer && !filed && onMakeCustomer && (
               <button type="button" onClick={make} disabled={busy} className={`${action} text-glow-300`}>{busy ? 'Adding…' : '+ Make customer'}</button>
             )}
@@ -260,7 +261,7 @@ export default function PastRequestsView({ requests, error, customers, season, o
             onUpdate={onUpdate} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />
         ))}
       </ul>
-      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} targetOf={(x) => ({ pastRequestId: x.id })} templateId={followUp ? 'winback-last' : group === 'winback' ? 'comeback' : 'winback'} onClose={() => setEmailing(false)} />}
+      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} targetOf={(x) => ({ pastRequestId: x.id })} templateId={followUp ? 'winback-last' : group === 'winback' ? 'comeback' : winbackTemplate({ year: year || season }, season)} onClose={() => setEmailing(false)} />}
     </>
   )
 }

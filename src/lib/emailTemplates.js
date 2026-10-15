@@ -125,8 +125,23 @@ Once you're back on our list, your account at {website}/account/ shows your inst
 Reply to this email, or call or text {businessPhone}. Rather not hear from us? Reply "no thanks" and we won't email you again.${sign}`,
   },
   {
+    id: 'winback-older', group: 'Estimates', label: 'It’s been a while (older requests)',
+    when: 'Past requests from 2020 and before (Past requests tab, pick the year), once a season. Sent last, after the newer ones show few bounces.',
+    subject: 'Christmas lights this year? We’re still here',
+    body: `Hi {first},
+
+Back in {asked} you asked {business} about Christmas lights for your home. We're still here, still family-owned, and booking {season} installs now.
+
+Since then we've added a free light designer, where you draw your lights on a photo of your home ({website}/design/), and Pay in 3 at the same price on any new install. Every light comes with our lifetime warranty: anything we supplied that wears out is replaced brand new, free, for as long as you're a customer.
+{earlyOffer}
+
+The estimate is still free: we measure your roofline in about 30 minutes, no roof climbing, and you don't need to be home. We light homes across Pearland, Manvel, Friendswood, League City, the Bay Area and Galveston County.
+
+Reply to this email, or call or text {businessPhone}. Not interested any more? Reply "no thanks" and we won't email you again.${sign}`,
+  },
+  {
     id: 'winback-last', group: 'Estimates', label: 'Win-back follow-up (the last one)',
-    when: 'Past requests → Emailed: at least 5 days after “Still want lights?” or “We miss you”, to people who haven’t answered. Once, then stop.',
+    when: 'Past requests → Emailed: at least 5 days after “We miss you” or “Still want lights?”, to people who haven’t answered (not the older requests). Once, then stop.',
     subject: 'Following up: Christmas lights this season',
     body: `Hi {first},
 
@@ -251,6 +266,15 @@ On your phone, open it once and tap Get the app: it saves to your home screen an
     body: `Hi {first},\n\n\n${sign.trimStart()}`,
   },
 ]
+
+// Which win-back email a past request starts on (docs/marketing/winback-2026.md):
+// former customers “We miss you”, requests from the last RECENT_YEARS
+// seasons (2021–2026 for 2026) “Still want lights?”, older ones “It’s been a while”.
+export const RECENT_YEARS = 5
+export function winbackTemplate(r, season) {
+  if (r.payments?.length) return 'comeback'
+  return Number(r.year) >= Number(season) - RECENT_YEARS ? 'winback' : 'winback-older'
+}
 
 // Stock templates with staff edits applied, plus staff-added ones.
 export function mergeTemplates(saved = []) {

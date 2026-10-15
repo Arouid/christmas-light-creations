@@ -148,6 +148,8 @@ export const demoData = {
     { id: 'old-robin-demo-example-com', fullName: 'Robin Demo', firstName: 'Robin', lastName: 'Demo', email: 'robin.demo@example.com', phone: '555-010-0163',
       firstAsked: '2023-11-01', lastAsked: '2023-11-01', year: '2023', contactBy: 'Email',
       requests: [{ date: '2023-11-01', message: 'Price for roofline lights, two story house in League City.' }], seasons: { 2026: { emailsSent: { winback: dayAgo(2) } } } },
+    { id: 'old-morgan-demo-example-com', fullName: 'Morgan Demo', firstName: 'Morgan', lastName: 'Demo', email: 'morgan.demo@example.com',
+      firstAsked: '2018-11-12', lastAsked: '2018-11-12', year: '2018', requests: [{ date: '2018-11-12', message: 'Can you put lights on our roofline in Friendswood?' }] },
     { id: 'old-riley-demo-example-com', fullName: 'Riley Demo', firstName: 'Riley', lastName: 'Demo', email: 'riley.demo@example.com',
       firstAsked: '2024-10-28', lastAsked: '2024-10-28', year: '2024', requests: [{ date: '2024-10-28', message: 'Estimate for lights on our house in Cypress 77429.' }] },
   ]),

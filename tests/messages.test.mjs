@@ -86,17 +86,29 @@ test('{earlyOffer}: the 10% line through Oct 31 only, then the line is gone (win
   assert.equal(fillTemplate(t, {}, '2026', { today: new Date(2026, 10, 2) }), 'Free estimate.\n\nReply here.', 'after Oct 31 the line is dropped')
   assert.deepEqual(missingPlaceholders(t, {}, '2026'), [], 'never reported as missing')
   // The season's win-back: the offer only through {earlyOffer}, the designer, a way to say no, the follow-up says it's the last.
-  for (const id of ['winback', 'comeback', 'winback-last']) {
+  for (const id of ['winback', 'comeback', 'winback-older', 'winback-last']) {
     const w = STOCK_TEMPLATES.find((x) => x.id === id)
     assert.match(w.body, /\n\{earlyOffer\}\n/, `${id}: the offer on its own line`)
     assert.doesNotMatch(w.body, /October 31|10%/, `${id}: no hard-coded offer`)
     assert.doesNotMatch(w.body, /—/, `${id}: no em dash`)
   }
-  for (const id of ['winback', 'comeback']) {
+  for (const id of ['winback', 'comeback', 'winback-older']) {
     const w = STOCK_TEMPLATES.find((x) => x.id === id).body
     assert.match(w, /\{website\}\/design\//, `${id}: the free designer`)
     assert.match(w, /no thanks.*won't email you again/, `${id}: an easy no`)
   }
   assert.match(STOCK_TEMPLATES.find((x) => x.id === 'comeback').body, /\{website\}\/account\/.*one tap/s)
   assert.match(STOCK_TEMPLATES.find((x) => x.id === 'winback-last').body, /last email/)
+})
+
+import { RECENT_YEARS, winbackTemplate } from '../src/lib/emailTemplates.js'
+
+test('win-back: each person starts on their group’s email (former customers, recent, older)', () => {
+  assert.equal(RECENT_YEARS, 5)
+  assert.equal(winbackTemplate({ payments: [{ amount: 400 }], year: '2015' }, '2026'), 'comeback')
+  assert.equal(winbackTemplate({ year: '2026' }, '2026'), 'winback')
+  assert.equal(winbackTemplate({ year: '2021' }, '2026'), 'winback', '2021–2026 are recent')
+  assert.equal(winbackTemplate({ year: '2020' }, '2026'), 'winback-older')
+  assert.equal(winbackTemplate({}, '2026'), 'winback-older', 'no year: treated as old')
+  assert.ok(['comeback', 'winback', 'winback-older', 'winback-last'].every((id) => STOCK_TEMPLATES.some((t) => t.id === id)))
 })

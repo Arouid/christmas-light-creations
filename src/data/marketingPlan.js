@@ -39,7 +39,7 @@ export const DAILY = [
   // The business page went up 2026-10-15; its notices also come into 💬 as 🏘️ Nextdoor (functions/listingNotices.js), answered on Nextdoor.
   { text: 'Nextdoor: answer new messages, comments and recommendations the same day, on Nextdoor (they also show in 💬 as 🏘️ Nextdoor).', link: 'https://nextdoor.com/', linkLabel: 'Nextdoor ↗' },
   // The win-back (docs/marketing/winback-2026.md), Oct 19 to Nov 5: a status is what keeps someone from a second email.
-  { text: 'Win-back answers (Oct 19 to Nov 5): find the person in Old-site requests and set a status the same day. Yes: Interested (or Estimate booked), then + Make customer once they book. "No thanks": Not interested, never emailed again. Bounced: Moved / bad info.', link: '#past', linkLabel: 'Old-site requests' },
+  { text: 'Win-back answers (Oct 19 to mid-November): find the person in Old-site requests and set a status the same day. Yes: Interested (or Estimate booked), then + Make customer once they book. "No thanks": Not interested, never emailed again. Bounced: Moved / bad info.', link: '#past', linkLabel: 'Old-site requests' },
 ]
 
 // Targets, not promises.
@@ -48,7 +48,7 @@ export const GOALS = [
   { what: 'Returning customers', target: 'Everyone from last season asked once in October, once more in November', where: 'Season tab' },
   { what: 'Estimate requests', target: 'Week to week, by "How did you hear about us?"', where: 'Leads' },
   { what: 'Google Ads', target: 'Cost per estimate request flat or falling', where: 'Home → Google Ads' },
-  { what: 'Win-back (old-site requests)', target: 'Everyone reachable emailed once (recent ones by Oct 24, the oldest by Nov 5), one follow-up for win-backs and 2021–2026; answers and estimates counted Mondays', where: 'Leads → Old-site requests (the line under the tabs)' },
+  { what: 'Win-back (old-site requests)', target: 'Everyone reachable emailed once (former customers and 2021–2026 by Oct 24, older ones in November), one follow-up for the first two; few bounces; answers and estimates counted Mondays', where: 'Leads → Old-site requests (the line under the tabs)' },
 ]
 
 // Monday numbers (15 minutes, owner or team), one row per week.
@@ -69,7 +69,7 @@ export const WEEKS = [
       { id: 'w1-video', who: 'owner', text: 'Halloween 15-second video live in Google Ads (until Oct 31)' },
       { id: 'w1-rebook', who: 'team', text: 'Send rebook email A (Thursday 8 am: Season → ✉ Email these)', draft: { doc: 'email', title: 'Version A' } },
       { id: 'w1-line', who: 'team', text: 'Set the "how full we are" line (⚙ Settings) with the real number' },
-      { id: 'w1-winback-ok', who: 'owner', text: 'Read and OK the three win-back emails before the team sends (More ▾ / ☰ → Emails: “Still want lights?”, “We miss you”, “Win-back follow-up”)' },
+      { id: 'w1-winback-ok', who: 'owner', text: 'Read and OK the four win-back emails before the team sends (More ▾ / ☰ → Emails → Estimates: “We miss you”, “Still want lights?”, “It’s been a while”, “Win-back follow-up”)' },
     ],
   },
   {
@@ -81,10 +81,10 @@ export const WEEKS = [
       { id: 'w2-adscheck', who: 'owner', text: 'Monday ads check: search terms, block display and job searches', draft: { doc: 'ads', title: 'Negative keywords' } },
       { id: 'w2-line', who: 'team', text: 'Update the "how full we are" line (Monday)' },
       { id: 'w2-bing', who: 'claude', text: 'Bing index re-check (scheduled for Oct 20)' },
-      { id: 'w2-winback-wb', who: 'team', text: 'Mon 8 am, once Scott OK’d the emails: Old-site requests → Win-backs → To contact → ✉ Email these (“We miss you”, about 180)' },
-      { id: 'w2-winback-recent', who: 'team', text: 'Old-site requests → Past requests → To contact, one year at a time → ✉ Email these (“Still want lights?”): Tue 2026, 2025, 2024 and 2023 (about 120) · Wed 2022 (about 145) · Thu 2021 (about 165)' },
+      { id: 'w2-winback-inbox', who: 'team', text: 'Mon, before the first batch: send the OK’d “We miss you” to your own Gmail and Outlook address (Emails → Copy subject / Copy message, from info@ in Gmail) and check it lands in the inbox, not Spam or Promotions' },
+      { id: 'w2-winback-wb', who: 'team', text: 'Mon to Wed, 8 am, once Scott OK’d the emails: Old-site requests → Win-backs → To contact → ✉ Email these (“We miss you”) → Send the rest, then Stop at about 50 sent. Mon 50, Tue 50, Wed the rest (about 80) if few bounced; the list picks up where it stopped' },
+      { id: 'w2-winback-recent', who: 'team', text: 'Only if under 1 in 20 bounced and nobody complained: Past requests → To contact, one year at a time → ✉ Email these (“Still want lights?”): Thu 2026, 2025, 2024 and 2023 (about 120) · Fri 2022 (about 145) · Sat 2021 (about 165)' },
       { id: 'w2-winback-calls', who: 'owner', text: 'Thu to Sat: call the win-backs who paid $1,000+ and haven’t answered (Win-backs → Emailed: the top of the list paid the most, about 20 with a phone); set a status after each call' },
-      { id: 'w2-winback-2020', who: 'team', text: 'One email, no follow-up: Fri 2020 (about 205), Sat 2019 (about 175). Skip if more than 1 in 20 of this week’s emails bounced' },
     ],
   },
   {
@@ -97,7 +97,7 @@ export const WEEKS = [
       { id: 'w3-line', who: 'team', text: 'Update the "how full we are" line (Monday)' },
       { id: 'w3-rerender', who: 'claude', text: 'Re-render the videos without the 10% line (ask Claude)' },
       { id: 'w3-winback-follow-wb', who: 'team', text: 'Mon: Win-backs → Emailed → ✉ Email these (“Win-back follow-up”, the last one)' },
-      { id: 'w3-winback-follow-recent', who: 'team', text: 'Past requests → Emailed → ✉ Email these (“Win-back follow-up”): Tue 2023 to 2026 · Wed 2022 · Thu 2021. Not 2019 or 2020 (one email only)' },
+      { id: 'w3-winback-follow-recent', who: 'team', text: 'Past requests → Emailed → ✉ Email these (“Win-back follow-up”): Tue 2026 to 2023 · Wed 2022 · Thu 2021. Not 2020 or older (one email only)' },
     ],
   },
   {
@@ -107,7 +107,7 @@ export const WEEKS = [
       { id: 'w4-social', who: 'owner', text: 'Social post 4: warm white or multicolor?', draft: { doc: 'social', num: 4 } },
       { id: 'w4-adscheck', who: 'owner', text: 'Monday ads check' },
       { id: 'w4-followup', who: 'team', text: 'Send the "Estimate follow-up" email a week after any unanswered estimate' },
-      { id: 'w4-winback-oldest', who: 'team', text: 'If Scott says go: the oldest requests, one email each, no follow-up (“Still want lights?”, the 10% line is gone by itself): Mon 2018 · Tue 2017 · Wed 2016 and 2015 · Thu 2013 and 2012' },
+      { id: 'w4-winback-older', who: 'team', text: 'If Scott says go: requests from 2020 and before, one email each, no follow-up (“It’s been a while”, it starts on it when you pick the year), at most 150 a day, newest year first: 2020 (two days), 2019, 2018, 2017, then 2016 and 2015; not on the rebook-B day. Stop if more than 1 in 20 bounce. 2013 and 2012 only if those stayed clean' },
       { id: 'w4-winback-readout', who: 'claude', text: 'Win-back read-out: answers, estimates booked, bounces, and whether the oldest batch is worth it (ask Claude, Mon Nov 2)' },
     ],
   },
