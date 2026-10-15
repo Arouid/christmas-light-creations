@@ -13,7 +13,7 @@ A short look around the customer's own account page, the first time they sign in
 | 🎄 Your lights this season | the Your lights section shows. Lines: the install and takedown dates (when on this season's list); **Yes, put my lights back up** (when not on it yet: the Rebook box); **🛠 Report a problem** (when they have a customer record) | `#lights` |
 | 💬 Chat with us | the chat section shows | `#chat` |
 | 🧾 Agreements & payments | they have a proposal or an invoice | `#agreements` |
-| 📱 Get the app | not in the installed app (Get the app box shows) | `#app` |
+| 📱 Get the app | not in the installed app, and we have something of theirs (a proposal, an invoice or a customer record; design review 2026-10-14: the box is hidden for someone signed in with nothing on file) | `#app` |
 | 🧭 Everything else is in ☰ | always, last: ☰ lists every part, Help, **Take the tour**; call or text 281-819-0163 | the ☰ button `#account-menu` |
 
 - The first card opens with "Welcome, Pat! A quick look around." (first name from their record, as the page's "Hi, Pat").
