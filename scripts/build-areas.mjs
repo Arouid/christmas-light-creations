@@ -15,6 +15,11 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 // The same footer links as the home page (content.js hrefs start at '/'; the build's base may not).
 const footer = footerLinks.map((l) => `<a href="${base}${l.href.replace(/^\//, '')}" class="hover:text-glow-300">${esc(l.label)}</a>`).join(' · ')
 
+// The header matches the home page's on phones (owner 2026-10-14, "phone number is all I see"):
+// the wide logo, a call button (the number shows from sm up) and Free estimate. The phone icon
+// is Icon.jsx's, inlined since these pages carry no JavaScript.
+const PHONE_ICON = '<svg viewBox="0 0 24 24" class="size-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>'
+
 // Reuse the main page's stylesheet(s) so the area pages match the site.
 const mainHtml = await readFile(new URL('index.html', dist), 'utf8')
 const styles = [...mainHtml.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+\.css)"/g)].map((m) => m[1])
@@ -71,11 +76,11 @@ function page(a) {
 ${head(a)}<body>
 <a href="#main" class="skip-link">Skip to main content</a>
 <header class="border-b border-white/10 bg-night-950/90">
-  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-    <a href="${base}" class="flex items-center gap-2.5"><img src="${base}images/clc-cottage.png" alt="" class="size-11" /><span class="font-display text-lg font-bold">${esc(business.name)}</span></a>
-    <div class="flex items-center gap-2">
-      <a href="tel:+12818190163" class="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold">${business.phone}</a>
-      <a href="${base}#estimate" class="hidden rounded-full bg-glow-400 px-4 py-2 text-sm font-semibold text-night-950 sm:inline-block">Free estimate</a>
+  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
+    <a href="${base}" class="flex min-w-0 items-center"><img src="${base}images/clc-logo-wide.png" alt="${esc(business.name)}" width="517" height="168" class="h-12 w-auto sm:h-14" /></a>
+    <div class="flex shrink-0 items-center gap-2">
+      <a href="tel:+12818190163" aria-label="Call ${business.phone}" class="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/20 px-3 text-sm font-semibold text-glow-300 sm:px-4 sm:text-white">${PHONE_ICON}<span class="hidden sm:inline">${business.phone}</span></a>
+      <a href="${base}#estimate" class="inline-flex min-h-11 items-center rounded-full bg-glow-400 px-4 text-sm font-semibold text-night-950">Free estimate</a>
     </div>
   </div>
 </header>

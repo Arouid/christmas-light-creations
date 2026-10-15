@@ -61,7 +61,7 @@ export const areas = [
     photos: pics('west-ranch-friendswood.jpg', 'friendswood-lakes-friendswood.jpg', 'autumn-creek-friendswood.jpg', 'eagle-lakes-friendswood.jpg', 'the-forest-of-friendswood-friendswood.jpg'),
     intro: 'Friendswood’s tree-lined streets are made for Christmas lights. We light homes from West Ranch to Sterling Creek and the established neighborhoods in between.',
     local: [
-      'Mature trees are half the show in Friendswood. We can wrap trunks and light trees and walkways along with the roofline.',
+      'Right next door to Pearland, where we started in 2011, so a bulb out mid-season is a short drive for the crew, and service calls are always free.',
       'Every install is all-inclusive: lights, clips, cords, timers, service calls, and removal in January, then we store your lights labeled in a bin for next year.',
       'Returning customers re-install at 50% of the original price every year after.',
     ],
