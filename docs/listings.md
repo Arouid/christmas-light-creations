@@ -4,7 +4,7 @@ The words we use on profiles outside the website, so every listing says the same
 
 Pictures: `assets-source/listings/` (`node scripts/listing-images.mjs`): `profile-1080.png` for profile pictures (round or square), `cover-*-2000x1000.jpg` for wide covers (Victory Lakes first).
 
-Accounts: Yelp and Nextdoor are signed up through **info@christmas-light-creations.com** (owner 2026-10-15), so their notices arrive there. The staff app's message sync drops mail from yelp.com and nextdoor.com as service mail (`SERVICE_DOMAINS` in `functions/messageSync.js`) until it learns to pick out messages and quote requests.
+Accounts: Yelp and Nextdoor are signed up through **info@christmas-light-creations.com** (owner 2026-10-15), so their notices arrive there. The staff app's message sync drops mail from yelp.com and nextdoor.com as service mail (`SERVICE_DOMAINS` in `functions/messageSync.js`), except Nextdoor's notices of a neighbor's message, recommendation, comment or mention, which show in 💬 as 🏘️ Nextdoor once `messageSync` is deployed (`docs/specs/nextdoor-notices.md`, TODO #82). Yelp's messages and quote requests are still dropped.
 
 Same name, phone and website everywhere: **Christmas Light Creations**, **281-819-0163**, **https://christmas-light-creations.com**.
 
