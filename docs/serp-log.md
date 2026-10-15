@@ -6,6 +6,8 @@ Where the site shows for the searches that matter, checked by hand so there is s
 |---|---|---|---|---|
 | 2026-10-13 | christmas light installation pearland tx | **6** (lsxmaslights, houstonxmaslighting, Yelp, a Facebook post, wehangchristmaslights ahead) | listed (with Top of Houston, All About Outdoor Lighting) | not on page 1 (Kingdom, Ambiance, Christmas Lights Specialist, League City Christmas Lights, Legacy, Warriors for Light, Yelp, holidaylightingdirectory, The Perfect Light) |
 | 2026-10-13 | christmas light installers pearland | **5** (lsxmaslights, houstonxmaslighting, Yelp, a Pearland Facebook group post ahead) | not captured | not on page 1 (Kingdom, holidaylightingdirectory, League City Christmas Lights, Yelp, Legacy, Specialist, dandelco, Perfect Light, houstonxmaslighting, Window Genie) |
+| 2026-10-14 | christmas light installation pearland tx | not checked (Google showed its unusual-traffic page in the pane) | not checked | **5** (Kingdom, Ambiance, Christmas Lights Specialist, Legacy ahead; listed under the older title “Christmas Light Creations \| Holiday Light Installation in Pearland, TX” with the new description) |
+| 2026-10-14 | christmas light installers pearland | not checked (same) | not checked | **2** (Kingdom ahead; then Holiday Lighting Directory, League City Christmas Lights, Specialist, Yelp's top 10, Legacy, dandelco, Perfect Light, Gorilla) |
 
 ## What the indexes hold (2026-10-13)
 
@@ -21,6 +23,15 @@ Owner's own Google search for “Christmas Light Creations” (signed in, Pearla
 ## Copy changes for search (2026-10-13)
 
 Home `<title>` now “Christmas Light Installation in Pearland, TX | Christmas Light Creations”; the hero subhead carries “professional Christmas light installers” and “family-owned company”; FAQ gained “How do I pick a Christmas light installer near Pearland?” and “My permanent Christmas lights failed. Can you replace them?”; `/cost/` answers the cost searches. Searches to add to the next check: “christmas light installers pearland”, “christmas light installation cost pearland”, “permanent christmas lights failed replace”.
+
+## SEO audit check (2026-10-14)
+
+Same method for Bing (DuckDuckGo's plain results); Google refused the pane with its unusual-traffic page twice, so there is no Google row today (Startpage was tried and not used: its results aren't Google's). **Bing moved from off page 1 to 5 and 2** for the two Pearland searches in one day, after the IndexNow pings and the Webmaster Tools sitemap.
+
+- **Bing `site:`**: home (older title, new description), `/design/` (new), and the old WordPress URLs (`/info/`, `/get-an-estimate/`, `/signup/`, `/free-estimates/`, `/pearland-christmas-light-installation/`, `/faq/`, `/shadow-creek-ranch/`, `/test/`, `/photos/`). Still none of the six area pages or `/cost/`.
+- **“christmas light installation cost pearland”** (Bing): homeyou's cost page 1, Holiday Lighting Directory 2, our old `/pearland-christmas-light-installation/` URL **3** (it redirects to the Pearland page), home **5**.
+- **“"christmas light creations" pearland”** (Bing): home 1, old `/info/` 2, then our listings elsewhere: Yelp (`yelp.com/biz/christmas-light-creations-pearland`), MapQuest, MerchantCircle (shows a P.O. Box 58801 and a 2017 post), a YouTube ad, pearland.com's Holiday Decor & Lighting list.
+- **AI search** (Claude's own web search, as a stand-in for the assistants): “best Christmas light installers Pearland TX” and “Christmas Light Creations Pearland reviews” returned Thumbtack, HomeAdvisor, Alignable (Kingdom), Blingle and news pages, **nothing about us**. The assistants lean on those directories; being listed there matters more than anything on our own pages (TODO #70, #79).
 
 ## Next check
 
