@@ -295,6 +295,14 @@ export const gallery = [
   { src: photo('pasadena-christmas-install.jpg'), place: 'Pasadena', alt: 'Warm white roofline and garage lights on a two-story home in Pasadena' },
 ]
 
+// The home gallery's buttons (design review 2026-10-14: “Show all 76” added
+// about five phone screens with no way back): a dozen more at a time, and a
+// way to fold it back.
+export const galleryUi = {
+  more: (n, left) => `Show ${n} more photos (${left} left)`,
+  fewer: 'Show fewer photos',
+}
+
 // The Google review card on the customer's account page (owner 2026-10-14:
 // "show up now for any past customers"; who sees it: accountReview in
 // functions/reviewAsk.js). Same words for everyone and nothing offered: the

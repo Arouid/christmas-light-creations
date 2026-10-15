@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { gallery } from '../data/content'
+import { gallery, galleryUi } from '../data/content'
 import { useFocusOnOpen } from '../lib/focus'
+import { scrollMotion } from '../lib/motion.js'
 import { GRID_SIZES, GRID_SIZES_WIDE, gallerySrcSet } from '../lib/thumb'
 import Icon from './Icon'
 import Section from './Section'
 
 const INITIAL = 9
+const STEP = 12
 
 export default function Gallery() {
-  const [showAll, setShowAll] = useState(false)
+  const [count, setCount] = useState(INITIAL)
   const [active, setActive] = useState(null)
-  const photos = showAll ? gallery : gallery.slice(0, INITIAL)
+  const photos = gallery.slice(0, count)
+  const left = gallery.length - count
+  const fewer = () => {
+    setCount(INITIAL)
+    document.getElementById('gallery')?.scrollIntoView({ behavior: scrollMotion() })
+  }
   const dialog = useRef(null)
   useFocusOnOpen(dialog, active !== null)
 
@@ -38,19 +45,28 @@ export default function Gallery() {
         {photos.map((p, i) => (
           <li key={p.src} className={i === 0 ? 'col-span-2 row-span-2' : ''}>
             <button type="button" onClick={() => setActive(i)}
-              className="group block h-full w-full overflow-hidden rounded-xl bg-night-900 focus-visible:outline-2 focus-visible:outline-glow-400">
+              className="group relative block h-full w-full overflow-hidden rounded-xl bg-night-900 focus-visible:outline-2 focus-visible:outline-glow-400">
               <img src={p.src} srcSet={gallerySrcSet(p.src)} sizes={i === 0 ? GRID_SIZES_WIDE : GRID_SIZES} alt={p.alt} loading="lazy"
-                className="aspect-[4/3] h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                className="aspect-[4/3] h-full w-full object-cover motion-safe:transition motion-safe:duration-500 motion-safe:group-hover:scale-105" />
+              {/* Where it is, as on the area pages (the alt text already says it, so screen readers skip this). */}
+              <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-night-950/90 to-night-950/0 px-2.5 pb-2 pt-8 text-left text-xs font-medium text-white sm:px-3 sm:text-sm">{p.place}</span>
             </button>
           </li>
         ))}
       </ul>
-      {!showAll && gallery.length > INITIAL && (
-        <div className="mt-8 text-center">
-          <button type="button" onClick={() => setShowAll(true)}
-            className="rounded-full border border-white/20 px-6 py-3 font-semibold hover:bg-white/5">
-            Show all {gallery.length} photos
-          </button>
+      {(left > 0 || count > INITIAL) && (
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {left > 0 && (
+            <button type="button" onClick={() => setCount((c) => Math.min(c + STEP, gallery.length))}
+              className="min-h-11 rounded-full border border-white/20 px-6 py-3 font-semibold hover:bg-white/5">
+              {galleryUi.more(Math.min(STEP, left), left)}
+            </button>
+          )}
+          {count > INITIAL && (
+            <button type="button" onClick={fewer} className="min-h-11 rounded-full px-6 py-3 font-semibold text-slate-300 underline underline-offset-4 hover:text-white">
+              {galleryUi.fewer}
+            </button>
+          )}
         </div>
       )}
 
