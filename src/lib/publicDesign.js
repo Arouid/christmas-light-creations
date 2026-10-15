@@ -24,6 +24,23 @@ export function attachmentProblem({ design, photo, image } = {}) {
   return ''
 }
 
+// The design in progress, kept in the browser tab (sessionStorage) so a
+// reload or the Back button doesn't lose it; gone when the tab closes. The
+// photo has its own key so a slider tick only rewrites the small design.
+export const SAVED_KEYS = { photo: 'clc-design-photo', design: 'clc-design' }
+
+// What was kept -> { photo: 'sample' | data URL, design, portrait }, or null
+// for nothing usable (missing, damaged, or from an older page).
+export function savedDesign(photoRaw, designRaw) {
+  const jpeg = (s) => typeof s === 'string' && s.startsWith('data:image/jpeg;base64,') && s.length <= LIMITS.photo
+  if (photoRaw !== 'sample' && !jpeg(photoRaw)) return null
+  let s
+  try { s = JSON.parse(designRaw) } catch { return null }
+  const d = s?.design
+  if (s?.v !== 1 || !d || typeof d !== 'object' || !Array.isArray(d.strands) || !(d.photo?.width > 0 && d.photo?.height > 0)) return null
+  return { photo: photoRaw, design: d, portrait: s.portrait === true }
+}
+
 // The business mark on every picture the public designer saves or sends
 // (spec: "Watermark and terms"): the wide logo on a dark see-through plate in
 // the bottom-right corner, the designer's address under it, sized with the

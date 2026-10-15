@@ -12,7 +12,7 @@ const field = 'mt-1.5 block w-full rounded-xl border border-white/15 bg-night-95
 const label = 'block text-sm font-medium text-slate-300'
 
 // The estimate request form (home page, area pages, /design/).
-// design (optional, /design/): { preview: image src, get: () => attachment }
+// design (optional, /design/): { preview: image src, get: () => attachment, sample: the untouched sample }
 // sends their light design with the request (docs/specs/public-designer.md).
 export default function EstimateForm({ design, defaultMessage = '' }) {
   const [status, setStatus] = useState('idle') // idle | sending | sent | error
@@ -84,10 +84,10 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
         <p className="text-sm text-slate-400 sm:col-span-2">Takes about a minute. You get one exact price within a day; we don’t quote over the phone.</p>
         {design && (
           <div className="flex items-center gap-3 rounded-2xl border border-glow-400/30 bg-glow-400/5 p-3 sm:col-span-2">
-            <img src={design.preview} alt="Your light design" className="h-16 w-24 shrink-0 rounded-lg object-cover" />
+            <img src={design.preview} alt="Your light design" className="h-24 w-36 shrink-0 rounded-lg object-cover" />
             <label className="flex min-h-11 flex-1 items-center gap-3 text-sm font-medium">
               <input type="checkbox" checked={attach} onChange={(e) => setAttach(e.target.checked)} className="size-5 accent-glow-400" />
-              {attach ? `✓ ${designPage.attached}` : designPage.attach}
+              {attach ? `✓ ${design.sample ? designPage.attachedSample : designPage.attached}` : designPage.attach}
             </label>
           </div>
         )}

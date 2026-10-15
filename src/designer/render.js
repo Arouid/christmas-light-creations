@@ -245,14 +245,23 @@ function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, d
     ctx.stroke()
   }
   const dot = ([x, y], color, r) => { ctx.setLineDash([]); ctx.fillStyle = color; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.arc(x, y, r * u, 0, Math.PI * 2); ctx.fill(); ctx.stroke() }
+  // Pins and corners: a ring (dark edge, colored band, clear middle), so the
+  // gable or window corner under it stays visible (audit 2026-10-14). The
+  // grab area is the same (hit-testing doesn't use these sizes).
+  const ring = ([x, y], color, r) => {
+    ctx.setLineDash([])
+    ctx.beginPath(); ctx.arc(x, y, r * u, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 4.5 * u; ctx.stroke()
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5 * u; ctx.stroke()
+  }
   for (const s of design.strands) {
     const sel = s.id === selectedId
     line(pathOf(s), sel ? 'rgba(255,207,77,0.95)' : 'rgba(255,255,255,0.35)', sel ? 2.5 : 1.2, !sel)
     if (sel && s.shape) {
       line([...boxCorners(s.shape), boxCorners(s.shape)[0]], 'rgba(255,207,77,0.6)', 1.2, true)
-      boxCorners(s.shape).forEach((p) => dot(p, '#ffcf4d', 8))
+      boxCorners(s.shape).forEach((p) => ring(p, '#ffcf4d', 8))
     } else if (sel) {
-      s.points.forEach((p, i) => (i === selectedPoint ? dot(p, '#ff5fb4', 10) : dot(p, '#ffcf4d', 7)))
+      s.points.forEach((p, i) => (i === selectedPoint ? ring(p, '#ff5fb4', 10) : ring(p, '#ffcf4d', 7)))
       // Move-all handle: a ring with a dot in the middle of the pins.
       const [cx, cy] = strandCenter(s.points, MOVE_HANDLE_OFFSET * u)
       ctx.setLineDash([])
@@ -266,7 +275,7 @@ function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, d
     }
   }
   for (const d of design.decorations) {
-    if (d.id === selectedId) dot([d.x, d.y], '#ffcf4d', 8)
+    if (d.id === selectedId) ring([d.x, d.y], '#ffcf4d', 8)
   }
   if (draftShape) line(shapePoints(draftShape), 'rgba(110,231,255,0.95)', 2.5)
   if (brush) {
@@ -275,7 +284,7 @@ function drawHandles(ctx, design, { selectedId, selectedPoint, draft, measure, d
   }
   if (draft?.length) {
     line(draft, 'rgba(110,231,255,0.95)', 2.5)
-    draft.forEach((p) => dot(p, '#6ee7ff', 6))
+    draft.forEach((p) => ring(p, '#6ee7ff', 6))
   }
   const ref = measure ?? design.scale?.ref
   if (ref?.a && ref?.b) {

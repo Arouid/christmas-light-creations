@@ -492,7 +492,7 @@ export const privacy = {
     {
       title: 'What your browser keeps',
       items: [
-        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you sign in with your phone number, Google’s reCAPTCHA check runs once on that screen (no checkbox unless it suspects a robot). If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer stays on your device and is gone when you leave the page, unless you send it with an estimate request. The home page remembers which of its photos it showed you last (just that number), so your next visit opens on a different one. On your account page, the Google review card remembers on your device that you tapped it or chose Not now, so it stays out of your way. The account page also remembers on your device that you’ve seen its short tour, so it opens by itself only once. Google’s ad tag (above) sets its own cookies on our public pages. Nothing else is stored.',
+        'If you sign in to your account, your browser keeps you signed in until you sign out. If you ask for a sign-in link, we remember the email in your browser so the link works when you open it. If you sign in with your phone number, Google’s reCAPTCHA check runs once on that screen (no checkbox unless it suspects a robot). If you came from one of our road signs, the page remembers which sign for that visit. A photo you open in our light designer, and what you draw on it, stay on your device: that browser tab keeps them (so a reload or the Back button doesn’t lose your design) and forgets them when you close it. We get them only if you send them with an estimate request. The designer also remembers on your device that you’ve seen its short how-to, so it shows only once. The home page remembers which of its photos it showed you last (just that number), so your next visit opens on a different one. On your account page, the Google review card remembers on your device that you tapped it or chose Not now, so it stays out of your way. The account page also remembers on your device that you’ve seen its short tour, so it opens by itself only once. Google’s ad tag (above) sets its own cookies on our public pages. Nothing else is stored.',
       ],
     },
     {
@@ -711,12 +711,30 @@ export const designPage = {
   saveLabelShort: 'Estimate →', // phones: the header row has to fit without scrolling
   noSight: 'The designer is a drawing tool, so it doesn’t work with a screen reader. If you can’t see the picture, call us and describe the look you want:',
   backHome: 'Back to the main site',
+  // On the picture, which opens the designer too (sample / their own photo).
+  tapToTry: 'Tap to try it',
+  tapToEdit: 'Tap to keep designing',
+  // Before a new photo replaces a design with lights on it.
+  replaceAsk: 'Start over on a new photo? The lights on this one will be cleared.',
+  replaceYes: 'Start over',
+  replaceNo: 'Keep this one',
+  // Over the photo the first time the designer opens on a device.
+  coach: {
+    title: 'How it works',
+    steps: [
+      'Tap corner to corner along your roofline.',
+      'Tap Done when the strand ends, then pick its colors.',
+      'Slide 🌙 to see it after dark, then tap Estimate →.',
+    ],
+    hint: 'Two fingers to zoom. ↶ takes back a tap.',
+    ok: 'Got it',
+  },
   how: [
     ['✏️', 'Lights', 'tap corner to corner along a roofline, then Done.'],
-    ['▭', 'Rectangle / ◯ Oval', 'drag around a window, door or wreath.'],
-    ['👆', 'Select', 'tap a strand to change it; tap an empty spot to start drawing.'],
+    ['▭', 'Shapes', 'a rectangle or oval around a window, door or wreath.'],
+    ['👆', 'Select', 'tap a strand to change or delete it; tap an empty spot to start drawing.'],
     ['🎨', 'Colors', 'warm white, multicolor, red & white and more.'],
-    ['🌙', 'Night', 'slide to see it after dark. Hold “before” to compare.'],
+    ['🌙', 'Night', 'slide to see it after dark. Tap Before to compare.'],
   ],
   tipsTitle: 'Tips for a great photo of your home',
   tips: [
@@ -735,6 +753,7 @@ export const designPage = {
   formTitle: 'Get your free estimate',
   formIntro: 'Tell us where you are and we’ll measure and send a price. Your design comes with your request, so we see exactly the look you want.',
   attached: 'Your design is attached',
+  attachedSample: 'Our sample design is attached', // they didn't change the sample
   attach: 'Send my design with the request',
   message: 'I designed my lights on your website (attached).',
 }

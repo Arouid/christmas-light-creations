@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { hitStrand, length, sampleAlong } from '../src/designer/geometry.js'
-import { newDesign, newStrand, normalize, pxPerFoot } from '../src/designer/model.js'
+import { newDesign, newStrand, normalize, pxPerFoot, withDraft } from '../src/designer/model.js'
+import { HISTORY_MAX, pushStep, startHistory } from '../src/designer/history.js'
 import { bulbColor, designStats, scaleFrom } from '../src/designer/stats.js'
 
 test('bulbs are spaced evenly along a bent line, across corners', () => {
@@ -119,4 +120,34 @@ test('erasing a section: gaps merge, bulbs and feet drop, colors keep their orde
   assert.equal(lit.length, 16)
   assert.equal(Math.round(designStats(d).feet), 16)
   assert.deepEqual(lit.slice(7, 9).map((b) => [b.i, bulbColor(s, b.i)]), [[7, 'cool'], [13, 'cool']], 'bulb after the gap keeps its place in the pattern')
+})
+
+test('undo history: a slider drag is one step; redo steps drop when something new happens', () => {
+  let h = startHistory('d0', 'Opened')
+  h = pushStep(h, 'd1', 'Changed night level', true)
+  h = pushStep(h, 'd2', 'Changed night level', true)
+  h = pushStep(h, 'd3', 'Changed night level', true)
+  assert.deepEqual(h.list.map((s) => s.d), ['d0', 'd3'], 'one undo takes the whole drag back')
+  h = pushStep(h, 'd4', 'Added strand')
+  h = pushStep(h, 'd5', 'Added strand')
+  assert.equal(h.list.length, 4, 'without merge, every step counts')
+  h = pushStep({ ...h, at: 1 }, 'd6', 'Changed night level', true)
+  assert.deepEqual(h.list.map((s) => s.d), ['d0', 'd3', 'd6'], 'after undo, a new step replaces the redo steps (and never merges into an older one)')
+  assert.deepEqual(pushStep(startHistory('d0', 'Changed night level'), 'd1', 'Changed night level', true).list.map((s) => s.d), ['d0', 'd1'], 'the first step is never replaced')
+  let long = startHistory(0, 'Opened')
+  for (let i = 1; i <= HISTORY_MAX + 5; i++) long = pushStep(long, i, `step ${i}`)
+  assert.equal(long.list.length, HISTORY_MAX)
+  assert.equal(long.at, HISTORY_MAX - 1)
+})
+
+test('closing or saving mid-line keeps the line (2+ points), with the pen\'s colors', () => {
+  const d = newDesign({ width: 100, height: 100 })
+  const pen = { style: 'c9', colors: ['red', 'cool'], groupSize: 2 }
+  assert.equal(withDraft(d, [], pen), d)
+  assert.equal(withDraft(d, [[1, 1]], pen), d, 'one tap is not a line')
+  const out = withDraft(d, [[1, 1], [50, 1]], pen)
+  assert.equal(out.strands.length, 1)
+  assert.deepEqual(out.strands[0].points, [[1, 1], [50, 1]])
+  assert.deepEqual([out.strands[0].colors, out.strands[0].groupSize], [['red', 'cool'], 2])
+  assert.equal(d.strands.length, 0, 'the design itself is untouched')
 })

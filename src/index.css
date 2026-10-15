@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* sideways: a screen wider than tall and at least 560 px wide (a phone held
+   sideways, a tablet or a computer). The light designer puts its controls
+   beside the photo there. The width keeps an upright phone with its keyboard
+   open (short, but narrow) on the stacked layout. */
+@custom-variant sideways {
+  @media (orientation: landscape) and (min-width: 35rem) {
+    @slot;
+  }
+}
+
 /* Fonts, self-hosted (public/fonts/, SIL OFL licences beside them): the same
    variable files Google Fonts served, split the same way (latin loads for
    English; latin-ext only when a page shows such a letter, e.g. a name). */

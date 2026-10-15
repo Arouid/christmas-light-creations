@@ -74,6 +74,13 @@ export function newStrand(style = 'c9', colors = ['warm']) {
   return { id: newId('s'), style, colors, groupSize: 1, spacingIn: s.spacingIn, size: 1, points: [] }
 }
 
+// The line being drawn as a strand (pen: { style, colors, groupSize }).
+export const draftStrand = (pen, points) => ({ ...newStrand(pen.style, pen.colors), groupSize: pen.groupSize ?? 1, points })
+
+// The design with the line being drawn added, if it has 2+ points: closing,
+// saving or exporting mid-line keeps what was tapped.
+export const withDraft = (design, draft, pen) => (draft?.length >= 2 ? { ...design, strands: [...design.strands, draftStrand(pen, draft)] } : design)
+
 export function newDecoration(type, x, y) {
   return { id: newId('d'), type, x, y, size: 1, rotation: 0 }
 }

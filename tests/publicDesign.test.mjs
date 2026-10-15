@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { newDesign } from '../src/designer/model.js'
 import { finishedPicture } from '../src/design/photo.js'
-import { LIMITS, WATERMARK_TEXT, attachmentProblem, standardSize, watermark, watermarkLayout } from '../src/lib/publicDesign.js'
+import { LIMITS, WATERMARK_TEXT, attachmentProblem, savedDesign, standardSize, watermark, watermarkLayout } from '../src/lib/publicDesign.js'
 
 test('every photo becomes the standard size: long side 1280, same shape', () => {
   assert.deepEqual(standardSize(4032, 3024), { width: 1280, height: 960, portrait: false })
@@ -92,4 +92,27 @@ test('every finished picture (the thumbnail and what is sent with the request) c
   } finally {
     delete globalThis.document
   }
+})
+
+test('a design kept in the tab comes back only when it is whole', () => {
+  const design = newDesign({ width: 1280, height: 960 })
+  const kept = JSON.stringify({ v: 1, design, portrait: true })
+  assert.deepEqual(savedDesign('sample', kept), { photo: 'sample', design, portrait: true })
+  assert.equal(savedDesign('data:image/jpeg;base64,AAAA', kept).photo, 'data:image/jpeg;base64,AAAA')
+  assert.equal(savedDesign(null, kept), null, 'no photo')
+  assert.equal(savedDesign('data:image/png;base64,AAAA', kept), null, 'only our own JPEGs')
+  assert.equal(savedDesign(`data:image/jpeg;base64,${'A'.repeat(LIMITS.photo)}`, kept), null, 'too big')
+  assert.equal(savedDesign('sample', '{oops'), null, 'damaged')
+  assert.equal(savedDesign('sample', JSON.stringify({ v: 2, design })), null, 'another version')
+  assert.equal(savedDesign('sample', JSON.stringify({ v: 1, design: { ...design, strands: null } })), null)
+  assert.equal(savedDesign('sample', JSON.stringify({ v: 1, design: { ...design, photo: {} } })), null)
+  assert.equal(savedDesign('sample', null), null)
+})
+
+test('the designer page has every word its buttons, form and how-to use', async () => {
+  const { designPage: t } = await import('../src/data/content.js')
+  for (const k of ['open', 'edit', 'upload', 'uploadAgain', 'tapToTry', 'tapToEdit', 'replaceAsk', 'replaceYes', 'replaceNo', 'estimate', 'saveLabel', 'saveLabelShort', 'attach', 'attached', 'attachedSample', 'portraitTip', 'noSight']) {
+    assert.ok(typeof t[k] === 'string' && t[k].trim(), k)
+  }
+  assert.ok(t.coach.title && t.coach.ok && t.coach.steps.length === 3 && t.coach.steps.every((s) => s.trim()))
 })
