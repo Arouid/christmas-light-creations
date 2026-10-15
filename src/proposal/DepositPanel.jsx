@@ -55,7 +55,8 @@ export default function DepositPanel({ token, part = 'deposit', of = 'proposal',
       <h2 className="font-display text-2xl font-extrabold">{title ?? 'Pay your deposit'}: {amountLabel}</h2>
       <p className="text-sm text-slate-300">{note ?? 'This holds your install date.'} Pay with PayPal, Venmo or a card. {PAYPAL.env === 'sandbox' && <strong className="text-glow-300">TEST MODE: no real money moves.</strong>}</p>
       {msg && <p className="text-sm text-glow-300" role="status">{msg}</p>}
-      <div ref={box} className="rounded-2xl bg-white p-3" />
+      {/* isolate: PayPal's frames carry z-index 100; kept in their own layer they scroll under a sticky header. */}
+      <div ref={box} className="isolate rounded-2xl bg-white p-3" />
     </section>
   )
 }

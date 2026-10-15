@@ -53,3 +53,14 @@ test('re-book: request checks, the season patch, already-on-the-list, and what s
   const link = STOCK_TEMPLATES.find((t) => t.id === 'account-invite')
   assert.ok(link && link.body.includes('{website}/account/') && /Google/.test(link.body) && /Get the app/.test(link.body), 'the account-link template names the link, Google sign-in and the app')
 })
+
+test('rebook weeks: only the ones still ahead in the fall, all of them before July, never none (owner 2026-10-14)', async () => {
+  const { openWeeks } = await import('../functions/rebook.js')
+  const d = (s) => new Date(`${s}T12:00:00`)
+  assert.deepEqual(openWeeks(d('2026-08-01')), WEEKS)
+  assert.deepEqual(openWeeks(d('2026-10-20')), WEEKS)
+  assert.ok(!openWeeks(d('2026-10-21')).includes('Mid-October'))
+  assert.deepEqual(openWeeks(d('2026-11-08')), ['Mid-November', 'Late November', 'Whenever works'])
+  assert.deepEqual(openWeeks(d('2026-12-10')), ['Whenever works'])
+  assert.deepEqual(openWeeks(d('2027-03-01')), WEEKS)
+})

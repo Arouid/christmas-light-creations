@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { ACCOUNT_TOUR_UI as UI } from '../data/accountTour'
+import Icon from '../components/Icon'
 import Rich from '../leads/Rich'
+import { firstName } from './contacts.js'
 
 // The customer's tour of their account (docs/specs/account-tour.md): one card
 // at a time at the bottom of the screen; the part of the page it talks about
@@ -13,7 +15,7 @@ export default function AccountTour({ steps, name = '', onClose }) {
   const i = Math.min(at, steps.length - 1) // the list can shrink when the account reloads
   const step = steps[i]
   const last = i === steps.length - 1
-  const first = String(name).trim().split(' ')[0]
+  const first = firstName(name)
   const next = () => setAt(i + 1)
   const back = () => setAt(i - 1)
 
@@ -48,7 +50,7 @@ export default function AccountTour({ steps, name = '', onClose }) {
           <button type="button" onClick={onClose} aria-label={UI.close} className="-my-1 -mr-2 size-11 shrink-0 rounded-full text-slate-300 hover:bg-white/10">✕</button>
         </div>
         <h2 className="flex items-center gap-2 font-display text-xl font-extrabold">
-          <span aria-hidden="true" className="text-2xl">{step.icon}</span>{step.title}
+          <Icon name={step.icon} className="size-6 shrink-0 text-glow-300" />{step.title}
         </h2>
         {step.body.map((line) => <p key={line} className="text-sm leading-relaxed text-slate-300 sm:text-base"><Rich text={line} /></p>)}
         <div className="flex items-center gap-1.5" aria-hidden="true">

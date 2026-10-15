@@ -113,8 +113,8 @@ export default function DesignPage() {
             </div>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               {/* Never disabled: the designer waits for the photo itself, and focus returns here when it closes. */}
-              <button type="button" onClick={() => setOpen(true)} className={primary}>✏️ {photo.sample ? t.open : t.edit}</button>
-              <button type="button" onClick={() => file.current?.click()} disabled={busy} className={secondary}>📷 {busy ? 'Opening…' : photo.sample ? t.upload : t.uploadAgain}</button>
+              <button type="button" onClick={() => setOpen(true)} className={primary}>{photo.sample ? t.open : t.edit}</button>
+              <button type="button" onClick={() => file.current?.click()} disabled={busy} className={secondary}>{busy ? 'Opening…' : photo.sample ? t.upload : t.uploadAgain}</button>
               <input ref={file} type="file" accept="image/*" onChange={pick} className="hidden" />
             </div>
             {problem && <p className="mt-3 text-berry-300" role="alert">{problem}</p>}

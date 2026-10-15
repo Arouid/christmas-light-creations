@@ -5,6 +5,17 @@
 // functions/index.js does the writes; this file is pure and tested.
 export const WEEKS = ['Mid-October', 'Late October', 'First week of November', 'Mid-November', 'Late November', 'Whenever works']
 export const NOTE_MAX = 300
+// The last day each week still makes sense ([month, day]); “Whenever works” always does.
+const WEEK_ENDS = { 'Mid-October': [10, 20], 'Late October': [10, 31], 'First week of November': [11, 7], 'Mid-November': [11, 20], 'Late November': [11, 30] }
+// The weeks to offer on a day (owner 2026-10-14: no “Mid-October” once it's gone).
+// From July to December only the weeks still ahead; January to June (booking next
+// season) all of them. Never empty: “Whenever works” stays.
+export function openWeeks(today = new Date()) {
+  const m = today.getMonth() + 1
+  if (m < 7) return WEEKS
+  const now = m * 100 + today.getDate()
+  return WEEKS.filter((w) => !WEEK_ENDS[w] || WEEK_ENDS[w][0] * 100 + WEEK_ENDS[w][1] >= now)
+}
 export const CONFIRMED = 'Confirmed - Needs to be Scheduled'
 // Statuses that mean "already on this season's list": the tap changes nothing.
 export const ON_THE_LIST = [CONFIRMED, 'Install Scheduled', 'Install Completed']

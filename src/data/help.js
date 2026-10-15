@@ -9,7 +9,7 @@ const PHONE = '281-819-0163'
 
 export const HELP = [
   { id: 'sign-in', q: 'How do I sign in?', tags: 'login password link google email phone number code text',
-    a: `There is no password. Tap Sign in with Google; or tap Sign in with your phone number, type the mobile number we have for you and then the 6-digit code we text you; or type your email and tap Email me a link, and the email has a one-tap link that signs you in. Use the same email or phone your estimate or invoice went to.` },
+    a: `There is no password. Tap Sign in with Google; or tap Sign in with your phone, type the mobile number we have for you and then the 6-digit code we text you; or type your email and tap Email me a link, and the email has a one-tap link that signs you in. Use the same email or phone your estimate or invoice went to.` },
   { id: 'no-link', q: 'The sign-in email never came', tags: 'spam junk promotions link expired once',
     a: `Check your spam or promotions folder and mark it "Not spam" so the next one lands in your inbox. The link works once; ask for a new one if you used it already. If the email we have for you is different from the one you typed, nothing is sent: call or text ${PHONE} and we will fix the address, or sign in with your phone number instead.` },
   { id: 'no-code', q: 'The text with the code never came', tags: 'sms code phone number landline wrong expired resend',
@@ -19,7 +19,7 @@ export const HELP = [
   { id: 'payin3', q: 'What is Pay in 3?', tags: 'payments monthly plan thirds installments',
     a: `Three equal payments that cover everything (install and takedown): the first when you sign, then one a month on the 1st or the 15th, whichever you picked when you signed. We email the link the morning each one is due. Same price as paying up front.` },
   { id: 'lights-out', q: 'My lights are out', tags: 'outlet gfci reset breaker timer strand dark not working',
-    a: `${GFCI_TIP} If a whole section is dark, or a strand is down, tap Report a problem under Your lights (or text a photo to ${PHONE}): service calls are free all season.` },
+    a: `${GFCI_TIP} If a whole section is dark, or a strand is down, tap Report a problem at the top of your account (or text a photo to ${PHONE}): service calls are free all season.` },
   { id: 'warranty', q: 'Is there a warranty on my lights?', tags: 'lifetime warranty replace worn sun broken guarantee',
     a: `Yes, for life, for as long as you stay a customer: when we install your lights, you are covered from that install until your next one with us, season after season. Decide not to have us install one year, and it ends there. When the Texas sun has finally worn out the plastic housings, five or more years in, we replace everything brand new at no charge; in 15 years we have never charged a cent for it. During the season, anything that goes out is fixed free, usually the same day. Not covered: damage from trees, storms, animals, vehicles or your home's wiring (see your agreement).` },
   { id: 'timer', q: 'When do the lights come on?', tags: 'timer dusk schedule hours',
@@ -27,7 +27,7 @@ export const HELP = [
   { id: 'trees', q: 'A tree pulled my lights down', tags: 'branches trim wind roof gutter rehang service',
     a: TREE_NOTICE },
   { id: 'dates', q: 'When will you install or take down my lights?', tags: 'schedule date week install takedown january',
-    a: `Your lights section shows the day or week once it is set; we schedule area by area and text the day before. Takedown runs from January 3 to about January 13, weather and the number of homes permitting. You never need to be home.` },
+    a: `The top of your account shows the day or week once it is set; we schedule area by area and text the day before. Takedown runs from January 3 to about January 13, weather and the number of homes permitting. You never need to be home.` },
   { id: 'weather', q: 'It is going to rain or storm on my install day', tags: 'weather rain wind lightning freeze reschedule',
     a: `Rain, lightning and strong wind keep our crew off the roof, so the date may move to the next clear day. We text you if it does, and you keep any early-install discount. When bad weather is coming we email a heads-up the afternoon before.` },
   { id: 'email-prefs', q: 'How do I stop the weather and tips emails?', tags: 'unsubscribe opt out notifications spam',
@@ -53,6 +53,22 @@ export const HELP = [
 const words = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 1)
 
 // Entries matching the query, best first; the whole list for a blank query.
+// The answers in groups under a heading with one of our line icons (owner
+// 2026-10-14: "the help section needs categorized, it's hard to read").
+// Every HELP id sits in exactly one group (tests/accountContacts.test.mjs).
+export const HELP_GROUPS = [
+  { key: 'signin', title: 'Signing in', icon: 'lock', ids: ['sign-in', 'no-link', 'no-code'] },
+  { key: 'money', title: 'Paying', icon: 'receipt', ids: ['pay', 'payin3', 'price', 'cancel'] },
+  { key: 'lights', title: 'Your lights', icon: 'tree', ids: ['lights-out', 'timer', 'trees', 'warranty', 'weather'] },
+  { key: 'home', title: 'Dates and your home', icon: 'home', ids: ['dates', 'boxes', 'hoa', 'details'] },
+  { key: 'us', title: 'Emails, the app and reaching us', icon: 'chat', ids: ['email-prefs', 'app', 'chat', 'contact'] },
+]
+
+// The search's answers sorted into those groups (best match first inside each); empty groups go.
+export const helpGroups = (list) => HELP_GROUPS
+  .map((g) => ({ ...g, items: list.filter((h) => g.ids.includes(h.id)) }))
+  .filter((g) => g.items.length)
+
 export function searchHelp(query, list = HELP) {
   const q = words(query)
   if (!q.length) return list

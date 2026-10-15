@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { accountGlance, accountReviewCard, business } from '../data/content'
 import { laterValue, reviewCardHidden, saveReviewCard } from './reviewCard'
 import DepositPanel from '../proposal/DepositPanel.jsx'
@@ -14,13 +14,14 @@ import AccountDrawer from './AccountDrawer.jsx'
 import { NOTE_MAX, REPORT_ISSUES, scheduleText, shortDate } from '../../functions/service.js'
 import { TEXT_MAX as CHAT_MAX } from '../../functions/chat.js'
 import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
-import { searchHelp } from '../data/help.js'
+import { helpGroups, searchHelp } from '../data/help.js'
 import { scrollMotion } from '../lib/motion.js'
-import { WEEKS } from '../../functions/rebook.js'
+import { openWeeks } from '../../functions/rebook.js'
 import { demoCodeStep, demoPhoneStep, phoneError, prettyPhone } from './phoneSignIn.js'
 import AccountTour from './AccountTour.jsx'
 import AccountHouse from './AccountHouse.jsx'
-import { accountTourSteps, tourWorthOpening } from '../data/accountTour.js'
+import { accountContacts, firstName } from './contacts.js'
+import { accountTourSteps, canReport, tourWorthOpening } from '../data/accountTour.js'
 import { PREVIEW_NO_SIGN_IN, PREVIEW_OFF, PREVIEW_PARAM, previewBanner, previewProblem } from '../lib/accountPreview.js'
 
 // The customer's own account: /account/ (sign in with Google, a code texted
@@ -102,21 +103,31 @@ export default function AccountPage() {
   const tourSteps = data ? accountTourSteps(data, { installed }) : []
   const tourOpen = tour ?? (Boolean(data) && (preview || !tourSeen) && tourWorthOpening(tourSteps))
   const closeTour = () => { if (!preview) markTourDone(); setTour(false) }
+  // ☰ → Add an email or phone starts a Chat with us message (no call needed).
+  const [chatDraft, setChatDraft] = useState(null) // { text, n }
+  function addContact() {
+    setChatDraft((d) => ({ text: 'Please also link this to my account so it can sign in: ', n: (d?.n ?? 0) + 1 }))
+    requestAnimationFrame(() => {
+      document.getElementById('chat')?.scrollIntoView({ behavior: scrollMotion(), block: 'start' })
+      document.getElementById('chat-text')?.focus({ preventScroll: true })
+    })
+  }
   // What the drawer links to, by what's on the page (anchors below).
   // In the page's own order (Account below).
   const hasRecords = Boolean(data) && ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0 || Boolean(data.customer))
   const menuItems = data ? [
-    (data.schedule || data.service) && { href: '#lights', label: 'Your lights', icon: '🎄' },
-    data.chat && { href: '#chat', label: 'Chat with us', icon: '💬' },
-    ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0) && { href: '#agreements', label: 'Agreements & payments', icon: '🧾' },
-    data.price && { href: '#price', label: 'Your yearly price', icon: '💲' },
-    (data.invoices ?? []).some((i) => i.state === 'paid') && { href: '#paid', label: 'Paid invoices', icon: '✓' },
-    data.price?.history?.length > 0 && { href: '#history', label: 'What you’ve paid', icon: '📒' },
-    data.details && { href: '#property-details', label: 'Your property details', icon: '🏡' },
-    data.details && { href: '#emails', label: 'Email preferences', icon: '✉️' },
-    !installed && hasRecords && { href: '#app', label: 'Get the app', icon: '📱' },
-    { href: '#help', label: 'Help', icon: '❓' },
-  ].filter(Boolean) : [{ href: '#help', label: 'Help', icon: '❓' }]
+    // group: a heading in content.js accountMenu (owner 2026-10-14)
+    (scheduleText(data.schedule) || canReport(data)) && { group: 'season', href: '#lights', label: 'Dates and service' },
+    data.chat && { group: 'season', href: '#chat', label: 'Chat with us' },
+    ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0) && { group: 'money', href: '#agreements', label: 'Agreements & payments' },
+    data.price && { group: 'money', href: '#price', label: 'Your yearly price' },
+    (data.invoices ?? []).some((i) => i.state === 'paid') && { group: 'money', href: '#paid', label: 'Paid invoices' },
+    data.price?.history?.length > 0 && { group: 'money', href: '#history', label: 'What you’ve paid' },
+    data.details && { group: 'home', href: '#property-details', label: 'Your property details' },
+    data.details && { group: 'home', href: '#emails', label: 'Email preferences' },
+    { group: 'help', href: '#help', label: 'Questions and answers' },
+    !installed && hasRecords && { group: 'help', href: '#app', label: 'Get the app' },
+  ].filter(Boolean) : [{ group: 'help', href: '#help', label: 'Questions and answers' }]
 
   async function load() {
     if (demo) {
@@ -125,7 +136,9 @@ export default function AccountPage() {
       // ?demo=street: no house photo of ours, so Street View (only on localhost:5173, where the Maps key works).
       // ?demo=nobody: signed in with an email we have nothing under (the "Nothing under this email yet" screen).
       const variant = q.get('demo')
+      // ?demo=up: their lights are up (Report a problem shows only then).
       const rebook = variant === 'rebook' ? { ...DEMO_ACCOUNT, schedule: { ...DEMO_ACCOUNT.schedule, installStatus: '', day: '', plannedDate: '', weekOf: '' } }
+        : variant === 'up' ? { ...DEMO_ACCOUNT, schedule: { ...DEMO_ACCOUNT.schedule, installStatus: 'Install Completed' } }
         : variant === 'street' ? { ...DEMO_ACCOUNT, house: null }
           : variant === 'nobody' ? { email: 'someone.else@example.com', phone: '', proposals: [], invoices: [], price: null, schedule: null, service: null, details: null, chat: null, review: null, customer: null }
             : DEMO_ACCOUNT
@@ -260,18 +273,21 @@ export default function AccountPage() {
           <span className="font-display text-lg font-extrabold leading-tight">Your account</span>
         </a>
         <div className="flex items-center gap-2">
-          <a href={business.phoneHref} className={`${btn} min-w-11 border border-white/20 px-3 text-glow-300 sm:px-4`} aria-label={`Call ${business.phone}`}>
+          <a href={business.phoneHref} className="inline-flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border border-white/20 font-semibold text-glow-300 sm:w-auto sm:px-4" aria-label={`Call ${business.phone}`}>
             <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span>
           </a>
+          {/* Help one tap away (owner 2026-10-14). */}
+          <a href="#help" aria-label="Help" className="grid size-11 shrink-0 place-items-center rounded-full border border-white/20 text-glow-300 print:hidden"><Icon name="help" className="size-5" /></a>
           <button type="button" id="account-menu" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl print:hidden">☰</button>
         </div>
       </div>
     </header>
     <main className="mx-auto min-h-svh max-w-3xl px-4 pb-24 pt-6">
-      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo && !preview ? logOut : null} onTour={tourSteps.length ? () => setTour(true) : null} />
+      <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo && !preview ? logOut : null} onTour={tourSteps.length ? () => setTour(true) : null}
+        onAddContact={data?.chat && !preview ? addContact : null} />
       {tourOpen && tourSteps.length > 0 && <AccountTour steps={tourSteps} name={(data.proposals?.[0]?.customer ?? data.customer ?? data.invoices?.[0]?.customer)?.name} onClose={closeTour} />}
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data{demoSignIn ? ': nothing is sent, any 6 digits sign in' : ''}</p>}
-      <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} phoneUi={phoneUi} reload={load} logOut={logOut} />
+      <Body view={view} email={email} setEmail={setEmail} busy={busy} submit={submit} google={google} phoneUi={phoneUi} reload={load} logOut={logOut} chatDraft={chatDraft} />
       <RecaptchaNote className="mt-10" />
     </main>
     </>
@@ -307,7 +323,7 @@ function StaffCard({ title, text, error, google, busy }) {
   )
 }
 
-function Body({ view, email, setEmail, busy, submit, google, phoneUi, reload, logOut }) {
+function Body({ view, email, setEmail, busy, submit, google, phoneUi, reload, logOut, chatDraft }) {
   if (view.name === 'checking' || view.name === 'loading') return <p className="py-20 text-center text-slate-400">{preview ? 'Loading their account…' : 'Loading your account…'}</p>
   if (view.name === 'staffSignIn') return <StaffCard title="See their account as they do" text="Sign in with the Google account you use for the staff app. Nothing you do here is sent." error={view.error} google={google} busy={busy} />
   if (view.name === 'previewProblem') return <StaffCard title={view.title} text={view.text} error={view.error} google={view.signIn ? google : null} busy={busy} />
@@ -328,7 +344,7 @@ function Body({ view, email, setEmail, busy, submit, google, phoneUi, reload, lo
               <GoogleG /> Sign in with Google
             </button>
             <button type="button" onClick={() => phoneUi.back('phone')} disabled={busy} className={`${btn} w-full border border-white/20 disabled:opacity-60`}>
-              <Icon name="phone" className="size-5" /> Sign in with your phone number
+              <Icon name="phone" className="size-5" /> Sign in with your phone
             </button>
             <p className="text-center text-sm text-slate-400">or get a sign-in link by email</p>
             {/* iPhone opens emailed links in Safari, not in the home-screen app. */}
@@ -342,14 +358,14 @@ function Body({ view, email, setEmail, busy, submit, google, phoneUi, reload, lo
         </label>
         {view.error && <p className="text-sm text-berry-300" role="alert">{view.error}</p>}
         <button type="submit" disabled={busy} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-60`}>
-          {busy ? 'One moment…' : finishing ? 'Sign in' : 'Email me a sign-in link'}
+          {busy ? (finishing ? 'Signing you in…' : 'Sending your link…') : finishing ? 'Sign in' : 'Email me a sign-in link'}
         </button>
       </form>
       <Help />
       </div>
     )
   }
-  return <Account data={view.data} reload={reload} logOut={logOut} />
+  return <Account data={view.data} reload={reload} logOut={logOut} chatDraft={chatDraft} />
 }
 
 // Sign in with your phone number (docs/specs/phone-sign-in.md): the number,
@@ -378,7 +394,7 @@ function PhoneSignIn({ view, busy, phone, setPhone, codeText, setCodeText, send,
       <div id={RECAPTCHA_ID} />
       {view.error && <p className="text-sm text-berry-300" role="alert">{view.error}</p>}
       <button type="submit" disabled={busy} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-60`}>
-        {busy ? 'One moment…' : code ? 'Sign in' : 'Text me a code'}
+        {busy ? (code ? 'Checking the code…' : 'Texting your code…') : code ? 'Sign in' : 'Text me a code'}
       </button>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
         {code && <button type="button" onClick={() => send()} disabled={busy} className="min-h-11 underline disabled:opacity-60">Didn’t get it? Send again</button>}
@@ -411,43 +427,45 @@ function Notice({ title, text, action }) {
   )
 }
 
-function Account({ data, reload, logOut }) {
+function Account({ data, reload, logOut, chatDraft }) {
   const list = data.proposals ?? []
   const invoices = data.invoices ?? []
   const me = list[0]?.customer ?? data.customer ?? invoices[0]?.customer
-  const linked = [...(data.customer?.phones ?? []).map(prettyPhone), ...(data.customer?.emails ?? [])]
-  const signedInAs = data.email || prettyPhone(data.phone)
-  // "+ Add another email or phone" starts a Chat with us message (no call needed).
-  const [chatDraft, setChatDraft] = useState(null) // { text, n }
-  function addContact() {
-    setChatDraft((d) => ({ text: 'Please also link this to my account so it can sign in: ', n: (d?.n ?? 0) + 1 }))
-    requestAnimationFrame(() => {
-      document.getElementById('chat')?.scrollIntoView({ behavior: scrollMotion(), block: 'start' })
-      document.getElementById('chat-text')?.focus({ preventScroll: true })
-    })
-  }
+  // The phones and emails that sign them in; the one they used glows when there are several
+  // (owner 2026-10-14). Sign out and "Add an email or phone" live in ☰.
+  // (A staff preview doesn't know which one they'd sign in with, so nothing glows there.)
+  const contacts = accountContacts(data.customer, preview ? {} : { email: data.email, phone: data.phone })
+  const signedInAs = data.email || prettyPhone(data.phone) // the "nothing under this email" note names it
   const unpaid = invoices.filter((i) => i.state === 'open' || i.state === 'overdue')
   const owed = list.flatMap((p) => p.parts.filter((x) => x.state === 'due')).reduce((t, x) => t + x.amount, 0) + unpaid.reduce((t, i) => t + i.cents, 0)
   const hasRecords = list.length > 0 || invoices.length > 0 || Boolean(data.customer)
+  const sched = scheduleText(data.schedule)
+  const booked = Boolean(sched && !sched.none)
   return (
     <div className="space-y-6">
       {/* Their house on top, like the staff Accounts card (owner 2026-10-14), without its buttons. */}
       <section className="overflow-hidden rounded-3xl border border-white/10 bg-night-900">
         {(data.house || me?.address) && <AccountHouse house={data.house} address={me?.address} />}
         <div className="space-y-1 p-4 sm:p-5">
-          <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : accountGlance.welcome}</h1>
+          <h1 className="font-display text-3xl font-extrabold">{firstName(me?.name) ? `Hi, ${firstName(me?.name)}` : accountGlance.welcome}</h1>
           {me?.address && <p className="text-slate-300">{me.address}</p>}
           {/* The phones and emails linked to the account (any of them signs in), like the staff card's line. */}
-          {linked.length > 0 && <p className="text-slate-300 [overflow-wrap:anywhere]">{linked.join(' · ')}</p>}
-          {data.chat && (
-            <button type="button" onClick={addContact} disabled={preview} title={offTip} className="min-h-11 text-sm font-semibold text-glow-300 underline disabled:opacity-60">
-              + Add another email or phone
-            </button>
+          {contacts.length > 0 && (
+            <p className="text-slate-300 [overflow-wrap:anywhere]">
+              {contacts.map((c, i) => (
+                <Fragment key={c.text}>
+                  {i > 0 && ' · '}
+                  {c.me && contacts.length > 1
+                    ? <span className="font-semibold text-glow-300 [text-shadow:0_0_12px_rgb(255_207_77/0.7)]" title={accountGlance.signedInWith}>{c.text}<span className="sr-only"> ({accountGlance.signedInWith})</span></span>
+                    : c.text}
+                </Fragment>
+              ))}
+            </p>
           )}
-          <p className="text-sm text-slate-400">Signed in as {signedInAs}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
+          {/* At a glance inside the same card, under the address (owner 2026-10-14: less clutter). */}
+          <Glance data={data} owed={owed} reload={reload} />
         </div>
       </section>
-      <Glance data={data} owed={owed} />
       {/* Signed in with an email or phone we don't have (owner 2026-10-14: less friction): try another,
           or text us with the details already filled in; Call stays. */}
       {!hasRecords && (
@@ -456,14 +474,15 @@ function Account({ data, reload, logOut }) {
           text={`We may have a different email or phone number for you. Try another way to sign in, or text us and we’ll link ${signedInAs} to your records.`}
           action={<>
             <button type="button" onClick={logOut} disabled={preview} title={offTip} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>Try another way to sign in</button>
-            <a href={business.smsWith(`Hi! Please link ${signedInAs} to my Christmas Light Creations account. My name and address: `)} className={`${btn} border border-white/20`}>💬 Text us to link it</a>
+            <a href={business.smsWith(`Hi! Please link ${signedInAs} to my Christmas Light Creations account. My name and address: `)} className={`${btn} border border-white/20`}><Icon name="chat" className="size-5" /> Text us to link it</a>
           </>}
         />
       )}
-      {data.details && <DetailsNudge details={data.details} />}
-      {/* Order (design review 2026-10-14): the season, then a word with us, then money, then the
-          review ask (it used to come first, above anything due), then the household details. */}
-      <Lights schedule={data.schedule} service={data.service} reload={reload} />
+      {/* "Two minutes before we come": only once a visit is on the books (owner 2026-10-14). */}
+      {data.details && booked && <DetailsNudge details={data.details} />}
+      {/* Order (design review 2026-10-14): a word with us, then money, then the review ask (it used
+          to come first, above anything due), then the household details. The season is in the
+          house card (At a glance). */}
       {data.chat && <Chat chat={data.chat} reload={reload} draft={chatDraft} />}
       <div id="agreements" className="scroll-mt-24 space-y-6">
         {(list.length > 0 || invoices.length > 0) && (
@@ -490,59 +509,83 @@ function Account({ data, reload, logOut }) {
   )
 }
 
-// Your lights this season (docs/specs/account-service.md): the schedule line
-// from the season fields staff fill in, and Report a problem, which becomes a
-// service call on the Service tab (through the server, never from here).
-// At a glance (design review 2026-10-14: the amount due sat about four screens
-// down): the next date, anything due with Pay, Report a problem and Chat, each
-// a tap to its section further down. Only what this page really has.
-function Glance({ data, owed }) {
+// At a glance, inside the house card (design review and owner 2026-10-14; it
+// replaced the separate "Your lights" card, which only repeated it): their
+// dates (docs/specs/account-service.md), anything due with Pay, Report a
+// problem and Chat. Report a problem and Book (not on this season's list yet)
+// open their form right here; Pay and Chat jump to their sections. The trees
+// notice stays one tap away under the rows and in full inside the report form
+// (told plainly, not only in the agreement, owner 2026-10-12). id="lights" is
+// the tour's first card.
+const rowCls = 'flex min-h-14 w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-left'
+function Glance({ data, owed, reload }) {
   const g = accountGlance
+  const [panel, setPanel] = useState(null) // 'report' | 'rebook' | null
   const sched = scheduleText(data.schedule)
   const up = sched && !sched.none && sched.install === 'Up ✓'
+  const open = data.service?.open
   const rows = [
-    sched && !sched.none && { href: '#lights', icon: '🎄', label: up ? g.takedown : g.lightsUp, value: up ? sched.takedown : sched.install },
+    sched?.none && { key: 'rebook', icon: 'tree', label: g.thisSeason, value: g.notListed, action: g.rebook, panel: 'rebook' },
+    sched && !sched.none && { key: 'dates', icon: 'tree', label: up ? g.takedown : g.lightsUp, value: up ? sched.takedown : sched.install, sub: up ? '' : `${g.takedown}: ${sched.takedown}` },
     ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0) && (owed
-      ? { href: '#agreements', icon: '🧾', label: g.due, value: fmt(owed), action: g.pay }
-      : { href: '#agreements', icon: '🧾', label: g.paid, value: g.paidUp }),
-    data.service && { href: '#lights', icon: '🛠', label: g.problem, value: g.report },
-    data.chat && { href: '#chat', icon: '💬', label: g.chat, value: g.write },
+      ? { key: 'pay', href: '#agreements', icon: 'receipt', label: g.due, value: fmt(owed), action: g.pay }
+      : { key: 'pay', href: '#agreements', icon: 'receipt', label: g.paid, value: g.paidUp }),
+    canReport(data) && { key: 'report', icon: 'wrench', label: g.problem, value: open ? (OPEN_TEXT[open.status] ?? open.status) : g.report, panel: 'report' },
+    data.chat && { key: 'chat', href: '#chat', icon: 'chat', label: g.chat, value: g.write },
   ].filter(Boolean)
-  if (rows.length < 2) return null
-  return (
-    <nav aria-label={g.label} className="grid gap-2 sm:grid-cols-2">
-      {rows.map((r) => (
-        <a key={r.label} href={r.href} className="flex min-h-14 items-center gap-3 rounded-2xl border border-white/10 bg-night-900 px-4 py-2 hover:border-glow-400/50">
-          <span aria-hidden="true" className="w-7 shrink-0 text-center text-xl">{r.icon}</span>
-          <span className="min-w-0 flex-1 leading-tight">
-            <span className="block text-xs uppercase tracking-wider text-slate-400">{r.label}</span>
-            <span className="font-semibold">{r.value}</span>
-          </span>
-          {r.action && <span className="shrink-0 rounded-full bg-glow-400 px-4 py-1.5 text-sm font-semibold text-night-950">{r.action}</span>}
-        </a>
-      ))}
-    </nav>
+  const trees = Boolean(sched) || canReport(data)
+  if (!rows.length && !trees) return null
+  const shown = rows.some((r) => r.panel === panel) ? panel : null
+  const inner = (r) => (
+    <>
+      <Icon name={r.icon} className="size-6 shrink-0 text-glow-300" />
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block text-xs uppercase tracking-wider text-slate-400">{r.label}</span>
+        <span className="font-semibold">{r.value}</span>
+        {r.sub && <span className="block text-sm text-slate-400">{r.sub}</span>}
+      </span>
+      {r.action && <span className="shrink-0 rounded-full bg-glow-400 px-4 py-1.5 text-sm font-semibold text-night-950">{r.action}</span>}
+      {r.panel && <Icon name="chevron" className={`size-5 shrink-0 text-slate-400 motion-safe:transition ${shown === r.panel ? 'rotate-180' : ''}`} />}
+    </>
   )
-}
-
-function Lights({ schedule, service, reload }) {
-  const sched = scheduleText(schedule)
-  if (!sched && !service) return null
   return (
-    <section id="lights" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
-      <h2 className="font-display text-xl font-extrabold">Your lights{sched?.season ? `, ${sched.season} season` : ''}</h2>
-      {sched && !sched.none && (
-        <p className="text-lg">
-          <span className="text-slate-400">Lights up:</span> <strong>{sched.install}</strong>
-          <span className="px-2 text-slate-500">·</span>
-          <span className="text-slate-400">Takedown:</span> <strong>{sched.takedown}</strong>
-        </p>
+    <div id="lights" className="scroll-mt-24 space-y-2 pt-3">
+      {rows.length > 0 && (
+        <nav aria-label={g.label} className="grid gap-2 sm:grid-cols-2">
+          {rows.map((r) => {
+            if (r.href) return <a key={r.key} href={r.href} className={`${rowCls} hover:border-glow-400/50`}>{inner(r)}</a>
+            if (r.panel) {
+              return (
+                <button key={r.key} type="button" onClick={() => setPanel(shown === r.panel ? null : r.panel)} aria-expanded={shown === r.panel} aria-controls="glance-panel"
+                  className={`${rowCls} hover:border-glow-400/50 ${shown === r.panel ? 'border-glow-400/60' : ''}`}>{inner(r)}</button>
+              )
+            }
+            return <div key={r.key} className={rowCls}>{inner(r)}</div>
+          })}
+        </nav>
       )}
-      {sched?.none && <Rebook onDone={reload} />}
-      {service && <ReportProblem service={service} />}
-      {/* Told plainly, not only in the agreement (owner 2026-10-12). */}
-      <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300"><strong className="text-glow-300">{TREE_TITLE}: </strong>{TREE_NOTICE}</p>
-    </section>
+      {shown && (
+        // The week picker brings its own gold box; the report form gets one here.
+        <div id="glance-panel" className={shown === 'report' ? 'rounded-2xl border border-glow-400/40 bg-white/5 p-4' : ''}>
+          {shown === 'report' && (
+            <div className="space-y-3">
+              <ReportProblem service={data.service} startOpen onCancel={() => setPanel(null)} />
+              <p className="rounded-xl bg-night-950/60 px-4 py-3 text-sm text-slate-300"><strong className="text-glow-300">{TREE_TITLE}: </strong>{TREE_NOTICE}</p>
+            </div>
+          )}
+          {shown === 'rebook' && <Rebook onDone={reload} />}
+        </div>
+      )}
+      {trees && shown !== 'report' && (
+        // Open to start with (owner 2026-10-14); they can fold it.
+        <details open className="group rounded-2xl bg-white/5 px-4 text-sm text-slate-300">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold text-glow-300 [&::-webkit-details-marker]:hidden">
+            {TREE_TITLE}<Icon name="chevron" className="size-5 shrink-0 motion-safe:transition group-open:rotate-180" />
+          </summary>
+          <p className="pb-3">{TREE_NOTICE}</p>
+        </details>
+      )}
+    </div>
   )
 }
 
@@ -651,12 +694,17 @@ function Chat({ chat, reload, draft }) {
 // things the agreement asks customers to tell us, filled in by them and saved
 // through the server (updateMyDetails) onto their record; the crew sees them
 // on the route.
+// [field, label, kind, example, longest answer, place in the grid]. Short answers get short
+// boxes (owner 2026-10-14: "probably max 30 characters, and that's the HOA name"): phones put
+// the gate code and the date side by side with the HOA name under them; from sm, one row of
+// gate code, HOA name and date, then things to avoid beside pets. The server's own limits are
+// functions/propertyDetails.js DETAIL_FIELDS.
 const DETAIL_INPUTS = [
-  ['gateCode', 'Gate code', 'input', 'e.g. #1234'],
-  ['hoa', 'HOA (name, any rules about lights)', 'input', 'e.g. Shadow Creek Ranch HOA'],
-  ['lightsDownBy', 'Date your HOA wants lights down by (if any)', 'input', 'e.g. Jan 10'],
-  ['hazards', 'Things in the yard we should avoid', 'textarea', 'Sprinkler heads, landscape lights and their wires, pet-fence wire, cameras, fragile plants…'],
-  ['pets', 'Pets', 'input', 'e.g. two dogs, friendly; keep the gate shut'],
+  ['gateCode', 'Gate code', 'input', 'e.g. #1234', 40, 'h-full order-1 sm:order-none'],
+  ['hoa', 'HOA name', 'input', 'e.g. Shadow Creek Ranch HOA', 60, 'h-full order-3 col-span-2 sm:order-none'],
+  ['lightsDownBy', 'HOA lights-down date', 'input', 'e.g. Jan 10', 40, 'h-full order-2 sm:order-none'],
+  ['hazards', 'Things in the yard we should avoid', 'textarea', 'Sprinkler heads, landscape lights and their wires, pet-fence wire, cameras, fragile plants…', 600, 'order-4 col-span-2 sm:order-none sm:col-span-3'],
+  ['pets', 'Pets', 'input', 'e.g. two friendly dogs', 120, 'order-5 col-span-2 self-start sm:order-none sm:col-span-1'],
 ]
 // Google review card for past customers (docs/specs/review-ask.md → On the
 // account page). Shown when the server says so (myAccount → review), until
@@ -724,16 +772,17 @@ function Details({ details, onSaved }) {
     <form id="property-details" onSubmit={save} className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Your property details</h2>
       <p className="text-sm text-slate-300">Helps our crew do a clean job: they see this on the day. Change it any time.</p>
-      <fieldset disabled={preview} title={offTip} className="min-w-0 space-y-3">
-      {DETAIL_INPUTS.map(([k, label, kind, placeholder]) => (
-        <label key={k} className="block text-sm text-slate-300">{label}
+      <fieldset disabled={preview} title={offTip} className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4">
+      {DETAIL_INPUTS.map(([k, label, kind, placeholder, max, place]) => (
+        // A label that wraps to two lines keeps its box level with the one beside it.
+        <label key={k} className={`flex flex-col text-sm text-slate-300 ${place}`}>{label}
           {kind === 'textarea'
-            ? <textarea value={v[k] ?? ''} rows={3} maxLength={600} onChange={(e) => { setV({ ...v, [k]: e.target.value }); setState(null) }} placeholder={placeholder} className={field} />
-            : <input value={v[k] ?? ''} maxLength={160} onChange={(e) => { setV({ ...v, [k]: e.target.value }); setState(null) }} placeholder={placeholder} className={field} />}
+            ? <textarea value={v[k] ?? ''} rows={3} maxLength={max} onChange={(e) => { setV({ ...v, [k]: e.target.value }); setState(null) }} placeholder={placeholder} className={field} />
+            : <input value={v[k] ?? ''} maxLength={max} onChange={(e) => { setV({ ...v, [k]: e.target.value }); setState(null) }} placeholder={placeholder} className={`${field} mt-auto`} />}
         </label>
       ))}
-      {state?.error && <p className="text-sm text-berry-300" role="alert">{state.error}</p>}
-      <div className="flex flex-wrap items-center gap-3">
+      {state?.error && <p className="order-6 col-span-full text-sm text-berry-300 sm:order-none" role="alert">{state.error}</p>}
+      <div className="order-7 col-span-full flex flex-wrap items-center gap-3 sm:order-none">
         <button type="submit" disabled={!changed || state === 'saving'} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-50`}>{state === 'saving' ? 'Saving…' : 'Save'}</button>
         {state === 'saved' && <span className="text-sm text-emerald-300">Saved ✓ Thank you.</span>}
       </div>
@@ -743,8 +792,9 @@ function Details({ details, onSaved }) {
 }
 
 const OPEN_TEXT = { Open: 'We’ve got it', Scheduled: 'On the schedule' }
-function ReportProblem({ service }) {
-  const [mode, setMode] = useState('idle') // idle | form | sent
+// startOpen: opened from At a glance, so it starts on the choices; onCancel closes that panel.
+function ReportProblem({ service, startOpen = false, onCancel }) {
+  const [mode, setMode] = useState(startOpen ? 'form' : 'idle') // idle | form | sent
   const [problem, setProblem] = useState('')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
@@ -775,7 +825,7 @@ function ReportProblem({ service }) {
     return (
       <div className="space-y-2 rounded-2xl bg-glow-400/10 px-4 py-3">
         {mode === 'sent' && <p className="font-semibold text-glow-300">Got it! We’ll be out within {service.days} days. If it’s urgent, call <span className="whitespace-nowrap">{business.phone}</span>.</p>}
-        <p><span className="font-semibold">🛠 {OPEN_TEXT[open.status] ?? open.status}:</span> {open.issue}{open.received ? `, reported ${shortDate(open.received)}` : ''}</p>
+        <p><span className="font-semibold">{OPEN_TEXT[open.status] ?? open.status}:</span> {open.issue}{open.received ? `, reported ${shortDate(open.received)}` : ''}</p>
         {open.details && <p className="text-sm text-slate-300">“{open.details}”</p>}
         {mode !== 'sent' && <p className="text-sm text-slate-400">Something else, or it’s urgent? Call or text us at <a href={business.phoneHref} className="underline">{business.phone}</a>.</p>}
       </div>
@@ -801,8 +851,8 @@ function ReportProblem({ service }) {
         <p className="text-sm text-slate-400">Photos from here are coming soon. For now, you can text one to <span className="whitespace-nowrap">{business.phone}</span>.</p>
         {error && <p className="text-sm text-berry-300" role="alert">{error}</p>}
         <div className="flex flex-wrap gap-3">
-          <button type="submit" disabled={busy} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>{busy ? 'Sending…' : 'Send report'}</button>
-          <button type="button" onClick={() => setMode('idle')} className={`${btn} border border-white/20`}>Cancel</button>
+          <button type="submit" disabled={busy || preview} title={offTip} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>{busy ? 'Sending…' : 'Send report'}</button>
+          <button type="button" onClick={() => (onCancel ? onCancel() : setMode('idle'))} className={`${btn} border border-white/20`}>Cancel</button>
         </div>
       </form>
     )
@@ -810,7 +860,7 @@ function ReportProblem({ service }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="text-slate-300">Something out? Tell us and we’ll fix it, free.</p>
-      <button type="button" onClick={() => setMode('form')} disabled={preview} title={offTip} className={`${btn} bg-white text-night-950 disabled:opacity-60`}>🛠 Report a problem</button>
+      <button type="button" onClick={() => setMode('form')} disabled={preview} title={offTip} className={`${btn} bg-white text-night-950 disabled:opacity-60`}>Report a problem</button>
     </div>
   )
 }
@@ -1014,23 +1064,29 @@ function Help() {
     <section id="help" className="scroll-mt-24 space-y-3 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h2 className="font-display text-xl font-extrabold">Help</h2>
       <label className="block text-sm text-slate-300">Search for an answer
-        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. lights out, pay, gate code, app"
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. lights out, paying"
           className="mt-1 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100" />
       </label>
-      {list.length ? (
-        <ul className="divide-y divide-white/10">
-          {list.map((h) => (
-            <li key={h.id}>
-              <details className="group py-1">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
-                  {h.q}<Icon name="chevron" className="size-5 shrink-0 text-glow-400 motion-safe:transition group-open:rotate-180" />
-                </summary>
-                <p className="pb-3 text-sm text-slate-300">{h.a}</p>
-              </details>
-            </li>
-          ))}
-        </ul>
-      ) : <p className="text-sm text-slate-300">Nothing matches that. Call or text <span className="whitespace-nowrap">{business.phone}</span> and a person will help.</p>}
+      {/* In groups under a heading (owner 2026-10-14: "it's hard to read"); data/help.js HELP_GROUPS. */}
+      {list.length ? helpGroups(list).map((g) => (
+        <section key={g.key} aria-labelledby={`help-${g.key}`} className="pt-2">
+          <h3 id={`help-${g.key}`} className="flex items-center gap-2.5 border-b border-white/10 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <Icon name={g.icon} className="size-5 text-glow-300" />{g.title}
+          </h3>
+          <ul className="divide-y divide-white/5">
+            {g.items.map((h) => (
+              <li key={h.id}>
+                <details className="group py-1">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
+                    {h.q}<Icon name="chevron" className="size-5 shrink-0 text-glow-400 motion-safe:transition group-open:rotate-180" />
+                  </summary>
+                  <p className="pb-3 text-sm text-slate-300">{h.a}</p>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )) : <p className="text-sm text-slate-300">Nothing matches that. Call or text <span className="whitespace-nowrap">{business.phone}</span> and a person will help.</p>}
     </section>
   )
 }
@@ -1058,7 +1114,7 @@ function Rebook({ onDone }) {
     <fieldset disabled={preview} title={offTip} className="min-w-0 space-y-3 rounded-2xl border border-glow-400/40 bg-glow-400/10 p-4">
       <p className="text-slate-200"><strong className="text-glow-300">Want your lights back up this season?</strong> One tap and you’re on the list; no call needed.</p>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Which week suits you?">
-        {WEEKS.map((w) => (
+        {openWeeks().map((w) => (
           <button key={w} type="button" onClick={() => setWeek(week === w ? '' : w)} aria-pressed={week === w}
             className={`min-h-11 rounded-full border px-4 text-sm font-medium ${week === w ? 'border-glow-400 bg-glow-400/20 text-glow-300' : 'border-white/15 text-slate-200'}`}>{w}</button>
         ))}

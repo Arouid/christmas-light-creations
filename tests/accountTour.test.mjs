@@ -18,15 +18,21 @@ test('a full account gets every card, in page order, ☰ last; the installed app
   for (const s of accountTourSteps(full)) for (const line of s.body) assert.equal(typeof line, 'string')
 })
 
-test('Your lights: the schedule line, or "put my lights back up" when they are not on this season’s list, plus Report a problem', () => {
+test('Your lights: the schedule line, or Book when they are not on this season’s list, plus Report a problem once the lights are up', () => {
   const lines = (data) => accountTourSteps(data).find((s) => s.id === 'lights')?.body ?? []
-  const [sched, problem] = lines(full)
+  // Booked, not installed yet: the dates, and nothing to report (owner 2026-10-14).
+  assert.equal(lines(full).length, 1)
+  const up = { ...full, schedule: { ...scheduled, installStatus: 'Install Completed' } }
+  const [sched, problem] = lines(up)
   assert.match(sched, /install day/)
   assert.match(problem, /Report a problem/)
-  // Not on this season's list yet: AccountPage shows Rebook instead of the dates.
+  // Taken down: nothing to report either; an open call still shows.
+  assert.equal(lines({ ...up, schedule: { ...up.schedule, takedownStatus: 'Takedown Completed' } }).length, 1)
+  assert.equal(lines({ ...full, service: { days: 2, open: { status: 'Open' } } }).length, 2)
+  // Not on this season's list yet: AccountPage shows Book instead of the dates.
   const rebook = lines({ ...full, schedule: { season: '2026', installStatus: '' } })
-  assert.equal(rebook.length, 2)
-  assert.match(rebook[0], /Yes, put my lights back up/)
+  assert.equal(rebook.length, 1)
+  assert.match(rebook[0], /\*\*Book\*\*/)
   // Off the scheduler and no customer record: no Your lights section, no card.
   assert.equal(lines({ ...full, schedule: { installStatus: 'Not Servicing' }, service: null }).length, 0)
   assert.deepEqual(ids(accountTourSteps({ ...full, schedule: null, service: null })), ['chat', 'pay', 'app', 'menu'])

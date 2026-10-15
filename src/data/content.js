@@ -319,6 +319,10 @@ export const accountReviewCard = {
 // amount due sat about four screens down): each row jumps to its section.
 export const accountGlance = {
   label: 'At a glance',
+  // A returning customer not on this season's list yet: the first row (owner 2026-10-14).
+  thisSeason: 'This season',
+  notListed: 'Not booked yet',
+  rebook: 'Book',
   lightsUp: 'Lights up',
   takedown: 'Takedown',
   due: 'Due now',
@@ -330,6 +334,23 @@ export const accountGlance = {
   chat: 'Questions?',
   write: 'Chat with us',
   welcome: 'Welcome', // the greeting when we don't know their name
+  signedInWith: 'signed in with this', // the glowing email or phone on the greeting card
+  addContact: 'Add an email or phone', // in ☰: starts a Chat with us message asking us to link it
+}
+
+// The ☰ menu on /account/ (src/account/AccountDrawer.jsx), in groups under a
+// heading with one of our line icons (owner 2026-10-14: "organize the drawer
+// menu under categories instead of everything having an icon").
+export const accountMenu = {
+  groups: [
+    { key: 'season', title: 'This season', icon: 'tree' },
+    { key: 'money', title: 'Payments', icon: 'receipt' },
+    { key: 'home', title: 'Your home', icon: 'home' },
+    { key: 'help', title: 'Help', icon: 'help' },
+    { key: 'reach', title: 'Reach us', icon: 'phone' },
+    { key: 'more', title: 'More', icon: 'globe' },
+  ],
+  signOut: 'Sign out',
 }
 
 // The picture of their house on top of the "Hi, <name>" card on /account/

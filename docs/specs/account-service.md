@@ -16,6 +16,8 @@ A customer who signs in at `/account/` sees their agreements, invoices, yearly p
 - Not on this year's schedule yet (status blank, Not Confirmed, or no season on file): a one-liner inviting them to call or text to book. "Off Scheduler" / "Not Servicing": nothing shown.
 - Never shown: scheduling notes, billing, gate codes, anything from other seasons.
 
+**Where it shows (owner 2026-10-14):** no separate "Your lights" card any more. The dates, Book (not on this season's list: the week picker opens in place) and Report a problem are rows of **At a glance** inside the house card (`#lights`), with **Trees and your lights** open under them. **Report a problem** shows only once their lights are up (Install Completed, until Takedown Completed) or while a call they made is open (`canReport` in `src/data/accountTour.js`); its form opens in place, with the trees notice in full. The "Two minutes before we come" details box shows only once a visit is booked.
+
 **Report a problem** (same customers):
 
 - A **Report a problem** button opens a short form: what's wrong (a whole section is out · a bulb or a few bulbs are out · lights fell down or are damaged · the timer · something else), an optional note, and a line saying photos come later: text one to 281-819-0163 for now.

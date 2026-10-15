@@ -8,24 +8,25 @@ import { business } from './content.js'
 import { scheduleText } from '../../functions/service.js'
 
 export const ACCOUNT_TOUR = [
-  { id: 'lights', anchor: 'lights', icon: '🎄', title: 'Your lights this season', body: [
+  // icon: a name in components/Icon.jsx (our own line icons, owner 2026-10-14)
+  { id: 'lights', anchor: 'lights', icon: 'tree', title: 'Your lights this season', body: [
     { if: 'schedule', text: 'Your **install day** and **takedown** show here, from our schedule. If a date moves, it changes here too.' },
-    { if: 'rebook', text: 'Want your lights back up this season? Tap **Yes, put my lights back up** (pick a week if you like) and you’re on the list. No call needed.' },
-    { if: 'problem', text: 'Something out? Tap **🛠 Report a problem** and pick what’s wrong. You’ll see here when we’ve got it and when it’s scheduled.' },
+    { if: 'rebook', text: 'Want your lights back up this season? Tap **Book** (pick a week if you like) and you’re on the list. No call needed.' },
+    { if: 'problem', text: 'Something out? Tap **Report a problem** and pick what’s wrong. You’ll see here when we’ve got it and when it’s scheduled.' },
   ] },
-  { id: 'chat', anchor: 'chat', icon: '💬', title: 'Chat with us', if: 'chat', body: [
+  { id: 'chat', anchor: 'chat', icon: 'chat', title: 'Chat with us', if: 'chat', body: [
     'Ask about your date, your lights or a bill. We answer **right here and by email**, usually within a few hours.',
   ] },
-  { id: 'pay', anchor: 'agreements', icon: '🧾', title: 'Agreements & payments', if: 'pay', body: [
+  { id: 'pay', anchor: 'agreements', icon: 'receipt', title: 'Agreements & payments', if: 'pay', body: [
     'Your agreements and invoices, what’s paid and anything due. Anything due has **PayPal, Venmo and card** buttons right under it.',
     'A new proposal shows **Review and sign**; a signed one, **View or print your agreement**.',
   ] },
-  { id: 'app', anchor: 'app', icon: '📱', title: 'Get the app', if: 'app', body: [
+  { id: 'app', anchor: 'app', icon: 'device', title: 'Get the app', if: 'app', body: [
     'Put your account on your phone’s home screen with **Get the app**: its own icon, full-screen, no password.',
   ] },
   // Always last, and never enough on its own to open the tour by itself.
-  { id: 'menu', anchor: 'account-menu', icon: '🧭', title: 'Everything else is in ☰', always: true, body: [
-    '**☰** (top right) jumps to any part of your account, and has **Help** for quick answers and **Take the tour** to see this again.',
+  { id: 'menu', anchor: 'account-menu', icon: 'compass', title: 'Everything else is in ☰', always: true, body: [
+    '**☰** (top right) jumps to any part of your account, and has **Help** for quick answers, **Take the tour** to see this again, and **Sign out**.',
     `Rather talk to a person? Call or text **${business.phone}**; the call button is always at the top.`,
   ] },
 ]
@@ -42,6 +43,12 @@ export const ACCOUNT_TOUR_UI = {
   menu: 'Take the tour',
 }
 
+// Report a problem shows once their lights are up this season (and until the
+// takedown), or while a call they made is still open: before the install there
+// is nothing to report (owner 2026-10-14). AccountPage.jsx uses the same test.
+export const canReport = (data) => Boolean(data?.service) && (Boolean(data.service.open)
+  || (data?.schedule?.installStatus === 'Install Completed' && data?.schedule?.takedownStatus !== 'Takedown Completed'))
+
 // What this customer's page shows, by the same tests AccountPage.jsx uses to
 // draw each section. installed: they're in the installed app (no Get the app).
 export function accountTourFacts(data, { installed = false } = {}) {
@@ -50,7 +57,7 @@ export function accountTourFacts(data, { installed = false } = {}) {
   return {
     schedule: Boolean(sched && !sched.none),
     rebook: Boolean(sched?.none),
-    problem: Boolean(data?.service),
+    problem: canReport(data),
     chat: Boolean(data?.chat),
     pay,
     // Get the app shows only when we have something of theirs (design review 2026-10-14).

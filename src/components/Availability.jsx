@@ -21,7 +21,7 @@ export default function Availability({ className = '' }) {
     <div className={className}>
       <button type="button" onClick={show} aria-expanded={open}
         className="inline-flex min-h-11 items-center gap-2 rounded-full border border-glow-400/40 bg-night-900/60 px-5 py-2.5 text-sm font-semibold text-glow-300 hover:bg-night-900">
-        📅 {T.button}
+        {T.button}
       </button>
       {open && (
         <div ref={panel} tabIndex={-1} aria-live="polite" className="mt-3 max-w-md rounded-2xl border border-white/10 bg-night-900/95 p-4 text-sm outline-none">
