@@ -90,8 +90,9 @@ function BookingStatus({ settings, onSave }) {
 
 // Gift wrapping on the website (docs/specs/gift-wrapping.md): built, off
 // until the owner says go (2026-10-13). settings/app.giftWrapping is read by
-// the `booking` function with the availability; the page draws the section
-// only when it says so, so the built HTML never carries it.
+// the `booking` function with the availability; the pages draw the teaser,
+// the menu link and /gift-wrapping/ only when it says so, so the built HTML
+// never carries it.
 function GiftWrapping({ settings, onSave }) {
   const [msg, setMsg] = useState(null)
   const on = giftWrappingOn(settings)
@@ -103,7 +104,7 @@ function GiftWrapping({ settings, onSave }) {
     <div className={box}>
       <p className="font-semibold">🎁 Gift wrapping</p>
       <p className="text-sm text-slate-400">
-        Off: nothing about gift wrapping shows anywhere on the website. On: the home page gets a Gift wrapping section (with its menu link and FAQ answers) and the estimate form asks “What do you need?” (Christmas lights / Gift wrapping / Both); a request that asks for it shows 🎁 on the lead and in the alert email, and its “Got your request” email talks about wrapping.
+        Off: nothing about gift wrapping shows anywhere on the website (its page sends visitors to the home page). On: the website gets its own white-and-red Gift wrapping page (/gift-wrapping/, with its own questions and the estimate form, Gift wrapping already picked), the home page a small “We wrap gifts too” card and a menu link to it, and the estimate form asks “What do you need?” (Christmas lights / Gift wrapping / Both); a request that asks for it shows 🎁 on the lead and in the alert email, and its “Got your request” email talks about wrapping.
       </p>
       <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
         <input type="checkbox" checked={on} onChange={(e) => toggle(e.target.checked)} className="size-5 accent-glow-400" />

@@ -12,7 +12,14 @@ import Icon from './Icon'
 // gold button shows at a time; the header's ☎ is always there. Sign visitors
 // keep it always: Text is only here.
 // estimate: where Free estimate goes.
-export default function MobileCta({ estimate = '#estimate' }) {
+// skin: 'night' (the site) or 'snow' (white and red, the gift-wrapping page);
+// each a full set of classes, never a second bg-… added onto a shared one.
+const SKINS = {
+  night: { bar: 'border-white/10 bg-night-950/90', call: 'bg-white/10', estimate: 'bg-glow-400 text-night-950' },
+  snow: { bar: 'border-berry-500/20 bg-white/95', call: 'bg-berry-50 text-berry-700', estimate: 'bg-berry-600 text-white' },
+}
+export default function MobileCta({ estimate = '#estimate', skin = 'night' }) {
+  const look = SKINS[skin] ?? SKINS.night
   const sign = useSign()
   // Starts hidden, in the built HTML too (so React's first draw matches it);
   // the observer's first answer, right after, shows it if nothing is in view.
@@ -37,17 +44,17 @@ export default function MobileCta({ estimate = '#estimate' }) {
   }, [])
   const hidden = covered && !sign
   return (
-    <div className={`fixed inset-x-0 bottom-0 z-30 grid ${sign ? 'grid-cols-3' : 'grid-cols-2'} gap-2 border-t border-white/10 bg-night-950/90 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur motion-safe:transition-transform motion-safe:duration-300 lg:hidden ${hidden ? 'translate-y-full' : ''} [body[data-menu=open]_&]:hidden`}
+    <div className={`fixed inset-x-0 bottom-0 z-30 grid ${sign ? 'grid-cols-3' : 'grid-cols-2'} gap-2 border-t ${look.bar} p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur motion-safe:transition-transform motion-safe:duration-300 lg:hidden ${hidden ? 'translate-y-full' : ''} [body[data-menu=open]_&]:hidden`}
       aria-hidden={hidden}>
-      <a href={business.phoneHref} tabIndex={hidden ? -1 : undefined} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white/10 py-3 font-semibold">
+      <a href={business.phoneHref} tabIndex={hidden ? -1 : undefined} className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full py-3 font-semibold ${look.call}`}>
         <Icon name="phone" className="size-5" /> Call
       </a>
       {sign && (
-        <a href={business.smsWith(business.signText)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white/10 py-3 font-semibold">
+        <a href={business.smsWith(business.signText)} className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full py-3 font-semibold ${look.call}`}>
           <Icon name="chat" className="size-5" /> Text
         </a>
       )}
-      <a href={estimate} tabIndex={hidden ? -1 : undefined} className="inline-flex min-h-11 items-center justify-center rounded-full bg-glow-400 py-3 text-center font-semibold text-night-950">
+      <a href={estimate} tabIndex={hidden ? -1 : undefined} className={`inline-flex min-h-11 items-center justify-center rounded-full py-3 text-center font-semibold ${look.estimate}`}>
         {sign ? 'Estimate' : 'Free estimate'}
       </a>
     </div>

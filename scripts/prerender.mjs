@@ -1,4 +1,5 @@
-// After `vite build`: draws the home page, /design/, /cost/, /privacy/ and
+// After `vite build`: draws the home page, /design/, /cost/, /gift-wrapping/
+// (only its empty shell: the page is behind a switch), /privacy/ and
 // /terms/ (the list is PRERENDERED in pages.mjs) into their HTML, so a phone
 // shows the page before the JavaScript has arrived and crawlers that don't run
 // JavaScript read it; React then takes it over (src/main.jsx and each page's
@@ -24,6 +25,11 @@ try {
   const day = localDay()
   const { heroPhotos } = await vite.ssrLoadModule('/src/data/content.js')
   const { heroScript } = await vite.ssrLoadModule('/src/lib/heroPhoto.js')
+  // Gift wrapping is behind the owner's switch (docs/specs/gift-wrapping.md): not one of its
+  // phrases may be in a built page, <head> included, as written or as React escapes it.
+  const { giftPhrases } = await vite.ssrLoadModule('/src/lib/giftWrapping.js')
+  const escaped = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
+  const behindSwitch = giftPhrases().flatMap((w) => [w, escaped(w)])
   for (const p of PAGES) {
     const { default: Page } = await vite.ssrLoadModule(p.module)
     const body = renderToString(createElement(BuildDay, { value: day }, createElement(Page)))
@@ -36,7 +42,10 @@ try {
       if (!html.includes(HERO_AT)) throw new Error(`${p.html}: no ${HERO_AT} to put the hero-photo picker before`)
       html = html.replace(HERO_AT, `<script>${heroScript(heroPhotos)}</script>\n    ${HERO_AT}`)
     }
-    await writeFile(file, html.replace(EMPTY, `<div id="root" data-day="${day}">${body}</div>`))
+    html = html.replace(EMPTY, `<div id="root" data-day="${day}">${body}</div>`)
+    const leak = behindSwitch.find((w) => html.includes(w))
+    if (leak) throw new Error(`${p.html}: built page carries the gift-wrapping words "${leak}" (they are behind a switch)`)
+    await writeFile(file, html)
     console.log(`prerendered ${p.html}: ${Math.round(body.length / 1024)} KB`)
   }
 } finally {

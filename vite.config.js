@@ -8,7 +8,8 @@ import { defineConfig } from 'vite'
 // Pages: the public site, the staff-only /leads/ app, and customers'
 // /proposal/?t=… and /invoice/?t=… pages (reachable only by their link), and
 // customers' own accounts at /account/ (email-link sign-in), the public
-// light designer at /design/ and the cost guide at /cost/.
+// light designer at /design/, the cost guide at /cost/ and the gift-wrapping
+// page at /gift-wrapping/ (behind the owner's switch, never in the sitemap).
 export default defineConfig({
   base: process.env.BASE_PATH || '/',
   plugins: [react(), tailwindcss()],
@@ -26,6 +27,7 @@ export default defineConfig({
         terms: resolve(import.meta.dirname, 'terms/index.html'),
         cost: resolve(import.meta.dirname, 'cost/index.html'),
         design: resolve(import.meta.dirname, 'design/index.html'),
+        gift: resolve(import.meta.dirname, 'gift-wrapping/index.html'),
         thanks: resolve(import.meta.dirname, 'thanks/index.html'),
       },
     },

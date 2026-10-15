@@ -1,12 +1,14 @@
 // Gift wrapping behind a switch (docs/specs/gift-wrapping.md): the switch,
-// what the form sends when off vs on, the staff words, and that nothing
-// public mentions it while off.
+// what the form sends when off vs on, the staff words, its own page
+// (/gift-wrapping/) and that nothing public mentions it while off.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { SERVICES, giftWrappingOn, leadService, navLinks, serviceLabel, serviceWords, wantsGiftWrapping } from '../src/lib/giftWrapping.js'
+import { SERVICES, giftPhrases, giftWrappingOn, leadService, navLinks, serviceLabel, serviceWords, wantsGiftWrapping } from '../src/lib/giftWrapping.js'
 import { parseBooking } from '../src/lib/urgency.js'
 import { faq, giftWrapping, nav } from '../src/data/content.js'
+import { areas } from '../src/data/areas.js'
+import { PRERENDERED, SITE, sitemapUrls } from '../scripts/pages.mjs'
 import { salesKnowledge } from '../src/assistant/lib/knowledge.js'
 
 const read = (p) => readFile(new URL(`../${p}`, import.meta.url), 'utf8')
@@ -52,17 +54,64 @@ test('staff words: a tag only when wrapping is asked for', () => {
   assert.ok(wantsGiftWrapping({ service: 'Both' }) && !wantsGiftWrapping({ service: 'Christmas lights' }) && !wantsGiftWrapping(undefined))
 })
 
-test('the menu: the Gift wrapping link right after Photos when on, the plain menu when off', () => {
+test('the menu: the Gift wrapping link (to its own page) right after Photos when on, the plain menu when off', () => {
   assert.equal(navLinks(nav, false), nav)
   const on = navLinks(nav, true)
   assert.equal(on.length, nav.length + 1)
-  assert.equal(on[on.findIndex((n) => n.href === '#gallery') + 1].href, '#gift-wrapping')
+  assert.equal(on[on.findIndex((n) => n.href === '#gallery') + 1].href, '/gift-wrapping/')
   assert.equal(on.at(-1).href, '#faq')
+})
+
+test('its own page: built as an empty shell, kept out of search, never announced', async () => {
+  const page = PRERENDERED.find((p) => p.html === 'gift-wrapping/index.html')
+  assert.ok(page, 'prerender.mjs draws /gift-wrapping/ (its shell)')
+  assert.equal(page.module, '/src/gift/GiftPage.jsx')
+  assert.equal(page.absent, 'ift wrapping')
+  assert.ok((await read('vite.config.js')).includes("'gift-wrapping/index.html'"), 'vite builds it')
+  const html = await read('gift-wrapping/index.html')
+  assert.ok(html.includes('<meta name="robots" content="noindex, noai, noimageai" />'), 'noindex, plus the AI meta every page carries')
+  assert.doesNotMatch(html, /rel="canonical"|og:|name="description"/, 'no canonical, share card or description to find it by')
+  assert.ok(html.includes('/src/gift/main.jsx'))
+  assert.doesNotMatch(html.replace('/src/gift/main.jsx', ''), /gift|wrap/i, 'the shell names nothing')
+  // The sitemap (and so IndexNow, which pings only sitemap pages) never lists it: the build can't see the switch.
+  const urls = sitemapUrls(areas)
+  assert.ok(!urls.includes(`${SITE}/gift-wrapping/`) && !urls.some((u) => u.includes('gift')), 'not in the sitemap')
+  assert.ok(!(await read('public/robots.txt')).includes('gift'), 'not named in robots.txt either')
+  // The page draws itself only on the server's yes, and sends visitors home on a no.
+  const src = await read('src/gift/GiftPage.jsx')
+  assert.ok(src.includes('useGiftWrappingAnswer()'))
+  assert.ok(src.includes('if (on === false) window.location.replace(base)'))
+  assert.ok(src.includes('{on ? <Content /> : <Waiting />}'))
+  assert.equal(giftWrapping.nav.href, '/gift-wrapping/', 'the menu link and the teaser go to the page')
+})
+
+test('the Ask button lands on the form with Gift wrapping already picked', async () => {
+  const src = await read('src/gift/GiftPage.jsx')
+  assert.match(src, /href="#estimate"/)
+  assert.match(src, /<section id="estimate"/)
+  assert.match(src, /<EstimateForm service="Gift wrapping"/)
+  assert.ok(SERVICES.includes('Gift wrapping'))
+  assert.ok((await read('src/components/EstimateForm.jsx')).includes('useState(SERVICES.includes(startService) ? startService : SERVICES[0])'))
+})
+
+test('the home page keeps only a small teaser: no section, no gift FAQ group', async () => {
+  const app = await read('src/App.jsx')
+  assert.ok(app.includes('<GiftTeaser />'))
+  assert.ok(!app.includes('<GiftWrapping />'))
+  assert.doesNotMatch(await read('src/components/Faq.jsx'), /giftWrapping/)
+  const { teaser } = giftWrapping
+  assert.ok(teaser.title.length <= 30 && teaser.body.length <= 60, 'a line, not a section')
 })
 
 test('while off, nothing public mentions gift wrapping: the main copy, the prerendered menu/FAQ, the sales assistant', () => {
   const says = (x) => JSON.stringify(x).toLowerCase().includes('gift wrap')
   assert.ok(!says(nav) && !says(faq), 'nav and faq (drawn into the built HTML) stay clean')
+  // prerender.mjs refuses a built page with any of these phrases; none may be in the standing copy either.
+  const phrases = giftPhrases()
+  assert.ok(phrases.includes(giftWrapping.title) && phrases.includes(giftWrapping.teaser.title) && phrases.includes(giftWrapping.faq.items[0][0]))
+  assert.ok(!phrases.includes(giftWrapping.nav.href), 'paths are not phrases')
+  const standing = JSON.stringify({ nav, faq })
+  assert.deepEqual(phrases.filter((p) => standing.includes(p)), [])
   assert.ok(!says(salesKnowledge()), 'the assistant learns about it only once the owner turns it on')
   assert.ok(says(giftWrapping) && giftWrapping.faq.items.length >= 3 && giftWrapping.steps.length === 3)
   // No promises the owner hasn't made yet (prices, dates, supplies): docs/specs/gift-wrapping.md.

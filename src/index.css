@@ -56,8 +56,11 @@
   --color-glow-500: #f5b81c;
   /* Text on the dark background (errors, Delete, Overdue): berry-500 is 3.6:1 there, this is 6.6:1. Fills keep 500/600. */
   --color-berry-300: #ff6b7d;
+  /* The white-and-red gift-wrapping page (docs/specs/gift-wrapping.md): a blush for its bands, a deep red for ribbon shade and hover. */
+  --color-berry-50: #fdf1f3;
   --color-berry-500: #d7263d;
   --color-berry-600: #b51d31;
+  --color-berry-700: #8f1526;
   --color-pine-500: #1f8a5b;
   --font-display: "Fraunces", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
@@ -146,6 +149,30 @@ body {
   @keyframes pin-pulse {
     0% { box-shadow: 0 0 0 0 var(--c), 0 0 10px 2px var(--c); }
     100% { box-shadow: 0 0 0 18px transparent, 0 0 10px 2px var(--c); }
+  }
+}
+
+/* The gift-wrapping page (docs/specs/gift-wrapping.md; owner 2026-10-15: white
+   and red, so it stands out from the night-blue lights site). gift-ribbon: a
+   satin ribbon, darker at its edges; gift-snow: faint red snowflakes behind
+   the top of the page; candy-stripe: the footer's edge and the home teaser's
+   ribbon. on-snow: focus rings in red, since the site's gold one is faint on white. */
+.gift-ribbon {
+  background: linear-gradient(to bottom, var(--color-berry-700), var(--color-berry-600) 22%, var(--color-berry-500) 50%, var(--color-berry-600) 78%, var(--color-berry-700));
+}
+.gift-ribbon-v {
+  background: linear-gradient(to right, var(--color-berry-700), var(--color-berry-600) 22%, var(--color-berry-500) 50%, var(--color-berry-600) 78%, var(--color-berry-700));
+}
+.gift-snow {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><defs><g id='f' fill='none' stroke='%23d7263d' stroke-opacity='.14' stroke-width='1.5' stroke-linecap='round'><path id='a' d='M0 0V-14M0-9l-4-3M0-9l4-3M0-4l-3-2M0-4l3-2'/><use href='%23a' transform='rotate(60)'/><use href='%23a' transform='rotate(120)'/><use href='%23a' transform='rotate(180)'/><use href='%23a' transform='rotate(240)'/><use href='%23a' transform='rotate(300)'/></g></defs><use href='%23f' x='40' y='42'/><use href='%23f' transform='translate(118 112) scale(.6)'/></svg>");
+  background-size: 160px 160px;
+}
+.candy-stripe {
+  background: repeating-linear-gradient(-45deg, var(--color-berry-500) 0 8px, #fff 8px 16px);
+}
+@layer base {
+  .on-snow :focus-visible {
+    outline-color: var(--color-berry-600);
   }
 }
 

@@ -3,7 +3,7 @@ import Hero from './components/Hero'
 import Services from './components/Services'
 import HowItWorks from './components/HowItWorks'
 import Gallery from './components/Gallery'
-import GiftWrapping from './components/GiftWrapping'
+import GiftTeaser from './components/GiftTeaser'
 import Testimonials from './components/Testimonials'
 import Faq from './components/Faq'
 import ServiceAreas from './components/ServiceAreas'
@@ -23,7 +23,7 @@ export default function App() {
         <Services />
         <HowItWorks />
         <Gallery />
-        <GiftWrapping />
+        <GiftTeaser />
         <Testimonials />
         <ServiceAreas />
         <Faq />

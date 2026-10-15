@@ -9,20 +9,55 @@ import { LIT_OPTIONS, composeMessage, needsPhone } from '../lib/estimateForm'
 import Icon from './Icon'
 import RecaptchaNote from './RecaptchaNote'
 
-const field = 'mt-1.5 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-glow-400 focus:outline-none focus:ring-2 focus:ring-glow-400/30'
-const label = 'block text-sm font-medium text-slate-300'
+// Two looks, each a full set of class strings (never a second bg-… added onto
+// a shared one): night, the site's own; snow, the white-and-red gift-wrapping
+// page (docs/specs/gift-wrapping.md).
+const SKINS = {
+  night: {
+    box: 'rounded-3xl border border-white/10 bg-night-900',
+    field: 'mt-1.5 block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-glow-400 focus:outline-none focus:ring-2 focus:ring-glow-400/30',
+    label: 'block text-sm font-medium text-slate-300',
+    muted: 'text-slate-400',
+    chip: 'rounded-xl border border-white/15 text-center text-sm font-medium peer-checked:border-glow-400 peer-checked:bg-glow-400/10 peer-checked:text-glow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-glow-400',
+    pickOn: 'border-glow-400 bg-glow-400/15 text-glow-300',
+    pickOff: 'border-white/15 text-slate-200 hover:border-white/30',
+    error: 'text-berry-300',
+    submit: 'bg-glow-400 text-night-950 shadow-[0_0_28px_-6px] shadow-glow-400 hover:bg-glow-300',
+    call: 'bg-glow-400 text-night-950',
+    link: 'text-glow-300',
+  },
+  snow: {
+    box: 'rounded-3xl border border-berry-500/20 bg-white shadow-xl shadow-berry-700/10',
+    field: 'mt-1.5 block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-night-950 placeholder:text-slate-500 focus:border-berry-600 focus:outline-none focus:ring-2 focus:ring-berry-600/25',
+    label: 'block text-sm font-medium text-slate-700',
+    muted: 'text-slate-600',
+    chip: 'rounded-xl border border-slate-300 text-center text-sm font-medium text-slate-800 peer-checked:border-berry-600 peer-checked:bg-berry-50 peer-checked:text-berry-700 peer-focus-visible:ring-2 peer-focus-visible:ring-berry-600',
+    pickOn: 'border-berry-600 bg-berry-50 text-berry-700',
+    pickOff: 'border-slate-300 text-slate-700 hover:border-slate-400',
+    error: 'text-berry-600',
+    submit: 'bg-berry-600 text-white shadow-lg shadow-berry-600/25 hover:bg-berry-700',
+    call: 'bg-berry-600 text-white',
+    link: 'text-berry-700',
+  },
+}
 
-// The estimate request form (home page, area pages, /design/).
+// The estimate request form (home page, area pages, /design/, /gift-wrapping/).
 // design (optional, /design/): { preview: image src, get: () => attachment, sample: the untouched sample }
 // sends their light design with the request (docs/specs/public-designer.md).
-export default function EstimateForm({ design, defaultMessage = '' }) {
+// service: the "What do you need?" choice it opens with (the gift-wrapping page: Gift wrapping).
+// skin: 'night' (the site) or 'snow' (the white gift-wrapping page).
+export default function EstimateForm({ design, defaultMessage = '', service: startService, skin = 'night' }) {
   const [status, setStatus] = useState('idle') // idle | sending | sent | error
   const sign = useSign()
   const takenOver = useTakenOver()
   const [attach, setAttach] = useState(true)
+  const look = SKINS[skin] ?? SKINS.night
+  const { field, label } = look
   // "What do you need?" (docs/specs/gift-wrapping.md): only while gift wrapping is switched on.
   const gift = useGiftWrapping()
-  const [service, setService] = useState(SERVICES[0])
+  const [service, setService] = useState(SERVICES.includes(startService) ? startService : SERVICES[0])
+  // Gift wrapping alone: no "What would you like lit?", and the words talk about wrapping.
+  const giftOnly = gift && service === 'Gift wrapping'
   // "What would you like lit?" chips + an optional note fold into the lead's message (src/lib/estimateForm.js).
   const [picks, setPicks] = useState([])
   const [phoneErr, setPhoneErr] = useState(false)
@@ -53,7 +88,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
     // Hidden field only bots fill in: pretend success, save nothing.
     if (data.get('website')) return setStatus('sent')
     if (needsPhone(data.get('contactMethod'), data.get('phone'))) { setPhoneErr(true); return }
-    data.set('message', composeMessage(picks, data.get('message'), { gift: gift && service === 'Gift wrapping' }))
+    data.set('message', composeMessage(picks, data.get('message'), { gift: giftOnly }))
     setStatus('sending')
     try {
       await submitLead(data, design && attach ? await design.get() : null)
@@ -69,22 +104,22 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
 
   if (status === 'sent') {
     return (
-      <div className="rounded-3xl border border-white/10 bg-night-900 p-6 py-12 text-center md:p-8" role="status">
+      <div className={`${look.box} p-6 py-12 text-center md:p-8`} role="status">
         <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-pine-500/20 text-pine-500">
           <Icon name="check" className="size-8" />
         </div>
         <h3 className="font-display text-2xl font-bold">Thanks, we got it!</h3>
-        <p className="mt-2 text-slate-400">We’ll be in touch soon. Need us sooner? Call <span className="whitespace-nowrap">{business.phone}</span>.</p>
+        <p className={`mt-2 ${look.muted}`}>We’ll be in touch soon. Need us sooner? Call <span className="whitespace-nowrap">{business.phone}</span>.</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-night-900 p-6 md:p-8">
+    <div className={`${look.box} p-6 md:p-8`}>
       {/* Load Firebase (and the anti-spam check) once someone starts filling in the form. */}
       <form onSubmit={onSubmit} onFocus={() => { if (firebaseReady) getFirebaseApp().catch(() => {}) }} className="grid gap-5 sm:grid-cols-2">
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
-        <p className="text-sm text-slate-400 sm:col-span-2">Takes about a minute. You get one exact price within a day; we don’t quote over the phone.</p>
+        <p className={`text-sm ${look.muted} sm:col-span-2`}>{giftOnly ? giftWrapping.form.intro : 'Takes about a minute. You get one exact price within a day; we don’t quote over the phone.'}</p>
         {design && (
           <div className="flex items-center gap-3 rounded-2xl border border-glow-400/30 bg-glow-400/5 p-3 sm:col-span-2">
             <img src={design.preview} alt="Your light design" className="h-24 w-36 shrink-0 rounded-lg object-cover" />
@@ -101,7 +136,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
               {SERVICES.map((s) => (
                 <label key={s} className="flex-1 cursor-pointer">
                   <input type="radio" name="service" value={s} checked={service === s} onChange={() => setService(s)} className="peer sr-only" />
-                  <span className="flex h-full min-h-11 items-center justify-center rounded-xl border border-white/15 px-1 py-2.5 text-center text-sm font-medium leading-tight peer-checked:border-glow-400 peer-checked:bg-glow-400/10 peer-checked:text-glow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-glow-400">
+                  <span className={`flex h-full min-h-11 items-center justify-center px-1 py-2.5 leading-tight ${look.chip}`}>
                     {s}
                   </span>
                 </label>
@@ -114,7 +149,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
         <label className={label}>Email *<input required type="email" name="email" maxLength={200} autoComplete="email" className={field} /></label>
         <label className={label}>Phone<input type="tel" name="phone" maxLength={40} autoComplete="tel" className={field} onInput={() => setPhoneErr(false)} /></label>
         <label className={`${label} sm:col-span-2`}>Street address *
-          <span id="address-hint" className="mt-0.5 block font-normal text-slate-400">{words.addressHint}</span>
+          <span id="address-hint" className={`mt-0.5 block font-normal ${look.muted}`}>{giftOnly ? giftWrapping.form.addressHint : words.addressHint}</span>
           <input required name="address" maxLength={200} autoComplete="street-address" aria-describedby="address-hint" className={field} />
         </label>
         <label className={label}>City<input name="city" maxLength={80} autoComplete="address-level2" className={field} placeholder={words.cityPlaceholder} /></label>
@@ -125,13 +160,13 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
             {['Phone', 'Text', 'Email'].map((m, i) => (
               <label key={m} className="flex-1 cursor-pointer">
                 <input type="radio" name="contactMethod" value={m} defaultChecked={i === 0} className="peer sr-only" />
-                <span className="flex min-h-11 items-center justify-center rounded-xl border border-white/15 py-2.5 text-center text-sm font-medium peer-checked:border-glow-400 peer-checked:bg-glow-400/10 peer-checked:text-glow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-glow-400">
+                <span className={`flex min-h-11 items-center justify-center py-2.5 ${look.chip}`}>
                   {m}
                 </span>
               </label>
             ))}
           </div>
-          {phoneErr && <p className="mt-2 text-sm text-berry-300" role="alert">{words.phoneError}</p>}
+          {phoneErr && <p className={`mt-2 text-sm ${look.error}`} role="alert">{words.phoneError}</p>}
         </fieldset>
         <label className={`${label} sm:col-span-2`}>How did you hear about us?
           {/* key: a sign code known only after the page is taken over still preselects "Road sign" */}
@@ -141,40 +176,40 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
             {HEARD_FROM.filter((h) => !(sign && h === 'Road sign')).map((h) => <option key={h}>{h}</option>)}
           </select>
         </label>
-        {!(gift && service === 'Gift wrapping') && (
+        {!giftOnly && (
           <fieldset className="sm:col-span-2">
-            <legend className={label}>What would you like lit? <span className="font-normal text-slate-400">(tap any, optional)</span></legend>
+            <legend className={label}>What would you like lit? <span className={`font-normal ${look.muted}`}>(tap any, optional)</span></legend>
             <div className="mt-2 flex flex-wrap gap-2">
               {LIT_OPTIONS.map((o) => (
                 <button key={o} type="button" onClick={() => togglePick(o)} aria-pressed={picks.includes(o)}
-                  className={`min-h-11 rounded-full border px-4 text-sm font-medium ${picks.includes(o) ? 'border-glow-400 bg-glow-400/15 text-glow-300' : 'border-white/15 text-slate-200 hover:border-white/30'}`}>
+                  className={`min-h-11 rounded-full border px-4 text-sm font-medium ${picks.includes(o) ? look.pickOn : look.pickOff}`}>
                   {picks.includes(o) ? '✓ ' : ''}{o}
                 </button>
               ))}
             </div>
           </fieldset>
         )}
-        <label className={`${label} sm:col-span-2`}>Anything else? <span className="font-normal text-slate-400">(optional)</span>
+        <label className={`${label} sm:col-span-2`}>Anything else? <span className={`font-normal ${look.muted}`}>(optional)</span>
           <textarea ref={message} name="message" rows={3} maxLength={3000} className={field} defaultValue={defaultMessage}
-            placeholder={gift && service === 'Gift wrapping' ? giftWrapping.form.placeholder : 'Colors you like, a date you need, a gate code…'} />
+            placeholder={giftOnly ? giftWrapping.form.placeholder : 'Colors you like, a date you need, a gate code…'} />
         </label>
 
         <div className="sm:col-span-2">
           {firebaseReady ? (
             // Off until React has taken the page over: a plain-HTML send would put their details in the URL.
             <button type="submit" disabled={!takenOver || status === 'sending'}
-              className="w-full rounded-full bg-glow-400 py-4 font-semibold text-night-950 shadow-[0_0_28px_-6px] shadow-glow-400 hover:bg-glow-300 disabled:opacity-60">
-              {status === 'sending' ? 'Sending…' : 'Request my free estimate'}
+              className={`w-full rounded-full py-4 font-semibold disabled:opacity-60 ${look.submit}`}>
+              {status === 'sending' ? 'Sending…' : giftOnly ? giftWrapping.form.submit : 'Request my free estimate'}
             </button>
           ) : (
-            <a href={business.phoneHref} className="block w-full rounded-full bg-glow-400 py-4 text-center font-semibold text-night-950">
+            <a href={business.phoneHref} className={`block w-full rounded-full py-4 text-center font-semibold ${look.call}`}>
               Call {business.phone} for your estimate
             </a>
           )}
-          <p className="mt-3 text-center text-sm text-slate-400">Rather not type? <a href={business.smsWith('Hi! I’d like a free estimate for my home at: ')} className="font-semibold text-glow-300 underline">Text a photo of your house to <span className="whitespace-nowrap">{business.phone}</span></a>.</p>
-          <RecaptchaNote className="mt-3" />
+          <p className={`mt-3 text-center text-sm ${look.muted}`}>Rather not type? <a href={business.smsWith(giftOnly ? giftWrapping.form.text.sms : 'Hi! I’d like a free estimate for my home at: ')} className={`font-semibold underline ${look.link}`}>{giftOnly ? giftWrapping.form.text.link : 'Text a photo of your house to'} <span className="whitespace-nowrap">{business.phone}</span></a>.</p>
+          <RecaptchaNote className="mt-3" muted={look.muted} />
           {status === 'error' && (
-            <p className="mt-3 text-center text-sm text-berry-300" role="alert">{words.sendError}</p>
+            <p className={`mt-3 text-center text-sm ${look.error}`} role="alert">{words.sendError}</p>
           )}
         </div>
       </form>

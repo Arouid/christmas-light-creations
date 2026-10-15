@@ -16,17 +16,21 @@ export const townName = (t) => t.replace(/\s*\(.*\)$/, '')
 export const areaDescription = (a, business) =>
   `Christmas light installation in ${townName(a.towns[0])} and ${townName(a.towns[1])}: free service calls, January removal, family-owned since ${business.since}. Free estimates: ${business.phone}.`
 
-// Drawn at build time; `expect` must be in the drawn HTML, `absent` must not
-// (gift wrapping is drawn only after the page asks the server whether it is
-// switched on, lib/giftWrapping.js). `hero`: the page gets the hero-photo picker
-// in its <head> (src/lib/heroPhoto.js), so each visit downloads one photo.
+// Drawn at build time; `expect` must be in the drawn HTML, `absent` must not,
+// nor any phrase of the gift-wrapping words on any page (gift wrapping is drawn
+// only after the page asks the server whether it is switched on,
+// lib/giftWrapping.js; its own page is built as an empty shell). `hero`: the
+// page gets the hero-photo picker in its <head> (src/lib/heroPhoto.js), so
+// each visit downloads one photo.
 export const PRERENDERED = [
   { html: 'index.html', module: '/src/App.jsx', expect: 'Holiday lights', absent: 'ift wrapping', hero: true },
   { html: 'design/index.html', module: '/src/design/DesignPage.jsx', expect: 'sample-design.webp', absent: 'ift wrapping' },
   { html: 'cost/index.html', module: '/src/cost/CostPage.jsx', expect: 'What sets the price' },
+  { html: 'gift-wrapping/index.html', module: '/src/gift/GiftPage.jsx', expect: 'data-behind-switch', absent: 'ift wrapping' },
   { html: 'privacy/index.html', module: '/src/privacy/PrivacyPage.jsx', expect: 'we never sell it' },
   { html: 'terms/index.html', module: '/src/terms/TermsPage.jsx', expect: 'installation agreement' },
 ]
 
 // sitemap.xml, in order: home, the designer, the cost guide, the area pages, the policies.
+// Never /gift-wrapping/: it is behind a switch the build can't see (docs/specs/gift-wrapping.md).
 export const sitemapUrls = (areas) => [`${SITE}/`, `${SITE}/design/`, `${SITE}/cost/`, ...areas.map((a) => `${SITE}/${pagePath(a)}`), `${SITE}/privacy/`, `${SITE}/terms/`]

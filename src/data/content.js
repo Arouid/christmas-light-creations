@@ -487,7 +487,7 @@ export const privacy = {
         '**Google reCAPTCHA:** on our estimate form, proposal and account pages, it checks that requests come from a real visitor and not a spam robot. Google’s privacy policy and terms apply to it.',
         '**Anthropic (Claude):** when one of our team asks for help writing a reply to you, your conversation with us (texts, emails and messages from your account) and the details on your record (name, address, what we installed, prices and schedule, never gate codes or payment details) are sent to Anthropic’s Claude service to suggest a draft. A person on our team reads, edits and sends every reply; nothing is sent to you automatically. Anthropic does not use this to train its models. Our team can also ask Claude questions about our own records (for example which invoices are due or what a customer asked us before); the same kinds of details are sent for that, with the same limits, and Claude can only read, never change or send anything.',
         '**Google Ads:** we advertise on Google, so our public pages (not your account or agreement pages) load Google’s ad tag. It tells Google when a visit from one of our ads led to an estimate request, so we know the ads work. When you send the estimate form, your browser turns your email and phone number into a scrambled code (a one-way “hash” that can’t be turned back into them) and the tag gives Google only that code, so Google can tell whether one of our ads led to your request. Google uses it only to measure our ads. Google sets its own cookies for this and its privacy policy applies. The tag never passes on your email or phone number themselves, or anything else you type into the form.',
-        'Our fonts come from our own website (no font service sees your visit), and the home page asks our own server (on Google Cloud) for the line about how booked we are and the next open install dates (only dates, nothing about anyone). That’s all: no other outside services see your visit.',
+        'Our fonts come from our own website (no font service sees your visit), and some of our pages, like the home page, ask our own server (on Google Cloud) what’s open right now: the line about how booked we are, the next open install dates and which of our services we’re offering (nothing about anyone). That’s all: no other outside services see your visit.',
       ],
     },
     {
@@ -762,28 +762,40 @@ export const designPage = {
 // Gift wrapping (docs/specs/gift-wrapping.md): the owner's second service,
 // shown on the website only while ⚙ Settings → Gift wrapping is on
 // (settings/app.giftWrapping; off until the owner says go, 2026-10-13).
+// Its own page, /gift-wrapping/ (src/gift/GiftPage.jsx, white and red, owner
+// 2026-10-15), with a small teaser and a menu link on the home page.
 // Kept out of `nav` and `faq` on purpose: those are drawn into the built
 // HTML and read by the sales assistant, and neither may mention it while
 // it is off. The owner's answers (pricing, drop-off, dates, supplies) still
 // aren't in: the words below promise nothing specific, and `details` is
 // where those answers go once given.
 export const giftWrapping = {
-  nav: { label: 'Gift wrapping', href: '#gift-wrapping', after: '#gallery' },
-  eyebrow: 'New this season',
+  nav: { label: 'Gift wrapping', href: `${base}gift-wrapping/`, after: '#gallery' },
+  // The home page's teaser (src/components/GiftTeaser.jsx), after Photos.
+  teaser: { eyebrow: 'New this Christmas', title: 'We wrap gifts too', body: 'Crisp corners, real ribbon, bows that stay put.', link: 'See gift wrapping' },
+  // The page's title in the browser tab, set once the switch says on (the built page has a plain one).
+  pageTitle: 'Gift Wrapping in Pearland, TX | Christmas Light Creations',
+  eyebrow: 'New this Christmas',
   title: 'Gift wrapping, done beautifully.',
   intro: 'The same family that lights your home can wrap your gifts: crisp corners, real ribbon, bows that stay put. Hand us the pile and get back presents ready to go under the tree.',
-  // Photos (the owner's: plaid, navy snowflake, red polka-dot bows) go here once processed with
-  // scripts/process-photos.mjs: { src: `${base}images/gift-wrap/….jpg`, alt: '…' }. Shown only when filled.
+  call: 'Call',
+  // Photos (the owner's own wrapping only, never stock or AI: plaid, navy snowflake, red polka-dot
+  // bows) go here once processed with scripts/process-photos.mjs:
+  // { src: `${base}images/gift-wrap/….jpg`, alt: '…' }. Shown only when filled.
+  photosTitle: 'Wrapped by us',
   photos: [],
+  stepsTitle: 'How gift wrapping works',
   steps: [
     ['Tell us what you have', 'Roughly how many gifts, what sizes, and when you need them back. Ask in the estimate form, or text us a photo of the pile.'],
     ['We send you a price', 'One clear price for the lot before you commit. Tell us a color or a theme and we choose paper, ribbon and bows to match.'],
     ['Hand them over, get them back wrapped', 'We arrange the hand-off with you, then your gifts come back wrapped and ready to give.'],
   ],
   // Fill in from the owner's answers (price by size, drop-off days, the last day before Christmas, your own paper). Shown only when filled.
+  detailsTitle: 'Good to know',
   details: [],
   cta: 'Ask about gift wrapping',
-  // An extra FAQ group, shown with the others while the switch is on.
+  // The page's questions (the home FAQ no longer carries them).
+  faqTitle: 'Your questions, answered.',
   faq: {
     group: 'Gift wrapping',
     items: [
@@ -793,10 +805,20 @@ export const giftWrapping = {
       ['Can I get lights and gift wrapping together?', 'Yes. Pick “Both” on the estimate form and we price them together. Lights customers get first dibs on wrapping dates.'],
     ],
   },
-  // "What do you need?" on the estimate form (the three choices are SERVICES in functions/giftWrapping.js).
+  // The page's form section (#estimate): the estimate form with Gift wrapping already picked.
+  ask: {
+    title: 'Ask about gift wrapping',
+    intro: 'Tell us roughly what you have and when you need it back. We send one clear price for the lot before you commit.',
+  },
+  // "What do you need?" on the estimate form (the three choices are SERVICES in functions/giftWrapping.js),
+  // and the form's words while Gift wrapping (alone) is picked.
   form: {
     legend: 'What do you need? *',
     placeholder: 'How many gifts, roughly what sizes, colors you like, when you need them…',
+    intro: 'Takes about a minute. We send one clear price for the lot before you commit.',
+    addressHint: 'So we can arrange the hand-off with you.',
+    submit: 'Ask for my price',
+    text: { link: 'Text a photo of the pile to', sms: 'Hi! I’d like a price for gift wrapping: ' },
   },
 }
 
