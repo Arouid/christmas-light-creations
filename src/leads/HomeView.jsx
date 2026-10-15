@@ -133,6 +133,9 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="hidden items-center gap-1.5 text-xs text-slate-400 sm:flex"><Light color="green" /> live</span>
+          {/* Marketing and Notes live here, not under More ▾ (owner 2026-10-15) */}
+          {!wall && <a href="#marketing" className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 text-sm font-semibold hover:bg-white/10">📣 Marketing</a>}
+          {!wall && <a href="#notes" className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 text-sm font-semibold hover:bg-white/10">📒 Notes</a>}
           {arranging && <button type="button" onClick={() => apply(DEFAULT_LAYOUT)} className="min-h-11 rounded-full px-3 text-sm text-slate-400 underline">Reset layout</button>}
           <button type="button" onClick={() => setArranging((v) => !v)} aria-pressed={arranging}
             className={`min-h-11 rounded-full px-4 text-sm font-semibold ${arranging ? 'bg-glow-400 text-night-950' : 'border border-white/20'}`}>

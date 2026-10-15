@@ -178,3 +178,26 @@ test('staff names: Settings first, then the staff list, by lowercase email', () 
   assert.equal(staffName('Exatrum@Gmail.com'), 'Scott M.')
   assert.deepEqual(staffNamesMap(), {})
 })
+
+test('Recent activity filters: every action is under exactly one filter; kind and person narrow the list', async () => {
+  const { ACTIVITY_FILTERS, activityPeople, filterActivity, filterOf } = await import('../src/lib/activity.js')
+  for (const a of ACTIONS) {
+    const homes = ACTIVITY_FILTERS.filter(([, , actions]) => actions?.includes(a))
+    assert.equal(homes.length, 1, `${a} is under one filter (${homes.map(([k]) => k).join(', ') || 'none'})`)
+  }
+  assert.equal(filterOf('invoice-paid-online'), 'money')
+  assert.equal(filterOf('made-up'), 'other')
+  const list = [
+    { id: '1', action: 'email', by: 'katie.p@christmas-light-creations.com' },
+    { id: '2', action: 'invoice-sent', by: 'scott@christmas-light-creations.com' },
+    { id: '3', action: 'proposal-signed', by: 'website' },
+    { id: '4', action: 'email', by: 'scott@christmas-light-creations.com' },
+  ]
+  assert.deepEqual(filterActivity(list).map((e) => e.id), ['1', '2', '3', '4'])
+  assert.deepEqual(filterActivity(list, { kind: 'email' }).map((e) => e.id), ['1', '4'])
+  assert.deepEqual(filterActivity(list, { kind: 'money' }).map((e) => e.id), ['2', '3'])
+  assert.deepEqual(filterActivity(list, { kind: 'email', by: 'scott@christmas-light-creations.com' }).map((e) => e.id), ['4'])
+  const people = activityPeople(list)
+  assert.equal(people.at(-1)[0], 'website', 'the website comes last')
+  assert.equal(people.length, 3)
+})

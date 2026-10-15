@@ -1,7 +1,7 @@
 import { setSender } from '../lib/messages'
 import { useCallback, useEffect, useState } from 'react'
 import { business } from '../data/content'
-import { ALL_TABS, BEFORE, LABEL, MORE } from '../lib/staffMenu'
+import { ALL_TABS, BEFORE, LABEL, MORE, ON_HOME } from '../lib/staffMenu'
 import Drawer from './Drawer'
 import { leadToCustomer, seasonYear } from '../lib/customers'
 import CustomerDetail from './CustomerDetail'
@@ -58,7 +58,7 @@ import { staffName, staffTitle, staffTitlesMap } from '../lib/activity'
 // Ask Claude sits right after Home so it shows without scrolling on a phone (owner, 2026-10-10).
 // The lists live in src/lib/staffMenu.js (BEFORE, MORE, HIDDEN); phones use the ☰ drawer instead of the row.
 // Which top-row tab a hash belongs to.
-const sectionOf = (tab) => (tab.startsWith('view-') ? 'customers' : tab === 'past' ? 'leads' : MORE.some(([k]) => k === tab) ? 'more' : tab)
+const sectionOf = (tab) => (tab.startsWith('view-') ? 'customers' : tab === 'past' ? 'leads' : ON_HOME.includes(tab) ? 'home' : MORE.some(([k]) => k === tab) ? 'more' : tab)
 const chip = (on) => `inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-medium ${on ? 'bg-glow-400 text-night-950' : 'bg-white/10 hover:bg-white/15'}`
 
 function Screen({ children }) {

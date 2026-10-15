@@ -2,7 +2,7 @@
 
 > Status: built 2026-10-13 (owner: "an area for Lacie and Katie to keep personal notes they can share with me" and "that to-do list in the staff app in a visible place she'll refer back to"). Needs the owner to publish `firestore.rules` (new collection `notes`); until then the Notes tab is empty and Save says the rules aren't published. Nothing to deploy on the server.
 
-## Notes (tab under More ▾ / drawer → Tools)
+## Notes (Home → 📒 Notes next to Arrange, since 2026-10-15; drawer → Tools)
 
 - `notes/{id}`: `{ title ≤ 120, text ≤ 5000, by (writer's email, lowercase), shared (bool), createdAt, updatedAt, updatedBy }`.
 - Private unless **Share with the team** is ticked; then every staff member reads it under "From Katie P." (read-only). Only the writer edits or deletes.

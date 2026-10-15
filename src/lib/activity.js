@@ -64,6 +64,31 @@ const VERB = {
 }
 export const ACTIONS = [...Object.keys(VERB), ...Object.keys(WEBSITE)]
 
+// Home → Recent activity filters (owner 2026-10-15: "recent activity is also
+// going to need a set of filters"): [key, label, actions]. Every action is in
+// exactly one (tests/activity.test.mjs).
+export const ACTIVITY_FILTERS = [
+  ['all', 'All activity', null],
+  ['email', 'Emails & chat', ['email', 'chat-reply', 'ai-draft', 'email-scheduled', 'chat-message']],
+  ['money', 'Invoices & proposals', ['invoice-sent', 'invoice-again', 'invoice-paid', 'invoice-void', 'invoice-paid-online', 'proposal-sent', 'proposal-void', 'proposal-countersigned', 'proposal-signed', 'proposal-paid']],
+  ['calls', 'Calls & texts', ['text', 'call']],
+  ['status', 'Status & rebooking', ['lead-status', 'make-customer', 'rebooked', 'details-updated']],
+  ['service', 'Service calls', ['service-logged', 'service-done', 'service-reported']],
+  ['claims', 'Who’s on what', ['handling', 'takeover']],
+  ['reviews', 'Reviews', ['reviewed', 'review-asked', 'review-reminded']],
+  ['spam', 'Spam', ['spam', 'spam-filed']],
+]
+export const filterOf = (action) => ACTIVITY_FILTERS.find(([, , actions]) => actions?.includes(action))?.[0] ?? 'other'
+// kind: a filter key ('all' for everything); by: a staff email or 'website' ('' for everyone).
+export const filterActivity = (entries = [], { kind = 'all', by = '' } = {}) =>
+  entries.filter((e) => (kind === 'all' || filterOf(e.action) === kind) && (!by || e.by === by))
+// Who appears in the entries, for the "By" list: [by, label], staff by name, the website last.
+export function activityPeople(entries = [], names = {}) {
+  const seen = new Map()
+  for (const e of entries) if (e.by && !seen.has(e.by)) seen.set(e.by, e.by === 'website' ? 'Website & customers' : staffName(e.by, names))
+  return [...seen].sort((a, b) => (a[0] === 'website') - (b[0] === 'website') || a[1].localeCompare(b[1]))
+}
+
 export function targetLink(target, messages = []) {
   const t = target ?? {}
   const id = encodeURIComponent(t.id ?? '')

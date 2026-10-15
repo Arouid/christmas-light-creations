@@ -6,7 +6,7 @@
 
 The season plan ([docs/marketing/season-plan-2026.md](../marketing/season-plan-2026.md)) as a shared to-do list in the staff app, so Scott and the team see the same jobs, tick them off, and find the words to paste in one place.
 
-- **📣 Marketing** section (phones: ☰ → Marketing & reviews; computers: More ▾). In order:
+- **📣 Marketing** section (computers and phones: the 📣 Marketing button on Home, next to Arrange (owner 2026-10-15); phones also ☰ → Marketing & reviews). In order:
   1. The phase we're in and its message (four phases, on the dates the website itself switches).
   2. **This week**: the week's jobs with who does them (Scott, Team, Claude), a 44 px tick, and "Done · Katie · Oct 14, 3:00 PM" once ticked. ◀ ▶ move between weeks; "Back to this week".
   3. **Still open from earlier weeks**: anything from a past week nobody ticked (Claude's jobs left out: they wait to be asked).

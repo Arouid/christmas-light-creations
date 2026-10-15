@@ -1,4 +1,5 @@
-import { agoText, describe, staffName, toMs } from '../lib/activity'
+import { useState } from 'react'
+import { ACTIVITY_DAYS, ACTIVITY_FILTERS, activityPeople, agoText, describe, filterActivity, staffName, toMs } from '../lib/activity'
 import { reasonText } from '../lib/signInLog'
 import { money } from '../lib/invoices'
 import { STOP_KINDS, clock, timeline } from '../lib/router'
@@ -223,20 +224,44 @@ export function SeasonPanel({ season, progress, money: m, wall, reviews, onOpenM
 const HUES = ['bg-glow-400 text-night-950', 'bg-pine-500 text-white', 'bg-sky-500 text-night-950', 'bg-berry-500 text-white', 'bg-violet-400 text-night-950']
 const hue = (s) => HUES[[...String(s).toLowerCase()].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % HUES.length]
 
+// Phones show the newest few; the rest fold away under "Show more" (owner
+// 2026-10-15: "very very long on mobile"). Computers keep the scrolling list.
+const FOLD = 5
+
 // entries: newest first. ctx: { names, messages } for describe().
 export function ActivityPanel({ entries, error, loading, ctx, now, wall, limit = 40 }) {
-  const shown = entries.slice(0, wall ? 12 : limit)
+  const [unfolded, setUnfolded] = useState(false)
+  const [kind, setKind] = useState('all')
+  const [by, setBy] = useState('')
+  // The wall screen always shows everything; the filters are for the people at a desk or on a phone.
+  const list = wall ? entries : filterActivity(entries, { kind, by })
+  const shown = list.slice(0, wall ? 12 : limit)
+  const folded = !wall && !unfolded && shown.length > FOLD
+  const people = activityPeople(entries, ctx.names)
+  const pick = 'min-h-11 min-w-0 flex-1 rounded-full border border-white/20 bg-night-950 px-3 text-sm sm:flex-none'
   return (
     <section className={`${panel} flex min-h-0 flex-col`} aria-label="Recent activity">
       <h2 className={label}>Recent activity</h2>
       {error && <p className="mt-3 text-sm text-glow-300">Recent activity needs the database rules published again (firestore.rules). Everything else works.</p>}
       {!error && !loading && !entries.length && <p className="mt-3 text-sm text-slate-400">Nothing yet. Emails, invoices, status changes, texts and calls started from the app show here for everyone.</p>}
+      {!wall && entries.length > 0 && (
+        <div className="mt-3 flex gap-2">
+          <select value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Show" className={pick}>
+            {ACTIVITY_FILTERS.map(([k, text]) => <option key={k} value={k}>{text}</option>)}
+          </select>
+          <select value={by} onChange={(e) => setBy(e.target.value)} aria-label="By" className={pick}>
+            <option value="">Everyone</option>
+            {people.map(([k, text]) => <option key={k} value={k}>{text}</option>)}
+          </select>
+        </div>
+      )}
+      {!wall && entries.length > 0 && !list.length && <p className="mt-3 text-sm text-slate-400">Nothing like that in the last {ACTIVITY_DAYS} days.</p>}
       <ul className={`mt-3 min-h-0 flex-1 space-y-1 overflow-y-auto ${wall ? '' : 'lg:max-h-[34rem]'}`}>
-        {shown.map((e) => {
+        {shown.map((e, i) => {
           const d = describe(e, ctx)
           const who = e.by === 'website' ? 'W' : staffName(e.by, ctx.names)[0]
           return (
-            <li key={e.id}>
+            <li key={e.id} className={folded && i >= FOLD ? 'hidden lg:block' : undefined}>
               <button type="button" onClick={() => go(d.link)} disabled={!d.link}
                 className="flex min-h-11 w-full items-start gap-3 rounded-xl px-2 py-1.5 text-left hover:bg-white/5 disabled:hover:bg-transparent">
                 <span className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${e.by === 'website' ? 'bg-white/15 text-white' : hue(e.by)}`} aria-hidden="true">{who}</span>
@@ -250,11 +275,17 @@ export function ActivityPanel({ entries, error, loading, ctx, now, wall, limit =
           )
         })}
       </ul>
+      {!wall && shown.length > FOLD && (
+        <button type="button" onClick={() => setUnfolded((v) => !v)} aria-expanded={!folded}
+          className="mt-2 min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold hover:bg-white/10 lg:hidden">
+          {folded ? `Show ${shown.length - FOLD} more ▾` : 'Show less ▴'}
+        </button>
+      )}
     </section>
   )
 }
 
-const DOT = { on: 'bg-emerald-400', away: 'bg-slate-500', never: 'bg-white/15' }
+const DOT ={ on: 'bg-emerald-400', away: 'bg-slate-500', never: 'bg-white/15' }
 
 // Who's on: staff with the app open now, else when they were last on.
 export function WhoPanel({ rows, error, now, wall }) {

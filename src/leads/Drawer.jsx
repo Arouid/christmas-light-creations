@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { GROUPS, ICON, NAME, SHORTCUTS, groupOf, searchHash } from '../lib/staffMenu'
+import Icon from '../components/Icon'
+import { GROUPS, NAME, SHORTCUTS, SHORTCUTS_HEADING, groupOf, searchHash } from '../lib/staffMenu'
 
 // The phone menu: ☰ opens this drawer from the left (owner 2026-10-12, "like
 // the Firebase console's"): a search box that jumps to Accounts, the
@@ -7,12 +8,17 @@ import { GROUPS, ICON, NAME, SHORTCUTS, groupOf, searchHash } from '../lib/staff
 // settings and sign-out. Closes on a pick, the backdrop, Escape, or any hash
 // change. Which groups are open is remembered on this device; the group that
 // holds the current section opens by itself. Computers keep the tab row.
+// Like the customer account's menu (owner 2026-10-15): one of our line icons on
+// each heading, the rows words only, 44 px (the smallest tap target the site
+// allows; they were 48).
 const OPEN_KEY = 'clcMenuGroups'
 const readOpen = () => { try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY)) ?? []) } catch { return new Set() } }
 const saveOpen = (set) => { try { localStorage.setItem(OPEN_KEY, JSON.stringify([...set])) } catch { /* private mode: fine */ } }
 
-const row = (on) => `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-base ${on ? 'bg-white/10 font-semibold text-glow-300' : 'text-slate-100 hover:bg-white/5'}`
-const Pic = ({ k }) => <span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">{ICON[k]}</span>
+const row = (on) => `flex min-h-11 w-full items-center rounded-xl pl-10 pr-3 text-left text-[15px] ${on ? 'bg-white/10 font-semibold text-glow-300' : 'text-slate-100 hover:bg-white/5'}`
+const heading = 'flex min-h-11 w-full items-center gap-2.5 px-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-400'
+// The bottom rows stand alone (no heading), so they keep a small icon.
+const tool = 'flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] text-slate-100 hover:bg-white/5'
 
 export default function Drawer({ open, onClose, tab, askOn, count, who, demo, onMessages, onGuide, guideNew = false, onSettings, onSignOut }) {
   const [q, setQ] = useState('')
@@ -44,7 +50,7 @@ export default function Drawer({ open, onClose, tab, askOn, count, who, demo, on
   }
   const link = (k) => (
     <li key={k}>
-      <a href={`#${k}`} onClick={onClose} aria-current={tab === k ? 'page' : undefined} className={row(tab === k)}><Pic k={k} />{NAME[k]}</a>
+      <a href={`#${k}`} onClick={onClose} aria-current={tab === k ? 'page' : undefined} className={row(tab === k)}>{NAME[k]}</a>
     </li>
   )
 
@@ -65,29 +71,33 @@ export default function Drawer({ open, onClose, tab, askOn, count, who, demo, on
           </label>
         </form>
         <nav className="flex-1 px-2" aria-label="Sections">
-          <ul>
-            {SHORTCUTS.filter((k) => k !== 'ask' || askOn).map(link)}
-            <li>
-              <button type="button" onClick={() => { onMessages(); onClose() }} className={row(false)}>
-                <span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">💬</span>Messages
-                {count > 0 && <span className="ml-auto rounded-full bg-berry-500 px-2 text-xs font-bold leading-5 text-white">{count > 99 ? '99+' : count}</span>}
-              </button>
-            </li>
-          </ul>
-          {GROUPS.map(([name, keys]) => (
-            <section key={name} className="mt-2 border-t border-white/10 pt-1">
-              <button type="button" onClick={() => toggle(name)} aria-expanded={isOpen(name)}
-                className="flex min-h-11 w-full items-center justify-between px-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
-                {name}<span aria-hidden="true" className="text-base">{isOpen(name) ? '▾' : '▸'}</span>
+          <section aria-labelledby="menu-every-day">
+            <h2 id="menu-every-day" className="flex items-center gap-2.5 px-3 pb-0.5 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400"><Icon name={SHORTCUTS_HEADING[1]} className="size-5 text-glow-300" />{SHORTCUTS_HEADING[0]}</h2>
+            <ul>
+              {SHORTCUTS.filter((k) => k !== 'ask' || askOn).map(link)}
+              <li>
+                <button type="button" onClick={() => { onMessages(); onClose() }} className={row(false)}>
+                  Messages
+                  {count > 0 && <span className="ml-auto rounded-full bg-berry-500 px-2 text-xs font-bold leading-5 text-white">{count > 99 ? '99+' : count}</span>}
+                </button>
+              </li>
+            </ul>
+          </section>
+          {GROUPS.map(([name, keys, icon]) => (
+            <section key={name} className="mt-1 border-t border-white/10">
+              <button type="button" onClick={() => toggle(name)} aria-expanded={isOpen(name)} className={heading}>
+                <Icon name={icon} className="size-5 text-glow-300" />
+                <span className="flex-1">{name}</span>
+                <Icon name="chevron" className={`size-4 transition-transform ${isOpen(name) ? '' : '-rotate-90'}`} />
               </button>
               {isOpen(name) && <ul>{keys.map(link)}</ul>}
             </section>
           ))}
         </nav>
-        <div className="mt-2 border-t border-white/10 p-2">
+        <div className="mt-1 border-t border-white/10 p-2">
           <ul>
-            <li><button type="button" onClick={() => { onGuide(); onClose() }} className={row(false)}><span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">?</span>Staff guide{guideNew && <span className="ml-2 rounded-full bg-glow-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-night-950">New</span>}</button></li>
-            <li><button type="button" onClick={() => { onSettings(); onClose() }} className={row(false)}><span aria-hidden="true" className="w-7 shrink-0 text-center text-lg">⚙</span>Settings</button></li>
+            <li><button type="button" onClick={() => { onGuide(); onClose() }} className={tool}><Icon name="help" className="size-5 text-glow-300" />Staff guide{guideNew && <span className="ml-2 rounded-full bg-glow-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-night-950">New</span>}</button></li>
+            <li><button type="button" onClick={() => { onSettings(); onClose() }} className={tool}><Icon name="sliders" className="size-5 text-glow-300" />Settings</button></li>
           </ul>
           <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-slate-400">
             <span className="truncate">{who}</span>

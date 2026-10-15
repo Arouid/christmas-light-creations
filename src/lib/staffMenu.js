@@ -6,27 +6,30 @@
 // The computer tab row, in order; the rarely used ones under "More" (the row
 // got too long: owner 2026-10-10); Past requests lives inside Leads.
 export const BEFORE = [['home', 'Home'], ['ask', '🤖 Ask Claude'], ['map', 'Map'], ['accounts', 'Accounts'], ['invoices', 'Invoices'], ['leads', 'Leads'], ['customers', 'Customers'], ['season', 'Season'], ['route', 'Routes'], ['service', 'Service']]
-export const MORE = [['marketing', '📣 Marketing'], ['notes', 'Notes'], ['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
-export const HIDDEN = [['past', 'Past requests']]
+export const MORE = [['signs', 'Signs'], ['emails', 'Emails'], ['gates', 'Gates'], ['import', 'Import']]
+// Not in the row: Past requests lives inside Leads; Marketing and Notes are
+// buttons on Home next to Arrange (owner 2026-10-15), and the Home tab stays
+// lit while you're in them.
+export const ON_HOME = ['marketing', 'notes']
+export const HIDDEN = [['past', 'Past requests'], ['marketing', '📣 Marketing'], ['notes', 'Notes']]
 export const ALL_TABS = [...BEFORE, ...MORE, ...HIDDEN]
 export const LABEL = Object.fromEntries(ALL_TABS)
 
-// Drawer rows get a small picture, like the console's.
-export const ICON = {
-  home: '🏠', ask: '🤖', map: '🗺️', accounts: '🔎', invoices: '🧾', leads: '📥', customers: '👥', season: '🎄',
-  route: '🚚', service: '🛠', signs: '🪧', emails: '✉️', gates: '🔐', import: '📄', past: '🕰️', notes: '📒', marketing: '📣',
-}
-// Drawer label: the plain name (the icon is drawn beside it).
+// Drawer label: the plain name, words only.
 export const NAME = Object.fromEntries(ALL_TABS.map(([k, label]) => [k, label.replace(/^\S+\s(?=\S)/, (m) => (/\p{Extended_Pictographic}/u.test(m) ? '' : m))]))
 
 // Phones: what gets tapped all day, then the rest grouped the way the guide groups jobs.
+// Each heading carries one of our line icons (src/components/Icon.jsx) and the
+// rows are words only, as on the customer account's menu (owner 2026-10-15: "I
+// thought we changed this", "lower the line height too").
 export const SHORTCUTS = ['home', 'accounts', 'map', 'ask']
+export const SHORTCUTS_HEADING = ['Every day', 'compass']
 export const GROUPS = [
-  ['Customers & messages', ['leads', 'past', 'customers', 'emails']],
-  ['Prices & money', ['invoices']],
-  ['Installs, takedowns & service', ['season', 'route', 'service']],
-  ['Marketing & reviews', ['marketing']],
-  ['Tools', ['notes', 'signs', 'gates', 'import']],
+  ['Customers & messages', ['leads', 'past', 'customers', 'emails'], 'user'],
+  ['Prices & money', ['invoices'], 'receipt'],
+  ['Installs, takedowns & service', ['season', 'route', 'service'], 'tree'],
+  ['Marketing & reviews', ['marketing'], 'star'],
+  ['Tools', ['notes', 'signs', 'gates', 'import'], 'wrench'],
 ]
 export const groupOf = (tab) => GROUPS.find(([, keys]) => keys.includes(tab))?.[0] ?? null
 
