@@ -5,7 +5,7 @@
 // below, and passes them in. A field a summary starts reading goes in these
 // lists too: tests/accountPreview.test.mjs builds a payload from records cut
 // down to them.
-import { accountSummary, byNewest, customerForAccount, shownInAccount } from './account.js'
+import { accountSummary, byNewest, customerEmailKeys, customerForAccount, customerPhoneKeys, shownInAccount } from './account.js'
 import { centralDay, invoiceSummary, shownInvoice } from './invoices.js'
 import { SERVICE_DAYS, scheduleFor } from './service.js'
 import { DETAIL_FIELDS, NOTICES_FIELD, detailsSummary } from './propertyDetails.js'
@@ -17,8 +17,9 @@ export const PROPOSAL_FIELDS = ['status', 'title', 'season', 'kind', 'plan', 'pa
 // Customer fields: name and address, the yearly price, seasons (schedule,
 // what they paid, the review card), property details and the email switch,
 // and the house photo (housePhoto + photos: read by index.js houseLink for
-// the 1-hour link, never sent on; docs/specs/account-house-photo.md).
-export const CUSTOMER_FIELDS = ['fullName', 'address', 'since', 'originalRate', 'reinstallBase', 'addOns', 'priceShown', 'seasons', ...DETAIL_FIELDS.map(([k]) => k), NOTICES_FIELD, 'housePhoto', 'photos']
+// the 1-hour link, never sent on; docs/specs/account-house-photo.md), and the
+// emails and phones that open the account (shown under their address).
+export const CUSTOMER_FIELDS = ['fullName', 'address', 'since', 'originalRate', 'reinstallBase', 'addOns', 'priceShown', 'seasons', ...DETAIL_FIELDS.map(([k]) => k), NOTICES_FIELD, 'housePhoto', 'photos', 'email', 'otherEmails', 'phone', 'otherPhones']
 
 // The season the page talks about: same as src/lib/customers.js seasonYear
 // (the server clock is UTC; fine for a July 1 cutover).
@@ -53,6 +54,8 @@ export function accountPayload({ who, proposals = [], invoices = [], customers =
     chat: onRecord ? customerView(conversation ?? undefined) : null,
     // The ★ Google review card for past customers (functions/reviewAsk.js).
     review: rec ? accountReview(rec, season) : null,
-    customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '' } : null,
+    // Linked to the account (owner 2026-10-14: show the linked phone and email):
+    // exactly the emails and phones (E.164) any of which signs them in here.
+    customer: rec ? { name: rec.fullName ?? '', address: rec.address ?? '', emails: customerEmailKeys(rec), phones: customerPhoneKeys(rec) } : null,
   }
 }

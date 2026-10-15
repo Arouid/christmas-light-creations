@@ -4,7 +4,8 @@ const part = (p, amount, state, paid = 0) => ({ part: p, amount, state, paid, pa
 
 export const DEMO_ACCOUNT = {
   email: 'pat@example.com',
-  customer: { name: customer.name, address: customer.address },
+  // Linked to the account (any of these signs in): shown under the address.
+  customer: { name: customer.name, address: customer.address, emails: ['pat@example.com'], phones: ['+12815550101'] },
   // Our own photo of the house (docs/specs/account-house-photo.md); live, a 1-hour link from myAccount.
   // (import.meta.env is missing when tests/accountTour.test.mjs loads this file in Node.)
   house: { id: 'pDemoHouse', url: `${import.meta.env?.BASE_URL ?? '/'}images/gallery/pomona-pearland.jpg`, at: 1764698400000 },

@@ -120,9 +120,12 @@ export default function AccountPage() {
       const { DEMO_ACCOUNT } = await import('./demoAccount.js')
       // ?demo=rebook: a returning customer who isn't on this season's list yet.
       // ?demo=street: no house photo of ours, so Street View (only on localhost:5173, where the Maps key works).
+      // ?demo=nobody: signed in with an email we have nothing under (the "Nothing under this email yet" screen).
       const variant = q.get('demo')
       const rebook = variant === 'rebook' ? { ...DEMO_ACCOUNT, schedule: { ...DEMO_ACCOUNT.schedule, installStatus: '', day: '', plannedDate: '', weekOf: '' } }
-        : variant === 'street' ? { ...DEMO_ACCOUNT, house: null } : DEMO_ACCOUNT
+        : variant === 'street' ? { ...DEMO_ACCOUNT, house: null }
+          : variant === 'nobody' ? { email: 'someone.else@example.com', phone: '', proposals: [], invoices: [], price: null, schedule: null, service: null, details: null, chat: null, review: null, customer: null }
+            : DEMO_ACCOUNT
       setView({ name: 'account', data: preview ? { ...rebook, preview: { id: previewId, name: rebook.customer?.name ?? '', canSignIn: true } } : rebook })
       return
     }
@@ -405,6 +408,17 @@ function Account({ data, reload, logOut }) {
   const list = data.proposals ?? []
   const invoices = data.invoices ?? []
   const me = list[0]?.customer ?? data.customer ?? invoices[0]?.customer
+  const linked = [...(data.customer?.phones ?? []).map(prettyPhone), ...(data.customer?.emails ?? [])]
+  const signedInAs = data.email || prettyPhone(data.phone)
+  // "+ Add another email or phone" starts a Chat with us message (no call needed).
+  const [chatDraft, setChatDraft] = useState(null) // { text, n }
+  function addContact() {
+    setChatDraft((d) => ({ text: 'Please also link this to my account so it can sign in: ', n: (d?.n ?? 0) + 1 }))
+    requestAnimationFrame(() => {
+      document.getElementById('chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById('chat-text')?.focus({ preventScroll: true })
+    })
+  }
   const unpaid = invoices.filter((i) => i.state === 'open' || i.state === 'overdue')
   const owed = list.flatMap((p) => p.parts.filter((x) => x.state === 'due')).reduce((t, x) => t + x.amount, 0) + unpaid.reduce((t, i) => t + i.cents, 0)
   return (
@@ -415,17 +429,35 @@ function Account({ data, reload, logOut }) {
         <div className="space-y-1 p-4 sm:p-5">
           <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : 'Your account'}</h1>
           {me?.address && <p className="text-slate-300">{me.address}</p>}
-          <p className="text-sm text-slate-400">Signed in as {data.email || prettyPhone(data.phone)}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
+          {/* The phones and emails linked to the account (any of them signs in), like the staff card's line. */}
+          {linked.length > 0 && <p className="text-slate-300 [overflow-wrap:anywhere]">{linked.join(' · ')}</p>}
+          {data.chat && (
+            <button type="button" onClick={addContact} disabled={preview} title={offTip} className="min-h-11 text-sm font-semibold text-glow-300 underline disabled:opacity-60">
+              + Add another email or phone
+            </button>
+          )}
+          <p className="text-sm text-slate-400">Signed in as {signedInAs}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
         </div>
       </section>
       {data.review?.show && <ReviewCard />}
       {data.details && <DetailsNudge details={data.details} />}
       <Lights schedule={data.schedule} service={data.service} reload={reload} />
-      {data.chat && <Chat chat={data.chat} reload={reload} />}
+      {data.chat && <Chat chat={data.chat} reload={reload} draft={chatDraft} />}
       {data.details && <Details details={data.details} onSaved={reload} />}
       {data.details && <EmailPrefs details={data.details} onSaved={reload} />}
       {data.price && <YearlyPrice price={data.price} />}
-      {!list.length && !data.customer && !invoices.length && <Notice title={`Nothing under this ${data.email ? 'email' : 'phone number'} yet`} text={`If you’re a customer, call or text us at ${business.phone} and we’ll link it to your records.`} />}
+      {/* Signed in with an email or phone we don't have (owner 2026-10-14: less friction): try another,
+          or text us with the details already filled in; Call stays. */}
+      {!list.length && !data.customer && !invoices.length && (
+        <Notice
+          title={`Nothing under this ${data.email ? 'email' : 'phone number'} yet`}
+          text={`We may have a different email or phone number for you. Try another way to sign in, or text us and we’ll link ${signedInAs} to your records.`}
+          action={<>
+            <button type="button" onClick={logOut} disabled={preview} title={offTip} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>Try another way to sign in</button>
+            <a href={business.smsWith(`Hi! Please link ${signedInAs} to my Christmas Light Creations account. My name and address: `)} className={`${btn} border border-white/20`}>💬 Text us to link it</a>
+          </>}
+        />
+      )}
       <div id="agreements" className="scroll-mt-24 space-y-6">
         {(list.length > 0 || invoices.length > 0) && (
           <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
@@ -483,8 +515,14 @@ const chatWhen = (iso) => {
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }), hour: 'numeric', minute: '2-digit' })
 }
 const CHAT_SHOW = 12
-function Chat({ chat, reload }) {
+function Chat({ chat, reload, draft }) {
   const [text, setText] = useState('')
+  // A starter message from "+ Add another email or phone"; never over what they already typed.
+  const [draftSeen, setDraftSeen] = useState(draft)
+  if (draft !== draftSeen) {
+    setDraftSeen(draft)
+    if (draft?.text && !text.trim()) setText(draft.text)
+  }
   const [state, setState] = useState(null) // null | 'sending' | 'sent' | 'checking' | { error }
   const [all, setAll] = useState(false)
   const [sent, setSent] = useState(null) // { of: chat, thread }: what the server answered, until the next load
@@ -551,7 +589,7 @@ function Chat({ chat, reload }) {
         <fieldset disabled={preview} title={offTip} className="min-w-0 space-y-2">
         <label className="block">
           <span className="sr-only">Your message</span>
-          <textarea value={text} onChange={(e) => { setText(e.target.value.slice(0, CHAT_MAX)); if (state !== 'sending') setState(null) }} rows={3} maxLength={CHAT_MAX} placeholder="Type your message…"
+          <textarea id="chat-text" value={text} onChange={(e) => { setText(e.target.value.slice(0, CHAT_MAX)); if (state !== 'sending') setState(null) }} rows={3} maxLength={CHAT_MAX} placeholder="Type your message…"
             className="w-full rounded-xl border border-white/20 bg-night-950 px-4 py-3 text-base" />
         </label>
         {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}

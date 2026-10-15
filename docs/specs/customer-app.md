@@ -41,6 +41,15 @@ Then Claude builds it (owner says go):
 
 Sources: Chrome's [install criteria](https://developer.chrome.com/blog/update-install-criteria) (menu install needs no service worker; the one-tap prompt still needs a fetch handler) and the [Trusted Web Activity quick start](https://developer.chrome.com/docs/android/trusted-web-activity/quick-start).
 
+## Getting in, and staying linked (owner 2026-10-14)
+
+Owner: "customer should also show the linked phone and linked email for that account", "and anything else that would lower friction for them being there".
+
+- **Linked contacts on the greeting card**: under the address, the phones and emails that sign them in, exactly the record's `phoneKeys`/`emailKeys` (`customerPhoneKeys`/`customerEmailKeys`), sent by `myAccount`/`accountPreview` as `customer.phones` (E.164, shown as (281) 555-0101) and `customer.emails` (`functions/accountPayload.js`; the record fields `email`, `otherEmails`, `phone`, `otherPhones` are in `CUSTOMER_FIELDS`). Only their own record's: nobody else's contact details.
+- **+ Add another email or phone** (when the chat exists): scrolls to Chat with us and starts the message "Please also link this to my account so it can sign in: " (never over what they already typed). Staff link it from the card: Edit details → Email or Phone, after a comma.
+- **The dead end** ("Nothing under this email / phone number yet") now offers **Try another way to sign in** (signs out to the sign-in screen), **💬 Text us to link it** (an SMS to the business with "Please link {their email or number} to my Christmas Light Creations account. My name and address: " filled in) and Call. `/account/?demo=nobody` shows it.
+- In the staff preview these are greyed out like every action.
+
 ## Not doing
 
 A native (Kotlin) app: every screen would exist twice and the sign-in, PayPal and proposal logic would be copied. The web app already works on both phones; the store listing is a wrapper around it.

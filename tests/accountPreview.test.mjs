@@ -60,7 +60,7 @@ test('the payload: what the account page draws, and nothing staff-only', () => {
   const p = build(false)
   assert.deepEqual(Object.keys(p).sort(), ['chat', 'customer', 'details', 'email', 'invoices', 'phone', 'price', 'proposals', 'review', 'schedule', 'service'])
   assert.equal(p.email, 'pat@example.com')
-  assert.deepEqual(p.customer, { name: 'Pat Sample', address: '1 Main St, Pearland' })
+  assert.deepEqual(p.customer, { name: 'Pat Sample', address: '1 Main St, Pearland', emails: ['pat@example.com'], phones: ['+12815550101'] }, 'the emails and phones that sign them in')
   assert.deepEqual(p.invoices.map((i) => i.token), ['new', 'old'], 'sent or paid only, newest first')
   assert.equal(p.schedule.season, '2026')
   assert.equal(p.schedule.plannedDate, 'Nov 13')

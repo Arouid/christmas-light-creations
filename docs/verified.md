@@ -679,3 +679,9 @@ What was actually checked working, and how. Newest first.
 ## 2026-10-14 Property details save is deployed (TODO #60 closed)
 
 - Anonymous empty POST to the callables (no data read or written): `updateMyDetails` and `myAccount` answer HTTP 401 "Please sign in again" (deployed, refusing strangers); a made-up name answers 404. So the account page's **Your property details** Save has its function live; the rest of #60 was client-side and went out with the site pushes. TODO #60 removed. Still open: checklist #97 (a real customer saves details from /account/ and staff see them).
+
+## 2026-10-14 Account: linked phones and emails, and fewer dead ends
+
+- `tests/accountPreview.test.mjs`: the payload's `customer` now carries `emails: ['pat@example.com']` and `phones: ['+12815550101']` from the record (also from records cut to `CUSTOMER_FIELDS`). Lint clean on `src/account` and the payload builder.
+- Browser pane, `/account/?demo` at 375 px: the greeting card reads "123 Example St, Pearland, TX 77581 / (281) 555-0101 · pat@example.com / + Add another email or phone / Signed in as pat@example.com. Sign out"; the button (44 px) scrolls to Chat with us, fills "Please also link this to my account so it can sign in: " and focuses the box. `/account/?demo=nobody`: "Nothing under this email yet" with **Try another way to sign in** (48 px), **💬 Text us to link it** (`sms:+12818190163?&body=Hi! Please link someone.else@example.com to my …`) and the phone button; no sideways scroll. `/account/?demo=rebook`: the note's hint reads "Anything changed? More lights, a gate code… (optional)". Console clean after a reload; the staff app still loads.
+- Not checked: live, which needs the `myAccount` + `accountPreview` deploy (checklist #157).
