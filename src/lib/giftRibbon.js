@@ -22,6 +22,10 @@ export const ribbonY = { backgroundImage: `${CENTRE}, linear-gradient(to right, 
 // the paper (owner 2026-10-15: "make the ouutlined red green bar all gold").
 export const goldX = { backgroundImage: 'linear-gradient(to bottom, #8a6420, #c9a043 25%, #f6e3a1 50%, #c9a043 75%, #8a6420)' }
 
+// A plain cream satin edge for the questions box (owner 2026-10-15: "the red outline in the top bar
+// ... make it go away. make that small green strip cream coplored").
+export const creamX = { backgroundImage: 'linear-gradient(to bottom, #e6dcc0, #fbf7e9 50%, #e6dcc0)' }
+
 // The home page's gift-wrapping card keeps a red satin edge: the evergreen ribbon would sink into
 // the night-blue home page.
 const SATIN = '#6d1016, #9b1c22 28%, #c63a3c 50%, #9b1c22 72%, #6d1016'

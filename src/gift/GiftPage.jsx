@@ -5,7 +5,7 @@ import Icon from '../components/Icon'
 import MobileCta from '../components/MobileCta'
 import Rich from '../components/Rich'
 import { business, footerLinks, giftWrapping as t } from '../data/content'
-import { goldX, ribbonX, ribbonY } from '../lib/giftRibbon'
+import { creamX, goldX, ribbonX, ribbonY } from '../lib/giftRibbon'
 import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 
 // /gift-wrapping/ (docs/specs/gift-wrapping.md): the owner's second service
@@ -16,11 +16,11 @@ import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 // tied to it with Santa and an elf strolling on top and candy canes between
 // them, Santa's sleigh flying over the top ribbon, ornaments hanging from the
 // top ribbon, the "Wrapped by us" box as a present of its own, the questions
-// box wrapped like a gift card, a bell over the form and a pine garland along
-// the foot. The
-// pictures are his Vecteezy Pro PNGs and his own ribbon picture
-// (scripts/gift-bows.mjs) and the ribbon is CSS (lib/giftRibbon.js); no
-// wrapped gift in any of them: every wrapped gift shown is his own photo.
+// box as another (white satin bow and ribbon, a garland of lights along its
+// foot) and a pine garland along the foot of the page. The pictures are his
+// Vecteezy Pro PNGs (scripts/gift-bows.mjs) and the ribbons are CSS
+// (lib/giftRibbon.js); no wrapped gift in any of them: every wrapped gift
+// shown is his own photo.
 //
 // Behind the same switch as before: the built HTML is only the header, an
 // empty main and the footer (no word of gift wrapping; scripts/prerender.mjs
@@ -102,7 +102,7 @@ function Content() {
       <Steps />
       <Tie />
       <Questions />
-      <Tie />
+      <Tie garland />
       <Ask />
       {/* A pine garland with ornaments and pinecones along the foot of the page. */}
       <img src={decor('garland-700.webp')} srcSet={`${decor('garland-700.webp')} 700w, ${decor('garland-1100.webp')} 1100w`} sizes="(min-width: 64rem) 64rem, 100vw"
@@ -141,10 +141,10 @@ function Lid() {
 }
 
 // A section as a wrapped box: white (or a paper class from index.css), a ribbon round its top edge
-// (evergreen, or another band), lying over the ribbon down the page.
-function Box({ id, className = '', paper = 'bg-white', band = ribbonX, children }) {
+// (evergreen, or another band), a faint outline (or another), lying over the ribbon down the page.
+function Box({ id, className = '', paper = 'bg-white', band = ribbonX, edge = 'ring-1 ring-berry-700/10', children }) {
   return (
-    <section id={id} className={`relative mx-auto w-full scroll-mt-20 rounded-lg ${paper} shadow-[0_22px_45px_-24px_rgb(143_21_38/0.45)] ring-1 ring-berry-700/10 ${className}`}>
+    <section id={id} className={`relative mx-auto w-full scroll-mt-20 rounded-lg ${paper} shadow-[0_22px_45px_-24px_rgb(143_21_38/0.45)] ${edge} ${className}`}>
       <div className="absolute inset-x-0 top-0 h-2.5 rounded-t-lg" style={band} aria-hidden="true" />
       {children}
     </section>
@@ -161,7 +161,28 @@ function Box({ id, className = '', paper = 'bg-white', band = ribbonX, children 
 // lies under a piece of the same ribbon drawn over him (it matches the page's ribbon beneath exactly). They sit
 // at z 3: over the box above (whose ribbon, bow and photos are z 1-2) and under the box below
 // (Steps is z 4), so their feet tuck just behind that edge.
-function Tie({ tall, chimney }) {
+function Tie({ tall, chimney, garland }) {
+  // Hung along the questions box's foot (owner 2026-10-15, his mockup: "garland on the bottom. takes 3
+  // seperate pieces, even it up so it looks natural"; the mistletoe in it came out: "take it out"):
+  // the same pine swag three times ("shirnk the garland down to fit 3 pieces"), its outer ends lined up
+  // with the box's edges ("line up the outer edge of the garland with inner edge of the questions
+  // answered div"): a third of the box's width each, edge to edge, the middle one mirrored. The light
+  // string runs to both edges of the picture (17 % down on the left, 19 % on the right), so with the
+  // middle one turned round each join meets string to string at the same height and peaks like a
+  // garland hung on hooks ("where i circled they need to be lined up better"). Raised a little over
+  // the box's foot ("raise them up just a little"); in front of both boxes (z 5).
+  if (garland) {
+    const swag = { src: decor('garland-swag-420.webp'), srcSet: `${decor('garland-swag-420.webp')} 420w, ${decor('garland-swag-840.webp')} 840w`, sizes: '(min-width: 48rem) 16rem, 34vw', width: 420, height: 194, alt: '', loading: 'lazy' }
+    return (
+      <div className="relative h-16 md:h-24" aria-hidden="true">
+        <div className="pointer-events-none relative z-[5] mx-auto h-full max-w-3xl">
+          <img {...swag} className="absolute left-0 -top-5 h-auto w-1/3 max-w-none md:-top-8" />
+          <img {...swag} className="absolute left-1/3 -top-5 h-auto w-1/3 max-w-none -scale-x-100 md:-top-8" />
+          <img {...swag} className="absolute right-0 -top-5 h-auto w-1/3 max-w-none md:-top-8" />
+        </div>
+      </div>
+    )
+  }
   if (chimney) {
     return (
       <div className="relative h-28 md:h-44" aria-hidden="true">
@@ -376,19 +397,35 @@ function Steps() {
   )
 }
 
+// White satin with deep forest-green edges, shaded across the ribbon ('bottom' for a band across the
+// box, 'right' for one down it).
+const whiteRibbon = (to) => `linear-gradient(to ${to}, #0f3b24 0 3px, #e4e8e3 3px, #ffffff 40%, #f2f4f1 60%, #d6dbd5 calc(100% - 3px), #0f3b24 calc(100% - 3px))`
 function Questions() {
   return (
-    <Box className="max-w-3xl px-5 pb-6 pt-10 md:px-10 md:pb-10 md:pt-14">
-      {/* Wrapped like a gift card in red satin ribbon (owner 2026-10-15: "thorw one of those corner wrap
-          ribbon sets on it", his own picture): the bow on the top left corner, a strip across the bottom
-          right, both cut off by the box's rounded edges. The strip is the bow's scale (207 / 300 wide);
-          on wide screens it is pushed a little into its corner so it stays clear of the last question. */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg [--rw:5rem] md:[--rw:9rem]" aria-hidden="true">
-        <img src={decor('ribbon-corner-bow.webp')} alt="" width="300" height="275" loading="lazy" className="absolute left-0 top-0 h-auto w-(--rw) drop-shadow-sm" />
-        <img src={decor('ribbon-corner-strip.webp')} alt="" width="207" height="191" loading="lazy" className="absolute bottom-0 right-0 h-auto w-[calc(var(--rw)*0.69)] md:translate-x-[12%] md:translate-y-[12%]" />
-      </div>
-      <h2 className={`${title} relative pl-16 md:pl-32`}>{t.faqTitle}</h2>
-      <div className="relative mt-4 divide-y divide-berry-500/15 md:mt-8">
+    // Green paper with white polka dots (.paper-polka-green; owner 2026-10-15: "polkadot", "not golfballs
+    // tho", after kraft paper with foil trees, red-and-green plaid, a dark tartan and golf balls), the
+    // title on a cream label and the questions on a white panel so the paper never runs behind words;
+    // its outline in the ribbon's evergreen ("make the red outline green on that card") and a plain
+    // cream edge along its top ("make that small green strip cream coplored").
+    <Box paper="paper-polka-green" band={creamX} edge="ring-2 ring-[#1b5e3b]" className="max-w-3xl px-5 pb-8 pt-10 [--kx:2.75rem] [--ky:2rem] [--wb:7rem] md:px-10 md:pb-10 md:pt-14 [--rib:1.75rem] md:[--kx:3.25rem] md:[--ky:2.75rem] md:[--wb:13.5rem] md:[--rib:2.5rem] lg:[--ky:4.25rem] lg:[--wb:21rem]">
+      {/* White satin ribbon with deep forest-green edges tied round the box ("then add some white ribbon
+          with deep forest green edges", "make it wider"), crossing under the bow's knot: one band across the box, one down
+          it, under the title's label and the questions' panel. */}
+      <div className="pointer-events-none absolute inset-x-0 top-[calc(var(--ky)-var(--rib)/2)] h-(--rib) shadow-[0_2px_4px_rgb(0_0_0/0.25)]" style={{ backgroundImage: whiteRibbon('bottom') }} aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-y-0 left-[calc(var(--kx)-var(--rib)/2)] w-(--rib) shadow-[2px_0_4px_rgb(0_0_0/0.25)]" style={{ backgroundImage: whiteRibbon('right') }} aria-hidden="true" />
+      {/* A big glossy white satin bow on its top left corner, tilted, reaching a little past the edges
+          (owner 2026-10-15, his mockup: "im feeling 3", "the third one I sent you"; the corner ribbon
+          came off: "remove the red ribbon"). Its knot (52 % across, 31 % down, 480 × 470) sits at --kx,
+          --ky from the corner. It lies over the title's label ("over the headline though", z 1) but under
+          the questions' panel (z 2), so its tails tuck under it and never cover a question ("tails
+          under the inside div"). From 1024 px it is as big as in his mockup, hanging well past the box's
+          left edge. */}
+      <img src={decor('bow-white-satin.webp')} alt="" width="480" height="470" loading="lazy" aria-hidden="true"
+        className="pointer-events-none absolute left-[calc(var(--kx)-var(--wb)*0.52)] top-[calc(var(--ky)-var(--wb)*0.304)] z-[1] h-auto w-(--wb) max-w-none -rotate-12 drop-shadow-[2px_5px_5px_rgb(20_50_20/0.4)]" />
+      <h2 className={`${title} relative ml-24 inline-block rounded-md bg-[#fbf7e9] px-3 py-1 shadow-md ring-1 ring-black/5 md:ml-32 lg:ml-36`}>{t.faqTitle}</h2>
+      {/* The questions' panel, no border (owner 2026-10-15: deep green, then light mint, then "remove the
+          border alltogetherr"). */}
+      <div className="relative z-[2] mt-4 divide-y divide-berry-500/15 rounded-lg bg-white px-4 shadow-md md:mt-8 md:px-6">
         {t.faq.items.map(([q, a]) => (
           <details key={q} className="group">
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium [&::-webkit-details-marker]:hidden">
@@ -408,15 +445,9 @@ function Questions() {
 function Ask() {
   return (
     <Box id="estimate" className="max-w-5xl px-5 pb-8 pt-10 md:px-10 md:pb-12 md:pt-14">
-      {/* A red-and-gold bell hanging from the box's ribbon (owner 2026-10-15: ring us): by the heading on
-          phones, between the heading and the form on wide screens, never over a field or button; .swing in index.css. */}
-      <div className="swing pointer-events-none absolute right-[5%] top-2.5 flex flex-col items-center lg:left-1/2 lg:right-auto lg:-translate-x-1/2" aria-hidden="true">
-        <span className="h-3 w-0.5 bg-gradient-to-b from-[#b98a2f] to-[#f0d27a] md:h-5" />
-        <img src={decor('bell.webp')} alt="" width="240" height="331" loading="lazy" className="h-auto w-9 drop-shadow-md md:w-12 lg:w-10" />
-      </div>
       <div className="grid gap-8 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-12">
         <div className="lg:col-start-1 lg:row-start-1">
-          <h2 className="pr-12 font-display text-3xl font-extrabold tracking-tight text-berry-600 md:pr-16 md:text-5xl lg:pr-0">{t.ask.title}</h2>
+          <h2 className="font-display text-3xl font-extrabold tracking-tight text-berry-600 md:text-5xl">{t.ask.title}</h2>
           <p className="mt-4 text-lg text-slate-700">{t.ask.intro}</p>
         </div>
         <div id="estimate-form" data-bar-hide="" className="scroll-mt-20 lg:col-start-2 lg:row-span-2 lg:row-start-1">

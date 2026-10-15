@@ -146,31 +146,19 @@ await save('garland', sharp(`${SRC}/vecteezy_festive-garland-with-ornaments-and-
 // away and use that elf poking his head out from behind the ribbon").
 await save('santa-chimney', sharp(`${SRC}/vecteezy_santa-claus-legs-in-chimney-isolated_52793371.png`), [400])
 await save('elf-peeking', sharp(`${SRC}/vecteezy_elf-character-for-decorating-christmas-greeting-cards_14606808.png`), [240])
-// A red-and-gold bell with a satin bow (86864817), hanging over the form box: ring us.
-await save('bell', sharp(`${SRC}/vecteezy_red-and-gold-christmas-bell-ornament-with-red-satin-bow-and_86864817.png`), [240])
+// (The red-and-gold bell 86864817 over the form box came off on 2026-10-15: "get rid of the bell".)
 
-// The questions box wrapped like a gift card (owner 2026-10-15: "thorw one of those corner wrap
-// ribbon sets on it", then his own picture, "ribbon corner.png": a white card with red satin
-// ribbon across two corners). The card is opaque white, so only the red is kept, by how much
-// redder than green and blue each pixel is (the satin's shading stays). The left half gives the
-// bow with its ribbon running off the card's top and left edges, the right half the plain strip
-// running off its right and bottom edges; both at one scale, so the two read as one ribbon.
-{
-  const { data, info } = await sharp(`${SRC}/ribbon corner.png`).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
-  for (let i = 0; i < data.length; i += 4) {
-    const red = (data[i] - Math.max(data[i + 1], data[i + 2]) - 25) / 60
-    data[i + 3] = Math.round(data[i + 3] * Math.max(0, Math.min(1, red)))
-  }
-  const half = (left) => sharp(data, { raw: info }).extract({ left, top: 0, width: info.width / 2, height: info.height }).png().toBuffer()
-  const bow = await sharp(await half(0)).trim().png().toBuffer()
-  const strip = await sharp(await half(info.width / 2)).trim().png().toBuffer()
-  const k = 300 / (await sharp(bow).metadata()).width
-  for (const [name, buf] of [['ribbon-corner-bow', bow], ['ribbon-corner-strip', strip]]) {
-    const { width } = await sharp(buf).metadata()
-    const r = await sharp(buf).resize({ width: Math.round(width * k) }).webp({ quality: 84, alphaQuality: 95 }).toFile(`${OUT}/${name}.webp`)
-    console.log(`${OUT}/${name}.webp: ${r.width}×${r.height}, ${Math.round(r.size / 1024)} KB`)
-  }
-}
+// (The questions box's corner ribbon, cut from the owner's own "ribbon corner.png", came off on
+// 2026-10-15: "remove the red ribbon".)
+// A big glossy white satin bow for the questions box's top left corner (34764415; owner 2026-10-15:
+// "im feeling 3", then "the red and white or the third one I sent you" after being told it is marked
+// AI-generated: his deliberate exception to keeping AI pieces off this page).
+await save('bow-white-satin', sharp(`${SRC}/vecteezy_ai-generated-ribbon-bow-knot-on-transparent-background_34764415.png`), [480])
+
+// Along the questions box's foot (owner 2026-10-15, his mockup: "garland on the bottom. takes 3
+// seperate pieces, even it up so it looks natural"): a pine swag with bulb lights (47831094), shown
+// three times. (The mistletoe 34917377 from his mockup came out: "take it out".)
+await save('garland-swag', sharp(`${SRC}/vecteezy_festive-christmas-garland-with-colorful-ornaments-on-pine_47831094.png`), [420, 840])
 
 // The big bow on the ribbon above the "Wrapped by us" box: the pink gingham watercolor bow
 // (42074935, as on step 3) at a size for wide screens, from the owner's mockup (2026-10-15, "have

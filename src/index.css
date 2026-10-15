@@ -171,16 +171,11 @@ body {
     0%, 100% { transform: rotate(-2deg); }
     50% { transform: rotate(2deg); }
   }
-  /* Santa's sleigh drifting over the top ribbon, and the bell over the form swinging a little. */
+  /* Santa's sleigh drifting over the top ribbon. */
   .fly { animation: fly 6s ease-in-out infinite alternate; }
   @keyframes fly {
     from { transform: translate(-4px, 2px) rotate(-1.5deg); }
     to { transform: translate(8px, -5px) rotate(1deg); }
-  }
-  .swing { animation: swing 3.2s ease-in-out infinite; transform-origin: 50% 0; }
-  @keyframes swing {
-    0%, 100% { transform: rotate(-5deg); }
-    50% { transform: rotate(5deg); }
   }
 }
 /* Wrapping papers for the gift-wrapping page's step boxes (owner 2026-10-15: "can we use css to
@@ -240,6 +235,21 @@ body {
   background-image:
     repeating-linear-gradient(0deg, var(--ink) 0 var(--check), transparent var(--check) calc(var(--check) * 2)),
     repeating-linear-gradient(90deg, var(--ink) 0 var(--check), transparent var(--check) calc(var(--check) * 2));
+}
+/* The questions box (owner 2026-10-15, after kraft paper with foil trees, red-and-green plaid, a dark
+   tartan and golf balls: "polkadot", "not golfballs tho"): bright green with plain white polka dots
+   in staggered rows and a soft sheen. Change the dot or its spacing with the variables. */
+.paper-polka-green {
+  --paper: #3f8a2c;
+  --dot: 9px;
+  --dot-gap: 48px; /* not --spacing: that is Tailwind's own scale */
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle, #fff var(--dot), transparent calc(var(--dot) + 1px)),
+    radial-gradient(circle, #fff var(--dot), transparent calc(var(--dot) + 1px)),
+    linear-gradient(135deg, rgb(255 255 255 / 0.08), transparent 45%, rgb(0 0 0 / 0.14));
+  background-size: var(--dot-gap) var(--dot-gap), var(--dot-gap) var(--dot-gap), 100% 100%;
+  background-position: 0 0, calc(var(--dot-gap) / 2) calc(var(--dot-gap) / 2), 0 0;
 }
 .paper-trees {
   --paper: #c21f35;
