@@ -120,6 +120,10 @@ test('while off, nothing public mentions gift wrapping: the main copy, the prere
   assert.deepEqual(giftWrapping.prices.rows.map((r) => r.price), ['$15', '$22', '$30', '$40'])
   assert.deepEqual([...new Set(words.match(/\$\d+(\.\d+)?/g))].sort(), ['$15', '$22', '$30', '$40'], 'no other amount anywhere')
   assert.match(giftWrapping.prices.intro, /bow is included/)
+  // Owner 2026-10-15: "price plus tax", on the tag and in the price answer (the rate lives in settings, not the words).
+  assert.match(giftWrapping.prices.intro, /plus sales tax/)
+  assert.match(giftWrapping.faq.items.find(([q]) => /cost/.test(q))[1], /plus sales tax/)
+  assert.doesNotMatch(words, /\d+(\.\d+)?\s*%/, 'no tax rate in the words')
   assert.doesNotMatch(words, /December \d|Dec\.? \d|\d+(st|nd|rd|th) of December/i)
 })
 
@@ -132,5 +136,17 @@ test('the page: the prices on the tag, the bow and decoration pictures it draws 
   for (const f of files) await readFile(new URL(`../public/images/gift-wrap/decor/${f}`, import.meta.url))
   for (const f of (await read('src/components/GiftTeaser.jsx')).match(/[\w-]+\.webp/g)) {
     await readFile(new URL(`../public/images/gift-wrap/decor/${f}`, import.meta.url))
+  }
+})
+
+test('the "Wrapped by us" photos: his own, on disk, alt texts that say the wrapping and no place', async () => {
+  const { serviceAreas } = await import('../src/data/content.js')
+  assert.ok(giftWrapping.photos.length >= 1)
+  for (const p of giftWrapping.photos) {
+    const file = p.src.replace(/^.*images\/gift-wrap\//, '')
+    assert.match(file, /^[a-z0-9-]+\.jpg$/, p.src)
+    await readFile(new URL(`../public/images/gift-wrap/${file}`, import.meta.url))
+    assert.match(p.alt, /bow|ribbon|paper/i, p.src)
+    for (const town of serviceAreas) assert.ok(!p.alt.includes(town), `${p.src}: no place names (${town})`)
   }
 })

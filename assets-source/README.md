@@ -18,11 +18,12 @@ Reorganized on 2026-10-14; the old folder names are at the bottom.
 | `photos/gallery-hi-res/` | The owner's hi-res rescans (about 3 MB each), named by neighborhood and town | *ignored* | `scripts/process-gallery.mjs` → `public/images/gallery/` |
 | `photos/google-photos/` | Install photos from Google Photos (`originals/`); the web gallery taken down on 2026-10-14 (`old-web-gallery-2026-10-08/`) | *ignored* (customers' houses) | by hand |
 | `stock/svg-repo-icons/` | 16 free holiday icons, kept untouched | yes | `scripts/holiday-icons.mjs` → `public/images/holiday/` |
-| `stock/vecteezy/` | Vecteezy Pro downloads (zips, packs, mockups) | *ignored* (licensed) | `stock/vecteezy/make-mockups.mjs`; `scripts/gift-art.mjs` (the owner's gift-wrap pack in `packs/gift-wrap/`: ribbon, bows, holly, ornaments → `public/images/gift-wrap/decor/`; needs Ghostscript); `scripts/gift-bows.mjs` (the transparent bow PNGs at the top of the folder: the step boxes' bows) |
+| `stock/vecteezy/` | Vecteezy Pro downloads (zips, packs, mockups, and the gift-wrapping PNGs at the top of the folder) | *ignored* (licensed) | `stock/vecteezy/make-mockups.mjs`; `scripts/gift-bows.mjs` (the gift-wrapping page's bows, ornaments, characters, candy canes, sleigh, holly, the Santa bow, the corner ribbon (red, from the owner's `ribbon corner.png`), bell and garland → `public/images/gift-wrap/decor/`) |
 | `stock/envato/` | Envato Elements rules and workflow (`README.md`); downloads in `downloads/<project>/` | README yes; `downloads/` ignored (licensed) | by hand |
 | `ads/gemini/` | The owner's Gemini renders of the cottage | yes | `video/scripts/prepare-assets.mjs` |
 | `ads/image-assets/` | Google Ads image assets: landscape and square crops, the two ad logos, crop previews | yes | uploaded by hand; `scripts/ads-video.py` reads the logos |
 | `ads/youtube/` | Channel banner, profile picture, video thumbnails | yes | uploaded by hand |
+| `ads/Gift-Wrapping/` | The owner's photos of his own gift wrapping (`luxury-gift-01..08.jpg`, up to 2752 px), the gift-wrapping page's "Wrapped by us" placeholders | *ignored* (originals) | `scripts/gift-photos.mjs` → `public/images/gift-wrap/` |
 | `ads/contact-sheet.jpg`, `ads/contact-sheet-index.txt` | Numbered sheet of `photos-incoming/` (the photo numbers the ads use) | yes | `scripts/ads-video.py`, `video/` |
 | `ads/clips/`, `ads/music/`, `ads/sfx/` | Licensed footage, music and sound effects | *ignored* (licensed) | `video/scripts/prepare-assets.mjs` |
 | `ads/motion/` | Uppbeat motion graphics, extracted: `snow/`, `light/`, `film/`, `Assets/` (packs as they unzipped), `Support/` | *ignored* (licensed) | not wired yet |

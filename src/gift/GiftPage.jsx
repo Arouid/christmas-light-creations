@@ -5,18 +5,21 @@ import Icon from '../components/Icon'
 import MobileCta from '../components/MobileCta'
 import Rich from '../components/Rich'
 import { business, footerLinks, giftWrapping as t } from '../data/content'
-import { ribbonX, ribbonY } from '../lib/giftRibbon'
+import { goldX, ribbonX, ribbonY } from '../lib/giftRibbon'
 import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 
 // /gift-wrapping/ (docs/specs/gift-wrapping.md): the owner's second service
 // on its own page. Owner 2026-10-15: "make the page look gift wrapped". The
-// page is the present: pale wrapping paper, a satin ribbon across the top
-// with one big bow, the same ribbon running down the middle behind the
+// page is the present: pale wrapping paper, an evergreen ribbon across the top
+// with his own big bow, the same ribbon running down the middle behind the
 // sections (white boxes, so it never covers words), the prices on a gift tag
-// tied to it, holly tucked into it between boxes and ornaments hanging from
-// the top ribbon. The ribbon, bows, holly and ornaments are the owner's
-// Vecteezy Pro vectors (scripts/gift-art.mjs); no gift in them, every wrapped
-// gift shown is his own photo.
+// tied to it with Santa and an elf strolling on top and candy canes between
+// them, Santa's sleigh flying over the top ribbon, holly on the ribbon between
+// boxes, ornaments hanging from the top ribbon, the questions box wrapped like
+// a gift card, a bell over the form and a pine garland along the foot. The
+// pictures are his Vecteezy Pro PNGs and his own ribbon picture
+// (scripts/gift-bows.mjs) and the ribbon is CSS (lib/giftRibbon.js); no
+// wrapped gift in any of them: every wrapped gift shown is his own photo.
 //
 // Behind the same switch as before: the built HTML is only the header, an
 // empty main and the footer (no word of gift wrapping; scripts/prerender.mjs
@@ -36,7 +39,8 @@ const BAND_TOP = `calc(${BOW_H} * 0.45 - var(--band) / 2)`
 // Shown once the switch says on, so the built page's header is the site's own.
 const BOW_LOGO = `${base}images/gift-wrap/logo-wide-bow.png`
 const btn = 'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 py-3 text-center font-semibold'
-const title = 'font-display text-3xl font-extrabold tracking-tight md:text-4xl'
+// Every heading in the same red (owner 2026-10-15: "every heaading should have the same red colored font").
+const title = 'font-display text-3xl font-extrabold tracking-tight text-berry-600 md:text-4xl'
 
 export default function GiftPage() {
   const on = useGiftWrappingAnswer() // null until the server answers
@@ -89,35 +93,44 @@ function Content() {
       <Tag />
       {t.photos.length > 0 && (
         <>
-          <Tie holly="holly-right.webp" />
+          <Tie tall />
           <Photos />
         </>
       )}
-      <Tie holly="holly-left.webp" />
+      <Tie holly />
       <Steps />
-      <Tie holly="holly-right.webp" />
+      <Tie />
       <Questions />
       <Tie />
       <Ask />
+      {/* A pine garland with ornaments and pinecones along the foot of the page. */}
+      <img src={decor('garland-700.webp')} srcSet={`${decor('garland-700.webp')} 700w, ${decor('garland-1100.webp')} 1100w`} sizes="(min-width: 64rem) 64rem, 100vw"
+        alt="" width="700" height="200" loading="lazy" className="relative mx-auto mt-10 block h-auto w-full max-w-5xl drop-shadow-md" aria-hidden="true" />
     </div>
   )
 }
 
 // The top ribbon with the big bow on it and ornaments hanging from it:
 // [file, where, width, how far below the ribbon's middle, from which screen width].
-const BAUBLES = [
-  ['bauble-stars.webp', 'left-[5%] md:left-[10%]', 'w-9 md:w-14', '0rem', ''],
-  ['bauble-glitter.webp', 'right-[5%] md:right-[10%]', 'w-9 md:w-14', '0rem', ''],
-  ['bauble-plain.webp', 'left-[24%]', 'w-11', '1.75rem', 'hidden lg:block'],
-  ['bauble-plain.webp', 'right-[24%]', 'w-11', '1.75rem', 'hidden lg:block'],
+// The owner's red-and-gold ornaments (scripts/gift-bows.mjs), on thin gold strings of different
+// lengths: two on phones (beside the bow, above the heading), four from 768 px.
+const ORNAMENTS = [
+  ['ornament-striped.webp', 'left-[5%] md:left-[9%]', 'w-10 md:w-14', '0.75rem', ''],
+  ['ornament-ornate.webp', 'right-[5%] md:right-[9%]', 'w-11 md:w-16', '1.75rem', ''],
+  ['ornament-gold.webp', 'left-[22%]', 'w-12', '2.75rem', 'hidden md:flex'],
+  ['ornament-striped.webp', 'right-[23%]', 'w-11', '3.5rem', 'hidden md:flex'],
 ]
 function Lid() {
   return (
     <div className="relative -mx-4" style={{ height: `calc(${BOW_H} * 0.95)` }} aria-hidden="true">
-      {BAUBLES.map(([file, where, width, drop, show]) => (
-        <img key={where} src={decor(file)} alt="" width="160" height="268" className={`absolute h-auto ${where} ${width} ${show}`}
-          style={{ top: `calc(${BAND_TOP} + var(--band) / 2 + ${drop})` }} />
+      {ORNAMENTS.map(([file, where, width, drop, show]) => (
+        <div key={where} className={`absolute flex-col items-center ${show || 'flex'} ${where}`} style={{ top: `calc(${BAND_TOP} + var(--band) / 2)` }}>
+          <span className="w-0.5 bg-gradient-to-b from-[#b98a2f] to-[#f0d27a]" style={{ height: drop }} />
+          <img src={decor(file)} alt="" width="200" height="248" className={`h-auto ${width}`} />
+        </div>
       ))}
+      {/* Santa's sleigh flying over the top ribbon, left of the bow, clear of the heading (owner 2026-10-15); .fly in index.css. */}
+      <img src={decor('sleigh.webp')} alt="" width="520" height="220" className="fly absolute left-[2%] top-1 h-auto w-20 md:left-[4%] md:top-2 md:w-44 lg:left-[7%] lg:w-60 xl:left-[12%]" />
       <div className="absolute inset-x-0 h-(--band) shadow-md" style={{ top: BAND_TOP, ...ribbonX }} />
       <img src={decor('bow-top-480.webp')} srcSet={`${decor('bow-top-480.webp')} 480w, ${decor('bow-top-720.webp')} 720w`}
         sizes="(min-width: 64rem) 20rem, (min-width: 48rem) 16rem, 12rem" alt="" width="480" height="555"
@@ -126,39 +139,73 @@ function Lid() {
   )
 }
 
-// A section as a wrapped box: white, a ribbon round its top edge, lying over the ribbon down the page.
-function Box({ id, className = '', children }) {
+// A section as a wrapped box: white (or a paper class from index.css), a ribbon round its top edge
+// (evergreen, or another band), lying over the ribbon down the page.
+function Box({ id, className = '', paper = 'bg-white', band = ribbonX, children }) {
   return (
-    <section id={id} className={`relative mx-auto w-full scroll-mt-20 rounded-lg bg-white shadow-[0_22px_45px_-24px_rgb(143_21_38/0.45)] ring-1 ring-berry-700/10 ${className}`}>
-      <div className="absolute inset-x-0 top-0 h-2.5 rounded-t-lg" style={ribbonX} aria-hidden="true" />
+    <section id={id} className={`relative mx-auto w-full scroll-mt-20 rounded-lg ${paper} shadow-[0_22px_45px_-24px_rgb(143_21_38/0.45)] ring-1 ring-berry-700/10 ${className}`}>
+      <div className="absolute inset-x-0 top-0 h-2.5 rounded-t-lg" style={band} aria-hidden="true" />
       {children}
     </section>
   )
 }
 
-// Between two boxes, on the ribbon: a sprig of holly tucked into it (or just the ribbon).
-function Tie({ holly }) {
+// Between two boxes, on the ribbon: glossy holly tucked into it, or just the ribbon (tall: room for
+// the bow and the heads peeking over it on the box below).
+function Tie({ holly, tall }) {
   return (
-    <div className="relative flex h-16 items-center justify-center md:h-24" aria-hidden="true">
-      {holly && <img src={decor(holly)} alt="" width="240" height="240" loading="lazy" className="h-14 w-auto drop-shadow-md md:h-20" />}
+    <div className={`relative flex items-center justify-center ${tall ? 'h-24 md:h-40' : 'h-16 md:h-24'}`} aria-hidden="true">
+      {holly && <img src={decor('holly-glossy.webp')} alt="" width="300" height="242" loading="lazy" className="h-14 w-auto drop-shadow-md md:h-20" />}
     </div>
   )
 }
 
-// The prices on a gift tag, hung from a small bow on the ribbon.
+// The prices on a gift tag, tied to the ribbon by a gold cord through a brass eyelet.
+const EYELET = 'radial-gradient(circle at 35% 30%, #fff4c9, #e3bf5c 30%, #a87a22 62%, #6e4d12)'
 const NOTCHED = 'polygon(1rem 0, calc(100% - 1rem) 0, 100% 1rem, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 1rem 100%, 0 calc(100% - 1rem), 0 1rem)'
 function Tag() {
   const p = t.prices
   return (
     <>
-      <div className="relative flex h-20 justify-center md:h-24" aria-hidden="true">
-        <span className="absolute bottom-0 left-1/2 top-10 w-0.5 -translate-x-1/2 bg-berry-700/70" />
-        <img src={decor('bow-small.webp')} alt="" width="240" height="191" loading="lazy" className="relative mt-3 h-auto w-24 drop-shadow md:w-28" />
+      {/* Room above the tag for the candy canes. The ribbon's gold middle line runs down behind them
+          and, just above the tag, becomes the cord's loop: one strand in front of the tag, one behind. */}
+      <div className="relative h-40 md:h-52" aria-hidden="true">
+        <svg viewBox="0 0 40 24" width="40" height="24" className="absolute bottom-0 left-1/2 -translate-x-1/2 overflow-visible" fill="none" strokeLinecap="round">
+          <path d="M20 0 C21 8 24 15 24.5 24" stroke="#9c7426" strokeWidth="1.8" />
+          <path d="M20 0 C19 8 15.5 15 15 24" stroke="#d9b456" strokeWidth="2" />
+          <path d="M19.6 0 C18.6 8 15.1 15 14.6 24" stroke="#f6e3a1" strokeWidth="0.7" />
+        </svg>
       </div>
-      <section aria-labelledby="prices" className="relative mx-auto w-full max-w-md drop-shadow-[0_14px_22px_rgb(143_21_38/0.25)]">
+      <section aria-labelledby="prices" className="relative mx-auto w-full max-w-md drop-shadow-[0_14px_22px_rgb(143_21_38/0.25)] [--fh:8rem] md:[--fh:10rem]">
+        {/* Crossed candy canes with a red-and-green bow standing between Santa and the elf, taller than
+            them, their feet just behind the tag's top edge (owner 2026-10-15, his mockup: "put that
+            candy cane inbetween them at that suze"). */}
+        <img src={decor('candy-canes.webp')} alt="" width="440" height="463" loading="lazy" className="pointer-events-none absolute bottom-[calc(100%-8px)] left-1/2 h-40 w-auto -translate-x-1/2 drop-shadow-md md:h-52" />
+        {/* Santa and the elf standing on the tag's top edge (owner 2026-10-15: "adjust the two elfs and
+            maybe a small drop shadow or something to bring out the illusion"): the front sole on the
+            edge, a soft contact shadow under both feet (the back foot stands a little higher, as in their
+            3D pose), a faint shadow of their own, and a sway that keeps their feet down (.stroll in
+            index.css). Feet: Santa's 17–99 % across his picture, the elf's 4–74 %. */}
+        <span className="pointer-events-none absolute z-[1] h-[calc(var(--fh)*0.055+3px)] w-[calc(var(--fh)*0.29)] -translate-x-1/2 rounded-full bg-black/30 blur-[2px]"
+          style={{ left: 'calc(10% + var(--fh) * 0.1755)', top: 'calc(var(--fh) * -0.055)' }} aria-hidden="true" />
+        <span className="pointer-events-none absolute z-[1] h-[calc(var(--fh)*0.055+3px)] w-[calc(var(--fh)*0.27)] -translate-x-1/2 rounded-full bg-black/30 blur-[2px]"
+          style={{ left: 'calc(90% - var(--fh) * 0.1921)', top: 'calc(var(--fh) * -0.055)' }} aria-hidden="true" />
+        <img src={decor('santa.webp')} alt="" width="121" height="400" loading="lazy" className="stroll pointer-events-none absolute bottom-[calc(100%-1px)] left-[10%] z-[2] h-(--fh) w-auto drop-shadow-[0_2px_2px_rgb(60_10_20/0.3)]" />
+        <img src={decor('elf.webp')} alt="" width="126" height="400" loading="lazy" className="stroll stroll-late pointer-events-none absolute bottom-[calc(100%-1px)] right-[10%] z-[2] h-(--fh) w-auto drop-shadow-[0_2px_2px_rgb(60_10_20/0.3)]" />
+        {/* The cord's front strand, from the top edge down into the hole, with its shadow on the tag. */}
+        <svg viewBox="0 0 40 28" width="40" height="28" className="pointer-events-none absolute left-1/2 top-0 z-[1] -translate-x-1/2 overflow-visible" fill="none" strokeLinecap="round" aria-hidden="true">
+          <path d="M15 0 C15 10 17.5 19 20 26" stroke="rgb(90 30 15 / 0.28)" strokeWidth="2.4" transform="translate(1.2 1.6)" />
+          <path d="M15 0 C15 10 17.5 19 20 26" stroke="#d9b456" strokeWidth="2" />
+          <path d="M14.6 0 C14.6 10 17.1 19 19.6 26" stroke="#f6e3a1" strokeWidth="0.7" />
+        </svg>
         <div className="bg-berry-600 p-1" style={{ clipPath: NOTCHED }}>
           <div className="relative bg-amber-50 px-6 pb-7 pt-12 md:px-9" style={{ clipPath: NOTCHED }}>
-            <span className="absolute left-1/2 top-3 size-5 -translate-x-1/2 rounded-full bg-berry-50 ring-2 ring-berry-700/60" aria-hidden="true" />
+            {/* A brass eyelet round the hole (owner 2026-10-15, "try A"); through it the evergreen ribbon
+                behind the tag shows, gold middle line and all ("bring the green ribbon down too so its
+                behind the hole some"). */}
+            <span className="absolute left-1/2 top-[11px] size-[22px] -translate-x-1/2 rounded-full shadow-[0_1px_2px_rgb(60_20_10/0.45)]" style={{ background: EYELET }} aria-hidden="true">
+              <span className="absolute inset-[5px] rounded-full shadow-[inset_0_1px_3px_rgb(0_0_0/0.6)]" style={{ ...ribbonY, backgroundSize: 'var(--band) 100%', backgroundPosition: 'center' }} />
+            </span>
             <div className="pointer-events-none absolute inset-2.5 border border-berry-500/50" aria-hidden="true" />
             <h2 id="prices" className="text-center font-display text-3xl font-extrabold text-berry-600">{p.title}</h2>
             <p className="mt-2 text-center text-slate-700">{p.intro}</p>
@@ -181,15 +228,46 @@ function Tag() {
   )
 }
 
-// The owner's own wrapping, once his photos are processed (content.js giftWrapping.photos).
+// The owner's own wrapping (content.js giftWrapping.photos, made by scripts/gift-photos.mjs).
+// The "Wrapped by us" box as a present of its own (owner 2026-10-15): green-and-white gingham paper
+// (.paper-gingham-green in index.css, "how about a green and whitee gingham pattern") with a gold
+// edge, a baby-pink satin ribbon down its front and the big pink gingham watercolor bow of step 3
+// sitting on top of the box, its knot on the top edge, as a present seen from the front ("try the
+// pink bows", "have the tails go behind the picture", "how can we make it so it doesnt look so
+// pasted", "the illusion fallas apart unless we raise the bow up"). Ribbon and bow lie under the
+// title and photos (z 1 against 2), so the tails tuck behind them. --x is how far below the top edge
+// the knot is, --rib the ribbon's width, --bw the bow's width; the bow's knot is 50 % across and 33 %
+// down (720 × 519), so its top is --x less 0.238 × --bw (its loops rise above the box). Under 1024 px
+// the title sits centred below the bow; from 1024 px it sits left, beside it.
+const BIG_BOW = { src: 'bow-pink-gingham-big.webp', width: 720, height: 519 }
 function Photos() {
+  const pinkSatin = satin('#e3a3bd', '#f3c4d6', '#fde6ef') // baby pink, to match the bow
   return (
-    <Box className="max-w-5xl px-5 pb-8 pt-10 md:px-10 md:pb-12 md:pt-14">
-      <h2 className={title}>{t.photosTitle}</h2>
-      <ul className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+    <Box paper="paper-gingham-green" band={goldX} className="max-w-5xl px-5 pb-8 pt-10 [--bw:11rem] [--rib:1.375rem] [--x:0.375rem] md:px-10 md:pb-12 md:pt-14 md:[--bw:13rem] lg:[--bw:19rem] lg:[--rib:2rem]">
+      <div className="absolute inset-y-0 left-1/2 z-[1] w-(--rib) -translate-x-1/2 shadow-[0_0_4px_rgb(0_0_0/0.2)]" style={{ backgroundImage: pinkSatin.down }} aria-hidden="true" />
+      {/* The bow's soft shadow on the paper (owner 2026-10-15: "add a fuzz of drop shadow on to the
+          green from the bow too"): the same bow, darkened and blurred, a little lower and to the right,
+          kept inside the box so it falls only on the box. */}
+      <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden rounded-lg" aria-hidden="true">
+        <img src={decor(BIG_BOW.src)} alt="" width={BIG_BOW.width} height={BIG_BOW.height} loading="lazy"
+          className="absolute left-[calc(50%+5px)] top-[calc(var(--x)-var(--bw)*0.238+14px)] h-auto w-(--bw) max-w-none -translate-x-1/2 opacity-35 blur-[7px] brightness-0" />
+      </div>
+      {/* One cheerful elf popping up from behind the bow, waving with a candy cane (owner 2026-10-15:
+          "maybe we can have a characters popping their head up from behind the pink bow", then "I wanna
+          try some other", "preferably just 1 of whatever it is"). Half the bow's width (480 × 523), his
+          waist just below the knot so the bow hides where the picture ends; before the bow, so the bow
+          lies over him. */}
+      <img src={decor('elf-waving.webp')} alt="" width="480" height="523" loading="lazy" aria-hidden="true"
+        className="pointer-events-none absolute left-[calc(50%-var(--bw)*0.025)] top-[calc(var(--x)-var(--bw)*0.495)] z-[1] h-auto w-[calc(var(--bw)*0.5)] max-w-none -translate-x-1/2 drop-shadow-[0_3px_4px_rgb(60_10_30/0.3)]" />
+      <img src={decor(BIG_BOW.src)} alt="" width={BIG_BOW.width} height={BIG_BOW.height} loading="lazy" aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-[calc(var(--x)-var(--bw)*0.238)] z-[1] h-auto w-(--bw) max-w-none -translate-x-1/2 drop-shadow-[0_8px_10px_rgb(90_20_50/0.35)]" />
+      <div className="relative z-[2] mt-7 text-center md:mt-6 lg:mt-0 lg:text-left">
+        <h2 className={`${title} inline-block rounded-md bg-[#fbf7e9] px-3 py-1 shadow-md ring-1 ring-black/5`}>{t.photosTitle}</h2>
+      </div>
+      <ul className="relative z-[2] mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {t.photos.map((p) => (
           <li key={p.src} className="rounded-md bg-white p-1.5 shadow-md ring-1 ring-berry-500/15">
-            <img src={p.src} alt={p.alt} loading="lazy" className="aspect-[4/3] h-auto w-full rounded object-cover" />
+            <img src={p.src} alt={p.alt} loading="lazy" className={`aspect-[4/3] h-auto w-full rounded object-cover ${p.tall ? 'object-[50%_35%]' : ''}`} />
           </li>
         ))}
       </ul>
@@ -249,7 +327,7 @@ function Steps() {
                 <div className="absolute left-1/2 top-0 w-3 -translate-x-1/2" style={{ backgroundImage: look.ribbon.down, height: ROOM }} aria-hidden="true" />
                 <div className="absolute bottom-0 left-1/2 h-3 w-3 -translate-x-1/2" style={{ backgroundImage: look.ribbon.down }} aria-hidden="true" />
                 <div className="relative flex-1 rounded-lg bg-white/[0.94] px-4 py-4 shadow-md">
-                  <h3 className="text-lg font-semibold">{step}</h3>
+                  <h3 className="text-lg font-semibold text-berry-600">{step}</h3>
                   <p className="mt-1.5 text-slate-600">{body}</p>
                 </div>
               </div>
@@ -265,7 +343,7 @@ function Steps() {
       </ol>
       {t.details.length > 0 && (
         <>
-          <h3 className="mt-10 font-display text-2xl font-bold">{t.detailsTitle}</h3>
+          <h3 className="mt-10 font-display text-2xl font-bold text-berry-600">{t.detailsTitle}</h3>
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {t.details.map((d) => (
               <li key={d} className="flex gap-3 text-slate-700">
@@ -282,9 +360,17 @@ function Steps() {
 
 function Questions() {
   return (
-    <Box className="max-w-3xl px-5 pb-6 pt-10 md:px-10 md:pb-8 md:pt-14">
-      <h2 className={title}>{t.faqTitle}</h2>
-      <div className="mt-4 divide-y divide-berry-500/15">
+    <Box className="max-w-3xl px-5 pb-6 pt-10 md:px-10 md:pb-10 md:pt-14">
+      {/* Wrapped like a gift card in red satin ribbon (owner 2026-10-15: "thorw one of those corner wrap
+          ribbon sets on it", his own picture): the bow on the top left corner, a strip across the bottom
+          right, both cut off by the box's rounded edges. The strip is the bow's scale (207 / 300 wide);
+          on wide screens it is pushed a little into its corner so it stays clear of the last question. */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg [--rw:5rem] md:[--rw:9rem]" aria-hidden="true">
+        <img src={decor('ribbon-corner-bow.webp')} alt="" width="300" height="275" loading="lazy" className="absolute left-0 top-0 h-auto w-(--rw) drop-shadow-sm" />
+        <img src={decor('ribbon-corner-strip.webp')} alt="" width="207" height="191" loading="lazy" className="absolute bottom-0 right-0 h-auto w-[calc(var(--rw)*0.69)] md:translate-x-[12%] md:translate-y-[12%]" />
+      </div>
+      <h2 className={`${title} relative pl-16 md:pl-32`}>{t.faqTitle}</h2>
+      <div className="relative mt-4 divide-y divide-berry-500/15 md:mt-8">
         {t.faq.items.map(([q, a]) => (
           <details key={q} className="group">
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium [&::-webkit-details-marker]:hidden">
@@ -304,9 +390,15 @@ function Questions() {
 function Ask() {
   return (
     <Box id="estimate" className="max-w-5xl px-5 pb-8 pt-10 md:px-10 md:pb-12 md:pt-14">
+      {/* A red-and-gold bell hanging from the box's ribbon (owner 2026-10-15: ring us): by the heading on
+          phones, between the heading and the form on wide screens, never over a field or button; .swing in index.css. */}
+      <div className="swing pointer-events-none absolute right-[5%] top-2.5 flex flex-col items-center lg:left-1/2 lg:right-auto lg:-translate-x-1/2" aria-hidden="true">
+        <span className="h-3 w-0.5 bg-gradient-to-b from-[#b98a2f] to-[#f0d27a] md:h-5" />
+        <img src={decor('bell.webp')} alt="" width="240" height="331" loading="lazy" className="h-auto w-9 drop-shadow-md md:w-12 lg:w-10" />
+      </div>
       <div className="grid gap-8 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-12">
         <div className="lg:col-start-1 lg:row-start-1">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight text-berry-600 md:text-5xl">{t.ask.title}</h2>
+          <h2 className="pr-12 font-display text-3xl font-extrabold tracking-tight text-berry-600 md:pr-16 md:text-5xl lg:pr-0">{t.ask.title}</h2>
           <p className="mt-4 text-lg text-slate-700">{t.ask.intro}</p>
         </div>
         <div id="estimate-form" data-bar-hide="" className="scroll-mt-20 lg:col-start-2 lg:row-span-2 lg:row-start-1">
@@ -319,7 +411,6 @@ function Ask() {
           <a href={business.smsWith(t.form.text.sms)} className={`${btn} bg-white text-berry-700 ring-1 ring-berry-500/30 hover:bg-berry-50`}>
             <Icon name="chat" className="size-5" /> Text us
           </a>
-          <img src={decor('holly-right.webp')} alt="" width="240" height="222" loading="lazy" className="mt-6 hidden h-28 w-auto drop-shadow-md lg:block" />
         </div>
       </div>
     </Box>

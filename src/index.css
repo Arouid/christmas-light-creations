@@ -161,6 +161,28 @@ body {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><defs><g id='f' fill='none' stroke='%23d7263d' stroke-opacity='.14' stroke-width='1.5' stroke-linecap='round'><path id='a' d='M0 0V-14M0-9l-4-3M0-9l4-3M0-4l-3-2M0-4l3-2'/><use href='%23a' transform='rotate(60)'/><use href='%23a' transform='rotate(120)'/><use href='%23a' transform='rotate(180)'/><use href='%23a' transform='rotate(240)'/><use href='%23a' transform='rotate(300)'/></g></defs><use href='%23f' x='40' y='42'/><use href='%23f' transform='translate(118 112) scale(.6)'/></svg>");
   background-size: 160px 160px;
 }
+/* Santa and the elf on the gift-wrapping page's price tag: a small sway from the feet, for people
+   who haven't asked for less motion (the stroll-late one is half a sway behind). */
+@media (prefers-reduced-motion: no-preference) {
+  .stroll { animation: stroll 1.4s ease-in-out infinite; transform-origin: 50% 100%; }
+  .stroll-late { animation-delay: -0.7s; }
+  /* A sway from the feet, no hop: they stay standing on the tag's edge (owner 2026-10-15). */
+  @keyframes stroll {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  /* Santa's sleigh drifting over the top ribbon, and the bell over the form swinging a little. */
+  .fly { animation: fly 6s ease-in-out infinite alternate; }
+  @keyframes fly {
+    from { transform: translate(-4px, 2px) rotate(-1.5deg); }
+    to { transform: translate(8px, -5px) rotate(1deg); }
+  }
+  .swing { animation: swing 3.2s ease-in-out infinite; transform-origin: 50% 0; }
+  @keyframes swing {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+}
 /* Wrapping papers for the gift-wrapping page's step boxes (owner 2026-10-15: "can we use css to
    draw some patterened background into the gift divs?"): CSS only, no picture files. Change a
    paper's colours or strength with its variables; each box puts its words on a white label. */
@@ -205,6 +227,19 @@ body {
     repeating-linear-gradient(90deg, transparent 0 16px, var(--line) 16px 18px, transparent 18px 22px, var(--line) 22px 23px, transparent 23px 40px),
     repeating-linear-gradient(0deg, var(--shade) 0 10px, transparent 10px 40px),
     repeating-linear-gradient(90deg, var(--shade) 0 10px, transparent 10px 40px);
+}
+/* The "Wrapped by us" box (owner 2026-10-15: "wrapped by us needs a wrapped css pattern", then
+   "how about a green and whitee gingham pattern", then "make the green a but more mint colored to
+   mnatch the bow"): white with see-through mint bands both ways, so the crossings come out darker,
+   as in woven gingham. Change the green or the check size with the variables. */
+.paper-gingham-green {
+  --paper: #fff;
+  --ink: rgb(104 196 162 / 0.5);
+  --check: 18px;
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, var(--ink) 0 var(--check), transparent var(--check) calc(var(--check) * 2)),
+    repeating-linear-gradient(90deg, var(--ink) 0 var(--check), transparent var(--check) calc(var(--check) * 2));
 }
 .paper-trees {
   --paper: #c21f35;

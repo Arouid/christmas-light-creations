@@ -69,6 +69,8 @@ assets-source/ads/motion/
 assets-source/photos/google-photos/
 # Hi-res gallery originals (owner, 2026-10-14, 3 MB each): the web copies in public/images/gallery/ are made from these.
 assets-source/photos/gallery-hi-res/
+# The owner's gift-wrapping photos (2026-10-15, up to 2752 px): the web copies in public/images/gift-wrap/ are made from these.
+assets-source/ads/Gift-Wrapping/
 # dev-workflow-core (plugin) local state: per-machine, never committed. The config and baseline are.
 .claude/dev-workflow.teststate.json
 .claude/.coordination-cache.json

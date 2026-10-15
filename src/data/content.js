@@ -784,11 +784,20 @@ export const giftWrapping = {
   title: 'Gift wrapping, done beautifully.',
   intro: 'The same family that lights your home can wrap your gifts: crisp corners, real ribbon, bows that stay put. Hand us the pile and get back presents ready to go under the tree.',
   call: 'Call',
-  // Photos (the owner's own wrapping only, never stock or AI: plaid, navy snowflake, red polka-dot
-  // bows) go here once processed with scripts/process-photos.mjs:
-  // { src: `${base}images/gift-wrap/….jpg`, alt: '…' }. Shown only when filled.
+  // Photos: the owner's own wrapping only, never stock (owner 2026-10-15: "we can use my gift photos
+  // for now as placeholders"), made by scripts/gift-photos.mjs. Alt texts say paper, ribbon and bow,
+  // never a place. tall: a portrait photo, cropped a little above its middle so its bow stays in.
   photosTitle: 'Wrapped by us',
-  photos: [],
+  photos: [
+    { src: `${base}images/gift-wrap/white-and-navy-gift-set.jpg`, alt: 'Gifts in white paper with a navy satin ribbon and a big white sheer bow, beside navy “Joy” paper tied with gold ribbon and cream bows' },
+    { src: `${base}images/gift-wrap/rose-gold-polka-dot-bow.jpg`, alt: 'A rose-gold foil box with a full white bow with red polka dots, next to a red-and-black buffalo-check gift', tall: true },
+    { src: `${base}images/gift-wrap/buffalo-check-and-gold-snowflakes.jpg`, alt: 'A buffalo-check gift with a black-and-gold snowflake bow on layered ribbons, beside gold snowflake paper with a navy snowflake bow and a tag' },
+    { src: `${base}images/gift-wrap/buffalo-check-tree-ribbon-bow.jpg`, alt: 'A tall red-and-black buffalo-check gift with a full red bow printed with white snowy trees', tall: true },
+    { src: `${base}images/gift-wrap/joy-paper-and-gingham-bow.jpg`, alt: 'Gold-and-navy “Joy” paper with a navy-and-gold striped bow, and stacked gold boxes tied with black-and-white gingham ribbon' },
+    { src: `${base}images/gift-wrap/black-gold-snowflake-bow.jpg`, alt: 'Close-up of a full black bow with gold glitter snowflakes, tied with cream “Merry Christmas” ribbon and gold mesh' },
+    { src: `${base}images/gift-wrap/gold-mesh-and-gingham-bows.jpg`, alt: 'Close-up of a gold-and-black striped mesh bow and a black-and-white gingham bow among wrapped gifts and gift bags' },
+    { src: `${base}images/gift-wrap/gifts-under-a-flocked-tree.jpg`, alt: 'Wrapped gifts under a flocked tree: cream paper with a red glitter bow, birch-print paper with a red bow, a gold box with a gold bow, and navy ribbon with a white bow' },
+  ],
   stepsTitle: 'How gift wrapping works',
   steps: [
     ['Tell us what you have', 'Roughly how many gifts, what sizes, and when you need them back. Ask in the estimate form, or text us a photo of the pile.'],
@@ -799,7 +808,7 @@ export const giftWrapping = {
   // designer bow in every price). The size examples are ours, for him to confirm (docs/specs/gift-wrapping.md).
   prices: {
     title: 'Prices',
-    intro: 'Per gift, by size. Your hand-tied designer bow is included in every price.',
+    intro: 'Per gift, by size, plus sales tax. Your hand-tied designer bow is included in every price.',
     rows: [
       { size: 'Small', price: '$15', examples: 'Jewelry box, book, gift card' },
       { size: 'Medium', price: '$22', examples: 'Shirt or sweater box, small toy' },
@@ -818,7 +827,7 @@ export const giftWrapping = {
     group: 'Gift wrapping',
     items: [
       ['Do you really wrap gifts?', 'Yes. Christmas lights by day, gift wrapping by night: the same family, the same season, and we love doing both. Crisp corners, real ribbon, bows that stay put.'],
-      ['How much does gift wrapping cost?', 'Per gift, by size: small $15, medium $22, large $30, oversized $40, with your hand-tied designer bow included in every price. Tell us roughly what you have and we send you the total before you commit.'],
+      ['How much does gift wrapping cost?', 'Per gift, by size, plus sales tax: small $15, medium $22, large $30, oversized $40, with your hand-tied designer bow included in every price. Tell us roughly what you have and we send you the total before you commit.'],
       ['How do my gifts get to you?', 'We arrange it with you when we send your price: drop them off with us, or we collect them when we’re at your home for your lights.'],
       ['Can I get lights and gift wrapping together?', 'Yes. Pick “Both” on the estimate form and we price them together. Lights customers get first dibs on wrapping dates.'],
     ],
