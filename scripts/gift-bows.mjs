@@ -135,11 +135,17 @@ for (const name of ['santa', 'elf']) {
 await save('ornament-striped', sharp(`${SRC}/vecteezy_red-and-gold-striped-christmas-ornament-with-metallic-cap_70397459.png`), [200])
 await save('ornament-ornate', sharp(`${SRC}/vecteezy_a-beautifully-ornate-red-ornament-with-intricate-gold_54122407.png`), [200])
 await save('ornament-gold', sharp(`${SRC}/vecteezy_red-and-gold-christmas-ornament-with-hanging-string_73206478.png`), [200])
-// Accents: glossy holly on the ribbon between boxes (50176637) and a pine garland with ornaments
-// and pinecones along the foot of the page (49146397). (The candy cane 31099142 and the pine corner
+// Accents: a pine garland with ornaments and pinecones along the foot of the page (49146397). (The
+// glossy holly 50176637 and a North Pole sign 11025680 came off on 2026-10-15: "get rid of it", "i
+// dont l;ike the sign".) (The candy cane 31099142 and the pine corner
 // spray 45838499 came off on 2026-10-15: "ditch the candy cane".)
-await save('holly-glossy', sharp(`${SRC}/vecteezy_holly-leaves-with-berries-isolated-on-transparent-background_50176637.png`), [300])
 await save('garland', sharp(`${SRC}/vecteezy_festive-garland-with-ornaments-and-pinecones-cut-out-stock_49146397.png`), [700, 1100])
+// Santa diving into a chimney, legs in the air (52793371), the chimney standing on the top edge of
+// the steps box (owner 2026-10-15: "put the santa falling in the chimney on there"), and an elf
+// peeking out from behind the ribbon beside it (14606808, drawn peeking round a corner; "take rudolph
+// away and use that elf poking his head out from behind the ribbon").
+await save('santa-chimney', sharp(`${SRC}/vecteezy_santa-claus-legs-in-chimney-isolated_52793371.png`), [400])
+await save('elf-peeking', sharp(`${SRC}/vecteezy_elf-character-for-decorating-christmas-greeting-cards_14606808.png`), [240])
 // A red-and-gold bell with a satin bow (86864817), hanging over the form box: ring us.
 await save('bell', sharp(`${SRC}/vecteezy_red-and-gold-christmas-bell-ornament-with-red-satin-bow-and_86864817.png`), [240])
 

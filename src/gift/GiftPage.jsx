@@ -14,9 +14,10 @@ import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 // with his own big bow, the same ribbon running down the middle behind the
 // sections (white boxes, so it never covers words), the prices on a gift tag
 // tied to it with Santa and an elf strolling on top and candy canes between
-// them, Santa's sleigh flying over the top ribbon, holly on the ribbon between
-// boxes, ornaments hanging from the top ribbon, the questions box wrapped like
-// a gift card, a bell over the form and a pine garland along the foot. The
+// them, Santa's sleigh flying over the top ribbon, ornaments hanging from the
+// top ribbon, the "Wrapped by us" box as a present of its own, the questions
+// box wrapped like a gift card, a bell over the form and a pine garland along
+// the foot. The
 // pictures are his Vecteezy Pro PNGs and his own ribbon picture
 // (scripts/gift-bows.mjs) and the ribbon is CSS (lib/giftRibbon.js); no
 // wrapped gift in any of them: every wrapped gift shown is his own photo.
@@ -97,7 +98,7 @@ function Content() {
           <Photos />
         </>
       )}
-      <Tie holly />
+      <Tie chimney />
       <Steps />
       <Tie />
       <Questions />
@@ -150,14 +151,31 @@ function Box({ id, className = '', paper = 'bg-white', band = ribbonX, children 
   )
 }
 
-// Between two boxes, on the ribbon: glossy holly tucked into it, or just the ribbon (tall: room for
-// the bow and the heads peeking over it on the box below).
-function Tie({ holly, tall }) {
-  return (
-    <div className={`relative flex items-center justify-center ${tall ? 'h-24 md:h-40' : 'h-16 md:h-24'}`} aria-hidden="true">
-      {holly && <img src={decor('holly-glossy.webp')} alt="" width="300" height="242" loading="lazy" className="h-14 w-auto drop-shadow-md md:h-20" />}
-    </div>
-  )
+// Between two boxes, just the ribbon (tall: room for the bow and the elf rising over it on the box
+// below), or Santa diving into a snowy chimney that stands on the top edge of the box below, on the
+// ribbon (owner 2026-10-15: where the holly was, "get rid of it"; "put the santa falling in the
+// chimney on there", after a North Pole sign and a red-nosed reindeer; "scoot him to the right": just
+// right of the ribbon; "take the drop shadopw off the santa": no shadows), and an elf poking out
+// from behind the ribbon on its left ("take rudolph away and use that elf poking his head out from
+// behind the ribbon"): his picture ends in a straight cut down his right side (85 % across), which
+// lies under a piece of the same ribbon drawn over him (it matches the page's ribbon beneath exactly). They sit
+// at z 3: over the box above (whose ribbon, bow and photos are z 1-2) and under the box below
+// (Steps is z 4), so their feet tuck just behind that edge.
+function Tie({ tall, chimney }) {
+  if (chimney) {
+    return (
+      <div className="relative h-28 md:h-44" aria-hidden="true">
+        <img src={decor('elf-peeking.webp')} alt="" width="240" height="449" loading="lazy"
+          className="pointer-events-none absolute -bottom-0.5 right-[calc(50%+var(--band)*0.15)] z-[3] h-28 w-auto max-w-none md:h-44" />
+        <div className="absolute inset-y-0 left-1/2 z-[3] w-(--band) -translate-x-1/2" style={ribbonY} />
+        <div className="absolute -bottom-0.5 left-[calc(50%+var(--band)/2+1rem)]">
+          <img src={decor('santa-chimney.webp')} alt="" width="400" height="363" loading="lazy"
+            className="pointer-events-none relative z-[3] block h-28 w-auto max-w-none md:h-40" />
+        </div>
+      </div>
+    )
+  }
+  return <div className={tall ? 'h-24 md:h-40' : 'h-16 md:h-24'} aria-hidden="true" />
 }
 
 // The prices on a gift tag, tied to the ribbon by a gold cord through a brass eyelet.
@@ -311,7 +329,7 @@ const lightNumber = 'text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]'
 const darkNumber = 'text-berry-700'
 function Steps() {
   return (
-    <Box className="max-w-5xl px-5 pb-10 pt-10 md:px-10 md:pb-12 md:pt-14">
+    <Box className="z-[4] max-w-5xl px-5 pb-10 pt-10 md:px-10 md:pb-12 md:pt-14">
       <h2 className={title}>{t.stepsTitle}</h2>
       <ol className="mt-4 grid gap-5 md:grid-cols-3 md:gap-6">
         {t.steps.map(([step, body], i) => {
