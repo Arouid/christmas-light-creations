@@ -8,7 +8,7 @@ Three kinds of work bring customers in, each with its own Claude session (owner 
 |---|---|---|---|
 | **SEO** (being found) | Google, Bing and AI assistants; titles, descriptions and structured data; area pages and `/cost/` for search; sitemap, robots, IndexNow; profile fields on Google Business Profile, Yelp, Bing Places, Nextdoor and directories; search positions | `docs/serp-log.md`, `docs/listings.md`, `docs/specs/indexnow.md`, `tests/seo.test.mjs`; report https://claude.ai/artifact/H1WySYPH6N7k6Vz5NoUpXQ | TODO #79, #70 |
 | **Design** (how pages look and work) | Layout, header and menus, buttons, forms, accessibility, the designer's and account page's usability | design report https://claude.ai/artifact/XGuBN4E8T1Dxk9TGDPvAQs | TODO N |
-| **Marketing** (what we say, where, when) | Season plan, posts (Google, Facebook, Nextdoor), Google Ads copy, the rebook email, the reviews plan, the 📣 Marketing checklist in the staff app, Nextdoor monitoring | `docs/marketing/` (start at its README), `src/data/marketingPlan.js` | the season plan's open questions |
+| **Marketing** (what we say, where, when) | Season plan, posts (Google, Facebook, Nextdoor), Google Ads copy, the rebook email, the reviews plan, the 📣 Marketing checklist in the staff app, Nextdoor monitoring and the Nextdoor/Yelp notices in 💬 (`functions/listingNotices.js`) | `docs/marketing/` (start at its README), `src/data/marketingPlan.js` | the season plan's open questions |
 
 ## One home for each thing
 
@@ -48,7 +48,8 @@ Three kinds of work bring customers in, each with its own Claude session (owner 
 | When | What | Who |
 |---|---|---|
 | Every morning 7:05 | Nextdoor check in the owner's Chrome: messages, recommendations, comments, neighbors asking for installers; reply drafts, never sends (scheduled task `nextdoor-morning-check`) | Claude reads, owner replies |
-| Every day | 📣 Marketing → Every day in the staff app | owner and staff |
+| Every day | 📣 Marketing → Every day in the staff app (the reviews habits and the Nextdoor line, with its Nextdoor ↗ button) | owner and staff |
+| As they arrive (after TODO #82's deploy) | Nextdoor notices (a neighbor's message, recommendation, comment, mention) in 💬 as 🏘️ Nextdoor, answered on Nextdoor; Yelp's messages and quote requests the same way as 📍 Yelp once Yelp's notification email is info@ (`docs/specs/listing-notices.md`) | staff (💬), marketing (the matcher) |
 | Mondays | Marketing numbers and the week's jobs | marketing |
 | Monthly | The same four searches, logged in `docs/serp-log.md` | SEO |
 | Fri 2026-10-16 | Google profile cleanup and the missing-reviews case (scheduled task) | owner |

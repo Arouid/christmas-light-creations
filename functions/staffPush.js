@@ -5,11 +5,16 @@
 // with the staff app (src/lib/staffAlerts.js) so the 💬 list and the
 // notification say the same thing. Spec: docs/specs/staff-alerts.md.
 
+import { PLATFORMS } from './listingNotices.js'
+// The sites whose notices come in (Nextdoor, Yelp): label, icon, where to answer; the app reads them from here.
+export { PLATFORMS }
+
 // report = a problem a customer reported from their account (docs/specs/account-service.md);
 // chat = a message typed in the account's Chat with us (docs/specs/account-chat.md);
 // review = a review-link text the website queued for a person to send (docs/specs/review-ask.md);
-// nextdoor = Nextdoor's notice of a neighbor's message, recommendation, comment or mention (docs/specs/nextdoor-notices.md).
-export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email', request: 'Estimate request', report: 'Problem report', chat: 'Account message', review: 'Review text to send', nextdoor: 'Nextdoor' }
+// nextdoor / yelp = that site's notice of a person's message (and on Nextdoor a recommendation,
+// comment or mention, on Yelp a quote request), docs/specs/listing-notices.md.
+export const KIND_WORD = { text: 'Text', voicemail: 'Voicemail', missed: 'Missed call', email: 'Email', request: 'Estimate request', report: 'Problem report', chat: 'Account message', review: 'Review text to send', nextdoor: 'Nextdoor', yelp: 'Yelp' }
 export const PREVIEW_CHARS = 120
 export const MAX_DEVICES = 10
 // A catch-up of old mail (sync down for a while) doesn't buzz phones.
@@ -27,12 +32,12 @@ export const messageLink = (m) => (m.customerId ? `#accounts/customer/${encodeUR
 
 // names: { 'customer:<id>': 'Full Name', 'lead:<id>': 'First Last' }.
 export const whoOf = (m, names = {}) =>
-  names[targetKey(m)] || (m.phone ? prettyPhone(m.phone) : '') || m.name || m.email || (m.kind === 'nextdoor' ? 'A neighbor' : 'Unknown number')
+  names[targetKey(m)] || (m.phone ? prettyPhone(m.phone) : '') || m.name || m.email || PLATFORMS[m.kind]?.someone || 'Unknown number'
 
 const clip = (s, max) => (s.length > max ? `${s.slice(0, max - 1)}…` : s)
 
 export function previewOf(m, max = PREVIEW_CHARS) {
-  const text = [m.kind === 'email' || m.kind === 'nextdoor' ? m.subject : '', m.text].filter(Boolean).join(' · ').replace(/\s+/g, ' ').trim()
+  const text = [m.kind === 'email' || PLATFORMS[m.kind] ? m.subject : '', m.text].filter(Boolean).join(' · ').replace(/\s+/g, ' ').trim()
   if (!text) return m.kind === 'missed' ? 'No voicemail left' : ''
   return clip(text, max)
 }

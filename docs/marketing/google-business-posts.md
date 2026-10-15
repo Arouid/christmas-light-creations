@@ -1,6 +1,6 @@
 # Google Business Profile posts, season 2026
 
-Ten drafts, one a week. **The owner posts them** (Business Profile → Add update / Add offer); Claude posts nothing. Google's rules for posts: no phone number in the text (the profile's Call button carries it), JPG or PNG photos (no WebP), up to 1,500 characters. Every claim is on the website today; photos are the owner's installs from `public/images/gallery/` (1600 px copies; the hi-res originals are in `assets-source/photos/gallery-hi-res/`). The designer post's text already lives in `docs/listings.md`; it is used as is.
+Ten drafts, one a week. **The owner posts them** (Business Profile → Add update / Add offer); Claude posts nothing. Google's rules for posts: no phone number in the text (the profile's Call button carries it), JPG or PNG photos (no WebP), up to 1,500 characters. Every claim is on the website today; photos are the owner's installs from `public/images/gallery/` (1600 px copies; the hi-res originals are in `assets-source/photos/gallery-hi-res/`). Every Google post lives here, the designer one included (moved from `docs/listings.md` on 2026-10-15; that file keeps only profile fields, `docs/growth.md`).
 
 | # | Post on | Type | Photo (`public/images/gallery/`) | Button → link |
 |---|---|---|---|---|
@@ -23,9 +23,11 @@ Ten drafts, one a week. **The owner posts them** (Business Profile → Add updat
 
 **Terms:** For installs completed by October 31, 2026. Start date Oct 15, end date Oct 31.
 
-## 2 · The free designer (text from `docs/listings.md`)
+## 2 · The free designer
 
 > See your house lit before you book. Our free light designer lets you draw Christmas lights on a photo of your own home and send the design with your estimate request. It takes a few minutes on your phone.
+
+(Photo: a JPG or PNG screenshot of the designer on a real house; Google takes no WebP. Button Learn more → `https://christmas-light-creations.com/design/`.)
 
 ## 3 · You don't need to be home
 

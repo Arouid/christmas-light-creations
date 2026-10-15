@@ -4,7 +4,7 @@ The words we use on profiles outside the website, so every listing says the same
 
 Pictures: `assets-source/listings/` (`node scripts/listing-images.mjs`): `profile-1080.png` for profile pictures (round or square), `cover-*-2000x1000.jpg` for wide covers (Victory Lakes first).
 
-Accounts (owner 2026-10-15): **Nextdoor** is signed up through **info@christmas-light-creations.com**, so its notices reach the staff app's message sync, which drops nextdoor.com mail as service mail (`SERVICE_DOMAINS` in `functions/messageSync.js`) except the notices of a neighbor's message, recommendation, comment or mention: those show in 💬 as 🏘️ Nextdoor once `messageSync` is deployed (`docs/specs/nextdoor-notices.md`, TODO #82). **Yelp** is linked to the owner's own email, not info@, so Yelp's messages and quote requests never reach the staff app; he watches that inbox (or changes Yelp's notification address to info@, which would also need a Yelp matcher in the sync, as yelp.com is service mail).
+Accounts (owner 2026-10-15): **Nextdoor** is signed up through **info@christmas-light-creations.com**, so its notices reach the staff app's message sync, which drops nextdoor.com mail as service mail (`SERVICE_DOMAINS` in `functions/messageSync.js`) except the notices of a neighbor's message, recommendation, comment or mention: those show in 💬 as 🏘️ Nextdoor once `messageSync` is deployed (`docs/specs/listing-notices.md`, TODO #82). **Yelp** is linked to the owner's own email, not info@, so Yelp's messages and quote requests never reach the staff app; he watches that inbox. The sync already has a Yelp matcher (a message or a Request a Quote → 📍 Yelp in 💬, everything else from yelp.com still dropped), so changing Yelp's notification email to info@ is all it would take.
 
 Same name, phone and website everywhere: **Christmas Light Creations**, **281-819-0163**, **https://christmas-light-creations.com**.
 
@@ -34,11 +34,9 @@ Same name, phone and website everywhere: **Christmas Light Creations**, **281-81
 | Christmas light service & repair | Bulb out, timer acting up or a tripped GFCI? Service calls are free all season for our customers, usually the same day, 48 hours at most in peak weeks. (Not marked “Free” in the price field: that would show to non-customers too.) |
 | Tree & landscape holiday lighting (only if kept) | Trees, shrubs and walkway lights as an add-on to your roofline, each priced on its own. |
 
-## Google post: the designer
+## Google posts
 
-> See your house lit before you book. Our free light designer lets you draw Christmas lights on a photo of your own home and send the design with your estimate request. It takes a few minutes on your phone.
-
-Button **Learn more** → `https://christmas-light-creations.com/design/`. Photo: a JPG or PNG screenshot of the designer on a real house (Google takes no WebP). No prices or phone number in post text.
+Not here: every Google Business Profile post, the designer one included, is in [`docs/marketing/google-business-posts.md`](marketing/google-business-posts.md) (one a week, with photo and button). This file keeps only profile fields.
 
 ## Yelp
 
