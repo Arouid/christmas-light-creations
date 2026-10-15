@@ -103,7 +103,9 @@ export const demoData = {
         { from: 'customer', by: 'test.homeowner@example.com', text: 'Great. One more thing: the section by the garage went dark last night. Can the crew look at it while they’re here?', at: new Date(minAgo(25)).toISOString() },
       ] },
   ]),
-  settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 }, blockedSenders: ['+15185550199'] } },
+  settings: { app: { homeBase: { address: 'Sample shop, Pearland TX', lat: 29.5636, lng: -95.2860 }, blockedSenders: ['+15185550199'],
+    // The season's marketing plan (src/data/marketingPlan.js): two jobs ticked, one week's Monday numbers.
+    marketing: { done: { 'w1-gbp': { by: 'katie@christmas-light-creations.com', at: 1792008000000 }, 'w1-rebook': { by: 'lacie@christmas-light-creations.com', at: 1792015200000 } }, log: { w1: { requests: '14', topSource: 'Google', reviews: '4' } } } } },
   // Home → Spent this month (docs/specs/spend.md): this month's Claude calls, PayPal fees, Google Cloud export and Google Ads transfer.
   usage: { [monthKey()]: {
     claude: { draft: { calls: 14, inputTokens: 71000, outputTokens: 11200, microCents: 42300 }, ask: { calls: 5, inputTokens: 40500, outputTokens: 2100, microCents: 18800 }, plan: { calls: 2, inputTokens: 30000, outputTokens: 7000, microCents: 29600 } },

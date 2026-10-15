@@ -13,6 +13,7 @@ import { useOutgoingMail } from './useOutgoingMail'
 import { DEFAULT_LAYOUT, LAYOUT_KEY, PANELS, SIZES, bands, cycleSize, nudge, placeBefore, readLayout, sizeOf } from '../lib/dashLayout'
 import { permission, storedFid } from './push'
 import { useLiveDoc, useLiveQuery } from './staffStore'
+import MarketingPanel from './marketing/MarketingPanel'
 
 // Home: mission control (docs/specs/dashboard.md). Recent staff activity, live
 // counters, today's routes, the season and system status lights, plus a wall
@@ -119,6 +120,7 @@ export default function HomeView({ user, season, alerts, feed, customers, leads,
     spent: <SpendPanel summary={spent} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
     ads: <AdsPanel ads={ads} month={month} error={usage.error} loading={usage.data === undefined} wall={wall} />,
     checklist: <ChecklistPanel wall={wall} onOpenMessages={onOpenMessages} />,
+    marketing: <MarketingPanel settings={settings} wall={wall} />,
   }
 
   const board = (

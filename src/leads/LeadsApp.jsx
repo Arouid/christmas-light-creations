@@ -28,6 +28,7 @@ import PastRequestsView from './PastRequestsView'
 import AccountsView from './accounts/AccountsView'
 import SignsView from './SignsView'
 import NotesView from './NotesView'
+import MarketingView from './marketing/MarketingView'
 import RoutesView from './RoutesView'
 import { RoutesContext } from './routesContext'
 import { StaffContext } from './staffContext'
@@ -413,6 +414,7 @@ export default function LeadsApp() {
               leads={leads} customers={customers} season={season} settings={settingsApi.settings ?? {}} onSaveSettings={settingsApi.save}
               onAdd={signsApi.add} onUpdate={signsApi.update} onRemove={signsApi.remove} onUpdateLead={updateLead} />
           : loading)}
+        {tab === 'marketing' && <MarketingView user={user} settings={settingsApi.settings ?? {}} names={feed.names} onOpenMessages={() => setShowMessages(true)} />}
         {tab === 'notes' && <NotesView mine={notesApi.mine} shared={notesApi.shared} email={user?.email} names={feed.names} onAdd={notesApi.add} onSave={notesApi.save} onRemove={notesApi.remove} />}
         {tab === 'past' && (customers
           ? <PastRequestsView requests={pastApi.error === 'not-staff' ? [] : pastApi.requests} error={pastApi.error === 'not-staff' ? null : pastApi.error}
