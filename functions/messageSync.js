@@ -4,6 +4,7 @@
 // docs/specs/message-sync.md. Tested in tests/messageSync.test.mjs.
 import { createHash } from 'node:crypto'
 import { phoneKey, phonesIn } from './phone.js'
+import { nextdoorNotice } from './nextdoor.js'
 
 export const OUR_EMAILS = ['info@christmas-light-creations.com', 'clc.voicemail.01@gmail.com']
 export const OUR_PHONES = ['+12818190163']
@@ -142,6 +143,14 @@ function parseEmail(item) {
   if (!counterparts.length) return { skip: 'internal' }
   const messageId = lower(item.messageId) || lower(item.gmailId)
   if (!messageId) return { skip: 'no-id' }
+  // A Nextdoor notice addressed to the business (functions/nextdoor.js): one 💬 item, not dropped as service mail.
+  const notice = out ? null : nextdoorNotice(item)
+  if (notice) {
+    return {
+      source: 'nextdoor', kind: 'nextdoor', direction: 'in', at: isoOf(item.date), text: notice.text,
+      subject: notice.word, name: notice.who, notice: notice.type, idBase: emailIdBase(messageId),
+    }
+  }
   return {
     source: 'gmail', kind: 'email', direction: out ? 'out' : 'in', at: isoOf(item.date),
     text: emailText(item.body), subject: subject.slice(0, 300), emails: counterparts,
@@ -219,6 +228,8 @@ export function docsFor(event, dir) {
     const also = others.filter((t) => t.type === 'customer').map((t) => t.id)
     return [{ id, data: { ...base, ...targetFields(first), ...(also.length ? { alsoMatches: also } : {}) } }]
   }
+  // Nextdoor notices: always the Unmatched list (a neighbor, not an address we can match), answered on Nextdoor.
+  if (event.source === 'nextdoor') return [{ id: `${idBase}-nextdoor`, data: { ...base, unmatched: true } }]
   const docs = []
   const seen = new Set()
   for (const addr of emails) {

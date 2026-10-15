@@ -57,6 +57,7 @@ A message that matches a website lead (not yet a customer) is stored on that lea
 | 2026-10-09 | Missed calls use kind `missed` (same as the Takeout import) | One history format |
 | 2026-10-14 | The sync's directory matches a customer's `otherPhones` and `otherEmails` too (the Takeout matcher always did); Link to customer on an unmatched message saves the sender on the record (`src/lib/linkSender.js`) and links the sender's other open messages | Owner: “emails are appearing in the history correctly but text messages aren't”: a customer texting from a number that isn't their main one landed in Unmatched every time |
 | 2026-10-13 | Bulk rule widened: relay domains, relay-style local parts, footer words without links, optional `List-Unsubscribe` from the script (`docs/specs/spam-filters.md`) | A Constant Contact blast showed as Unmatched: Gmail's plain body has the footer words but not the links |
+| 2026-10-15 | Nextdoor's notices of a neighbor's message, recommendation, comment or mention are kept before the service-mail rule, as kind `nextdoor`, Unmatched, one doc `em-<hash>-nextdoor` (`docs/specs/nextdoor-notices.md`); other nextdoor.com mail stays dropped | Owner: "have nextdoor messages appear in our notifications"; the business page's account is info@ |
 
 ## Acceptance criteria
 

@@ -10,6 +10,7 @@ import { logActivity } from './activity'
 import { senderKey, withBlocked } from '../lib/blocklist'
 import Handling from './Handling'
 import SuggestReply from '../assistant/SuggestReply'
+import { NEXTDOOR_URL } from '../../functions/nextdoor.js'
 
 const newestFirst = (a, b) => (b.at ?? '').localeCompare(a.at ?? '')
 const prettyPhone = (p) => {
@@ -47,7 +48,9 @@ function Row({ m, user, customers, feed, blocked, siblings }) {
     setBusy(true)
     try { await saveRecord(user, 'messages', m.id, data) } finally { setBusy(false) }
   }
-  const who = m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'
+  // Nextdoor notices (docs/specs/nextdoor-notices.md): a neighbor's name, no number or address; answered on Nextdoor.
+  const nd = m.kind === 'nextdoor'
+  const who = m.phone ? prettyPhone(m.phone) : m.email || m.name || (nd ? 'A neighbor' : 'Unknown')
   // 🚫 Spam (owner 2026-10-13, docs/specs/spam-filters.md): dismiss and block the sender, so the
   // sync drops their next texts and emails before anyone sees them. Undo: ⚙ Settings → Blocked senders.
   async function spam() {
@@ -74,18 +77,19 @@ function Row({ m, user, customers, feed, blocked, siblings }) {
   const digits = String(m.phone ?? '').replace(/\D/g, '')
   return (
     <li className="rounded-2xl bg-white/5 p-3">
-      <p className="mb-2 break-all font-semibold">{m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'}</p>
-      <Bubble m={m} who={m.phone ? 'Unknown number' : m.email ? 'New sender' : 'Unknown'} />
+      <p className="mb-2 break-all font-semibold">{who}</p>
+      <Bubble m={m} who={nd ? 'On Nextdoor' : m.phone ? 'Unknown number' : m.email ? 'New sender' : 'Unknown'} />
       <div className="mt-2 flex flex-wrap gap-2">
         {digits && <a className={pill} href={`tel:${digits}`}><Icon name="phone" className="size-4" /> Call</a>}
         {m.phone && <TextButton phone={m.phone} />}
         {m.email && <a className={pill} href={gmailUrl({ to: m.email, subject: m.subject && !/^re:/i.test(m.subject) ? `Re: ${m.subject}` : m.subject ?? '' })} target="_blank" rel="noreferrer">✉️ Reply in Gmail</a>}
-        {customers && <button type="button" disabled={busy} onClick={() => setLinking(!linking)} className={pill}>Link to customer</button>}
-        <button type="button" disabled={busy} onClick={() => save({ dismissed: true })} className={pill}>Dismiss</button>
-        <button type="button" disabled={busy} onClick={spam} className={pill} title="Dismiss and block this sender">🚫 Spam</button>
+        {nd && <a className={pill} href={NEXTDOOR_URL} target="_blank" rel="noopener noreferrer">🏘️ Answer on Nextdoor ↗</a>}
+        {customers && !nd && <button type="button" disabled={busy} onClick={() => setLinking(!linking)} className={pill}>Link to customer</button>}
+        <button type="button" disabled={busy} onClick={() => save({ dismissed: true })} className={pill}>{nd ? 'Done' : 'Dismiss'}</button>
+        {!nd && <button type="button" disabled={busy} onClick={spam} className={pill} title="Dismiss and block this sender">🚫 Spam</button>}
       </div>
-      <Handling m={m} who={m.phone ? prettyPhone(m.phone) : m.email || m.name || 'Unknown'} feed={feed} user={user} />
-      <div className="mt-2"><SuggestReply target={{ messageId: m.id }} /></div>
+      <Handling m={m} who={who} feed={feed} user={user} />
+      {!nd && <div className="mt-2"><SuggestReply target={{ messageId: m.id }} /></div>}
       {linking && <LinkPicker customers={customers} onCancel={() => setLinking(false)}
         onPick={link} />}
     </li>

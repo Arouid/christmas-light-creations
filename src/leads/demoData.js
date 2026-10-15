@@ -153,6 +153,9 @@ export const demoData = {
     { id: 'gv-demo-unmatched-1', unmatched: true, phone: '+15550100166', kind: 'text', direction: 'in', source: 'voice-email', at: hoursAgo(2), syncedAt: hoursAgo(1.95), text: 'Hi! Saw your sign on Broadway. How much for a one story house?' },
     { id: 'em-demo-new-unmatched', unmatched: true, email: 'pat.new@example.org', kind: 'email', direction: 'in', source: 'gmail', at: hoursAgo(1.2), syncedAt: hoursAgo(1.15),
       subject: 'Christmas lights quote', text: 'Hi, a neighbor recommended you. Could you give us a quote for our roofline? Two-story house in Shadow Creek Ranch.' },
+    // A Nextdoor notice (docs/specs/nextdoor-notices.md); a made-up neighbor, demo only.
+    { id: 'em-demo-nextdoor-nextdoor', unmatched: true, kind: 'nextdoor', notice: 'message', name: 'Sample N.', direction: 'in', source: 'nextdoor', at: hoursAgo(0.9), syncedAt: hoursAgo(0.85),
+      subject: 'New message', text: 'Hi! Do you still have dates in November? Two-story house, roofline only.' },
     { id: 'gv-demo-missed', customerId: 'sample-customer', phone: '+15550101', kind: 'missed', direction: 'in', source: 'voice-email', at: hoursAgo(0.7), syncedAt: hoursAgo(0.65) },
     { id: 'gv-demo-unmatched-2', unmatched: true, phone: '+15550100177', kind: 'voicemail', direction: 'in', source: 'voice-email', at: hoursAgo(9), syncedAt: hoursAgo(8.95), text: 'Hi, this is about getting lights put up on our house in Silverlake. Please call me back.' },
   ]),

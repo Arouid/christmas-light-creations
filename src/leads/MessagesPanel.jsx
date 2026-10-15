@@ -9,9 +9,10 @@ import { draftTarget } from '../assistant/lib/targets'
 // calls, emails, website estimate requests, problems customers reported
 // from their account and messages typed in their account's chat
 // (docs/specs/account-chat.md), plus review-link texts the website queued for
-// a person to send (docs/specs/review-ask.md), from the last 7 days, newest
-// first; the ones that arrived since you last looked are marked. Tap one → their account.
-const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝', report: '🛠', chat: '🗨️', review: '⭐' }
+// a person to send (docs/specs/review-ask.md), and Nextdoor's notices of a
+// neighbor's message, recommendation, comment or mention (docs/specs/nextdoor-notices.md),
+// from the last 7 days, newest first; the ones that arrived since you last looked are marked. Tap one → their account.
+const ICON = { text: '💬', voicemail: '🎙', missed: '📵', email: '✉️', request: '📝', report: '🛠', chat: '🗨️', review: '⭐', nextdoor: '🏘️' }
 
 function when(iso) {
   const d = new Date(iso)
@@ -68,14 +69,14 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
                       <span className="block text-sm text-slate-300">
                         {fresh && <span className="mr-1.5 rounded-full bg-glow-400 px-1.5 text-xs font-bold text-night-950">{alerts.openMode ? 'Needs someone' : 'New'}</span>}
                         <span className="font-medium">{KIND_WORD[m.kind]}</span>
-                        {m.unmatched && <span className="text-slate-400"> · {m.email ? 'new sender' : 'unknown number'}</span>}
+                        {m.unmatched && m.kind !== 'nextdoor' && <span className="text-slate-400"> · {m.email ? 'new sender' : 'unknown number'}</span>}
                       </span>
                       {previewOf(m) && <span className="mt-0.5 line-clamp-2 block break-words text-sm text-slate-400">{previewOf(m)}</span>}
                     </span>
                   </button>
                   <div className="space-y-2 pl-13">
                     <Handling m={m} who={whoOf(m, names)} feed={feed} user={user} cover={alerts.cover} />
-                    {m.kind !== 'review' && <SuggestReply target={draftTarget(m)} chat={m.kind === 'chat'} />}
+                    {m.kind !== 'review' && m.kind !== 'nextdoor' && <SuggestReply target={draftTarget(m)} chat={m.kind === 'chat'} />}
                   </div>
                 </li>
               )
@@ -83,7 +84,7 @@ export default function MessagesPanel({ user, alerts, names, feed, onClose }) {
           </ul>
         )}
         <p className="text-xs text-slate-500">
-          What customers and new people sent in the last {LIST_DAYS} days: texts, voicemails and emails arrive within about 5 minutes, website estimate requests, problem reports and account messages at once. Our own replies aren’t listed. Tap one to open their account and full history (account messages: the 💬 Chat box at the top); unknown numbers and emails open the Unmatched list on Leads. ⭐ <em>Review text to send</em>: the website asked them for a Google review by email and they prefer texts; open their account and tap ★ Text review link.
+          What customers and new people sent in the last {LIST_DAYS} days: texts, voicemails and emails arrive within about 5 minutes, website estimate requests, problem reports and account messages at once. Our own replies aren’t listed. Tap one to open their account and full history (account messages: the 💬 Chat box at the top); unknown numbers and emails open the Unmatched list on Leads. ⭐ <em>Review text to send</em>: the website asked them for a Google review by email and they prefer texts; open their account and tap ★ Text review link. 🏘️ <em>Nextdoor</em>: a neighbor messaged, recommended, commented on or mentioned us on Nextdoor; it opens the Unmatched list on Leads, and you answer on Nextdoor.
         </p>
       </div>
     </div>

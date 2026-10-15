@@ -36,8 +36,8 @@ export const DAILY = [
   { text: 'Send the ⭐ review texts the day they show up in 💬.', link: 'messages', linkLabel: '💬 Messages' },
   { text: 'When a new review shows on Google, tap ★ They reviewed on that customer.', link: '#customers', linkLabel: 'Customers' },
   { text: 'Fill in a missing email or phone number when you see one: no contact, no review ask.', link: '#customers', linkLabel: 'Customers' },
-  // The business page went up 2026-10-15; its messages and recommendations only show on Nextdoor (the sync drops nextdoor.com mail as service mail).
-  { text: 'Nextdoor: answer new messages, comments and recommendations on the business page the same day.', link: 'https://nextdoor.com/', linkLabel: 'Nextdoor ↗' },
+  // The business page went up 2026-10-15; its notices also come into 💬 as 🏘️ Nextdoor (functions/nextdoor.js), answered on Nextdoor.
+  { text: 'Nextdoor: answer new messages, comments and recommendations the same day, on Nextdoor (they also show in 💬 as 🏘️ Nextdoor).', link: 'https://nextdoor.com/', linkLabel: 'Nextdoor ↗' },
 ]
 
 // Targets, not promises.
