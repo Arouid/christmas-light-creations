@@ -49,7 +49,7 @@ Three kinds of work bring customers in, each with its own Claude session (owner 
 |---|---|---|
 | Every morning 7:05 | Nextdoor check in the owner's Chrome: messages, recommendations, comments, neighbors asking for installers; reply drafts, never sends (scheduled task `nextdoor-morning-check`) | Claude reads, owner replies |
 | Every day | 📣 Marketing → Every day in the staff app (the reviews habits and the Nextdoor line, with its Nextdoor ↗ button) | owner and staff |
-| As they arrive (after TODO #82's deploy) | Nextdoor notices (a neighbor's message, recommendation, comment, mention) in 💬 as 🏘️ Nextdoor, answered on Nextdoor; Yelp's messages and quote requests the same way as 📍 Yelp once Yelp's notification email is info@ (`docs/specs/listing-notices.md`) | staff (💬), marketing (the matcher) |
+| As they arrive (after TODO #82's deploy) | Nextdoor notices (a neighbor's message, recommendation, comment, mention) in 💬 as 🏘️ Nextdoor, answered on Nextdoor; Yelp's messages and quote requests the same way as 📍 Yelp (Yelp's notifications go to info@ since 2026-10-15; `docs/specs/listing-notices.md`) | staff (💬), marketing (the matcher) |
 | Mondays | Marketing numbers and the week's jobs | marketing |
 | Monthly | The same four searches, logged in `docs/serp-log.md` | SEO |
 | Fri 2026-10-16 | Google profile cleanup and the missing-reviews case (scheduled task) | owner |

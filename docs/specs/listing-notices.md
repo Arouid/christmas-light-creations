@@ -4,7 +4,7 @@
 
 ## The problem
 
-The Nextdoor business page is on info@ (2026-10-15). Yelp is on the owner's own email (his correction, the same day), so its notices only reach the sync if Yelp's notification email is changed to info@; the Yelp half is built and waits for that. When a neighbor messages the Nextdoor page, recommends us, comments on our post or mentions us, or someone messages us or sends a Request a Quote on Yelp, that site emails info@. The message sync (`docs/specs/message-sync.md`) dropped every nextdoor.com and yelp.com email as service mail (`SERVICE_DOMAINS`), so nobody in the staff app saw them; they sat in info@'s Gmail. On Yelp a slow answer to a quote request loses the job.
+The Nextdoor business page is on info@ (2026-10-15). Yelp was on the owner's own email at first; he switched its notification email to info@ the same day, so both sites' notices reach the sync. When a neighbor messages the Nextdoor page, recommends us, comments on our post or mentions us, or someone messages us or sends a Request a Quote on Yelp, that site emails info@. The message sync (`docs/specs/message-sync.md`) dropped every nextdoor.com and yelp.com email as service mail (`SERVICE_DOMAINS`), so nobody in the staff app saw them; they sat in info@'s Gmail. On Yelp a slow answer to a quote request loses the job.
 
 ## What we want
 
@@ -30,7 +30,7 @@ The Nextdoor business page is on info@ (2026-10-15). Yelp is on the owner's own 
 
 ## Not confirmed yet
 
-The subject patterns were written from the sites' usual wording on 2026-10-15; no real notice had reached info@ (info@ isn't signed in to the owner's Chrome, so none was read). The live check: the owner messages the Nextdoor page from his personal Nextdoor account and (once Yelp's notifications go to info@) sends a Request a Quote from a personal Yelp account; each 🏘️ / 📍 item shows in 💬 within 10 minutes (`docs/test-checklist.md` #170). If one doesn't: the email is still in info@'s Gmail; send Claude its sender and subject line, and the pattern gets added with a test.
+The subject patterns were written from the sites' usual wording on 2026-10-15; no real notice had reached info@ (info@ isn't signed in to the owner's Chrome, so none was read). The live check: the owner messages the Nextdoor page from his personal Nextdoor account and sends a Request a Quote or a message from a personal Yelp account; each 🏘️ / 📍 item shows in 💬 within 10 minutes (`docs/test-checklist.md` #170). If one doesn't: the email is still in info@'s Gmail; send Claude its sender and subject line, and the pattern gets added with a test.
 
 ## Acceptance
 
