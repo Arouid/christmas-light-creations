@@ -51,6 +51,16 @@ export const REPORTS = [
     was: 'https://claude.ai/artifact/XGuBN4E8T1Dxk9TGDPvAQs',
     pictures: 'https://claude.ai/artifact/VBC9eE6KAS7PYJ6hLUhA9S',
   },
+  {
+    // docs/specs/staff-links.md: the list is code, the logins are typed here
+    // (settings/app.logins) because the repo is public.
+    id: 'links',
+    title: 'Links',
+    blurb: 'Every account the business runs on: its link, what it’s for, and the login it belongs to.',
+    live: 'links',
+    docs: [],
+    sources: ['src/data/staffLinks.js', 'the logins typed here (settings)'],
+  },
 ]
 
 // Old reports that already have a home in the app (no page here).

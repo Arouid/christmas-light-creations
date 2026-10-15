@@ -421,7 +421,7 @@ export default function LeadsApp() {
         {tab === 'reports' && (
           <Suspense fallback={<p className="mt-6 text-slate-400">Loading reports…</p>}>
             <ReportsView requests={pastApi.error === 'not-staff' ? [] : pastApi.requests} pastError={pastApi.error === 'not-staff' ? null : pastApi.error}
-              customers={customers} season={season} settings={settingsApi.settings ?? {}} />
+              customers={customers} season={season} settings={settingsApi.settings ?? {}} onSaveSettings={settingsApi.save} />
           </Suspense>
         )}
         {tab === 'notes' && <NotesView mine={notesApi.mine} shared={notesApi.shared} email={user?.email} names={feed.names} onAdd={notesApi.add} onSave={notesApi.save} onRemove={notesApi.remove} />}

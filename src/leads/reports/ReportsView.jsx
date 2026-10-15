@@ -5,16 +5,18 @@ import { WINBACK_GROUPS, winbackStats } from '../../lib/pastStates'
 import { mergeTemplates } from '../../lib/emailTemplates'
 import { fillTemplate } from '../../lib/messages'
 import Markdown, { Inline } from './Markdown'
+import LinksReport from './LinksReport'
 import { CHECKLIST_ROWS, DOC_BLOCKS, TODO_ROWS } from './docs'
 
 // 📊 Reports (docs/specs/reports.md): the reports Claude used to write as
 // claude.ai pages, drawn from the repo's own docs at build time plus the live
-// lists the app already reads, so they never go stale. Read-only.
+// lists the app already reads, so they never go stale. Read-only, except the
+// logins on Links (docs/specs/staff-links.md).
 
 const card = 'space-y-3 rounded-2xl border border-white/10 bg-night-900 p-4'
 const btn = 'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15'
 
-export default function ReportsView({ requests, pastError, customers, season, settings }) {
+export default function ReportsView({ requests, pastError, customers, season, settings, onSaveSettings }) {
   const [id, setId] = useState(() => reportFromHash(window.location.hash))
   useEffect(() => {
     const onHash = () => { setId(reportFromHash(window.location.hash)); window.scrollTo(0, 0) }
@@ -36,6 +38,7 @@ export default function ReportsView({ requests, pastError, customers, season, se
         <div className="flex flex-wrap gap-2">{report.links.map(([href, label]) => <a key={href} href={href} className={btn}>{label}</a>)}</div>
       )}
       {report.live === 'winback' && <WinbackLive requests={requests} error={pastError} customers={customers} season={season} settings={settings} />}
+      {report.live === 'links' && <LinksReport settings={settings} onSave={onSaveSettings} />}
       {report.todo && <TodoItems ids={report.todo} />}
       {report.checklist && <Checks ids={report.checklist} />}
       {report.pictures && (
@@ -52,7 +55,7 @@ function ReportList() {
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-glow-300/80">Always current</p>
         <h2 className="font-display text-3xl font-extrabold">Reports</h2>
-        <p className="text-sm text-slate-400">The plans and reviews Claude wrote for Scott, drawn from the same files and lists the app uses, so they change when the work does. Nothing here sends or changes anything.</p>
+        <p className="text-sm text-slate-400">The plans and reviews Claude wrote for Scott, drawn from the same files and lists the app uses, so they change when the work does. Nothing here sends anything; Links is the one place you type (the logins).</p>
       </header>
       <ul className="space-y-2">
         {REPORTS.map((r) => (

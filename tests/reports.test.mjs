@@ -58,7 +58,7 @@ test('reports: every source file exists, is read in docs.js, and parses with a #
   assert.ok(REPORTS.length >= 4)
   assert.equal(new Set(REPORTS.map((r) => r.id)).size, REPORTS.length)
   for (const r of REPORTS) {
-    assert.ok(r.title && r.blurb && r.docs.length, `${r.id} has a title, a blurb and docs`)
+    assert.ok(r.title && r.blurb && (r.docs.length || r.live), `${r.id} has a title, a blurb and docs (or a live part)`)
     for (const d of r.docs) {
       assert.ok(existsSync(new URL(`../${d.path}`, import.meta.url)), `${d.path} exists`)
       assert.ok(docsJs.includes(`'${d.path}'`), `${d.path} is read in docs.js`)
