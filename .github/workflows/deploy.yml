@@ -29,14 +29,22 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+      # While the live site still has the old pages: which pages did this push change? Writes their
+      # list to changed-pages.json for the IndexNow ping and the real dates into dist/sitemap.xml
+      # (scripts/indexnow.mjs, docs/specs/indexnow.md). Best effort: without the list, the ping sends every URL.
+      - name: Changed pages
+        continue-on-error: true
+        run: node scripts/indexnow.mjs --compare
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-      # The sitemap alone, for the IndexNow ping after the deploy (the Pages artifact can't be read there).
+      # The sitemap and the list, for the IndexNow ping after the deploy (the Pages artifact can't be read there).
       - uses: actions/upload-artifact@v7
         with:
           name: sitemap
-          path: dist/sitemap.xml
+          path: |
+            dist/sitemap.xml
+            changed-pages.json
           retention-days: 1
 
   deploy:
@@ -48,17 +56,18 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-      # Once the site is live, tell Bing and the other IndexNow engines which pages to recrawl
-      # (scripts/indexnow.mjs, docs/specs/indexnow.md). Best effort: none of this can fail the deploy.
+      # Once the site is live, tell Bing and the other IndexNow engines which pages changed
+      # (scripts/indexnow.mjs, docs/specs/indexnow.md); none, no ping. Best effort: none of this can fail the deploy.
       - uses: actions/checkout@v4
         continue-on-error: true
         with:
           persist-credentials: false
+      # Back where the build job had them: dist/sitemap.xml and changed-pages.json.
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           name: sitemap
-          path: dist
+          path: .
       - name: IndexNow
         continue-on-error: true
         run: node scripts/indexnow.mjs

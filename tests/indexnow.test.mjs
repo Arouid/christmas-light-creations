@@ -1,7 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readdir, readFile } from 'node:fs/promises'
-import { ENDPOINT, MAX_URLS, MEANINGS, SITE, indexNowBody, keyOfFile, sitemapUrls, validKey } from '../scripts/indexnow.mjs'
+import {
+  ENDPOINT, MAX_URLS, MEANINGS, SITE, changedPages, countdowns, indexNowBody, keyOfFile, lastmods, pageText,
+  sitemapDates, sitemapUrls, validKey, withLastmods,
+} from '../scripts/indexnow.mjs'
+import { urgency } from '../src/data/content.js'
+import { seasonBadge, topBar } from '../src/lib/urgency.js'
 
 const KEY = '3bcc247f6ab0920d551117209063808d'
 
@@ -78,4 +83,102 @@ test('public/ holds exactly one IndexNow key file, and it is the committed key',
 
 test('the answers the protocol documents each have a meaning for the log line', () => {
   assert.deepEqual(Object.keys(MEANINGS).map(Number), [200, 202, 400, 403, 422, 429])
+})
+
+// A built page as prerender.mjs writes it: hashed assets, the build day on #root, the hero-photo
+// script, a stylesheet, an icon, Tailwind classes, JSON-LD.
+const page = ({ hash = 'D-BI5gSR', day = '2026-10-14', words = 'Holiday lights, done for you.', cls = 'text-glow-300', badge = 'Booking now', description = 'Free estimates.', ld = 'Christmas Light Creations' } = {}) => `<!doctype html>
+<html lang="en">
+  <head>
+    <script>(function(){var p=${JSON.stringify(hash)}})()</script>
+    <meta name="description" content="${description}" />
+    <link rel="modulepreload" crossorigin href="/assets/preload-helper-${hash}.js">
+    <link rel="stylesheet" crossorigin href="/assets/src-${hash}.css">
+    <style>.x{color:red}</style>
+    <script type="module" crossorigin src="/assets/App-${hash}.js"></script>
+    <script type="application/ld+json">{"name":"${ld}"}</script>
+  </head>
+  <body>
+    <div id="root" data-day="${day}"><span class="twinkle ${cls}"><!-- -->${badge}</span>
+      <h1 class="${cls}">${words}</h1><svg viewBox="0 0 24 24"><path d="M5 4h4"/></svg>
+      <img src="/assets/sample-design-${hash}.webp" alt="A sample house" style="--hero:url(x)" />
+    </div>
+  </body>
+</html>`
+
+test('two builds of the same content read the same: hashes, build day, scripts, styles, classes, icons, whitespace', () => {
+  const a = pageText(page())
+  assert.equal(pageText(page({ hash: 'Xy_9-AbC', day: '2026-10-21', cls: 'text-berry-400 md:text-6xl' })), a)
+  assert.equal(pageText(page().replace(/\n\s*/g, '\r\n      ')), a)
+  assert.ok(!a.includes('data-day') && !a.includes('class=') && !a.includes('<svg') && !a.includes('src-'), a)
+  assert.ok(a.includes('/assets/sample-design.webp') && a.includes('alt="A sample house"'))
+  assert.equal(pageText('<a href="/assets/Designer-DX-buP5-.js">x</a>'), '<a href="/assets/Designer.js">x</a>')
+})
+
+test('a change a search engine reads is a change: words, description, image alt, structured data', () => {
+  const a = pageText(page())
+  assert.notEqual(pageText(page({ words: 'Holiday lights, installed for you.' })), a)
+  assert.notEqual(pageText(page({ description: 'Free estimates, no need to be home.' })), a)
+  assert.notEqual(pageText(page().replace('A sample house', 'Our sample house')), a)
+  assert.notEqual(pageText(page({ ld: 'Christmas Light Creations LLC' })), a)
+})
+
+test("the days-left countdowns from content.js don't make the home page change every day", () => {
+  const templates = countdowns(urgency)
+  assert.deepEqual(templates, [urgency.badge.countdown, urgency.topBar.countdown])
+  // Two days of the early-install countdown, as the home page's badge and top bar draw them.
+  const on = (date) => {
+    const d = new Date(`${date}T12:00:00`)
+    return page({ badge: `${seasonBadge(d)} · ${topBar(d).text}`, day: date })
+  }
+  assert.notEqual(on('2026-10-16'), on('2026-10-20'))
+  assert.equal(pageText(on('2026-10-16'), templates), pageText(on('2026-10-20'), templates))
+  // Moving from one wording to the next (countdown → last day) is a real change.
+  assert.notEqual(pageText(on('2026-10-30'), templates), pageText(on('2026-10-31'), templates))
+  assert.deepEqual(countdowns({ a: 'no number', b: { c: '{n} left', d: ['x {n}'] } }), ['{n} left', 'x {n}'])
+})
+
+const HOME = `${SITE}/`
+const COST = `${SITE}/cost/`
+const PEARLAND = `${SITE}/christmas-light-installation/pearland/`
+
+test('only pages whose text changed, the missing or unreadable ones, and the ones the sitemap dropped', () => {
+  const urls = [HOME, COST, PEARLAND]
+  const built = { [HOME]: page({ words: 'New words' }), [COST]: page({ hash: 'newHash1' }), [PEARLAND]: page() }
+  const live = { [HOME]: page(), [COST]: page(), [PEARLAND]: null }
+  assert.deepEqual(changedPages({ urls, built, live, liveUrls: [HOME, COST, `${SITE}/old-page/`] }), {
+    changed: [HOME, PEARLAND],
+    unchanged: [COST],
+    removed: [`${SITE}/old-page/`],
+  })
+  // No network: every page counts as changed, so the ping falls back to all of them.
+  assert.deepEqual(changedPages({ urls, built, live: {} }).changed, urls)
+  const same = { [HOME]: page(), [COST]: page(), [PEARLAND]: page() }
+  assert.deepEqual(changedPages({ urls, built: same, live: same }), { changed: [], unchanged: urls, removed: [] })
+})
+
+test('<lastmod>: today for a changed page, the live date for an unchanged one, today when that date is unknown or odd', () => {
+  const urls = [HOME, COST, PEARLAND, `${SITE}/terms/`]
+  const live = { [HOME]: '2026-10-01', [COST]: '2026-10-02', [`${SITE}/terms/`]: '2026-12-25' }
+  assert.deepEqual(lastmods({ urls, changed: [HOME], live, today: '2026-10-15' }), {
+    [HOME]: '2026-10-15',
+    [COST]: '2026-10-02',
+    [PEARLAND]: '2026-10-15',
+    [`${SITE}/terms/`]: '2026-10-15',
+  })
+  assert.equal(lastmods({ urls: [COST], changed: [], live: { [COST]: '2026-10-02T09:00:00Z' }, today: '2026-10-15' })[COST], '2026-10-15')
+})
+
+test('the dates go into the sitemap the build wrote, and read back the same', () => {
+  const dates = { [`${SITE}/`]: '2026-10-01', [`${SITE}/design/`]: '2026-10-15', [`${SITE}/?a=1&b=2`]: '2026-10-03' }
+  const xml = withLastmods(SITEMAP, dates)
+  assert.deepEqual(sitemapUrls(xml), sitemapUrls(SITEMAP))
+  assert.match(xml, /<url><loc>https:\/\/christmas-light-creations\.com\/<\/loc><lastmod>2026-10-01<\/lastmod><\/url>/)
+  assert.match(xml, /<loc>https:\/\/christmas-light-creations\.com\/\?a=1&amp;b=2<\/loc><lastmod>2026-10-03<\/lastmod>/)
+  assert.equal(sitemapDates(xml)[`${SITE}/`], '2026-10-01')
+  assert.equal(sitemapDates(xml)[`${SITE}/design/`], '2026-10-15')
+  // A URL without a date keeps its block as it was (Pearland has no <lastmod> in SITEMAP).
+  assert.equal(sitemapDates(xml)[PEARLAND], undefined)
+  assert.equal((xml.match(/<lastmod>/g) || []).length, 4)
+  assert.deepEqual(sitemapDates(SITEMAP), { [`${SITE}/`]: '2026-10-13', [`${SITE}/design/`]: '2026-10-13' })
 })

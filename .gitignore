@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Written by the deploy workflow's Changed pages step (scripts/indexnow.mjs --compare), read by its IndexNow ping
+changed-pages.json
 *.local
 
 # Editor directories and files
