@@ -11,12 +11,14 @@
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join, sep } from 'node:path'
 import Papa from 'papaparse'
 import { phonesOf } from '../../functions/messageSync.js'
+import { contactsOf, joinSheetPayments, sheetPayments } from './customerLists.mjs'
 import { readEmail, streamMbox, unfold } from './mbox.mjs'
 import { formRequest, paymentEntry, paymentOf, personEmail, requestEntry, reviewAlert } from './oldHistory.mjs'
 import { namesToPhones } from './voiceTakeout.mjs'
+import { readXlsx } from './xlsx.mjs'
 import { cleanRow } from '../../src/lib/oldEstimates.js'
 
 const DIR = 'old-site-backup'
@@ -75,6 +77,7 @@ try {
   const mboxes = []
   const contactFiles = [] // Google Contacts exports (Google CSV): saved names for numbers
   const voiceHtml = []
+  const sheetFiles = [] // old customer spreadsheets in a Drive Takeout
   for (const input of inputs) {
     if (input.endsWith('.mbox')) { mboxes.push(input); continue }
     if (input.endsWith('.csv')) { contactFiles.push(input); continue }
@@ -85,6 +88,7 @@ try {
     for (const f of walk(dir)) {
       if (f.endsWith('.mbox')) mboxes.push(f)
       else if (/[\\/]Voice[\\/]Calls[\\/].*\.html$/.test(f)) voiceHtml.push(f)
+      else if (f.toLowerCase().endsWith('.xlsx') && f.split(sep).includes('Drive')) sheetFiles.push(f)
     }
   }
   for (const m of mboxes) {
@@ -101,6 +105,21 @@ try {
     if (known && !p.email) p.email = known.email
     keep(paymentEntry(p), `${p.via} ${p.kind}`)
   }
+
+  // Old yearly customer spreadsheets (Drive Takeout): payments no email shows
+  // (Zelle, check, Venmo, cash), and PayPal/Square ones the mail missed.
+  const sheetPays = []
+  const sheetContacts = []
+  for (const f of sheetFiles) {
+    for (const s of readXlsx(f)) {
+      sheetPays.push(...sheetPayments(s.rows, basename(f)))
+      sheetContacts.push(...contactsOf(s.rows))
+    }
+  }
+  const sheets = joinSheetPayments(sheetPays, sheetContacts, payments)
+  if (sheets.dropped) tally('sheet payment already in PayPal/Square mail', sheets.dropped)
+  for (const p of sheets.kept) keep(paymentEntry(p), `${p.via} payment (customer list)`)
+  payments.push(...sheets.kept)
 
   // Old website requests (WordPress export): history entries too.
   const csvPath = join(DIR, 'past-requests-all.csv')
@@ -133,7 +152,7 @@ try {
     extra.push(row({ Date: day(f.date), Source: f.source, Email: f.email, Phone: f.phone, Address: f.address, City: f.city, Message: f.message, 'All fields': f.name ? `Name: ${f.name}` : '' }))
   }
   for (const p of payments) {
-    extra.push(row({ Date: day(p.date), Source: p.via, Email: p.email, Address: p.address, 'All fields': p.name ? `Name: ${p.name}` : '', Kind: p.kind, Amount: p.amount, Invoice: p.invoice, Items: p.items.join(' · ') }))
+    extra.push(row({ Date: day(p.date), Source: p.via, Email: p.email, Phone: p.phone, Address: p.address, 'All fields': p.name ? `Name: ${p.name}` : '', Kind: p.kind, Amount: p.amount, Invoice: p.invoice, Items: p.items.join(' · ') }))
   }
   // Voice: numbers with a saved contact name, or real back-and-forth texting.
   const names = new Map([...namesToPhones(voiceHtml.map((f) => readFileSync(f, 'utf8')))].map(([n, p]) => [p, n]))

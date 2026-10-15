@@ -6,7 +6,7 @@ import { mergeMany, queryOnce, updateField } from '../staffStore'
 
 // "From old records": what the old-history import found about a customer that
 // isn't on their record yet (src/lib/oldPayments.js):
-// - old PayPal/Square payments → their Seasons (only empty boxes are filled),
+// - old payments (PayPal/Square emails, the old customer sheets) → their Seasons (only empty boxes are filled),
 //   so the Seasons table and the customer's "What you've paid" show them;
 // - phones/emails from Past requests cards matched to them → otherPhones /
 //   otherEmails, so re-importing the customer history brings those texts,
@@ -97,7 +97,7 @@ function SeasonRow({ s, onAdd, busy }) {
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-semibold">{s.season} season</p>
         {['install', 'takedown'].filter((k) => s.parts[k]).map((k) => (
-          <p key={k} className="text-slate-300">{PART[k]}: ${s.parts[k].amount.toFixed(2)} <span className="text-slate-400">· {s.parts[k].via}{s.parts[k].count > 1 ? ` (${s.parts[k].count} payments)` : ''} · {s.parts[k].date}</span></p>
+          <p key={k} className="text-slate-300">{PART[k]}: ${s.parts[k].amount.toFixed(2)} <span className="text-slate-400">· {s.parts[k].via || 'method not noted'}{s.parts[k].count > 1 ? ` (${s.parts[k].count} payments)` : ''} · {s.parts[k].date || 'no date on the sheet'}</span></p>
         ))}
       </div>
       <button type="button" disabled={busy} onClick={onAdd} className={btn}>Add</button>
@@ -122,7 +122,7 @@ export function OldRecordsPanel({ customer: c, customers = [], user, past = [] }
         {seasons.length > 0 && (
           <div className="space-y-2">
             <p className="font-semibold">Old payments to add to Seasons ({seasons.length})</p>
-            <p className="text-slate-400">From old PayPal/Square emails and Past requests cards. January–April payments count as takedown unless the payment says otherwise. Only empty boxes are filled; fix anything in Edit details.</p>
+            <p className="text-slate-400">From old PayPal/Square emails, the old yearly customer sheets (check, Zelle, Venmo, cash) and Past requests cards. January–April payments count as takedown unless the payment says otherwise. Only empty boxes are filled; fix anything in Edit details.</p>
             <ul className="divide-y divide-white/5">{seasons.map((s) => <SeasonRow key={s.season} s={s} busy={busy} onAdd={() => run(() => applyFills(user, c.id, s.fills))} />)}</ul>
             {seasons.length > 1 && <button type="button" disabled={busy} onClick={() => run(() => applyFills(user, c.id, seasons.flatMap((s) => s.fills)))} className={btn}>Add all {seasons.length} seasons</button>}
           </div>

@@ -26,7 +26,13 @@ export function paymentPart(p) {
 
 const usDate = (iso) => { const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return `${m}/${d}/${y}` }
 const dollars = (n) => `$${(Math.round(n * 100) / 100).toFixed(2)}`
-const VIA = { paypal: 'PayPal', square: 'Square' }
+// How they paid, as the app's payment types (PAYMENT_TYPES in customers.js). The old
+// customer sheets add Zelle, check, Venmo, cash and Cash App to PayPal and Square;
+// a payment whose method the sheet left blank fills no payment type.
+const VIA = { paypal: 'PayPal', square: 'Square', zelle: 'Zelle', check: 'Check', venmo: 'Venmo', cash: 'Cash', cashapp: 'CashApp' }
+// Sheet payments with no date carry this line (scripts/old-site/customerLists.mjs):
+// their date is a stand-in, so it never fills a payment date.
+export const UNDATED = /payment date not on the sheet/i
 const empty = (v) => v == null || String(v).trim() === ''
 // Where the amount goes: install "Total due" (what they paid, after any
 // discount); takedown "Rate" (takedown has no total field).
@@ -44,8 +50,8 @@ export function seasonFills(payments, customer) {
     const g = groups.get(key) ?? { season, part, amount: 0, count: 0, via: new Set(), last: '' }
     g.amount += Number(p.amount)
     g.count += 1
-    g.via.add(VIA[String(p.source ?? '').toLowerCase()] ?? p.source ?? '')
-    if (String(p.at) > g.last) g.last = String(p.at)
+    g.via.add(VIA[String(p.source ?? '').toLowerCase()] ?? '')
+    if (!UNDATED.test(String(p.text ?? '')) && String(p.at) > g.last) g.last = String(p.at)
     groups.set(key, g)
   }
   const bySeason = new Map()
@@ -57,10 +63,10 @@ export function seasonFills(payments, customer) {
       empty(have[AMOUNT_FIELD[g.part]]) && { path: `${base}.${AMOUNT_FIELD[g.part]}`, value: dollars(g.amount) },
       empty(have.paid) && { path: `${base}.paid`, value: 'Yes' },
       empty(have.paymentType) && via.length === 1 && { path: `${base}.paymentType`, value: via[0] },
-      empty(have.paymentDate) && { path: `${base}.paymentDate`, value: usDate(g.last) },
+      empty(have.paymentDate) && g.last && { path: `${base}.paymentDate`, value: usDate(g.last) },
     ].filter(Boolean)
     const s = bySeason.get(g.season) ?? { season: g.season, parts: {}, fills: [] }
-    s.parts[g.part] = { amount: Math.round(g.amount * 100) / 100, count: g.count, via: via.join(' + '), date: usDate(g.last) }
+    s.parts[g.part] = { amount: Math.round(g.amount * 100) / 100, count: g.count, via: via.join(' + '), date: g.last ? usDate(g.last) : '' }
     s.fills.push(...fills)
     bySeason.set(g.season, s)
   }

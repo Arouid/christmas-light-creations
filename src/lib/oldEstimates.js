@@ -85,7 +85,9 @@ function historyRow(row, f) {
 // One raw CSV row -> a clean request, or null if it's junk.
 export function cleanRow(row) {
   const f = parseFields(row['All fields'])
-  if (['PayPal', 'Square', 'Voice'].includes(row.Source)) return historyRow(row, f)
+  // Any payment or invoice row (PayPal, Square, or the old customer sheets'
+  // Zelle, check, Venmo, cash) is history, not a request.
+  if (['PayPal', 'Square', 'Voice'].includes(row.Source) || ['payment', 'invoice'].includes(row.Kind)) return historyRow(row, f)
   const name = (f.Name || f['your-name'] || [row['First name'], row['Last name']].filter(Boolean).join(' ')).trim()
   const email = String(f.Email || f.email || f['your-email'] || row.Email || '').trim().toLowerCase()
   const phone = cleanPhone(f.Phone || f.phone || f['tel-858'] || row.Phone)

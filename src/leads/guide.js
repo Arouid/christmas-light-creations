@@ -123,7 +123,7 @@ export const SECTIONS = [
       '**👁 View their account**: their account page as they see it, in a new tab, every button greyed out (nothing is sent). Also on the customer card.',
       '**Seasons**: every year’s install and takedown, price, paid or not.',
       '**💲 Yearly price & add-ons**: original price, add-ons by year, price changes; flags when it doesn’t match this season’s rate.',
-      '**🗂 From old records**: old PayPal/Square payments and old phone numbers waiting to be added to this customer (only fills empty boxes).',
+      '**🗂 From old records**: old payments (PayPal/Square emails, and check, Zelle, Venmo or cash from the old yearly customer sheets) and old phone numbers waiting to be added to this customer (only fills empty boxes).',
       'Also: service calls, light designs, proposals, text & call history (texts, calls, voicemails, emails, old payments), website requests.',
       'On the search page: **Add-on notes to check** and **From old records** lists show who still needs a look.',
     ],
