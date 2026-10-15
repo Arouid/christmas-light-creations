@@ -6,7 +6,7 @@ import {
   sitemapDates, sitemapUrls, validKey, withLastmods,
 } from '../scripts/indexnow.mjs'
 import { urgency } from '../src/data/content.js'
-import { seasonBadge, topBar } from '../src/lib/urgency.js'
+import { topBar } from '../src/lib/urgency.js'
 
 const KEY = '3bcc247f6ab0920d551117209063808d'
 
@@ -125,11 +125,11 @@ test('a change a search engine reads is a change: words, description, image alt,
 
 test("the days-left countdowns from content.js don't make the home page change every day", () => {
   const templates = countdowns(urgency)
-  assert.deepEqual(templates, [urgency.badge.countdown, urgency.topBar.countdown])
-  // Two days of the early-install countdown, as the home page's badge and top bar draw them.
+  assert.deepEqual(templates, [urgency.topBar.countdown])
+  // Two days of the early-install countdown, as the home page's top bar draws them.
   const on = (date) => {
     const d = new Date(`${date}T12:00:00`)
-    return page({ badge: `${seasonBadge(d)} · ${topBar(d).text}`, day: date })
+    return page({ badge: topBar(d).text, day: date })
   }
   assert.notEqual(on('2026-10-16'), on('2026-10-20'))
   assert.equal(pageText(on('2026-10-16'), templates), pageText(on('2026-10-20'), templates))

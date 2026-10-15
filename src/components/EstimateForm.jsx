@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { HEARD_FROM, business, designPage, giftWrapping, urgency } from '../data/content'
+import { HEARD_FROM, business, designPage, estimateForm as words, giftWrapping, urgency } from '../data/content'
 import { firebaseReady, getFirebaseApp, submitLead } from '../lib/firebase'
 import { SERVICES, useGiftWrapping } from '../lib/giftWrapping'
 import { useSign, useTakenOver } from '../lib/prerendered'
@@ -71,7 +71,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
           <Icon name="check" className="size-8" />
         </div>
         <h3 className="font-display text-2xl font-bold">Thanks, we got it!</h3>
-        <p className="mt-2 text-slate-400">We’ll be in touch soon. Need us sooner? Call {business.phone}.</p>
+        <p className="mt-2 text-slate-400">We’ll be in touch soon. Need us sooner? Call <span className="whitespace-nowrap">{business.phone}</span>.</p>
       </div>
     )
   }
@@ -111,9 +111,10 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
         <label className={label}>Email *<input required type="email" name="email" maxLength={200} autoComplete="email" className={field} /></label>
         <label className={label}>Phone<input type="tel" name="phone" maxLength={40} autoComplete="tel" className={field} onInput={() => setPhoneErr(false)} /></label>
         <label className={`${label} sm:col-span-2`}>Street address *
-          <input required name="address" maxLength={200} autoComplete="street-address" className={field} placeholder="We can’t estimate without it" />
+          <span id="address-hint" className="mt-0.5 block font-normal text-slate-400">{words.addressHint}</span>
+          <input required name="address" maxLength={200} autoComplete="street-address" aria-describedby="address-hint" className={field} />
         </label>
-        <label className={label}>City<input name="city" maxLength={80} autoComplete="address-level2" className={field} defaultValue="Pearland" /></label>
+        <label className={label}>City<input name="city" maxLength={80} autoComplete="address-level2" className={field} placeholder={words.cityPlaceholder} /></label>
         <label className={label}>ZIP<input name="zip" inputMode="numeric" maxLength={10} autoComplete="postal-code" className={field} /></label>
         <fieldset className="sm:col-span-2">
           <legend className={label}>Best way to reach you *</legend>
@@ -121,13 +122,13 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
             {['Phone', 'Text', 'Email'].map((m, i) => (
               <label key={m} className="flex-1 cursor-pointer">
                 <input type="radio" name="contactMethod" value={m} defaultChecked={i === 0} className="peer sr-only" />
-                <span className="block rounded-xl border border-white/15 py-2.5 text-center text-sm font-medium peer-checked:border-glow-400 peer-checked:bg-glow-400/10 peer-checked:text-glow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-glow-400">
+                <span className="flex min-h-11 items-center justify-center rounded-xl border border-white/15 py-2.5 text-center text-sm font-medium peer-checked:border-glow-400 peer-checked:bg-glow-400/10 peer-checked:text-glow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-glow-400">
                   {m}
                 </span>
               </label>
             ))}
           </div>
-          {phoneErr && <p className="mt-2 text-sm text-berry-500" role="alert">Add your phone number so we can call or text you, or pick Email.</p>}
+          {phoneErr && <p className="mt-2 text-sm text-berry-300" role="alert">{words.phoneError}</p>}
         </fieldset>
         <label className={`${label} sm:col-span-2`}>How did you hear about us?
           {/* key: a sign code known only after the page is taken over still preselects "Road sign" */}
@@ -139,7 +140,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
         </label>
         {!(gift && service === 'Gift wrapping') && (
           <fieldset className="sm:col-span-2">
-            <legend className={label}>What would you like lit? <span className="font-normal text-slate-500">(tap any, optional)</span></legend>
+            <legend className={label}>What would you like lit? <span className="font-normal text-slate-400">(tap any, optional)</span></legend>
             <div className="mt-2 flex flex-wrap gap-2">
               {LIT_OPTIONS.map((o) => (
                 <button key={o} type="button" onClick={() => togglePick(o)} aria-pressed={picks.includes(o)}
@@ -150,7 +151,7 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
             </div>
           </fieldset>
         )}
-        <label className={`${label} sm:col-span-2`}>Anything else? <span className="font-normal text-slate-500">(optional)</span>
+        <label className={`${label} sm:col-span-2`}>Anything else? <span className="font-normal text-slate-400">(optional)</span>
           <textarea ref={message} name="message" rows={3} maxLength={3000} className={field} defaultValue={defaultMessage}
             placeholder={gift && service === 'Gift wrapping' ? giftWrapping.form.placeholder : 'Colors you like, a date you need, a gate code…'} />
         </label>
@@ -167,12 +168,10 @@ export default function EstimateForm({ design, defaultMessage = '' }) {
               Call {business.phone} for your estimate
             </a>
           )}
-          <p className="mt-3 text-center text-sm text-slate-400">Rather not type? <a href={business.smsWith('Hi! I’d like a free estimate for my home at: ')} className="font-semibold text-glow-300 underline">Text a photo of your house to {business.phone}</a>.</p>
+          <p className="mt-3 text-center text-sm text-slate-400">Rather not type? <a href={business.smsWith('Hi! I’d like a free estimate for my home at: ')} className="font-semibold text-glow-300 underline">Text a photo of your house to <span className="whitespace-nowrap">{business.phone}</span></a>.</p>
           <RecaptchaNote className="mt-3" />
           {status === 'error' && (
-            <p className="mt-3 text-center text-sm text-berry-500" role="alert">
-              Something went wrong. Please call or text {business.phone}.
-            </p>
+            <p className="mt-3 text-center text-sm text-berry-300" role="alert">{words.sendError}</p>
           )}
         </div>
       </form>

@@ -15,6 +15,7 @@ import { NOTE_MAX, REPORT_ISSUES, scheduleText, shortDate } from '../../function
 import { TEXT_MAX as CHAT_MAX } from '../../functions/chat.js'
 import { TREE_NOTICE, TREE_TITLE } from '../../functions/notices.js'
 import { searchHelp } from '../data/help.js'
+import { scrollMotion } from '../lib/motion.js'
 import { WEEKS } from '../../functions/rebook.js'
 import { demoCodeStep, demoPhoneStep, phoneError, prettyPhone } from './phoneSignIn.js'
 import AccountTour from './AccountTour.jsx'
@@ -290,7 +291,7 @@ function StaffCard({ title, text, error, google, busy }) {
     <div className="space-y-4 rounded-3xl border border-white/10 bg-night-900 p-5">
       <h1 className="font-display text-2xl font-extrabold">{title}</h1>
       <p className="text-slate-300">{text}</p>
-      {error && <p className="text-sm text-berry-500" role="alert">{error}</p>}
+      {error && <p className="text-sm text-berry-300" role="alert">{error}</p>}
       {google && (
         <button type="button" onClick={google} disabled={busy} className={`${btn} w-full bg-white text-night-950 disabled:opacity-60`}>
           <GoogleG /> Sign in with Google
@@ -333,7 +334,7 @@ function Body({ view, email, setEmail, busy, submit, google, phoneUi, reload, lo
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
             className="min-h-11 w-full rounded-xl border border-white/20 bg-night-950 px-4 py-3 text-base" />
         </label>
-        {view.error && <p className="text-sm text-berry-500" role="alert">{view.error}</p>}
+        {view.error && <p className="text-sm text-berry-300" role="alert">{view.error}</p>}
         <button type="submit" disabled={busy} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-60`}>
           {busy ? 'One moment…' : finishing ? 'Sign in' : 'Email me a sign-in link'}
         </button>
@@ -369,7 +370,7 @@ function PhoneSignIn({ view, busy, phone, setPhone, codeText, setCodeText, send,
         </label>
       )}
       <div id={RECAPTCHA_ID} />
-      {view.error && <p className="text-sm text-berry-500" role="alert">{view.error}</p>}
+      {view.error && <p className="text-sm text-berry-300" role="alert">{view.error}</p>}
       <button type="submit" disabled={busy} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-60`}>
         {busy ? 'One moment…' : code ? 'Sign in' : 'Text me a code'}
       </button>
@@ -377,7 +378,7 @@ function PhoneSignIn({ view, busy, phone, setPhone, codeText, setCodeText, send,
         {code && <button type="button" onClick={() => send()} disabled={busy} className="min-h-11 underline disabled:opacity-60">Didn’t get it? Send again</button>}
         <button type="button" onClick={() => back(code ? 'phone' : 'signin')} disabled={busy} className="min-h-11 text-slate-300 underline disabled:opacity-60">{code ? 'Use a different number' : 'Other ways to sign in'}</button>
       </div>
-      <p className="text-xs text-slate-400">It must be a mobile number that gets texts (not a landline). Message and data rates may apply. No code? Use the email link, or call {business.phone}.</p>
+      <p className="text-xs text-slate-400">It must be a mobile number that gets texts (not a landline). Message and data rates may apply. No code? Use the email link, or call <span className="whitespace-nowrap">{business.phone}</span>.</p>
     </form>
   )
 }
@@ -415,7 +416,7 @@ function Account({ data, reload, logOut }) {
   function addContact() {
     setChatDraft((d) => ({ text: 'Please also link this to my account so it can sign in: ', n: (d?.n ?? 0) + 1 }))
     requestAnimationFrame(() => {
-      document.getElementById('chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById('chat')?.scrollIntoView({ behavior: scrollMotion(), block: 'start' })
       document.getElementById('chat-text')?.focus({ preventScroll: true })
     })
   }
@@ -577,7 +578,7 @@ function Chat({ chat, reload, draft }) {
               <li key={`${m.at}-${i}`} className={`flex ${m.from === 'customer' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] min-w-0 rounded-2xl px-3 py-2 text-sm ${m.from === 'customer' ? 'bg-glow-400/15 text-slate-50' : 'bg-white/10'}`}>
                   <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                  <p className="mt-1 text-[11px] text-slate-400">{m.from === 'customer' ? 'You' : business.name} · {chatWhen(m.at)}</p>
+                  <p className="mt-1 text-xs text-slate-400">{m.from === 'customer' ? 'You' : business.name} · {chatWhen(m.at)}</p>
                 </div>
               </li>
             ))}
@@ -592,7 +593,7 @@ function Chat({ chat, reload, draft }) {
           <textarea id="chat-text" value={text} onChange={(e) => { setText(e.target.value.slice(0, CHAT_MAX)); if (state !== 'sending') setState(null) }} rows={3} maxLength={CHAT_MAX} placeholder="Type your message…"
             className="w-full rounded-xl border border-white/20 bg-night-950 px-4 py-3 text-base" />
         </label>
-        {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+        {state?.error && <p className="text-sm text-berry-300" role="alert">{state.error}</p>}
         <div className="flex flex-wrap items-center gap-3">
           <button type="submit" disabled={state === 'sending'} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>{state === 'sending' ? 'Sending…' : 'Send'}</button>
           {state === 'sent' && <span className="text-sm text-emerald-300">Sent ✓ We’ll answer here and by email.</span>}
@@ -689,7 +690,7 @@ function Details({ details, onSaved }) {
             : <input value={v[k] ?? ''} maxLength={160} onChange={(e) => { setV({ ...v, [k]: e.target.value }); setState(null) }} placeholder={placeholder} className={field} />}
         </label>
       ))}
-      {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+      {state?.error && <p className="text-sm text-berry-300" role="alert">{state.error}</p>}
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" disabled={!changed || state === 'saving'} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-50`}>{state === 'saving' ? 'Saving…' : 'Save'}</button>
         {state === 'saved' && <span className="text-sm text-emerald-300">Saved ✓ Thank you.</span>}
@@ -731,7 +732,7 @@ function ReportProblem({ service }) {
   if (open) {
     return (
       <div className="space-y-2 rounded-2xl bg-glow-400/10 px-4 py-3">
-        {mode === 'sent' && <p className="font-semibold text-glow-300">Got it! We’ll be out within {service.days} days. If it’s urgent, call {business.phone}.</p>}
+        {mode === 'sent' && <p className="font-semibold text-glow-300">Got it! We’ll be out within {service.days} days. If it’s urgent, call <span className="whitespace-nowrap">{business.phone}</span>.</p>}
         <p><span className="font-semibold">🛠 {OPEN_TEXT[open.status] ?? open.status}:</span> {open.issue}{open.received ? `, reported ${shortDate(open.received)}` : ''}</p>
         {open.details && <p className="text-sm text-slate-300">“{open.details}”</p>}
         {mode !== 'sent' && <p className="text-sm text-slate-400">Something else, or it’s urgent? Call or text us at <a href={business.phoneHref} className="underline">{business.phone}</a>.</p>}
@@ -755,8 +756,8 @@ function ReportProblem({ service }) {
           <textarea value={note} onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))} rows={3} placeholder="Which side of the house, since when…"
             className="w-full rounded-xl border border-white/20 bg-night-950 px-4 py-3 text-base" />
         </label>
-        <p className="text-sm text-slate-400">Photos from here are coming soon. For now, you can text one to {business.phone}.</p>
-        {error && <p className="text-sm text-berry-500" role="alert">{error}</p>}
+        <p className="text-sm text-slate-400">Photos from here are coming soon. For now, you can text one to <span className="whitespace-nowrap">{business.phone}</span>.</p>
+        {error && <p className="text-sm text-berry-300" role="alert">{error}</p>}
         <div className="flex flex-wrap gap-3">
           <button type="submit" disabled={busy} className={`${btn} bg-glow-400 text-night-950 disabled:opacity-60`}>{busy ? 'Sending…' : 'Send report'}</button>
           <button type="button" onClick={() => setMode('idle')} className={`${btn} border border-white/20`}>Cancel</button>
@@ -865,7 +866,7 @@ function InvoiceCard({ i, reload }) {
           <h2 className="font-display text-xl font-extrabold">Invoice {i.number}</h2>
           <p className="text-sm text-slate-400">{KIND_SHORT[i.kind] ?? ''}{i.season ? `, ${i.season} season` : ''}</p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-sm ${late ? 'bg-berry-600/30 text-berry-500' : 'bg-glow-400/10 text-glow-300'}`}>{late ? 'Overdue' : 'Due'}</span>
+        <span className={`rounded-full px-3 py-1 text-sm ${late ? 'bg-berry-600/30 text-berry-300' : 'bg-glow-400/10 text-glow-300'}`}>{late ? 'Overdue' : 'Due'}</span>
       </div>
       <p className="flex justify-between gap-3 font-semibold"><span>{late ? `Was due ${longDate(i.dueDate)}` : i.dueDate > i.sentDay ? `Due ${longDate(i.dueDate)}` : 'Due on receipt'}</span><span className="tabular-nums">{fmt(i.cents)}</span></p>
       <a href={invoiceLink(i.token)} className={`${btn} bg-white text-night-950`}>View or print the invoice</a>
@@ -957,7 +958,7 @@ function EmailPrefs({ details, onSaved }) {
       </label>
       <p className="text-sm text-slate-400">Agreements, bills, payment reminders, scheduling and replies to you always come through.</p>
       {state === 'saved' && <p className="text-sm text-emerald-300">Saved ✓</p>}
-      {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+      {state?.error && <p className="text-sm text-berry-300" role="alert">{state.error}</p>}
     </section>
   )
 }
@@ -987,7 +988,7 @@ function Help() {
             </li>
           ))}
         </ul>
-      ) : <p className="text-sm text-slate-300">Nothing matches that. Call or text {business.phone} and a person will help.</p>}
+      ) : <p className="text-sm text-slate-300">Nothing matches that. Call or text <span className="whitespace-nowrap">{business.phone}</span> and a person will help.</p>}
     </section>
   )
 }
@@ -1022,7 +1023,7 @@ function Rebook({ onDone }) {
       </div>
       <input value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder="Anything changed? More lights, a gate code… (optional)"
         className="block w-full rounded-xl border border-white/15 bg-night-950 px-4 py-3 text-base text-slate-100" />
-      {state?.error && <p className="text-sm text-berry-500" role="alert">{state.error}</p>}
+      {state?.error && <p className="text-sm text-berry-300" role="alert">{state.error}</p>}
       <button type="button" onClick={go} disabled={state === 'sending'} className={`${btn} w-full bg-glow-400 text-night-950 disabled:opacity-50`}>
         {state === 'sending' ? 'One moment…' : 'Yes, put my lights back up'}
       </button>

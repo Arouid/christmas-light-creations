@@ -170,6 +170,13 @@ export const priceBeat = {
   body: 'Show us a legitimate written proposal from another professional Christmas-light company (their own estimate, with their name on it) for the same lights and service, and we’ll beat it by 10%. Handymen and landscapers don’t count.',
 }
 
+// The small line over the hero's headline (design review 2026-10-14: it used
+// to repeat the Oct 31 offer that the bar above the header already shows;
+// now it says where we are and since when, as the FAQ does).
+export const hero = {
+  eyebrow: `Pearland, TX · Family-owned since ${business.since}`,
+}
+
 // Two things to shout about under the hero buttons (owner 2026-10-12: "the
 // designer and Pay in 3 should be highlighted"). href 'design/' is the light
 // designer (prefixed with the site base); '#…' scrolls on the page.
@@ -527,6 +534,8 @@ export const costGuide = {
   },
   ranges: {
     title: 'Typical prices',
+    // The heading while rows is empty (design review: “Typical prices” over no prices promised numbers).
+    titleEmpty: 'Why there’s no price list',
     // Shown while rows is empty: honest about why there is no list.
     empty: 'We don’t publish a price list, and we’d rather say why than hide it: a range wide enough to be true for every home in Pearland wouldn’t tell you much about yours. What you get instead is one exact price for your own home, free, with nothing to pay until you sign.',
     hurry: `In a hurry? Text a photo of the front of your house to [${business.phone}](${business.smsHref}) and we’ll text back a rough price.`,
@@ -606,13 +615,6 @@ export const urgency = {
   installStart: { month: 10, day: 15 },
   discountEnd: { month: 10, day: 31 },
   bookingClose: { month: 12, day: 15 }, // after this, we book for next season
-  badge: {
-    before: 'Booking now · Early install discount through Oct 31',
-    countdown: 'Early install discount: {n} days left',
-    lastDay: 'Early install discount ends today',
-    season: 'Booking now for the {season} season',
-    next: 'Booking for the {season} season',
-  },
   // The slim bar above the header (owner 2026-10-12: "utilize the top of the site banner"): one line by the calendar.
   topBar: {
     before: 'Install by Oct 31 and save 10% · Lifetime warranty on every light',
@@ -725,6 +727,17 @@ export const giftWrapping = {
     legend: 'What do you need? *',
     placeholder: 'How many gifts, roughly what sizes, colors you like, when you need them…',
   },
+}
+
+// The estimate form's own words (design review 2026-10-14): the address hint
+// sits under its label (a placeholder vanishes as soon as you type), City
+// starts empty so nobody sends "Pearland" from League City by mistake, and a
+// failed send says the details are still there.
+export const estimateForm = {
+  addressHint: 'We can’t estimate without it.',
+  cityPlaceholder: 'Pearland, League City…',
+  phoneError: 'Add your phone number so we can call or text you, or pick Email.',
+  sendError: `Your request didn’t send. Your details are still here: try again, or call or text ${business.phone}.`,
 }
 
 // The estimate section's designer line (owner 2026-10-13: "we're not offering our

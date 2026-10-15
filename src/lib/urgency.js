@@ -1,6 +1,7 @@
 // Booking urgency for the home page, from the calendar (words and dates in
 // content.js `urgency`). Pure: the date is passed in, so tests can pin it.
 import { urgency as U } from '../data/content.js'
+import { scrollMotion } from './motion.js'
 
 const md = (d) => (d.getMonth() + 1) * 100 + d.getDate()
 const at = ({ month, day }) => month * 100 + day
@@ -10,16 +11,6 @@ const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k]
 export function bookingSeason(d) {
   const y = d.getFullYear()
   return md(d) > at(U.bookingClose) ? y + 1 : y
-}
-
-export function seasonBadge(d = new Date()) {
-  const now = md(d)
-  const season = bookingSeason(d)
-  if (now > at(U.bookingClose) || now < 700) return fill(U.badge.next, { season })
-  if (now < at(U.installStart)) return U.badge.before
-  if (now < at(U.discountEnd)) return fill(U.badge.countdown, { n: at(U.discountEnd) - now + 1 })
-  if (now === at(U.discountEnd)) return U.badge.lastDay
-  return fill(U.badge.season, { season })
 }
 
 // The bar above the header: { text, href } for the day. Only at the top of
@@ -72,5 +63,12 @@ export const dayLabel = (day) => new Date(`${day}T12:00:00`).toLocaleDateString(
 // "Request this date": the estimate form puts it at the top of the message.
 export function pickDate(day) {
   window.dispatchEvent(new CustomEvent('clc:pick-date', { detail: dayLabel(day) }))
-  document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth' })
+  document.getElementById('estimate')?.scrollIntoView({ behavior: scrollMotion() })
+}
+
+// The staff's line, ending in one full stop: “October is 80% booked!” stays as
+// typed, “Only weekends left” gets a period (the hero used to add one to both).
+export const statusSentence = (s) => {
+  const text = String(s ?? '').trim()
+  return !text || /[.!?…]$/.test(text) ? text : `${text}.`
 }

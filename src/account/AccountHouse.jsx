@@ -52,7 +52,7 @@ function StreetView({ address }) {
     return () => { done = true; clearTimeout(timer) }
   }, [address])
 
-  if (view === undefined) return <div className={`${frame} ${shape} animate-pulse`} aria-hidden="true" />
+  if (view === undefined) return <div className={`${frame} ${shape} motion-safe:animate-pulse`} aria-hidden="true" />
   if (view?.kind !== 'photo' || broken) return null
   return (
     <figure className={frame}>

@@ -86,7 +86,7 @@ export default function CostPage() {
           </ul>
         </Block>
 
-        <Block title={t.ranges.title}>
+        <Block title={t.ranges.rows.length ? t.ranges.title : t.ranges.titleEmpty}>
           <Ranges rows={t.ranges.rows} />
           <p className="mt-4 max-w-2xl text-slate-300"><Rich text={t.ranges.hurry} /></p>
           <h3 className="mt-8 font-display text-xl font-bold">{t.ranges.includedTitle}</h3>
@@ -169,7 +169,7 @@ export default function CostPage() {
 
         <section className="mt-14 rounded-2xl bg-night-900 px-5 py-10 text-center md:mt-20">
           <h2 className="font-display text-3xl font-extrabold tracking-tight">{t.closing.title}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-slate-300">{t.closing.body}</p>
+          <p className="mx-auto mt-3 max-w-xl text-slate-300"><Rich text={t.closing.body} /></p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <a href={estimate} className={`${btn} bg-glow-400 text-night-950`}>{t.cta.estimate}</a>
             <a href={business.phoneHref} className={`${btn} border border-white/20`}><Icon name="phone" className="size-5" /> {t.cta.call}</a>

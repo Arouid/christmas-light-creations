@@ -1,20 +1,24 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { bookLine, bookingSeason, freshStatus, seasonBadge, topBar } from '../src/lib/urgency.js'
+import { bookLine, bookingSeason, freshStatus, statusSentence, topBar } from '../src/lib/urgency.js'
 
 const d = (s) => new Date(`${s}T12:00:00`)
 
-test('hero badge follows the real calendar', () => {
-  assert.equal(seasonBadge(d('2026-08-20')), 'Booking now · Early install discount through Oct 31')
-  assert.equal(seasonBadge(d('2026-10-14')), 'Booking now · Early install discount through Oct 31')
-  assert.equal(seasonBadge(d('2026-10-15')), 'Early install discount: 17 days left')
-  assert.equal(seasonBadge(d('2026-10-30')), 'Early install discount: 2 days left')
-  assert.equal(seasonBadge(d('2026-10-31')), 'Early install discount ends today')
-  assert.equal(seasonBadge(d('2026-11-01')), 'Booking now for the 2026 season')
-  assert.equal(seasonBadge(d('2026-12-15')), 'Booking now for the 2026 season')
-  assert.equal(seasonBadge(d('2026-12-16')), 'Booking for the 2027 season')
-  assert.equal(seasonBadge(d('2027-03-01')), 'Booking for the 2027 season')
+test('the season being booked rolls over after Dec 15', () => {
+  assert.equal(bookingSeason(d('2026-08-20')), 2026)
+  assert.equal(bookingSeason(d('2026-12-15')), 2026)
   assert.equal(bookingSeason(d('2026-12-20')), 2027)
+  assert.equal(bookingSeason(d('2027-03-01')), 2027)
+})
+
+test('the staff line ends in exactly one stop (design review: “booked!.”)', () => {
+  assert.equal(statusSentence('October is 80% booked!'), 'October is 80% booked!')
+  assert.equal(statusSentence('Only weekends left in November'), 'Only weekends left in November.')
+  assert.equal(statusSentence('Full until Nov 3.'), 'Full until Nov 3.')
+  assert.equal(statusSentence('Any dates left?'), 'Any dates left?')
+  assert.equal(statusSentence('  Almost full…  '), 'Almost full…')
+  assert.equal(statusSentence(''), '')
+  assert.equal(statusSentence(undefined), '')
 })
 
 test('book-early line: October first, then fast, then next season', () => {

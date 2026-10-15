@@ -44,6 +44,8 @@
   --color-glow-300: #ffe08a;
   --color-glow-400: #ffcf4d;
   --color-glow-500: #f5b81c;
+  /* Text on the dark background (errors, Delete, Overdue): berry-500 is 3.6:1 there, this is 6.6:1. Fills keep 500/600. */
+  --color-berry-300: #ff6b7d;
   --color-berry-500: #d7263d;
   --color-berry-600: #b51d31;
   --color-pine-500: #1f8a5b;
@@ -69,12 +71,32 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 4.5rem;
+}
+/* Smooth jumps to #estimate etc., except for people who asked for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
 }
 
 body {
   @apply bg-night-950 text-slate-100 font-sans antialiased;
+}
+
+/* In the base layer so a component's own focus style (focus:outline-none + a
+   ring, as on the form fields) still wins. Gold, offset from the element, so
+   it shows on the gold buttons too. Headings wrap in even lines. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-glow-300);
+    outline-offset: 3px;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  /* A phone number never breaks across two lines. */
+  a[href^="tel:"] {
+    white-space: nowrap;
+  }
 }
 
 /* String of bulbs used as a section divider */

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { business, heroHighlights, heroPhotos } from '../data/content'
+import { business, hero, heroHighlights, heroPhotos } from '../data/content'
 import { HERO_KEY, HERO_VAR, heroBackground, showHero } from '../lib/heroPhoto'
 import { useToday } from '../lib/prerendered'
-import { bookLine, fetchBooking, seasonBadge } from '../lib/urgency'
+import { bookLine, fetchBooking, statusSentence } from '../lib/urgency'
 import Availability from './Availability'
 import Icon from './Icon'
 
@@ -28,8 +28,8 @@ export default function Hero() {
       <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-night-950 to-transparent" />
 
       <div className="mx-auto flex min-h-[88svh] max-w-6xl flex-col justify-end px-4 pb-14 pt-32 md:justify-center md:pb-24">
-        <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-glow-400/30 bg-night-900/60 px-3 py-1 text-xs font-medium uppercase tracking-wider text-glow-300">
-          <span className="twinkle size-2 rounded-full bg-glow-400" /> {seasonBadge(today)}
+        <p className="mb-4 inline-flex w-fit items-center gap-2 text-sm font-semibold uppercase tracking-wider text-glow-300">
+          <span className="twinkle size-2 rounded-full bg-glow-400" aria-hidden="true" /> {hero.eyebrow}
         </p>
         <h1 className="max-w-3xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl md:text-7xl">
           Holiday lights, <span className="text-glow-400 [text-shadow:0_0_28px_rgba(255,207,77,0.55)]">done for you.</span>
@@ -53,7 +53,7 @@ export default function Hero() {
               className="flex min-h-14 items-center gap-3 rounded-2xl border border-glow-400/40 bg-night-900/70 px-4 py-2.5 backdrop-blur hover:border-glow-400 hover:bg-night-900">
               <span aria-hidden="true" className="text-2xl">{h.icon}</span>
               <span className="min-w-0 leading-tight">
-                <span className="flex items-center gap-2 font-semibold text-glow-300">{h.title}{h.tag && <span className="rounded-full bg-glow-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-night-950">{h.tag}</span>}</span>
+                <span className="flex items-center gap-2 font-semibold text-glow-300">{h.title}{h.tag && <span className="rounded-full bg-glow-400 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-night-950">{h.tag}</span>}</span>
                 <span className="block text-sm text-slate-300">{h.body}</span>
               </span>
             </a>
@@ -61,7 +61,7 @@ export default function Hero() {
         </div>
         {/* Two lines tall from the start, so the staff line arriving later doesn't push the page down */}
         <p className="mt-4 min-h-10 text-sm text-slate-300">
-          {status && <span className="mr-2 font-semibold text-glow-300">🔥 {status}.</span>}
+          {status && <span className="mr-2 font-semibold text-glow-300">🔥 {statusSentence(status)}</span>}
           {bookLine(today)}
         </p>
         <Availability className="mt-4" />

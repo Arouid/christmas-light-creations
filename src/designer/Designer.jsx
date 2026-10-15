@@ -591,8 +591,8 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
                   {!simple && <span className="text-slate-400">{Math.round(stats.perStrand.find((s) => s.id === selStrand.id)?.feet ?? 0)} ft</span>}
                   <span className="ml-auto flex gap-1.5">
                     {selStrand.gaps?.length > 0 && <button type="button" onClick={() => patchStrand('Restored erased lights', { gaps: [] })} className={off}>Restore erased lights</button>}
-                    {!selStrand.shape && selectedPoint != null && <button type="button" onClick={deletePin} className={`${off} text-berry-500`}>Delete pin</button>}
-                    <button type="button" onClick={removeSelected} className={`${off} text-berry-500`}>Delete {selStrand.shape ? 'oval' : selStrand.closed ? 'rectangle' : 'strand'}</button>
+                    {!selStrand.shape && selectedPoint != null && <button type="button" onClick={deletePin} className={`${off} text-berry-300`}>Delete pin</button>}
+                    <button type="button" onClick={removeSelected} className={`${off} text-berry-300`}>Delete {selStrand.shape ? 'oval' : selStrand.closed ? 'rectangle' : 'strand'}</button>
                   </span>
                 </>
               )}
@@ -604,7 +604,7 @@ export default function Designer({ photo, design: initial, defaults = {}, title 
             <span className="font-semibold">{DECORATIONS[selDecor.type]?.label}</span>
             <label className="flex items-center gap-1.5">Size<input type="range" min="0.3" max="3" step="0.1" value={selDecor.size} onChange={(e) => patchDecor('Resized decoration', { size: Number(e.target.value) })} /></label>
             <label className="flex items-center gap-1.5">Turn<input type="range" min="-45" max="45" step="1" value={selDecor.rotation} onChange={(e) => patchDecor('Turned decoration', { rotation: Number(e.target.value) })} /></label>
-            <button type="button" onClick={removeSelected} className={`${off} ml-auto text-berry-500`}>Delete</button>
+            <button type="button" onClick={removeSelected} className={`${off} ml-auto text-berry-300`}>Delete</button>
           </div>
         )}
 

@@ -3,6 +3,7 @@ import { business, designPage as t, footerLinks } from '../data/content'
 import { newDesign } from '../designer/model.js'
 import { attachmentProblem } from '../lib/publicDesign'
 import { useToday } from '../lib/prerendered'
+import { scrollMotion } from '../lib/motion.js'
 import EstimateForm from '../components/EstimateForm'
 import Icon from '../components/Icon'
 import SkipLink from '../components/SkipLink'
@@ -68,7 +69,7 @@ export default function DesignPage() {
       setBusy(false)
     }
   }
-  const toForm = () => document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const toForm = () => document.getElementById('estimate')?.scrollIntoView({ behavior: scrollMotion(), block: 'start' })
 
   const attachment = preview && {
     preview,
@@ -124,7 +125,7 @@ export default function DesignPage() {
               <button type="button" onClick={() => file.current?.click()} disabled={busy} className={secondary}>📷 {busy ? 'Opening…' : photo.sample ? t.upload : t.uploadAgain}</button>
               <input ref={file} type="file" accept="image/*" onChange={pick} className="hidden" />
             </div>
-            {problem && <p className="mt-3 text-berry-500" role="alert">{problem}</p>}
+            {problem && <p className="mt-3 text-berry-300" role="alert">{problem}</p>}
             {portrait && !problem && <p className="mt-3 text-sm text-glow-300">{t.portraitTip}</p>}
             <button type="button" onClick={toForm} className="mt-4 min-h-11 w-full rounded-full border border-glow-400/40 bg-glow-400/10 px-6 py-3 font-semibold text-glow-300 hover:bg-glow-400/20">
               {t.estimate} ↓

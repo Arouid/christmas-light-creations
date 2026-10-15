@@ -83,11 +83,11 @@ export function InstallButtons({ app, signIn = 'sign in', className = '' }) {
     <div className={`grid grid-cols-1 gap-2 sm:grid-cols-2 ${className}`}>
       <button type="button" onClick={async () => { if (!(canPrompt && await install())) setShow('android') }} className={badge}>
         <PhoneDownload className="size-8 shrink-0 text-emerald-400" />
-        <span className="leading-tight"><span className="block text-[11px] uppercase tracking-wider text-slate-400">Install on</span><span className="text-lg font-semibold">Android</span></span>
+        <span className="leading-tight"><span className="block text-xs uppercase tracking-wider text-slate-400">Install on</span><span className="text-lg font-semibold">Android</span></span>
       </button>
       <button type="button" onClick={() => setShow('ios')} className={badge}>
         <ShareIcon className="size-8 shrink-0 text-sky-400" />
-        <span className="leading-tight"><span className="block text-[11px] uppercase tracking-wider text-slate-400">Install on</span><span className="text-lg font-semibold">iPhone</span></span>
+        <span className="leading-tight"><span className="block text-xs uppercase tracking-wider text-slate-400">Install on</span><span className="text-lg font-semibold">iPhone</span></span>
       </button>
       {show && <Steps which={show} app={app} signIn={signIn} onClose={() => setShow(null)} />}
     </div>

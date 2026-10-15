@@ -22,7 +22,7 @@ export default function ServiceAreas() {
           {areas.map((a) => (
             <li key={a.slug}>
               <a href={`${import.meta.env.BASE_URL}christmas-light-installation/${a.slug}/`}
-                className="inline-block rounded-full border border-glow-400/30 px-4 py-2 text-sm font-medium text-glow-300 hover:bg-glow-400/10">
+                className="inline-flex min-h-11 items-center rounded-full border border-glow-400/30 px-4 text-sm font-medium text-glow-300 hover:bg-glow-400/10">
                 {a.name}
               </a>
             </li>
