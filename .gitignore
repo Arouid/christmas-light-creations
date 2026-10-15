@@ -67,3 +67,7 @@ assets-source/ads/motion/
 assets-source/photos/google-photos/
 # Hi-res gallery originals (owner, 2026-10-14, 3 MB each): the web copies in public/images/gallery/ are made from these.
 assets-source/photos/gallery-hi-res/
+# dev-workflow-core (plugin) local state: per-machine, never committed. The config and baseline are.
+.claude/dev-workflow.teststate.json
+.claude/.coordination-cache.json
+.claude/.coordination-vus.json

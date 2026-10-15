@@ -23,6 +23,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 ## Working rules
 
 - Run `npm run check` before every commit; don't commit if it fails.
+- Guardrails (plugin dev-workflow-core, `.claude/dev-workflow.json`): at the end of a turn that changed JS/JSX/MJS/CSS/HTML, `npm run check` runs (about 14 s) and a failure sends the turn back; a size note past 400 lines per file or 100 per function (known debt in `.claude/dev-workflow.baseline.json`, only new or growing violations speak; overrides for `functions/index.js`, `content.js`, `guide.js`); writes into `dist/` or `node_modules/` are blocked (it reads the whole shell command, so even quoting such a write in text trips it: write that text with a file instead); a one-time stop before editing a file that changed on origin. Several sessions share this checkout: when the check fails only in files you didn't touch, that's another session's work in progress: say so in one line and stop, never edit their files to make it pass. After splitting a big file, re-record its baseline entry.
 - Commit after each working change, with a clear message.
 - After a change, look at it in the browser pane at phone width (375px) and check the console for errors. A passing build doesn't prove the page renders. If the page looks stale, restart the dev server.
 - While the dev server runs, write `src/` files with the Write/Edit tools, not shell redirection (`cat > file`): Vite can read the file mid-write and keep serving a broken module ("does not provide an export named …") until restarted.

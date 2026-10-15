@@ -1,0 +1,42 @@
+{
+  "scripts/build-areas.mjs": {
+    "[FUNCTION] page": 118
+  },
+  "src/account/AccountPage.jsx": {
+    "[FILE]": 1031,
+    "[FUNCTION] AccountPage": 186
+  },
+  "src/cost/CostPage.jsx": {
+    "[FUNCTION] CostPage": 145
+  },
+  "src/design/DesignPage.jsx": {
+    "[FUNCTION] stamp": 165,
+    "[FUNCTION] DesignPage": 161
+  },
+  "src/designer/Designer.jsx": {
+    "[FILE]": 628
+  },
+  "src/leads/HomePanels.jsx": {
+    "[FILE]": 419
+  },
+  "src/leads/LeadsApp.jsx": {
+    "[FILE]": 460,
+    "[FUNCTION] LeadsApp": 383
+  },
+  "src/leads/SettingsPanel.jsx": {
+    "[FILE]": 472
+  },
+  "src/leads/demoData.js": {
+    "[FUNCTION] minAgo": 178,
+    "[FUNCTION] localDay": 177
+  },
+  "src/leads/proposals/ProposalsPanel.jsx": {
+    "[FILE]": 401
+  },
+  "src/leads/useLeads.js": {
+    "[FUNCTION] useLeads": 103
+  },
+  "tests/rules/firestore.rules.test.mjs": {
+    "[FILE]": 529
+  }
+}

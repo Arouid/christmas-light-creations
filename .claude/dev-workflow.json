@@ -1,0 +1,43 @@
+{
+  "_comment": "dev-workflow-core guardrails (plugin from the owner's wow-addon-workspace marketplace). Limits measured 2026-10-14 on 418 JS/JSX/MJS files: file lines median 66, p90 209, p95 269, max 2133; function lines median 7, p95 31, p99 88. Existing debt is in the baseline: only new or growing violations are reported. Patterns are wildcards, not regexes.",
+
+  "fileSizeGuard": {
+    "enabled": true,
+    "maxFileLines": 400,
+    "maxFunctionLines": 100,
+    "include": ["*.js", "*.jsx", "*.mjs"],
+    "exclude": ["*/node_modules/*", "*/dist/*", "*/public/*", "*/assets-source/*", "*/old-site-backup/*", "*/video/node_modules/*", "*/.claude/*", "*/logo-vector.local/*"],
+    "overrides": {
+      "*/functions/index.js": 3000,
+      "*/src/data/content.js": 1500,
+      "*/src/leads/guide.js": 800
+    },
+    "baseline": ".claude/dev-workflow.baseline.json"
+  },
+
+  "readonlyPathGuard": {
+    "enabled": true,
+    "blocked": ["*/dist/*", "*/node_modules/*"],
+    "message": "Generated or installed files: dist/ is rebuilt by `npm run build`, node_modules/ by `npm ci`. Change the source instead."
+  },
+
+  "testGuard": {
+    "_comment": "`npm run check` (oxlint zero warnings, node tests, vite build + prerender + area pages), about 14 s; reruns only when watched files changed since its last green run. Several sessions share this checkout: a failure in files you didn't touch is another session's work in progress (CLAUDE.md).",
+    "enabled": true,
+    "checks": [
+      {
+        "name": "check",
+        "command": "npm run check",
+        "timeoutSeconds": 90,
+        "runOnlyIfChanged": ["*.js", "*.jsx", "*.mjs", "*.css", "*.html", "package.json"],
+        "exclude": ["*/assets-source", "*/assets-source/*", "*/old-site-backup", "*/old-site-backup/*", "*/video", "*/video/*", "*/photos-incoming", "*/photos-incoming/*", "*/gift-wrap-incoming", "*/gift-wrap-incoming/*", "*/logo-vector.local", "*/logo-vector.local/*"]
+      }
+    ]
+  },
+
+  "coordinationGuard": {
+    "enabled": true,
+    "fetchMinutes": 10,
+    "exclude": ["*/.claude/*", "*/docs/verified.md", "*/docs/test-checklist.md"]
+  }
+}
