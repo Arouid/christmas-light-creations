@@ -42,9 +42,12 @@ export const memorial = {
 // Estimate form: "How did you hear about us?" (shown on each lead to staff).
 export const HEARD_FROM = ['Road sign', 'Google search', 'Google Maps / Business listing', 'Google ad', 'Facebook', 'Nextdoor', 'Saw your lights / yard sign', 'Friend or neighbor', 'Returning customer', 'Other']
 
+// The menu (header on every public page, home footer). '#…' links scroll the
+// home page; the shared header points them at the home page elsewhere.
 export const nav = [
   { label: 'Services', href: '#services' },
   { label: 'Design yours', href: `${base}design/` },
+  { label: 'What it costs', href: `${base}cost/` },
   { label: 'How it works', href: '#how' },
   { label: 'Photos', href: '#gallery' },
   { label: 'FAQ', href: '#faq' },

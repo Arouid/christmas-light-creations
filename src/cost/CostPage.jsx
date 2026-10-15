@@ -1,4 +1,6 @@
+import Header from '../components/Header'
 import Icon from '../components/Icon'
+import MobileCta from '../components/MobileCta'
 import Rich from '../components/Rich'
 import { business, costGuide as t, footerLinks, included, lifetimeWarranty, lightOptions, priceBeat } from '../data/content'
 import { faqSchema, jsonLd } from '../lib/costGuide.js'
@@ -55,22 +57,14 @@ export default function CostPage() {
   return (
     <>
       <a href="#main" className="skip-link">Skip to main content</a>
-      <header className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 pt-6">
-        <a href={base} className="flex items-center gap-2">
-          <img src={business.logo} alt="" width="40" height="40" className="size-10" />
-          <span className="font-display text-lg font-extrabold leading-tight">{business.name}</span>
-        </a>
-        <a href={business.phoneHref} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-glow-400 px-4 font-semibold text-night-950" aria-label={`Call ${business.phone}`}>
-          <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span><span className="sm:hidden">Call</span>
-        </a>
-      </header>
+      <Header home={false} />
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-5xl px-4 pb-28 pt-10 md:pb-16 md:pt-16">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-5xl px-4 pb-28 pt-10 md:pt-16 lg:pb-16">
         <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-glow-400">{t.eyebrow}</p>
         <h1 className="max-w-3xl font-display text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">{t.title}</h1>
         <p className="mt-5 max-w-2xl text-lg text-slate-300">{t.intro}</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <a href={estimate} className={`${btn} bg-glow-400 text-night-950`}>{t.cta.estimate}</a>
+          <a href={estimate} data-bar-hide="" className={`${btn} bg-glow-400 text-night-950`}>{t.cta.estimate}</a>
           <a href={business.phoneHref} className={`${btn} border border-white/20`}><Icon name="phone" className="size-5" /> {t.cta.call}</a>
         </div>
 
@@ -105,7 +99,7 @@ export default function CostPage() {
               </li>
             ))}
           </ol>
-          <a href={estimate} className={`${btn} mt-6 bg-glow-400 text-night-950`}>{t.cta.estimate}</a>
+          <a href={estimate} data-bar-hide="" className={`${btn} mt-6 bg-glow-400 text-night-950`}>{t.cta.estimate}</a>
         </Block>
 
         <Block title={t.pay.title} intro={t.pay.intro}>
@@ -171,13 +165,13 @@ export default function CostPage() {
           <h2 className="font-display text-3xl font-extrabold tracking-tight">{t.closing.title}</h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-300"><Rich text={t.closing.body} /></p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <a href={estimate} className={`${btn} bg-glow-400 text-night-950`}>{t.cta.estimate}</a>
+            <a href={estimate} data-bar-hide="" className={`${btn} bg-glow-400 text-night-950`}>{t.cta.estimate}</a>
             <a href={business.phoneHref} className={`${btn} border border-white/20`}><Icon name="phone" className="size-5" /> {t.cta.call}</a>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-white/10 px-4 pb-28 pt-8 text-sm text-slate-400 md:pb-10">
+      <footer className="border-t border-white/10 px-4 pb-28 pt-8 text-sm text-slate-400 lg:pb-10">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2">
           <a href={base} className="inline-flex min-h-11 items-center hover:text-glow-300">← {business.name}</a>
           <a href={business.phoneHref} className="inline-flex min-h-11 items-center gap-2 font-semibold text-glow-300"><Icon name="phone" className="size-5" /> {business.phone}</a>
@@ -185,11 +179,8 @@ export default function CostPage() {
         </div>
       </footer>
 
-      {/* Thumb-reach bar on phones: call is always one tap away. */}
-      <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t border-white/10 bg-night-950/90 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
-        <a href={business.phoneHref} className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 py-3 font-semibold"><Icon name="phone" className="size-5" /> Call</a>
-        <a href={estimate} className="rounded-full bg-glow-400 py-3 text-center font-semibold text-night-950">Free estimate</a>
-      </div>
+      {/* Thumb-reach bar on phones (hides while a Get your exact price button is in view). */}
+      <MobileCta estimate={estimate} />
 
       {/* FAQPage structured data: this page's own questions, the answers as plain text. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(t.faq.items)) }} />

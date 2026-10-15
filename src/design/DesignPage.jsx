@@ -5,7 +5,9 @@ import { attachmentProblem } from '../lib/publicDesign'
 import { useToday } from '../lib/prerendered'
 import { scrollMotion } from '../lib/motion.js'
 import EstimateForm from '../components/EstimateForm'
+import Header from '../components/Header'
 import Icon from '../components/Icon'
+import MobileCta from '../components/MobileCta'
 import SkipLink from '../components/SkipLink'
 import { SAMPLE_PHOTO, SAMPLE_PICTURE, sampleDesign } from './sampleDesign'
 
@@ -88,23 +90,14 @@ export default function DesignPage() {
   return (
     <div className="min-h-svh">
       <SkipLink />
-      <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pt-5">
-        {/* The way back to the main site, said in words (owner: people couldn't tell how to get back). */}
-        <a href={import.meta.env.BASE_URL} className="group flex min-h-11 min-w-0 items-center gap-2">
-          <span className="text-xl text-glow-300" aria-hidden="true">←</span>
-          <img src={business.logo} alt="" className="size-10 shrink-0" />
-          <span className="min-w-0">
-            <span className="block font-display text-lg font-extrabold leading-tight">{business.name}</span>
-            <span className="block text-sm text-glow-300 group-hover:underline">{t.backHome}</span>
-          </span>
-        </a>
-        <a href={business.phoneHref} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-glow-400 px-4 font-semibold text-night-950" aria-label={`Call ${business.phone}`}>
-          <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span><span className="sm:hidden">Call</span>
-        </a>
-      </header>
+      <Header home={false} estimate="#estimate" />
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-28 pt-8 md:pb-16">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-glow-400">Free light designer</p>
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-28 pt-4 lg:pb-16">
+        {/* The way back to the main site, said in words (owner: people couldn't tell how to get back). */}
+        <a href={import.meta.env.BASE_URL} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-glow-300 hover:underline">
+          <span aria-hidden="true">←</span> {t.backHome}
+        </a>
+        <p className="mb-2 mt-2 text-sm font-semibold uppercase tracking-wider text-glow-400">Free light designer</p>
         <h1 className="font-display text-4xl font-extrabold tracking-tight md:text-6xl">{t.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-slate-300">{t.intro}</p>
         <p className="mt-2 max-w-2xl text-slate-400">{t.noSight} <a href={business.phoneHref} className="font-semibold text-glow-300 underline">{business.phone}</a>.</p>
@@ -118,8 +111,7 @@ export default function DesignPage() {
               {!untouched && !img && <p className="absolute inset-0 grid place-items-center text-slate-400">Loading…</p>}
               <span className="absolute left-3 top-3 rounded-full bg-night-950/80 px-3 py-1 text-xs font-semibold">{photo.sample ? t.sampleNote : t.ownNote}</span>
             </div>
-            <p className="mt-1 flex flex-wrap items-center gap-x-1 text-xs text-slate-500">© {today.getFullYear()} {business.name} · <a href={`${import.meta.env.BASE_URL}terms/`} className="inline-flex min-h-11 items-center underline underline-offset-2 hover:text-glow-300">Terms of use</a></p>
-            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               {/* Never disabled: the designer waits for the photo itself, and focus returns here when it closes. */}
               <button type="button" onClick={() => setOpen(true)} className={primary}>✏️ {photo.sample ? t.open : t.edit}</button>
               <button type="button" onClick={() => file.current?.click()} disabled={busy} className={secondary}>📷 {busy ? 'Opening…' : photo.sample ? t.upload : t.uploadAgain}</button>
@@ -127,9 +119,11 @@ export default function DesignPage() {
             </div>
             {problem && <p className="mt-3 text-berry-300" role="alert">{problem}</p>}
             {portrait && !problem && <p className="mt-3 text-sm text-glow-300">{t.portraitTip}</p>}
-            <button type="button" onClick={toForm} className="mt-4 min-h-11 w-full rounded-full border border-glow-400/40 bg-glow-400/10 px-6 py-3 font-semibold text-glow-300 hover:bg-glow-400/20">
+            <button type="button" onClick={toForm} data-bar-hide="" className="mt-4 min-h-11 w-full rounded-full border border-glow-400/40 bg-glow-400/10 px-6 py-3 font-semibold text-glow-300 hover:bg-glow-400/20">
               {t.estimate} ↓
             </button>
+            {/* Our mark on the designer (spec: "Watermark and terms"), under the buttons rather than between the picture and them. */}
+            <p className="mt-1 flex flex-wrap items-center justify-center gap-x-1 text-xs text-slate-400">© {today.getFullYear()} {business.name} · <a href={`${import.meta.env.BASE_URL}terms/`} className="inline-flex min-h-11 items-center underline underline-offset-2 hover:text-glow-300">Terms of use</a></p>
           </section>
 
           <aside className="space-y-4 lg:col-span-2">
@@ -154,11 +148,11 @@ export default function DesignPage() {
             <p className="mt-3 text-lg text-slate-300">{t.formIntro}</p>
             <a href={business.phoneHref} className={`${secondary} mt-6`}><Icon name="phone" className="size-5" /> Call {business.phone}</a>
           </div>
-          <EstimateForm design={attachment} defaultMessage={t.message} />
+          <div data-bar-hide=""><EstimateForm design={attachment} defaultMessage={t.message} /></div>
         </section>
       </main>
 
-      <footer className="border-t border-white/10 px-4 pb-28 pt-8 text-sm text-slate-400 md:pb-10">
+      <footer className="border-t border-white/10 px-4 pb-28 pt-8 text-sm text-slate-400 lg:pb-10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2">
           <a href={import.meta.env.BASE_URL} className="inline-flex min-h-11 items-center hover:text-glow-300">← {business.name}</a>
           <a href={business.phoneHref} className="inline-flex min-h-11 items-center gap-2 font-semibold text-glow-300"><Icon name="phone" className="size-5" /> {business.phone}</a>
@@ -166,15 +160,13 @@ export default function DesignPage() {
         </div>
       </footer>
 
-      {/* Thumb-reach bar on phones: call is always one tap away. */}
-      <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t border-white/10 bg-night-950/90 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
-        <a href={business.phoneHref} className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 py-3 font-semibold"><Icon name="phone" className="size-5" /> Call</a>
-        <button type="button" onClick={toForm} className="rounded-full bg-glow-400 py-3 text-center font-semibold text-night-950">Free estimate</button>
-      </div>
+      {/* Thumb-reach bar on phones (hides while the page's own estimate button or the form is in view). */}
+      <MobileCta estimate="#estimate" />
 
       {open && (untouched || img) && (
         <Suspense fallback={<div className="fixed inset-0 z-50 grid place-items-center bg-night-950 text-slate-400">Loading designer…</div>}>
           <Designer simple photo={photo} design={design} title="Your light design" stamp={stamp} saveLabel={t.saveLabel} saveLabelShort={t.saveLabelShort}
+            call={{ href: business.phoneHref, label: `Call ${business.phone}` }}
             onSave={async (d) => { setDesign(d); setOpen(false); setTimeout(toForm, 50) }}
             onClose={(d) => { if (d) setDesign(d); setOpen(false) }} />
         </Suspense>

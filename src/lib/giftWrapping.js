@@ -32,4 +32,7 @@ function subscribe(listener) {
 }
 
 // False in the built HTML and until the server has answered; then the switch.
-export const useGiftWrapping = () => useSyncExternalStore(subscribe, () => on, () => false)
+// ask = false: don't ask the server at all (the shared header on /cost/ and the
+// policy pages, where the privacy page says nothing is fetched); always false.
+const noSubscribe = () => () => {}
+export const useGiftWrapping = (ask = true) => useSyncExternalStore(ask ? subscribe : noSubscribe, () => ask && on, () => false)
