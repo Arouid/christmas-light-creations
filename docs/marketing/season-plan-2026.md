@@ -41,6 +41,7 @@ The "dates are filling" message stays honest because it comes from the calendar 
 |---|---|---|---|
 | **Reviews** (automatic ask + ★ account card) | Runs by itself at 4 pm daily; staff send the ⭐ texts, mark They reviewed; owner replies to every review | Low: 5 to 10 min a day | Staff, owner |
 | **Returning customers** (email + one-tap rebook) | Email A in the week of Oct 15, email B around Nov 9, then schedule who said yes | Low: about 1 hour per wave | Staff |
+| **Old-site requests (win-back)** | One email to past requests and former customers (Oct 19 to 24, the oldest in November if the owner says go), one follow-up for the best two groups (Oct 26 to 29); [winback-2026.md](winback-2026.md) | Medium: 10 min a batch + same-day answers | Staff send; owner OKs the words and calls the top win-backs |
 | **Google Business Profile** | One post a week (10 drafted), reply to reviews, photos (SEO TODO #79) | Low: 15 to 20 min a week | Owner |
 | **Google Ads** (Performance Max) | Three copy swaps, Monday search-terms check, negatives, budget by phase | Medium: 30 min a week + 1 hour per swap | Owner; Claude drafts |
 | **Video ads** | Halloween cut to Oct 31; re-render without the offer on Nov 1 | Low | Owner uploads; Claude renders when asked |
@@ -76,6 +77,7 @@ What isn't on the list: paid social ads, mailers, door hangers, a referral offer
 - **The button**: on `/account/`, a returning customer who isn't on this season's list sees "Want your lights back up this season? One tap and you're on the list" with week chips and a note, and **Yes, put my lights back up**. Staff get a notification and an email; the season goes to Confirmed - Needs to be Scheduled. `rebookMe` answered 401 (deployed) to an anonymous probe on 2026-10-14.
 - **The email**: [rebook-email.md](rebook-email.md), two versions, two sends per person at most.
 - **Who said yes**: Season → Installs → ✨ Plan with Claude places them; text the date.
+- **Former customers not in Customers** (paid us years ago, on the old records): the win-back's “We miss you” email, not the rebook email; [winback-2026.md](winback-2026.md).
 - **The ★ card**: past customers see the review card on their account until they reviewed. Rebook and review are separate on purpose: the review never rides on the booking.
 
 ## Reviews: from about 3 to about 40
@@ -138,3 +140,4 @@ Every Monday, 15 minutes, into the log below (owner or staff). Nothing new is in
 5. **A referral thank-you?** Nothing on the site offers one, so nothing in the drafts does. Your call; reviews can never be part of it.
 6. **Ads budget by phase**: your number; the plan only says where the weight goes.
 7. **Yard signs at customers' homes**: worth ordering for this season (TODO #53)?
+8. **A mailing address for marketing emails?** CAN-SPAM asks for a postal address (street or PO box) in emails that sell to people who aren't customers now; the win-back emails are the first. The footer says "Pearland, TX" only ([winback-2026.md](winback-2026.md)).

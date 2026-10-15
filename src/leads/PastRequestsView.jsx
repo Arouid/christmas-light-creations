@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { FILED_STATUSES as FILED, findCustomer, pastGroup } from '../lib/oldEstimates'
+import { todayISO } from '../lib/customers'
+import { FILED_STATUSES as FILED, FOLLOW_UP_DAYS, findCustomer, followUpTooSoon, lastEmailed, pastArea, pastGroup } from '../lib/oldEstimates'
 import { textMessages } from '../lib/messages'
 import Icon from '../components/Icon'
 import { EmailQueue } from './BulkEmail'
@@ -40,6 +41,10 @@ function summary(r) {
   return `Asked ${r.lastAsked}${r.requests.length > 1 ? ` · ${r.requests.length} times` : ''}`
 }
 
+// Where they live, as far as their address or messages say (src/lib/serviceArea.js).
+// "Outside our area" is never in Email these.
+const AREAS = [['', 'All areas'], ['in', 'In our area'], ['unknown', 'Area unknown'], ['out', 'Outside our area']]
+
 const FILTERS = [
   ['todo', 'To contact', (s) => s === ''],
   ['Emailed', 'Emailed', (s) => s === 'Emailed'],
@@ -51,7 +56,7 @@ const FILTERS = [
   ['all', 'All', () => true],
 ]
 
-function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpenCustomer }) {
+function PastCard({ r, customer, state, area, season, onUpdate, onMakeCustomer, onOpenCustomer }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const last = r.requests?.at(-1)
@@ -76,7 +81,7 @@ function PastCard({ r, customer, state, season, onUpdate, onMakeCustomer, onOpen
           <div className="min-w-0">
             <p className="truncate font-semibold">{r.fullName}</p>
             <p className="text-sm text-slate-400">
-              {summary(r)}{r.contactBy && ` · prefers ${r.contactBy}`}
+              {summary(r)}{r.contactBy && ` · prefers ${r.contactBy}`}{area === 'out' && ' · outside our area'}
             </p>
           </div>
           <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${state === 'customer' ? 'bg-emerald-500/20 text-emerald-300' : state ? 'bg-white/10' : 'bg-glow-400 text-night-950'}`}>
@@ -152,27 +157,45 @@ export default function PastRequestsView({ requests, error, customers, season, o
   const [group, setGroup] = useState('winback')
   const [filter, setFilter] = useState('todo')
   const [year, setYear] = useState('')
+  const [area, setArea] = useState('')
   const [search, setSearch] = useState('')
   const [emailing, setEmailing] = useState(false)
 
   const rows = useMemo(() => (requests ?? []).map((r) => {
     const customer = (r.customerId && customers.find((c) => c.id === r.customerId)) || findCustomer(r, customers)
-    return { r, customer, state: stateOf(r, customer, season) }
+    return { r, customer, state: stateOf(r, customer, season), area: pastArea(r) || 'unknown' }
   }), [requests, customers, season])
 
   const years = useMemo(() => [...new Set(rows.map(({ r }) => r.year).filter(Boolean))].sort().reverse(), [rows])
+  // The win-back so far, every group together (the Monday numbers read this).
+  const tally = useMemo(() => {
+    const t = { emailed: 0, Interested: 0, 'Estimate booked': 0, 'Not interested': 0 }
+    for (const { r } of rows) {
+      if (lastEmailed(r, season)) t.emailed++
+      if (r.status in t) t[r.status]++
+    }
+    return t
+  }, [rows, season])
   const q = search.trim().toLowerCase()
   const groupTest = GROUPS.find(([k]) => k === group)[3]
   const inGroup = rows.filter(({ r }) => groupTest(r))
-  const inYear = inGroup.filter(({ r }) => (!year || r.year === year)
+  const inYear = inGroup.filter(({ r, area: where }) => (!year || r.year === year) && (!area || where === area)
     && (!q || [r.fullName, r.email, r.phone, r.address, r.requests?.map((x) => x.message).join(' ')].join(' ').toLowerCase().includes(q)))
   const test = Object.fromEntries(FILTERS.map(([k, , t]) => [k, t]))
-  // Missed requests first; in "Texted us", named people (saved contacts) before
-  // bare numbers, most texts first.
+  // Missed requests first; win-backs by what they paid us (the most first:
+  // the ones worth a call); in "Texted us", named people (saved contacts)
+  // before bare numbers, most texts first.
   const named = (r) => Number(!/^[\d\s()+-]*$/.test(r.fullName ?? ''))
   const shown = inYear.filter(({ state }) => test[filter](state)).sort((a, b) => Number(Boolean(b.r.missed)) - Number(Boolean(a.r.missed))
+    || (group === 'winback' ? (b.r.paid ?? 0) - (a.r.paid ?? 0) : 0)
     || (group === 'voice' ? named(b.r) - named(a.r) || (b.r.voice?.entries ?? 0) - (a.r.voice?.entries ?? 0) : 0))
-  const emailable = shown.filter(({ r, state }) => r.email && !DO_NOT_CONTACT.includes(state)).map(({ r }) => r)
+  // Never outside our area. From Emailed (the follow-up), only people whose
+  // last email is at least FOLLOW_UP_DAYS old.
+  const today = todayISO()
+  const followUp = filter === 'Emailed'
+  const reachable = shown.filter(({ r, state, area: where }) => r.email && !DO_NOT_CONTACT.includes(state) && where !== 'out')
+  const tooSoon = followUp ? reachable.filter(({ r }) => followUpTooSoon(r, season, today)).length : 0
+  const emailable = reachable.filter(({ r }) => !followUp || !followUpTooSoon(r, season, today)).map(({ r }) => r)
 
   if (error) return <p className="mt-6 text-berry-500" role="alert">Couldn’t load past requests: {error}</p>
   if (!requests) return <p className="mt-6 text-slate-400">Loading…</p>
@@ -198,6 +221,11 @@ export default function PastRequestsView({ requests, error, customers, season, o
       <p className="mt-2 text-sm text-slate-400">
         {GROUPS.find(([k]) => k === group)[2]} Anyone already in Customers is matched by email, phone or name.
       </p>
+      {tally.emailed > 0 && (
+        <p className="mt-1 text-sm text-slate-300">
+          {season} win-back so far: {tally.emailed} emailed · {tally.Interested + tally['Estimate booked'] + tally['Not interested']} answered ({tally.Interested} interested, {tally['Estimate booked']} estimate booked, {tally['Not interested']} no thanks)
+        </p>
+      )}
       <div className="mt-3 grid grid-cols-2 gap-2 lg:flex lg:items-center">
         <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, street, message…"
           className="col-span-2 block w-full rounded-xl border border-white/15 bg-night-900 px-4 py-2.5 text-base placeholder:text-slate-500 lg:max-w-sm" />
@@ -205,12 +233,18 @@ export default function PastRequestsView({ requests, error, customers, season, o
           <option value="">All years</option>
           {years.map((y) => <option key={y}>{y}</option>)}
         </select>
+        <select value={area} onChange={(e) => setArea(e.target.value)} className={select} aria-label="Area">
+          {AREAS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+        </select>
         {emailable.length > 0 && (
-          <button type="button" onClick={() => setEmailing(true)} className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold lg:ml-auto">
+          <button type="button" onClick={() => setEmailing(true)} className="col-span-2 min-h-11 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold lg:col-auto lg:ml-auto">
             ✉ Email these {emailable.length}
           </button>
         )}
       </div>
+      {tooSoon > 0 && (
+        <p className="mt-2 text-sm text-slate-400">{tooSoon} emailed in the last {FOLLOW_UP_DAYS} days {tooSoon === 1 ? 'isn’t' : 'aren’t'} in Email these yet: the follow-up waits {FOLLOW_UP_DAYS} days after the first email.</p>
+      )}
       <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-2" role="tablist" aria-label="Filter">
         {FILTERS.map(([k, label, t]) => (
           <button key={k} type="button" role="tab" aria-selected={filter === k} onClick={() => setFilter(k)}
@@ -221,12 +255,12 @@ export default function PastRequestsView({ requests, error, customers, season, o
       </div>
       {!shown.length && <p className="mt-6 text-slate-400">Nobody here.</p>}
       <ul className="mt-3 space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-        {shown.map(({ r, customer, state }) => (
-          <PastCard key={r.id} r={r} customer={customer} state={state} season={season}
+        {shown.map(({ r, customer, state, area: where }) => (
+          <PastCard key={r.id} r={r} customer={customer} state={state} area={where} season={season}
             onUpdate={onUpdate} onMakeCustomer={onMakeCustomer} onOpenCustomer={onOpenCustomer} />
         ))}
       </ul>
-      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} targetOf={(x) => ({ pastRequestId: x.id })} templateId={group === 'winback' ? 'comeback' : 'winback'} onClose={() => setEmailing(false)} />}
+      {emailing && <EmailQueue rows={emailable} season={season} onUpdate={onUpdate} targetOf={(x) => ({ pastRequestId: x.id })} templateId={followUp ? 'winback-last' : group === 'winback' ? 'comeback' : 'winback'} onClose={() => setEmailing(false)} />}
     </>
   )
 }

@@ -1,6 +1,7 @@
 // Past estimate requests from the old WordPress site (2015–2026), cleaned into
 // one record per person for the staff "Past requests" list. Pure functions;
 // scripts/old-estimates.mjs runs them on the private CSV export.
+import { areaOf } from './serviceArea.js'
 
 // "key: value | key: value" (the export's "All fields" column) -> object.
 export function parseFields(all = '') {
@@ -217,4 +218,21 @@ export const FILED_STATUSES = ['Deceased', 'Personal (family/friends)', 'Junk / 
 export function pastGroup(r) {
   if (r.payments?.length) return 'winback'
   return r.requests?.length ? 'asked' : 'voice'
+}
+
+// In our service area? From the address on file, else what they wrote us
+// ('in', 'out', or '' when nothing says). Most old requests have no address.
+export const pastArea = (r) => areaOf([r.address, r.city, r.zip].filter(Boolean).join(', '), (r.requests ?? []).map((q) => q.message).join('\n'))
+
+// The win-back follow-up (docs/marketing/winback-2026.md) waits this many
+// days after the first email, so nobody gets two in one week.
+export const FOLLOW_UP_DAYS = 5
+
+// The last day anything went to them from the list this season ('' if never).
+export const lastEmailed = (r, season) => Object.values(r.seasons?.[season]?.emailsSent ?? {}).filter((d) => typeof d === 'string').sort().at(-1) ?? ''
+
+// Emailed less than FOLLOW_UP_DAYS ago (today: 'YYYY-MM-DD'): not yet.
+export function followUpTooSoon(r, season, today) {
+  const last = lastEmailed(r, season)
+  return Boolean(last) && Date.parse(`${today}T12:00:00Z`) - Date.parse(`${last}T12:00:00Z`) < FOLLOW_UP_DAYS * 86_400_000
 }

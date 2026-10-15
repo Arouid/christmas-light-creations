@@ -90,29 +90,52 @@ If it's urgent, call or text {businessPhone}.${sign}`,
     subject: 'Checking in on your Christmas light estimate',
     body: `Hi {first},\n\nJust checking in on the estimate we sent for {address}. Any questions we can answer?\n\nThe schedule fills up fast once November hits, so if you'd like your lights up in time, reply here or call or text us at {businessPhone}.${sign}`,
   },
+  // The season's win-back (docs/marketing/winback-2026.md): one email, then at
+  // most the one follow-up below. Every claim is on the site (FAQ, costGuide,
+  // the designer, the account page); {earlyOffer} drops out after Oct 31.
+  // "No thanks" replies are set to Not interested, never emailed again.
   {
     id: 'winback', group: 'Estimates', label: 'Still want lights? (past requests)',
-    when: 'People who asked on the old website years ago (Past requests tab).',
+    when: 'People who asked on the old website years ago (Past requests tab), once a season.',
     subject: 'Still thinking about Christmas lights?',
     body: `Hi {first},
 
-Back in {asked} you asked {business} about putting up Christmas lights. We'd still love to light up your home!
+Back in {asked} you asked {business} about Christmas lights for your home. If you'd still like them, we're booking {season} installs now.
 
-We're booking {season} installs now. Estimates are free: we measure your roofline in about 30 minutes, no roof climbing, and you don't need to be home. Installs done by October 31st get 10% off.
+The estimate is free: we measure your roofline in about 30 minutes, no roof climbing, and you don't need to be home. Want to see the look first? Draw your lights on a photo of your home with our free designer: {website}/design/
+{earlyOffer}
 
-Just reply to this email, or call or text {businessPhone}. If you're all set, no worries, and Merry Christmas!${sign}`,
+We light homes across Pearland, Manvel, Friendswood, League City, the Bay Area and Galveston County. Reply to this email, or call or text {businessPhone}.
+
+Not interested any more? Reply "no thanks" and we won't email you again. Merry Christmas either way!${sign}`,
   },
   {
     id: 'comeback', group: 'Estimates', label: 'We miss you (former customers)',
-    when: 'People who paid us in past years but are not customers now (Past requests → Win-backs).',
+    when: 'People who paid us in past years but are not customers now (Past requests → Win-backs), once a season.',
     subject: 'Christmas lights again this year?',
     body: `Hi {first},
 
-It's {business}! It's been a while since we lit up your home, and we'd love to have you back this season.
+It's {business}. It's been a while since we lit up your home, and we'd love to have you back this season. If something wasn't right last time, we'd like to hear that too: just reply.
 
-We're booking {season} installs now. If you still have your lights from us, let us know: re-installing them costs less than new. Installs done by October 31st get 10% off.
+We're booking {season} installs now. If you still have the lights we put up, tell us: putting them back up costs less than new. Want a new look instead? Try it on a photo of your home with our free designer: {website}/design/
+{earlyOffer}
 
-Just reply to this email, or call or text {businessPhone}. If you're all set, no worries, and Merry Christmas!${sign}`,
+Once you're back on our list, your account at {website}/account/ shows your install date and invoices, and next year getting your lights back up is one tap.
+
+Reply to this email, or call or text {businessPhone}. Rather not hear from us? Reply "no thanks" and we won't email you again.${sign}`,
+  },
+  {
+    id: 'winback-last', group: 'Estimates', label: 'Win-back follow-up (the last one)',
+    when: 'Past requests → Emailed: at least 5 days after “Still want lights?” or “We miss you”, to people who haven’t answered. Once, then stop.',
+    subject: 'Following up: Christmas lights this season',
+    body: `Hi {first},
+
+Just following up on our email last week about Christmas lights for your home this season.
+{earlyOffer}
+
+If you'd like them, reply here or call or text {businessPhone} and we'll tell you the next open install date. The estimate is free, and you don't need to be home.
+
+If you're all set, no worries: this is our last email about it. Merry Christmas!${sign}`,
   },
   {
     id: 'reinstall', group: 'Booking', label: 'Re-install invite',

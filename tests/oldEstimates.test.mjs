@@ -78,3 +78,38 @@ test('re-import keeps ids of people already in the list', () => {
   assert.equal(out[0].id, 'old-b')
   assert.equal(out[1].id, 'old-z')
 })
+
+import { FOLLOW_UP_DAYS, followUpTooSoon, lastEmailed, pastArea } from '../src/lib/oldEstimates.js'
+import { AREA_ZIPS, areaOf } from '../src/lib/serviceArea.js'
+import { serviceAreas } from '../src/data/content.js'
+
+test('service area: every town on the site has its ZIP codes, and nothing else', () => {
+  assert.deepEqual(Object.keys(AREA_ZIPS).toSorted(), [...serviceAreas].toSorted())
+  for (const [town, zips] of Object.entries(AREA_ZIPS)) assert.ok(zips.length && zips.every((z) => /^77\d{3}$/.test(z)), town)
+})
+
+test('in our area: a ZIP or town in the address first, then what they wrote; house numbers are not ZIPs', () => {
+  assert.equal(areaOf('2323 Green Tee Dr, Pearland, TX 77581'), 'in')
+  assert.equal(areaOf('1 Main St, Houston, TX 77089'), 'out', 'a Texas ZIP that is not ours')
+  assert.equal(areaOf('1 Main St, Pearland, TX 77089'), 'in', 'one of our towns in the address wins')
+  assert.equal(areaOf('12302 Shadow Creek Pkwy'), 'in', 'a neighborhood inside Pearland')
+  assert.equal(areaOf('12302 Oak St'), '', 'a 5-digit house number is not a ZIP')
+  assert.equal(areaOf('', 'We live in League City, two story house'), 'in')
+  assert.equal(areaOf('', 'Quote for my house in Cypress 77429'), 'out')
+  assert.equal(areaOf('', 'Quote for a two story house'), '', 'nothing says: unknown')
+  assert.equal(areaOf('', 'Live in la  porte'), 'in', 'spacing and case')
+  assert.equal(pastArea({ address: '5 Bay Dr, Seabrook, TX', requests: [{ message: 'moving to Cypress 77429' }] }), 'in', 'the address beats a message')
+  assert.equal(pastArea({ requests: [{ message: 'Lights for our home in Manvel' }] }), 'in')
+  assert.equal(pastArea({}), '')
+})
+
+test('win-back follow-up: waits FOLLOW_UP_DAYS after the last email this season', () => {
+  const r = { seasons: { 2026: { emailsSent: { winback: '2026-10-20', 'winback-last': '2026-10-26' } }, 2025: { emailsSent: { winback: '2025-10-30' } } } }
+  assert.equal(lastEmailed(r, '2026'), '2026-10-26')
+  assert.equal(lastEmailed({}, '2026'), '')
+  const first = { seasons: { 2026: { emailsSent: { winback: '2026-10-20' } } } }
+  assert.equal(FOLLOW_UP_DAYS, 5)
+  assert.equal(followUpTooSoon(first, '2026', '2026-10-24'), true)
+  assert.equal(followUpTooSoon(first, '2026', '2026-10-25'), false, 'five days on: ready')
+  assert.equal(followUpTooSoon({}, '2026', '2026-10-25'), false, 'never emailed: not held back by this rule')
+})

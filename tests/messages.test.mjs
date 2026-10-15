@@ -73,3 +73,30 @@ test('{me}: the sender signs the email; unknown sender leaves no hole (owner 202
   const done = STOCK_TEMPLATES.find((t) => t.id === 'install-done')
   assert.ok(done.body.endsWith('Thank you,\n{me}{myTitle}\n{business}\n{businessPhone}'), 'the stock sign-off carries the sender and the title')
 })
+
+import { earlyOffer } from '../src/lib/messages.js'
+
+test('{earlyOffer}: the 10% line through Oct 31 only, then the line is gone (win-back templates)', () => {
+  assert.equal(earlyOffer(new Date(2026, 9, 31)), 'Installs done by October 31st get 10% off, and October dates go first.')
+  assert.equal(earlyOffer(new Date(2026, 9, 15), true), ' Installs done by Oct 31 get 10% off.')
+  assert.equal(earlyOffer(new Date(2026, 10, 1)), '')
+  assert.equal(earlyOffer(new Date(2026, 11, 20), true), '')
+  const t = 'Free estimate.\n{earlyOffer}\n\nReply here.'
+  assert.equal(fillTemplate(t, {}, '2026', { today: new Date(2026, 9, 20) }), 'Free estimate.\nInstalls done by October 31st get 10% off, and October dates go first.\n\nReply here.')
+  assert.equal(fillTemplate(t, {}, '2026', { today: new Date(2026, 10, 2) }), 'Free estimate.\n\nReply here.', 'after Oct 31 the line is dropped')
+  assert.deepEqual(missingPlaceholders(t, {}, '2026'), [], 'never reported as missing')
+  // The season's win-back: the offer only through {earlyOffer}, the designer, a way to say no, the follow-up says it's the last.
+  for (const id of ['winback', 'comeback', 'winback-last']) {
+    const w = STOCK_TEMPLATES.find((x) => x.id === id)
+    assert.match(w.body, /\n\{earlyOffer\}\n/, `${id}: the offer on its own line`)
+    assert.doesNotMatch(w.body, /October 31|10%/, `${id}: no hard-coded offer`)
+    assert.doesNotMatch(w.body, /—/, `${id}: no em dash`)
+  }
+  for (const id of ['winback', 'comeback']) {
+    const w = STOCK_TEMPLATES.find((x) => x.id === id).body
+    assert.match(w, /\{website\}\/design\//, `${id}: the free designer`)
+    assert.match(w, /no thanks.*won't email you again/, `${id}: an easy no`)
+  }
+  assert.match(STOCK_TEMPLATES.find((x) => x.id === 'comeback').body, /\{website\}\/account\/.*one tap/s)
+  assert.match(STOCK_TEMPLATES.find((x) => x.id === 'winback-last').body, /last email/)
+})

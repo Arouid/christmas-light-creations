@@ -1,18 +1,31 @@
 // Message templates and links for reaching customers from the business
 // accounts: texts through Google Voice, emails through Gmail (info@).
-import { business } from '../data/content.js'
+import { business, urgency } from '../data/content.js'
 import { askText } from '../../functions/reviewAsk.js'
 
 export const BUSINESS_EMAIL = 'info@christmas-light-creations.com'
 
 const first = (c) => c.firstName || 'there'
 
+// The early-install offer (content.js `urgency.discountEnd`, the site's own
+// date), only until that day: '' after it, so a template line or a text
+// holding it disappears by itself on November 1st. short: the text version.
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const nth = (n) => `${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'}`
+export function earlyOffer(today = new Date(), short = false) {
+  const { month, day } = urgency.discountEnd
+  if ((today.getMonth() + 1) * 100 + today.getDate() > month * 100 + day) return ''
+  const m = MONTHS[month - 1]
+  return short ? ` Installs done by ${m.slice(0, 3)} ${day} get 10% off.` : `Installs done by ${m} ${nth(day)} get 10% off, and ${m} dates go first.`
+}
+
 export const textMessages = {
   confirm: (c, year) => `Hi ${first(c)}, this is ${business.name}! We're scheduling ${year} installs. Would you like your lights again this year? Reply YES and any timing preferences.`,
   // The same words the website's review ask uses (docs/specs/review-ask.md).
   review: (c) => askText(c.firstName || c.fullName),
-  comeback: (c, year) => `Hi ${first(c)}, this is ${business.name}. It's been a while since we lit up your home, and we'd love to have you back! We're booking ${year} installs now. Want a quote?`,
-  winback: (c, year) => `Hi ${first(c)}, this is ${business.name}. You asked us about Christmas lights a while back. We're booking ${year} installs now and would love to light up your home! Free estimate, no need to be home. Want one?`,
+  // Win-back texts: only to people who asked us by text (docs/marketing/winback-2026.md).
+  comeback: (c, year) => `Hi ${first(c)}, this is ${business.name}. It's been a while since we lit up your home, and we'd love to have you back! We're booking ${year} installs now.${earlyOffer(new Date(), true)} Want a quote?`,
+  winback: (c, year) => `Hi ${first(c)}, this is ${business.name}. You asked us about Christmas lights a while back. We're booking ${year} installs now and would love to light up your home! Free estimate, no need to be home.${earlyOffer(new Date(), true)} Want one?`,
   // Their account link (the email template 'account-invite' says the same, longer).
   account: (c) => `Hi ${first(c)}, ${business.name} here. Your account: https://christmas-light-creations.com/account/ (sign in with Google, your phone number, or a one-time email link; no password). Your install date, lights, invoices, payments and a chat to us are all there. Save it to your home screen and it works like an app.`,
   repaired: (c) => `Hi ${first(c)}, ${business.name} here. Your lights should be all set now. If anything else goes out, just text us! And if you have a minute, a Google review really helps: ${business.reviewLink}`,
@@ -48,6 +61,8 @@ export const PLACEHOLDERS = [
   ['business', 'Business name', () => business.name],
   ['businessPhone', 'Business phone', () => business.phone],
   ['website', 'Website', () => 'https://christmas-light-creations.com'],
+  // On its own line: the line is dropped after Oct 31 (extra.today pins the day in tests).
+  ['earlyOffer', '10% early-install line (gone after Oct 31)', (c, y, x) => earlyOffer(x?.today ?? new Date()), true],
   ['when', 'Arrival window (from the route)', (c, y, x) => x?.when],
   ['visitDay', 'Visit day (from the route)', (c, y, x) => x?.visitDay],
   ['job', 'Install / takedown (from the route)', (c, y, x) => x?.job],

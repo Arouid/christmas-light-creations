@@ -11,6 +11,7 @@ Plans and ready-to-use drafts for promoting Christmas Light Creations. Drafts on
 | [social-posts.md](social-posts.md) | 8 Facebook / Nextdoor posts on the owner's gallery photos, captions with the owner's place names |
 | [google-ads-copy.md](google-ads-copy.md) | Performance Max headlines, long headlines, descriptions by phase, sitelinks, callouts, search themes, negatives; every count checked |
 | [rebook-email.md](rebook-email.md) | The past-customer email (October and November versions, a text version) for the staff app's Emails tab |
+| [winback-2026.md](winback-2026.md) | The win-back to old-site requests before Oct 31: segments with counts, the days and how many, the rules (one email, one follow-up), what to count; the words are the app's templates |
 
 ## Rules every draft follows
 

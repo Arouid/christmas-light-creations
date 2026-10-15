@@ -65,6 +65,7 @@ customers.forEach((c) => { const g = demoGeo[c.id]; if (g) c.geo = { lat: g[0], 
 const hoursAgo = (h) => new Date(Date.now() - h * 3600000).toISOString()
 const byId = (list) => Object.fromEntries(list.map(({ id, ...d }) => [id, d]))
 const minAgo = (m) => Date.now() - m * 60000
+const dayAgo = (n) => new Date(Date.now() - n * 86400000).toLocaleDateString('en-CA') // YYYY-MM-DD, local
 const localDay = () => new Date().toLocaleDateString('en-CA')
 const picks = quickPicks(Date.now())
 
@@ -137,6 +138,18 @@ export const demoData = {
     { id: 'old-sample-example-com', fullName: 'Sample Customer', firstName: 'Sample', lastName: 'Customer', email: 'sample@example.com', phone: '555-010-0101',
       firstAsked: '2019-11-05', lastAsked: '2019-11-05', year: '2019', requests: [{ date: '2019-11-05', message: 'Estimate for Christmas lights on our home.' }],
       payments: [{ date: '2023-11-30', via: 'PayPal', kind: 'payment', amount: 414, invoice: '0042', items: 'Christmas light install' }, { date: '2024-01-12', via: 'Square', kind: 'payment', amount: 150, invoice: '', items: '' }] },
+    // The win-back (docs/marketing/winback-2026.md): a former customer emailed a week ago (follow-up due),
+    // one emailed 2 days ago (follow-up waits), and a request from outside our area.
+    { id: 'old-casey-demo-example-com', fullName: 'Casey Demo', firstName: 'Casey', lastName: 'Demo', email: 'casey.demo@example.com', phone: '555-010-0177',
+      address: '18 Demo Bay Dr, Houston, TX 77062', firstAsked: '2019-11-02', lastAsked: '2021-12-03', year: '2021', requests: [],
+      paid: 1770, firstPaid: '2019-11-02', lastPaid: '2021-12-03',
+      payments: [{ date: '2019-11-02', via: 'PayPal', kind: 'payment', amount: 1180, invoice: '0031', items: 'Christmas light install' }, { date: '2021-12-03', via: 'PayPal', kind: 'payment', amount: 590, invoice: '0057', items: 'Re-install' }],
+      seasons: { 2026: { emailsSent: { comeback: dayAgo(7) } } } },
+    { id: 'old-robin-demo-example-com', fullName: 'Robin Demo', firstName: 'Robin', lastName: 'Demo', email: 'robin.demo@example.com', phone: '555-010-0163',
+      firstAsked: '2023-11-01', lastAsked: '2023-11-01', year: '2023', contactBy: 'Email',
+      requests: [{ date: '2023-11-01', message: 'Price for roofline lights, two story house in League City.' }], seasons: { 2026: { emailsSent: { winback: dayAgo(2) } } } },
+    { id: 'old-riley-demo-example-com', fullName: 'Riley Demo', firstName: 'Riley', lastName: 'Demo', email: 'riley.demo@example.com',
+      firstAsked: '2024-10-28', lastAsked: '2024-10-28', year: '2024', requests: [{ date: '2024-10-28', message: 'Estimate for lights on our house in Cypress 77429.' }] },
   ]),
   messages: byId([
     { id: 'demo-msg-1', customerId: 'sample-customer', phone: '+15550101', kind: 'text', direction: 'out', at: '2025-11-18T17:05:00Z', text: 'Hi! This is Christmas Light Creations. We can install Thursday Nov 20 in the evening. Does that work?' },
