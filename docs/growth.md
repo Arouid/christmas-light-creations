@@ -43,11 +43,23 @@ Three kinds of work bring customers in, each with its own Claude session (owner 
 | Marketing writes a Google post | it goes in `docs/marketing/google-business-posts.md`; `docs/listings.md` only holds profile fields |
 | Anyone pushes | IndexNow pings only the public pages that changed |
 
+## Claude plugins (onboarded 2026-10-15)
+
+The owner chose four plugins (“OKAY ONBOARD”). One rule for all of them: Claude reads and drafts; anything that posts, sends, spends money or changes an ad account waits for the owner's yes to that one action. In Claude Code the owner's own settings (`~/.claude/settings.json`) make every AdCopilot change tool and PayPal's invoice and payment-link tools ask first, even in auto mode; AdCopilot's read-only tools run without asking. Open owner steps: TODO #83.
+
+| Plugin | Used for | State 2026-10-15 | Rules |
+|---|---|---|---|
+| **AdCopilot** (Google Ads + Search Console) | Ads audits, search terms and negatives, conversion setup, budget pacing, locations; Search Console positions next to the ads | Signed in; the Google Ads account and both Search Console properties connected. Analytics and Tag Manager left unconnected: the site has neither on purpose. Pro trial until 2026-10-22 (owner decides) | Reads run freely; each change is proposed, applied only on the owner's yes, then read back. New campaigns are built paused and the owner switches them on. It can add locations but never remove them (that is the owner's click in Google Ads). Ad copy still comes from `docs/marketing/google-ads-copy.md` |
+| **Small Business** (Anthropic) | Winning back old leads (the owner's pick) | PayPal connector attached; read-only use. The plugin's own Gmail and Calendar links fail to sign in from Claude Code; info@'s Gmail is to be added as a claude.ai connector | Skips what the staff app already does: review asks, rebook, invoices, reminders. Invoices and payment links are made only in the staff app (`docs/specs/invoices.md`), never through the PayPal connector. Win-back messages are drafts for staff to send from the app |
+| **Social Media Skills** | Words and planning: captions, hooks, calendars, seasonal moments | Loads; nothing to connect | No AI-generated images or video presented as our installs: photos are the owner's own, captioned with the places he named. Its scheduling steps name WoopSocial; Posty does that job here. Drafts go in `docs/marketing/` |
+| **Posty** | Scheduling posts: YouTube first; Facebook once the page is recovered; it doesn't do Nextdoor or Yelp | Not signed in: this Claude Code session can't start its sign-in; to be connected from claude.ai → Customize → Connectors | A preview first; nothing scheduled or posted without the owner's yes for that post |
+
 ## Regular checks
 
 | When | What | Who |
 |---|---|---|
 | Every morning 7:05 | Nextdoor check in the owner's Chrome: messages, recommendations, comments, neighbors asking for installers; reply drafts, never sends (scheduled task `nextdoor-morning-check`) | Claude reads, owner replies |
+| Weekdays 8:07 | AdCopilot morning check of Google Ads: yesterday against the 7-day average, budget pacing, costly searches, ad problems, changes in the last 24 hours; read-only, ends with one yes/no fix (scheduled task `adcopilot-morning-check` on the office PC, runs while the Claude app is open; the cloud routine of the same name is paused because it can't reach AdCopilot) | Claude reads, owner decides |
 | Every day | 📣 Marketing → Every day in the staff app (the reviews habits and the Nextdoor line, with its Nextdoor ↗ button) | owner and staff |
 | As they arrive (after TODO #82's deploy) | Nextdoor notices (a neighbor's message, recommendation, comment, mention) in 💬 as 🏘️ Nextdoor, answered on Nextdoor; Yelp's messages and quote requests the same way as 📍 Yelp (Yelp's notifications go to info@ since 2026-10-15; `docs/specs/listing-notices.md`) | staff (💬), marketing (the matcher) |
 | Mondays | Marketing numbers and the week's jobs | marketing |
