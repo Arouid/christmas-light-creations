@@ -129,7 +129,7 @@ test('while off, nothing public mentions gift wrapping: the main copy, the prere
 
 test('the page: the prices on the tag, the bow and decoration pictures it draws are on disk', async () => {
   const src = await read('src/gift/GiftPage.jsx')
-  assert.ok(src.includes('t.prices') && src.includes('<Tag />'))
+  assert.ok(src.includes('t.prices') && /<Tag[\s/]/.test(src))
   // Every decoration it names: decor('x.webp'), the step bows (src: 'x.webp'), the ornaments ['x.webp', …].
   const files = [...new Set(src.match(/'[\w-]+\.webp'/g).map((m) => m.slice(1, -1)))]
   assert.ok(files.length >= 10, `${files.length} pictures`)

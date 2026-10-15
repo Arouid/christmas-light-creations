@@ -171,6 +171,15 @@ body {
     0%, 100% { transform: rotate(-2deg); }
     50% { transform: rotate(2deg); }
   }
+  /* The C9 lights on the gift-wrapping page's ribbon: two sets switching on and off in turn, with a
+     short fade, like a real light string. */
+  .twinkle { animation: twinkle 1.8s ease-in-out infinite; }
+  .twinkle-late { animation-delay: -0.9s; }
+  @keyframes twinkle {
+    0%, 42% { opacity: 1; }
+    50%, 92% { opacity: 0.08; }
+    100% { opacity: 1; }
+  }
   /* Santa's sleigh drifting over the top ribbon. */
   .fly { animation: fly 6s ease-in-out infinite alternate; }
   @keyframes fly {

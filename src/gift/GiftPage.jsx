@@ -1,11 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import EstimateForm from '../components/EstimateForm'
 import Header from '../components/Header'
 import Icon from '../components/Icon'
 import MobileCta from '../components/MobileCta'
 import Rich from '../components/Rich'
 import { business, footerLinks, giftWrapping as t } from '../data/content'
-import { creamX, goldX, ribbonDown, ribbonX, ribbonY } from '../lib/giftRibbon'
+import { creamX, goldX, lightsAcross, lightsDown, ribbonAcross, ribbonDown, ribbonX, ribbonY } from '../lib/giftRibbon'
 import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 
 // /gift-wrapping/ (docs/specs/gift-wrapping.md): the owner's second service
@@ -74,11 +74,20 @@ function Waiting() {
 }
 
 function Content() {
+  const [lit, setLit] = useState(false) // the C9 lights start off; the switch under the top buttons turns them on
   return (
     <div className="gift-snow relative isolate overflow-hidden bg-berry-50 px-4 pb-16 pt-4 [--band:2.25rem] md:pb-24 md:[--band:3rem] lg:[--band:3.75rem]">
+      {/* With the lights on, the paper behind everything dims to a night blue so the bulbs glow (owner
+          2026-10-15: "were not getting a dramatic effect"); under every picture and box (z -2). */}
+      <div className={`pointer-events-none absolute inset-0 -z-2 bg-night-900 transition-opacity duration-700 ${lit ? 'opacity-60' : 'opacity-0'}`} aria-hidden="true" />
       {/* The ribbon down the middle: from the top ribbon (1rem of paper above the bow) to the last box, behind every box. */}
       <div className="absolute bottom-24 left-1/2 w-(--band) -translate-x-1/2 shadow-md md:bottom-32" style={{ top: `calc(1rem + ${BAND_TOP})`, ...ribbonDown }} aria-hidden="true" />
-      <Lid />
+      {/* Its C9 lights, once a visitor flips the switch: switching on and off, the two sets in turn
+          (.twinkle in index.css; steady for people who asked for less motion). Off, the bulbs show dark. */}
+      {lit && lightsDown.map((on, i) => (
+        <div key={i} className={`twinkle ${i ? 'twinkle-late' : ''} absolute bottom-24 left-1/2 w-(--band) -translate-x-1/2 md:bottom-32`} style={{ top: `calc(1rem + ${BAND_TOP})`, ...on }} aria-hidden="true" />
+      ))}
+      <Lid lit={lit} />
       <Box className="max-w-3xl px-5 pb-10 pt-12 text-center md:px-12 md:pb-14 md:pt-16">
         <p className="text-sm font-semibold uppercase tracking-wider text-berry-600">{t.eyebrow}</p>
         <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight tracking-tight text-berry-600 md:text-6xl">{t.title}</h1>
@@ -89,8 +98,11 @@ function Content() {
             <Icon name="phone" className="size-5" /> {t.call} {business.phone}
           </a>
         </div>
+        <div className="mt-6 flex justify-center">
+          <LightSwitch on={lit} onFlip={() => setLit((v) => !v)} />
+        </div>
       </Box>
-      <Tag />
+      <Tag lit={lit} />
       {t.photos.length > 0 && (
         <>
           <Tie tall />
@@ -107,6 +119,25 @@ function Content() {
   )
 }
 
+// A wall light switch for the C9 lights round the ribbon (owner 2026-10-15: "I wanna put a switch on
+// the site that visitors and switch and theyll come on", "pretty cool if we can do it"): a cream
+// plate with two screws and a lever, up when the lights are on. A real switch button (role switch,
+// aria-checked), at least 44 px tall; its words say what a press does.
+function LightSwitch({ on, onFlip }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} onClick={onFlip}
+      className="inline-flex min-h-11 items-center gap-3 rounded-full px-3 py-1.5 font-semibold text-berry-700 hover:bg-berry-50">
+      <span className="relative h-14 w-9 shrink-0 rounded-md bg-gradient-to-b from-[#fdfaf2] to-[#e7e0cc] shadow-[0_2px_4px_rgb(0_0_0/0.25)] ring-1 ring-black/10" aria-hidden="true">
+        <span className="absolute left-1/2 top-1 size-1.5 -translate-x-1/2 rounded-full bg-[#bfb59c]" />
+        <span className="absolute bottom-1 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-[#bfb59c]" />
+        <span className="absolute inset-x-[11px] bottom-3.5 top-3.5 rounded-sm bg-[#d6cdb5] shadow-[inset_0_1px_2px_rgb(0_0_0/0.35)]" />
+        <span className={`absolute left-1/2 h-4 w-3 -translate-x-1/2 rounded-sm bg-gradient-to-b from-white to-[#ddd5c0] shadow-[0_1px_2px_rgb(0_0_0/0.4)] transition-all duration-150 ${on ? 'top-3.5' : 'top-6'}`} />
+      </span>
+      <span>{on ? t.lights.off : t.lights.on}</span>
+    </button>
+  )
+}
+
 // The top ribbon with the big bow on it and ornaments hanging from it:
 // [file, where, width, how far below the ribbon's middle, from which screen width].
 // The owner's red-and-gold ornaments (scripts/gift-bows.mjs), on thin gold strings of different
@@ -117,7 +148,7 @@ const ORNAMENTS = [
   ['ornament-gold.webp', 'left-[22%]', 'w-12', '2.75rem', 'hidden md:flex'],
   ['ornament-striped.webp', 'right-[23%]', 'w-11', '3.5rem', 'hidden md:flex'],
 ]
-function Lid() {
+function Lid({ lit }) {
   return (
     <div className="relative -mx-4" style={{ height: `calc(${BOW_H} * 0.95)` }} aria-hidden="true">
       {ORNAMENTS.map(([file, where, width, drop, show]) => (
@@ -128,7 +159,10 @@ function Lid() {
       ))}
       {/* Santa's sleigh flying over the top ribbon, left of the bow, clear of the heading (owner 2026-10-15); .fly in index.css. */}
       <img src={decor('sleigh.webp')} alt="" width="520" height="220" className="fly absolute left-[2%] top-1 h-auto w-20 md:left-[4%] md:top-2 md:w-44 lg:left-[7%] lg:w-60 xl:left-[12%]" />
-      <div className="absolute inset-x-0 h-(--band) shadow-md" style={{ top: BAND_TOP, ...ribbonX }} />
+      <div className="absolute inset-x-0 h-(--band) shadow-md" style={{ top: BAND_TOP, ...ribbonAcross }} />
+      {lit && lightsAcross.map((on, i) => (
+        <div key={i} className={`twinkle ${i ? 'twinkle-late' : ''} absolute inset-x-0 h-(--band)`} style={{ top: BAND_TOP, ...on }} />
+      ))}
       <img src={decor('bow-top-480.webp')} srcSet={`${decor('bow-top-480.webp')} 480w, ${decor('bow-top-720.webp')} 720w`}
         sizes="(min-width: 64rem) 20rem, (min-width: 48rem) 16rem, 12rem" alt="" width="480" height="555"
         className="absolute left-1/2 top-0 z-10 h-auto max-w-none -translate-x-1/2 drop-shadow-lg" style={{ width: BOW_W }} />
@@ -188,7 +222,7 @@ function Tie({ tall, chimney, wreath }) {
 // The prices on a gift tag, tied to the ribbon by a gold cord through a brass eyelet.
 const EYELET = 'radial-gradient(circle at 35% 30%, #fff4c9, #e3bf5c 30%, #a87a22 62%, #6e4d12)'
 const NOTCHED = 'polygon(1rem 0, calc(100% - 1rem) 0, 100% 1rem, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 1rem 100%, 0 calc(100% - 1rem), 0 1rem)'
-function Tag() {
+function Tag({ lit }) {
   const p = t.prices
   return (
     <>
@@ -205,7 +239,8 @@ function Tag() {
         {/* Crossed candy canes with a red-and-green bow standing between Santa and the elf, taller than
             them, their feet just behind the tag's top edge (owner 2026-10-15, his mockup: "put that
             candy cane inbetween them at that suze"). */}
-        <img src={decor('candy-canes.webp')} alt="" width="440" height="463" loading="lazy" className="pointer-events-none absolute bottom-[calc(100%-8px)] left-1/2 h-40 w-auto -translate-x-1/2 drop-shadow-md md:h-52" />
+        {/* With the C9 lights on, the canes glow red and warm white (owner 2026-10-15: "can we make the candy canes glow? with the c9"). */}
+        <img src={decor('candy-canes.webp')} alt="" width="440" height="463" loading="lazy" className={`pointer-events-none absolute bottom-[calc(100%-8px)] left-1/2 h-40 w-auto -translate-x-1/2 transition-[filter] duration-700 md:h-52 ${lit ? '[filter:brightness(1.1)_drop-shadow(0_0_10px_rgb(255_70_70/0.85))_drop-shadow(0_0_24px_rgb(255_210_150/0.6))]' : 'drop-shadow-md'}`} />
         {/* Santa and the elf standing on the tag's top edge (owner 2026-10-15: "adjust the two elfs and
             maybe a small drop shadow or something to bring out the illusion"): the front sole on the
             edge, a soft contact shadow under both feet (the back foot stands a little higher, as in their
@@ -283,7 +318,7 @@ function Photos() {
           waist just below the knot so the bow hides where the picture ends; before the bow, so the bow
           lies over him. */}
       <img src={decor('elf-waving.webp')} alt="" width="480" height="523" loading="lazy" aria-hidden="true"
-        className="pointer-events-none absolute left-[calc(50%-var(--bw)*0.025)] top-[calc(var(--x)-var(--bw)*0.495)] z-[1] h-auto w-[calc(var(--bw)*0.5)] max-w-none -translate-x-1/2 drop-shadow-[0_3px_4px_rgb(60_10_30/0.3)]" />
+        className="pointer-events-none absolute left-[calc(50%-var(--bw)*0.08)] top-[calc(var(--x)-var(--bw)*0.495)] z-[1] h-auto w-[calc(var(--bw)*0.5)] max-w-none -translate-x-1/2 drop-shadow-[0_3px_4px_rgb(60_10_30/0.3)]" />
       <img src={decor(BIG_BOW.src)} alt="" width={BIG_BOW.width} height={BIG_BOW.height} loading="lazy" aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-[calc(var(--x)-var(--bw)*0.238)] z-[1] h-auto w-(--bw) max-w-none -translate-x-1/2 drop-shadow-[0_8px_10px_rgb(90_20_50/0.35)]" />
       <div className="relative z-[2] mt-7 text-center md:mt-6 lg:mt-0 lg:text-left">

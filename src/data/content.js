@@ -832,6 +832,10 @@ export const giftWrapping = {
       ['Can I get lights and gift wrapping together?', 'Yes. Pick “Both” on the estimate form and we price them together. Lights customers get first dibs on wrapping dates.'],
     ],
   },
+  // The light switch under the top buttons: the C9 lights round the ribbon start off and a visitor
+  // flips them on (owner 2026-10-15: "I wanna put a switch on the site that visitors and switch and
+  // theyll come on"). The label says what a press does.
+  lights: { on: 'Turn the lights on', off: 'Turn the lights off' },
   // The page's form section (#estimate): the estimate form with Gift wrapping already picked.
   ask: {
     title: 'Ask about gift wrapping',
