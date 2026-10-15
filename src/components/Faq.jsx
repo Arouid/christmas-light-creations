@@ -1,4 +1,5 @@
 import { faq, giftWrapping } from '../data/content'
+import { faqSchema, jsonLd } from '../lib/costGuide'
 import { useGiftWrapping } from '../lib/giftWrapping'
 import Icon from './Icon'
 import Rich from './Rich'
@@ -27,6 +28,9 @@ export default function Faq() {
           </div>
         ))}
       </div>
+      {/* FAQPage structured data for search engines and assistants: the standing questions only
+          (gift wrapping is behind a switch), answers as plain text (lib/costGuide.js). */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(faq.flatMap((g) => g.items))) }} />
     </Section>
   )
 }

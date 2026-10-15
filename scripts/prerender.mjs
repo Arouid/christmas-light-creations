@@ -1,7 +1,8 @@
-// After `vite build`: draws the home page, /design/ and /cost/ (the list is
-// PRERENDERED in pages.mjs) into their HTML, so a phone shows the page before
-// the JavaScript has arrived; React then takes it over (src/main.jsx,
-// src/design/main.jsx, src/cost/main.jsx). Things only the visitor's browser
+// After `vite build`: draws the home page, /design/, /cost/, /privacy/ and
+// /terms/ (the list is PRERENDERED in pages.mjs) into their HTML, so a phone
+// shows the page before the JavaScript has arrived and crawlers that don't run
+// JavaScript read it; React then takes it over (src/main.jsx and each page's
+// own main.jsx). Things only the visitor's browser
 // knows are drawn as the build sees them (src/lib/prerendered.js). The home
 // page also gets the hero-photo picker at the top of its <head>, before the
 // stylesheet, so it runs at once and only the picked photo downloads

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { gallery } from '../data/content'
 import { useFocusOnOpen } from '../lib/focus'
+import { GRID_SIZES, GRID_SIZES_WIDE, gallerySrcSet } from '../lib/thumb'
 import Icon from './Icon'
 import Section from './Section'
 
@@ -38,7 +39,7 @@ export default function Gallery() {
           <li key={p.src} className={i === 0 ? 'col-span-2 row-span-2' : ''}>
             <button type="button" onClick={() => setActive(i)}
               className="group block h-full w-full overflow-hidden rounded-xl bg-night-900 focus-visible:outline-2 focus-visible:outline-glow-400">
-              <img src={p.src} alt={p.alt} loading="lazy"
+              <img src={p.src} srcSet={gallerySrcSet(p.src)} sizes={i === 0 ? GRID_SIZES_WIDE : GRID_SIZES} alt={p.alt} loading="lazy"
                 className="aspect-[4/3] h-full w-full object-cover transition duration-500 group-hover:scale-105" />
             </button>
           </li>

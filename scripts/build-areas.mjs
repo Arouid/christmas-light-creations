@@ -4,7 +4,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { areas } from '../src/data/areas.js'
 import { business, footerLinks, included } from '../src/data/content.js'
-import { SITE, pagePath, sitemapUrls } from './pages.mjs'
+import { GRID_SIZES, GRID_SIZES_WIDE, gallerySrcSet } from '../src/lib/thumb.js'
+import { BUSINESS_ID, SITE, areaDescription, pagePath, sitemapUrls, townName } from './pages.mjs'
 
 const base = process.env.BASE_PATH || '/'
 const dist = new URL('../dist/', import.meta.url)
@@ -18,23 +19,24 @@ const footer = footerLinks.map((l) => `<a href="${base}${l.href.replace(/^\//, '
 const mainHtml = await readFile(new URL('index.html', dist), 'utf8')
 const styles = [...mainHtml.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+\.css)"/g)].map((m) => m[1])
 
-function page(a) {
+// An area page's <head>: title, description (pages.mjs), the share picture (its first photo) and
+// the Service structured data, whose provider is the business described on the home page.
+function head(a) {
   const url = `${SITE}/${pagePath(a)}`
   const title = `Christmas Light Installation in ${a.name}, TX | ${business.name}`
-  const description = `Professional Christmas light installation, free service calls and January removal in ${a.towns.slice(0, 4).join(', ')}. Family-owned since ${business.since}. Free estimates: ${business.phone}.`
+  const description = areaDescription(a, business)
+  const image = `${SITE}/images/gallery/${a.photos[0].file}`
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
+    name: `Christmas light installation in ${a.name}`,
     serviceType: 'Christmas light installation',
     url,
-    areaServed: a.towns.map((t) => ({ '@type': 'Place', name: `${t}, TX` })),
-    provider: { '@type': 'HomeAndConstructionBusiness', name: business.name, telephone: '+1-281-819-0163', url: `${SITE}/` },
+    image,
+    areaServed: a.towns.map((t) => ({ '@type': 'Place', name: `${townName(t)}, TX` })),
+    provider: { '@type': 'HomeAndConstructionBusiness', '@id': BUSINESS_ID, name: business.name, telephone: '+1-281-819-0163', url: `${SITE}/` },
   }
-  const others = areas.filter((o) => o.slug !== a.slug)
-
-  return `<!doctype html>
-<html lang="en">
-<head>
+  return `<head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#050b1a" />
@@ -46,6 +48,10 @@ function page(a) {
 <meta property="og:description" content="${esc(description)}" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="${url}" />
+<meta property="og:site_name" content="${esc(business.name)}" />
+<meta property="og:image" content="${image}" />
+<meta property="og:image:alt" content="${esc(a.photos[0].alt)}" />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="icon" type="image/svg+xml" href="${base}favicon.svg" />
 <link rel="icon" type="image/png" sizes="192x192" href="${base}icon-192.png" />
 <link rel="apple-touch-icon" href="${base}apple-touch-icon.png" />
@@ -54,7 +60,15 @@ function page(a) {
 ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
 <script type="application/ld+json">${JSON.stringify(schema)}</script>
 </head>
-<body>
+`
+}
+
+function page(a) {
+  const others = areas.filter((o) => o.slug !== a.slug)
+
+  return `<!doctype html>
+<html lang="en">
+${head(a)}<body>
 <a href="#main" class="skip-link">Skip to main content</a>
 <header class="border-b border-white/10 bg-night-950/90">
   <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -86,7 +100,7 @@ ${styles.map((h) => `<link rel="stylesheet" href="${h}" />`).join('\n')}
   <section class="px-4 pb-14">
     <h2 class="sr-only">Our work nearby</h2>
     <ul class="mx-auto grid max-w-6xl grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
-      ${a.photos.map((p, i) => `<li${i === 0 ? ' class="col-span-2 row-span-2"' : ''}><figure class="relative h-full overflow-hidden rounded-xl bg-night-900"><img src="${base}images/gallery/${p.file}" alt="${esc(p.alt)}" loading="lazy" class="aspect-[4/3] h-full w-full object-cover" /><figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night-950/90 to-night-950/0 px-3 pb-2.5 pt-10 text-sm font-medium text-white">${esc(p.place)}</figcaption></figure></li>`).join('\n      ')}
+      ${a.photos.map((p, i) => `<li${i === 0 ? ' class="col-span-2 row-span-2"' : ''}><figure class="relative h-full overflow-hidden rounded-xl bg-night-900"><img src="${base}images/gallery/${p.file}" srcset="${gallerySrcSet(`${base}images/gallery/${p.file}`)}" sizes="${i === 0 ? GRID_SIZES_WIDE : GRID_SIZES}" alt="${esc(p.alt)}" loading="lazy" class="aspect-[4/3] h-full w-full object-cover" /><figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-night-950/90 to-night-950/0 px-3 pb-2.5 pt-10 text-sm font-medium text-white">${esc(p.place)}</figcaption></figure></li>`).join('\n      ')}
     </ul>
     ${a.photosNote ? `<p class="mx-auto mt-3 max-w-6xl text-sm text-slate-400">${esc(a.photosNote)}</p>` : ''}
   </section>

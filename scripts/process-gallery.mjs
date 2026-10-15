@@ -4,10 +4,12 @@
 // applied, 1600 px wide, JPEG quality 82 (mozjpeg), metadata stripped. The one older web-size
 // photo the owner kept (listed in KEEP) is left as it is. Run: node scripts/process-gallery.mjs
 // The order, places and alt texts live in src/data/content.js (gallery); area pages pick files in
-// src/data/areas.js. tests/areaPhotos.test.mjs checks the list and the folder agree.
+// src/data/areas.js. tests/areaPhotos.test.mjs checks the list and the folder agree. Then the
+// 800 px phone copies in public/images/gallery/800/ are remade (scripts/gallery-thumbs.mjs).
 import { readdir, stat, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { makeThumbs } from './gallery-thumbs.mjs'
 
 const SRC = new URL('../assets-source/photos/gallery-hi-res/', import.meta.url)
 const OUT = new URL('../public/images/gallery/', import.meta.url)
@@ -39,6 +41,7 @@ async function main() {
   console.log(`${originals.length} photos -> public/images/gallery at ${WIDTH} px, ${(bytes / 1048576).toFixed(1)} MB total (+ ${KEEP.length} kept)`)
   const renamed = originals.filter((f) => webName(f) !== f)
   if (renamed.length) console.log('renamed:', renamed.map((f) => `${f} -> ${webName(f)}`).join(', '))
+  await makeThumbs()
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) await main()

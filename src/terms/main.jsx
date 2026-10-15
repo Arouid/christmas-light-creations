@@ -1,10 +1,7 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
 import '../index.css'
+import { mount } from '../lib/mount.jsx'
 import TermsPage from './TermsPage.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <TermsPage />
-  </StrictMode>,
-)
+// The built page arrives already drawn (scripts/prerender.mjs), so search engines and assistants
+// that don't run JavaScript read it too; React takes it over (lib/mount.jsx).
+mount(TermsPage)

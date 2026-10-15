@@ -5,6 +5,17 @@ export const SITE = 'https://christmas-light-creations.com'
 
 export const pagePath = (a) => `christmas-light-installation/${a.slug}/`
 
+// The business in structured data: the home page describes it (index.html) and every area page's
+// Service names it as provider by this same id, so search engines read them as one business.
+export const BUSINESS_ID = `${SITE}/#business`
+
+// An area page's meta description: short enough (160 characters at most, tests/seo.test.mjs) that
+// the phone number at the end isn't cut off in search results. Neighborhood notes in brackets
+// ("Shadow Creek Ranch (west of 288)") are left out here and in the structured data.
+export const townName = (t) => t.replace(/\s*\(.*\)$/, '')
+export const areaDescription = (a, business) =>
+  `Christmas light installation in ${townName(a.towns[0])} and ${townName(a.towns[1])}: free service calls, January removal, family-owned since ${business.since}. Free estimates: ${business.phone}.`
+
 // Drawn at build time; `expect` must be in the drawn HTML, `absent` must not
 // (gift wrapping is drawn only after the page asks the server whether it is
 // switched on, lib/giftWrapping.js). `hero`: the page gets the hero-photo picker
@@ -13,6 +24,8 @@ export const PRERENDERED = [
   { html: 'index.html', module: '/src/App.jsx', expect: 'Holiday lights', absent: 'ift wrapping', hero: true },
   { html: 'design/index.html', module: '/src/design/DesignPage.jsx', expect: 'sample-design.webp', absent: 'ift wrapping' },
   { html: 'cost/index.html', module: '/src/cost/CostPage.jsx', expect: 'What sets the price' },
+  { html: 'privacy/index.html', module: '/src/privacy/PrivacyPage.jsx', expect: 'we never sell it' },
+  { html: 'terms/index.html', module: '/src/terms/TermsPage.jsx', expect: 'installation agreement' },
 ]
 
 // sitemap.xml, in order: home, the designer, the cost guide, the area pages, the policies.
