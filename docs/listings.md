@@ -11,7 +11,7 @@ Same name, phone and website everywhere: **Christmas Light Creations**, **281-81
 | Place | State (2026-10-14) |
 |---|---|
 | Google Business Profile | Primary category **Lighting contractor** (was Landscaping), 7 services listed (owner's screenshot). Left: service descriptions, business description, hours, new photos (upload first, delete the old after), the designer post |
-| Yelp (`yelp.com/biz/christmas-light-creations-pearland`) | Claimed and updated by the owner: Specialties and History below. Never ask customers for Yelp reviews (Yelp forbids it); the review request links Google only |
+| Yelp (`yelp.com/biz/christmas-light-creations-pearland`) | Set up as far as the free listing goes (owner 2026-10-15: “as best we can without paying them”): claimed, Specialties and History below, website, hours, photos. No paid Yelp ads or upgrades. Never ask customers for Yelp reviews (Yelp forbids it); the review request links Google only |
 | Bing Places | Syncs from Google: press **Sync** after the Google changes |
 | Nextdoor | Business page being set up by the owner (2026-10-15): categories **Lighting installation** and **Home decor service** (no holiday or Christmas category exists there). Description = the short one below. Nextdoor allows sharing its “Ask for recommendations” link with customers |
 | Holiday Lighting Directory, Thumbtack, Angi, BBB | To do: reuse the short description and services below |
