@@ -80,7 +80,8 @@ export const highlights = [
   },
   {
     title: 'Professional-grade lights',
-    body: 'No store-bought strands. Commercial bulbs that shine brighter and last longer. Worn out by the Texas sun? Replaced new, free, for as long as you’re a customer.',
+    // The warranty has its own card a little further down (design review 2026-10-14: said once each).
+    body: 'No store-bought strands. Commercial bulbs that shine brighter and last longer.',
     icon: 'c9-bulb',
   },
   {
@@ -146,14 +147,15 @@ export const lightOptions = [
 // Price promise (owner 2026-10-12): beat any professional holiday-lighting
 // company's written quote by 10%; handymen and landscapers don't count.
 // What customers get on top of the lights (owner 2026-10-12: "highlight all
-// these features our customers get"). Shown under the options on the home page.
+// these features our customers get"). Shown under the options on the home page,
+// as a two-column list since the design review (2026-10-14; it was eight cards,
+// about two phone screens). Buy, lease or pay in 3 is the options row right above.
 export const customerPerks = {
   title: 'Everything in one place: your account and app',
   intro: 'Every customer gets an account (no password) and a phone app, so you never have to wonder where things stand.',
   items: [
     ['🛡️', 'Lifetime warranty', 'Lights worn out by the Texas sun are replaced brand new, free, for as long as you’re a customer.'],
     ['🧾', 'Agreements and bills online', 'Sign online, see what’s paid and what’s due, and pay with PayPal, Venmo or a card in two taps.'],
-    ['💳', 'Buy, lease or pay in 3', 'Pick the way that suits you, at the same price. Three equal payments, nothing extra.'],
     ['🎄', 'Your dates, your crew', 'Your install and takedown day on your account, a text the day before, and photos of the install.'],
     ['🛠', 'Report a problem in a tap', 'A bulb out? Tap Report a problem and the crew’s phones light up. Service calls are free all season.'],
     ['⛈', 'Weather heads-ups', 'Storm, wind or freeze coming? We email ahead with what to check and what we do if your date has to move.'],
