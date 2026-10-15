@@ -25,7 +25,7 @@ How to reach it: the **📊 Reports** button on Home (next to 📣 Marketing and
 
 ## What we DON'T do
 
-- **No public page.** These hold customer counts, email drafts, ad strategy and audit findings; `/leads/` is noindex and robots-disallowed.
+- **No public page.** These hold customer counts, email drafts, ad strategy and audit findings; `/leads/` is noindex and robots-disallowed. Know what sign-in does and doesn't hide: the docs a report reads are in the GitHub repo, which is **public** (checked 2026-10-15; TODO #64 makes it private), and the Reports chunk is a plain JS file like the rest of the staff app, so their words are readable by anyone who looks there; what only staff can see is the live data (the win-back counts, the Emails tab's edits). Anything that must stay private never goes in `docs/`.
 - **No copied text.** A report never holds its own words: when a number or a line changes, it changes in the doc or the code it's read from. The one exception is the two design reviews, whose findings existed only in the artifacts: they were moved into `docs/reviews/` once, and those docs are now the source.
 - **No editing.** Reports read; ticks, statuses and Monday numbers stay where they are (📣 Marketing, Old-site requests).
 - **No screenshots.** The before/after pictures of the design review stay on its claude.ai page (linked); a picture of a page on one day can't update itself.
@@ -47,7 +47,7 @@ How to reach it: the **📊 Reports** button on Home (next to 📣 Marketing and
 - 2026-10-15: one generic Markdown reader (`src/lib/markdown.js`, pure, tested) instead of a page per doc, so a new report is a list entry plus its docs.
 - 2026-10-15: the Reports screen and its docs load only when Reports opens (a lazy chunk), so the staff app's first load doesn't grow (the chunk is about 186 KB, 68 KB gzipped, mostly the docs).
 - 2026-10-15: the design review's before/after pictures are not copied into the repo; the report links to the artifact.
-- 2026-10-15: the old artifacts keep their content and get a "Moved to the staff app" note at the top; the logo and icon boards are left alone (owner).
+- 2026-10-15: the old artifacts keep their content and get a "Snapshot of <date>, no longer updated" note at the top pointing at the staff app (done the same day on all eight: win-back, season plan, SEO, design review, design before/after, designer audit, staff release notes, Katie's list); the logo and icon boards are left alone (owner).
 
 ## Acceptance criteria
 
