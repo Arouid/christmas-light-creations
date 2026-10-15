@@ -135,11 +135,13 @@ for (const name of ['santa', 'elf']) {
 await save('ornament-striped', sharp(`${SRC}/vecteezy_red-and-gold-striped-christmas-ornament-with-metallic-cap_70397459.png`), [200])
 await save('ornament-ornate', sharp(`${SRC}/vecteezy_a-beautifully-ornate-red-ornament-with-intricate-gold_54122407.png`), [200])
 await save('ornament-gold', sharp(`${SRC}/vecteezy_red-and-gold-christmas-ornament-with-hanging-string_73206478.png`), [200])
-// Accents: a pine garland with ornaments and pinecones along the foot of the page (49146397). (The
-// glossy holly 50176637 and a North Pole sign 11025680 came off on 2026-10-15: "get rid of it", "i
-// dont l;ike the sign".) (The candy cane 31099142 and the pine corner
-// spray 45838499 came off on 2026-10-15: "ditch the candy cane".)
-await save('garland', sharp(`${SRC}/vecteezy_festive-garland-with-ornaments-and-pinecones-cut-out-stock_49146397.png`), [700, 1100])
+// A wreath with a yellow bow, peppermints, a candy cane and a star (86596528), hung on the ribbon
+// between the steps and the questions box (owner 2026-10-15: "add the wresth here").
+await save('wreath', sharp(`${SRC}/vecteezy_christmas-wreath-yellow-bow-candy-cane-gift-box-star_86596528.png`), [600])
+// Taken off again on 2026-10-15: the candy cane 31099142 and the pine corner spray 45838499 ("ditch
+// the candy cane"), the glossy holly 50176637 ("get rid of it"), a North Pole sign 11025680 ("i dont
+// l;ike the sign") and both garlands, 49146397 along the foot of the page and 47831094 under the
+// questions box ("remove the garland": both).
 // Santa diving into a chimney, legs in the air (52793371), the chimney standing on the top edge of
 // the steps box (owner 2026-10-15: "put the santa falling in the chimney on there"), and an elf
 // peeking out from behind the ribbon beside it (14606808, drawn peeking round a corner; "take rudolph
@@ -155,10 +157,6 @@ await save('elf-peeking', sharp(`${SRC}/vecteezy_elf-character-for-decorating-ch
 // AI-generated: his deliberate exception to keeping AI pieces off this page).
 await save('bow-white-satin', sharp(`${SRC}/vecteezy_ai-generated-ribbon-bow-knot-on-transparent-background_34764415.png`), [480])
 
-// Along the questions box's foot (owner 2026-10-15, his mockup: "garland on the bottom. takes 3
-// seperate pieces, even it up so it looks natural"): a pine swag with bulb lights (47831094), shown
-// three times. (The mistletoe 34917377 from his mockup came out: "take it out".)
-await save('garland-swag', sharp(`${SRC}/vecteezy_festive-christmas-garland-with-colorful-ornaments-on-pine_47831094.png`), [420, 840])
 
 // The big bow on the ribbon above the "Wrapped by us" box: the pink gingham watercolor bow
 // (42074935, as on step 3) at a size for wide screens, from the owner's mockup (2026-10-15, "have

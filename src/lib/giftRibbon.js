@@ -18,6 +18,17 @@ const CENTRE = 'linear-gradient(to right, transparent calc(50% - 1px), #b98a2f c
 export const ribbonX = { backgroundImage: `linear-gradient(to bottom, ${BAND})` }
 export const ribbonY = { backgroundImage: `${CENTRE}, linear-gradient(to right, ${BAND})` }
 
+// The ribbon down the page wrapped in a string of C9 Christmas lights (owner 2026-10-15: "i wanna wrap
+// that ribbon in C9 christmas lights"): a dark green cord crossing the ribbon on the diagonal, as if it
+// winds round it, with big cone bulbs in red, green, blue and amber, each with a soft glow. One tile
+// the ribbon's width (it scales with it) and repeating down; laid over the ribbon's own gradients.
+const C9 = "url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 160' width='60' height='160'><defs><radialGradient id='r'><stop offset='0' stop-color='%23e23b2e' stop-opacity='.55'/><stop offset='1' stop-color='%23e23b2e' stop-opacity='0'/></radialGradient><radialGradient id='g'><stop offset='0' stop-color='%232fa84f' stop-opacity='.55'/><stop offset='1' stop-color='%232fa84f' stop-opacity='0'/></radialGradient><radialGradient id='b'><stop offset='0' stop-color='%232f6fe0' stop-opacity='.55'/><stop offset='1' stop-color='%232f6fe0' stop-opacity='0'/></radialGradient><radialGradient id='a'><stop offset='0' stop-color='%23f5a623' stop-opacity='.55'/><stop offset='1' stop-color='%23f5a623' stop-opacity='0'/></radialGradient></defs><path d='M-4 6Q30 46 64 66' fill='none' stroke='%231d3b26' stroke-width='2.2'/><path d='M-4 86Q30 126 64 146' fill='none' stroke='%231d3b26' stroke-width='2.2'/><circle cx='16.4' cy='41.2' r='12' fill='url(%23r)'/><rect x='13.799999999999999' y='28.2' width='5.2' height='5.5' rx='1' fill='%231f4a2c'/><path d='M16.4 33.2C21.599999999999998 33.2 22 40.2 16.4 47.7C10.799999999999999 40.2 11.2 33.2 16.4 33.2Z' fill='%23e23b2e'/><ellipse cx='14.799999999999999' cy='37.7' rx='1.3' ry='3' fill='white' fill-opacity='.55'/><circle cx='45' cy='66.2' r='12' fill='url(%23g)'/><rect x='42.4' y='53.2' width='5.2' height='5.5' rx='1' fill='%231f4a2c'/><path d='M45 58.2C50.2 58.2 50.6 65.2 45 72.7C39.4 65.2 39.8 58.2 45 58.2Z' fill='%232fa84f'/><ellipse cx='43.4' cy='62.7' rx='1.3' ry='3' fill='white' fill-opacity='.55'/><circle cx='16.4' cy='121.2' r='12' fill='url(%23b)'/><rect x='13.799999999999999' y='108.2' width='5.2' height='5.5' rx='1' fill='%231f4a2c'/><path d='M16.4 113.2C21.599999999999998 113.2 22 120.2 16.4 127.7C10.799999999999999 120.2 11.2 113.2 16.4 113.2Z' fill='%232f6fe0'/><ellipse cx='14.799999999999999' cy='117.7' rx='1.3' ry='3' fill='white' fill-opacity='.55'/><circle cx='45' cy='146.2' r='12' fill='url(%23a)'/><rect x='42.4' y='133.2' width='5.2' height='5.5' rx='1' fill='%231f4a2c'/><path d='M45 138.2C50.2 138.2 50.6 145.2 45 152.7C39.4 145.2 39.8 138.2 45 138.2Z' fill='%23f5a623'/><ellipse cx='43.4' cy='142.7' rx='1.3' ry='3' fill='white' fill-opacity='.55'/></svg>\")"
+export const ribbonDown = {
+  backgroundImage: `${C9}, ${ribbonY.backgroundImage}`,
+  backgroundSize: '100% auto, 100% 100%, 100% 100%',
+  backgroundRepeat: 'repeat-y, no-repeat, no-repeat',
+}
+
 // A gold satin edge for the green-papered "Wrapped by us" box, where the evergreen one sinks into
 // the paper (owner 2026-10-15: "make the ouutlined red green bar all gold").
 export const goldX = { backgroundImage: 'linear-gradient(to bottom, #8a6420, #c9a043 25%, #f6e3a1 50%, #c9a043 75%, #8a6420)' }

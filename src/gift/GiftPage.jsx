@@ -5,7 +5,7 @@ import Icon from '../components/Icon'
 import MobileCta from '../components/MobileCta'
 import Rich from '../components/Rich'
 import { business, footerLinks, giftWrapping as t } from '../data/content'
-import { creamX, goldX, ribbonX, ribbonY } from '../lib/giftRibbon'
+import { creamX, goldX, ribbonDown, ribbonX, ribbonY } from '../lib/giftRibbon'
 import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 
 // /gift-wrapping/ (docs/specs/gift-wrapping.md): the owner's second service
@@ -16,8 +16,7 @@ import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 // tied to it with Santa and an elf strolling on top and candy canes between
 // them, Santa's sleigh flying over the top ribbon, ornaments hanging from the
 // top ribbon, the "Wrapped by us" box as a present of its own, the questions
-// box as another (white satin bow and ribbon, a garland of lights along its
-// foot) and a pine garland along the foot of the page. The pictures are his
+// box as another (white satin bow and ribbon). The pictures are his
 // Vecteezy Pro PNGs (scripts/gift-bows.mjs) and the ribbons are CSS
 // (lib/giftRibbon.js); no wrapped gift in any of them: every wrapped gift
 // shown is his own photo.
@@ -76,9 +75,9 @@ function Waiting() {
 
 function Content() {
   return (
-    <div className="gift-snow relative overflow-hidden bg-berry-50 px-4 pb-16 pt-4 [--band:2.25rem] md:pb-24 md:[--band:3rem] lg:[--band:3.75rem]">
+    <div className="gift-snow relative isolate overflow-hidden bg-berry-50 px-4 pb-16 pt-4 [--band:2.25rem] md:pb-24 md:[--band:3rem] lg:[--band:3.75rem]">
       {/* The ribbon down the middle: from the top ribbon (1rem of paper above the bow) to the last box, behind every box. */}
-      <div className="absolute bottom-24 left-1/2 w-(--band) -translate-x-1/2 shadow-md md:bottom-32" style={{ top: `calc(1rem + ${BAND_TOP})`, ...ribbonY }} aria-hidden="true" />
+      <div className="absolute bottom-24 left-1/2 w-(--band) -translate-x-1/2 shadow-md md:bottom-32" style={{ top: `calc(1rem + ${BAND_TOP})`, ...ribbonDown }} aria-hidden="true" />
       <Lid />
       <Box className="max-w-3xl px-5 pb-10 pt-12 text-center md:px-12 md:pb-14 md:pt-16">
         <p className="text-sm font-semibold uppercase tracking-wider text-berry-600">{t.eyebrow}</p>
@@ -100,13 +99,10 @@ function Content() {
       )}
       <Tie chimney />
       <Steps />
-      <Tie />
+      <Tie wreath />
       <Questions />
-      <Tie garland />
+      <Tie />
       <Ask />
-      {/* A pine garland with ornaments and pinecones along the foot of the page. */}
-      <img src={decor('garland-700.webp')} srcSet={`${decor('garland-700.webp')} 700w, ${decor('garland-1100.webp')} 1100w`} sizes="(min-width: 64rem) 64rem, 100vw"
-        alt="" width="700" height="200" loading="lazy" className="relative mx-auto mt-10 block h-auto w-full max-w-5xl drop-shadow-md" aria-hidden="true" />
     </div>
   )
 }
@@ -158,28 +154,19 @@ function Box({ id, className = '', paper = 'bg-white', band = ribbonX, edge = 'r
 // right of the ribbon; "take the drop shadopw off the santa": no shadows), and an elf poking out
 // from behind the ribbon on its left ("take rudolph away and use that elf poking his head out from
 // behind the ribbon"): his picture ends in a straight cut down his right side (85 % across), which
-// lies under a piece of the same ribbon drawn over him (it matches the page's ribbon beneath exactly). They sit
-// at z 3: over the box above (whose ribbon, bow and photos are z 1-2) and under the box below
-// (Steps is z 4), so their feet tuck just behind that edge.
-function Tie({ tall, chimney, garland }) {
-  // Hung along the questions box's foot (owner 2026-10-15, his mockup: "garland on the bottom. takes 3
-  // seperate pieces, even it up so it looks natural"; the mistletoe in it came out: "take it out"):
-  // the same pine swag three times ("shirnk the garland down to fit 3 pieces"), its outer ends lined up
-  // with the box's edges ("line up the outer edge of the garland with inner edge of the questions
-  // answered div"): a third of the box's width each, edge to edge, the middle one mirrored. The light
-  // string runs to both edges of the picture (17 % down on the left, 19 % on the right), so with the
-  // middle one turned round each join meets string to string at the same height and peaks like a
-  // garland hung on hooks ("where i circled they need to be lined up better"). Raised a little over
-  // the box's foot ("raise them up just a little"); in front of both boxes (z 5).
-  if (garland) {
-    const swag = { src: decor('garland-swag-420.webp'), srcSet: `${decor('garland-swag-420.webp')} 420w, ${decor('garland-swag-840.webp')} 840w`, sizes: '(min-width: 48rem) 16rem, 34vw', width: 420, height: 194, alt: '', loading: 'lazy' }
+// lies under the page's own ribbon (he sits at z -1 in the page's isolated layer, under the ribbon
+// and its C9 lights but over the paper). The chimney sits at z 3: over the box above (whose ribbon,
+// bow and photos are z 1-2) and under the box below (Steps is z 4), so its foot tucks just behind
+// that edge; the elf's feet go behind that box too.
+function Tie({ tall, chimney, wreath }) {
+  // A wreath hung on the ribbon between the steps and the questions box (owner 2026-10-15: "add the
+  // wresth here", then a circle drawn about half again as big, "bigger", "pin it about 30px up"): 32 px
+  // taller than its gap and raised 30 px, so it laps over the foot of the box above more than the top
+  // of the box below, in front of both (z 5).
+  if (wreath) {
     return (
-      <div className="relative h-16 md:h-24" aria-hidden="true">
-        <div className="pointer-events-none relative z-[5] mx-auto h-full max-w-3xl">
-          <img {...swag} className="absolute left-0 -top-5 h-auto w-1/3 max-w-none md:-top-8" />
-          <img {...swag} className="absolute left-1/3 -top-5 h-auto w-1/3 max-w-none -scale-x-100 md:-top-8" />
-          <img {...swag} className="absolute right-0 -top-5 h-auto w-1/3 max-w-none md:-top-8" />
-        </div>
+      <div className="relative z-[5] flex h-48 items-center justify-center md:h-64" aria-hidden="true">
+        <img src={decor('wreath.webp')} alt="" width="600" height="603" loading="lazy" className="h-56 w-auto max-w-none -translate-y-[30px] drop-shadow-[0_4px_5px_rgb(60_10_20/0.3)] md:h-72" />
       </div>
     )
   }
@@ -187,8 +174,7 @@ function Tie({ tall, chimney, garland }) {
     return (
       <div className="relative h-28 md:h-44" aria-hidden="true">
         <img src={decor('elf-peeking.webp')} alt="" width="240" height="449" loading="lazy"
-          className="pointer-events-none absolute -bottom-0.5 right-[calc(50%+var(--band)*0.15)] z-[3] h-28 w-auto max-w-none md:h-44" />
-        <div className="absolute inset-y-0 left-1/2 z-[3] w-(--band) -translate-x-1/2" style={ribbonY} />
+          className="pointer-events-none absolute -bottom-0.5 right-[calc(50%+var(--band)*0.15)] -z-1 h-28 w-auto max-w-none md:h-44" />
         <div className="absolute -bottom-0.5 left-[calc(50%+var(--band)/2+1rem)]">
           <img src={decor('santa-chimney.webp')} alt="" width="400" height="363" loading="lazy"
             className="pointer-events-none relative z-[3] block h-28 w-auto max-w-none md:h-40" />
