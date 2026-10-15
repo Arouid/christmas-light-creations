@@ -2,6 +2,8 @@
 
 The words we use on profiles outside the website, so every listing says the same thing (SEO audit 2026-10-14, TODO #79). Every claim here is also on the website (`src/data/content.js`, `src/data/areas.js`); when the website changes, change these too. No prices, no phone numbers or links inside descriptions (the profiles have their own phone and website fields), and nothing that sells tree wrapping (owner 2026-10-14: “we lose money on them typically”).
 
+Pictures: `assets-source/listings/` (`node scripts/listing-images.mjs`): `profile-1080.png` for profile pictures (round or square), `cover-*-2000x1000.jpg` for wide covers (Victory Lakes first).
+
 Same name, phone and website everywhere: **Christmas Light Creations**, **281-819-0163**, **https://christmas-light-creations.com**.
 
 ## Where it's used

@@ -28,6 +28,7 @@ Reorganized on 2026-10-14; the old folder names are at the bottom.
 | `ads/motion/` | Uppbeat motion graphics, extracted: `snow/`, `light/`, `film/`, `Assets/` (packs as they unzipped), `Support/` | *ignored* (licensed) | not wired yet |
 | `ads/video/` | Rendered ads; `keep/` and `Dont-Delete/` are the owner's | *ignored*, except its README and the 5-second ad | `video/`, `scripts/ads-video.py` |
 | `print/` | Road and yard signs, banner, cards, door decals, magnet, sticker | yes | `scripts/print-vectors.mjs` |
+| `listings/` | Pictures for profiles outside the site (Nextdoor, Thumbtack, Angi, Google): `profile-1080.png` (the cottage render, centred for round crops) and 2:1 covers from roofline photos | yes | `scripts/listing-images.mjs`; uploaded by hand, words in `docs/listings.md` |
 | `shirts/` | Crew shirt art; `designs/` | yes; big PNGs in `designs/` ignored | `scripts/shirt-art.mjs`, `scripts/shirt-designs.mjs` |
 
 The logo's tracing scripts are in `logo-vector.local/` at the repo root (ignored).
