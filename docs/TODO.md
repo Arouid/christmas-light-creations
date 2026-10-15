@@ -82,7 +82,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 
 - **Fri 2026-10-16** (scheduled task `friday-google-profile-cleanup`, 9 am): after removing the duplicate Google Business Profile on 2026-10-13, check Maps for a leftover pin (Suggest an edit → Duplicate), the Google Ads location asset points at the kept profile, Sync in Bing Places and delete the leftover listing there, and the kept profile's website (https), category (lighting), description and hours. TODO #70.
 - **Tue 2026-10-20** (scheduled task `bing-index-recheck-oct-20`, 9 am; owner 2026-10-13: "check bing again in a week"): one week after the IndexNow pings began, read Bing's index for the site (`site:` through html.duckduckgo.com, both pages) and the two ranking searches, compare with the 2026-10-13 baseline in `docs/serp-log.md` (home page recrawled with the new title the same evening; the six area pages, `/cost/`, `/design/`, `/privacy/`, `/terms/` not yet listed; 14 old WordPress URLs still there), log the result, commit, no push. If none of the new pages show by then: Bing Webmaster Tools → URL Inspection and → IndexNow.
-- **Wed 2026-10-21**: AdCopilot plan, decided by the owner the day before the Pro trial ends (TODO #83 (3)).
+- **Wed 2026-10-21** (scheduled task `adcopilot-plan-decision-oct-21`, 9 am): AdCopilot plan, decided by the owner the day before the Pro trial ends (TODO #83 (3)).
 
 | When | What |
 |---|---|
