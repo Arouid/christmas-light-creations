@@ -32,6 +32,7 @@ Marketing site for christmas-light-creations.com, a family-owned Christmas light
 - Tailwind buttons: never add a second `bg-…` to a shared class string (`${btn} bg-glow-400`); the first one can win and the button shows the wrong color. Keep a shape-only class and add exactly one background per button.
 - Log what was actually checked in `docs/verified.md` (dated); keep unverified items in `docs/test-checklist.md`; record decisions in `docs/decisions.md`.
 - Search positions go in `docs/serp-log.md` (same four searches, same method, one row per check) so the next "vs last month" has a baseline.
+- SEO, design and marketing work: who owns what, the one home for each thing (claims in content.js, profile texts in `docs/listings.md`, posts and ads in `docs/marketing/`) and the rules all three share are in `docs/growth.md`; read it before working on any of them.
 
 ## Site rules
 
