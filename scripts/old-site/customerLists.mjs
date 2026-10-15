@@ -112,7 +112,7 @@ function revenueRows(rows) {
     }
     const amount = money(r[cols.paid])
     if (!amount) continue
-    out.push({ name: `${clean(r[cols.first])} ${clean(r[cols.last])}`, email: '', part: cols.part, amount, via: viaOf(r[cols.type]), date: '', invoice: '', installed: '', since: '' })
+    out.push({ name: `${clean(r[cols.first])} ${clean(r[cols.last])}`, email: '', part: cols.part, amount, via: viaOf(r[cols.type]), date: '', invoice: '', installed: '', since: '', book: true })
   }
   return out
 }
@@ -158,35 +158,65 @@ export function sheetPayments(rows, title = '') {
   const season = sheetSeason(all, heading ?? title)
   if (!season) return []
   return all.map((l) => {
-    const inSeason = (d) => Boolean(d) && seasonOf(d) === season
+    // The 2022 workbook is a calendar year of money in: its installs are the 2022
+    // season, its takedowns were paid in January 2022 for the 2021 install
+    // (owner: "2022 takedown would be for a 2021 install"; "if they paid in 2022
+    // its important that theyre listed under 2022"). The season lists (2023,
+    // 2024) hold one season: its takedown is paid the January after.
+    const s = l.book && l.part === 'takedown' ? season - 1 : season
+    const paidYear = l.book ? season : 0
+    const inSeason = (d) => Boolean(d) && seasonOf(d) === s
     const date = inSeason(l.date) ? l.date : ''
-    const fallback = l.part === 'takedown' ? `${season + 1}-01-15` : inSeason(l.installed) ? l.installed : `${season}-12-01`
+    // Stand-in dates: takedowns the January after their season, installs the
+    // install day or Dec 1. A 2022-book line's stand-in is always in 2022.
+    const fallback = l.part === 'takedown' ? `${s + 1}-01-15` : inSeason(l.installed) ? l.installed : `${s}-12-01`
     return {
-      id: `sheet-${sha(`${season}|${l.part}|${nameKey(l.name)}|${l.amount}`)}`,
+      id: `sheet-${sha(`${s}|${l.part}|${nameKey(l.name)}|${l.amount}`)}`,
       via: l.via || 'Not noted',
       kind: 'payment',
       amount: l.amount,
       invoice: l.invoice,
       date: date || fallback,
       undated: !date,
-      season,
+      season: s,
+      paidYear,
       part: l.part,
       name: l.name,
       email: l.email,
       address: '',
       items: [
-        `${season} ${l.part} (customer list)`,
+        l.book ? `${s} ${l.part} (customer list: ${season} revenue sheet)` : `${s} ${l.part} (customer list)`,
         inSeason(l.installed) && `Installed ${usDate(l.installed)}`,
         l.since && `Customer since ${l.since}`,
-        !date && 'Payment date not on the sheet',
+        !date && (paidYear ? `Paid in ${paidYear} (payment date not on the sheet)` : 'Payment date not on the sheet'),
       ].filter(Boolean),
     }
   })
 }
 
-// Fill phone/address/email from the contact rows (same full name), and drop
-// a sheet payment that a PayPal or Square email already shows: same method,
-// same season, same person (email or full name).
+// Install or takedown for a PayPal/Square email: its own words first, else the
+// month (paymentPart in src/lib/oldPayments.js).
+export function mailPart(m) {
+  const t = [m.items ?? []].flat().join(' ')
+  if (/take\s*-?\s*down|removal/i.test(t)) return 'takedown'
+  if (/install/i.test(t)) return 'install'
+  const month = Number(String(m.date).slice(5, 7))
+  return month >= 1 && month <= 4 ? 'takedown' : 'install'
+}
+
+const digitsOf = (v) => String(v ?? '').replace(/\D/g, '')
+
+// Fill phone/address/email from the contact rows (same full name), then hold
+// each sheet line against the PayPal/Square emails (owner: "cross reference for
+// timestamps on invoices and payments received"):
+// - the money is already in the mail (same person, season and part; the same
+//   method, or the same amount within $1 whatever the sheet says) -> the
+//   line is dropped, the email (with its real date) is the record;
+// - a line with no date takes the date of the matching invoice (same person or
+//   invoice number, season, part and amount) as "Invoice sent …"; the payment
+//   day stays unknown. A line whose sheet names the year the money came in
+//   only takes a date from that year.
+// The same line on two sheets counts once.
 export function joinSheetPayments(sheetPays, contacts, mailPays) {
   const byName = new Map()
   for (const c of contacts) {
@@ -194,22 +224,147 @@ export function joinSheetPayments(sheetPays, contacts, mailPays) {
     const have = byName.get(k) ?? {}
     byName.set(k, { phone: have.phone || c.phone, address: have.address || c.address, email: have.email || c.email })
   }
-  const seen = new Set()
-  for (const p of mailPays) {
-    if (p.kind !== 'payment' || !p.date) continue
-    for (const who of [lower(p.email), nameKey(p.name)].filter(Boolean)) seen.add(`${p.via}|${seasonOf(p.date)}|${who}`)
-  }
+  const mail = mailPays.filter((m) => m.date).map((m) => ({ ...m, day: String(m.date).slice(0, 10), season: seasonOf(m.date), part: mailPart(m), who: [lower(m.email), nameKey(m.name)].filter(Boolean) }))
+  const near = (m, amount) => [m.amount, m.total].some((a) => Number(a) > 0 && Math.abs(Number(a) - amount) <= 1)
   const kept = []
-  const ids = new Set() // the same line copied into two sheets counts once
-  let dropped = 0
+  const ids = new Set()
+  const counts = { inMail: 0, invoiceDate: 0 }
   for (const p of sheetPays) {
     if (ids.has(p.id)) continue
     ids.add(p.id)
     const c = byName.get(nameKey(p.name)) ?? {}
     const q = { ...p, email: p.email || c.email || '', phone: c.phone || '', address: c.address || '' }
-    const inMail = ['PayPal', 'Square'].includes(q.via) && [lower(q.email), nameKey(q.name)].filter(Boolean).some((who) => seen.has(`${q.via}|${q.season}|${who}`))
-    if (inMail) dropped++
-    else kept.push(q)
+    const who = new Set([lower(q.email), nameKey(q.name)].filter(Boolean))
+    const same = (m) => m.season === q.season && m.part === q.part && m.who.some((k) => who.has(k))
+    const inMail = mail.some((m) => m.kind === 'payment' && same(m) && (m.via === q.via || near(m, q.amount)))
+    if (inMail) { counts.inMail++; continue }
+    if (q.undated) {
+      const inYear = (m) => !q.paidYear || m.day.startsWith(String(q.paidYear))
+      const byNumber = (m) => digitsOf(q.invoice) && digitsOf(m.invoice) === digitsOf(q.invoice) && m.season === q.season && m.part === q.part
+      const inv = mail
+        .filter((m) => m.kind === 'invoice' && inYear(m) && (same(m) || byNumber(m)) && near(m, q.amount))
+        .sort((a, b) => a.day.localeCompare(b.day))[0]
+      if (inv) {
+        counts.invoiceDate++
+        const at = q.items.findIndex((t) => /payment date not on the sheet/i.test(t))
+        const items = [...q.items]
+        items.splice(at, 0, `${inv.via} invoice sent ${usDate(inv.day)}${inv.invoice ? ` (#${inv.invoice})` : ''}`)
+        kept.push({ ...q, date: inv.day, items })
+        continue
+      }
+    }
+    kept.push(q)
   }
-  return { kept, dropped }
+  return { kept, dropped: counts.inMail, invoiceDated: counts.invoiceDate }
+}
+
+// ---- Dates checked against texts and emails ---------------------------------
+// Owner: "any payment that has a fingerprint in email or text or anywhere for
+// that matter should have its date checked and tagged", "and filed under that
+// date/year"; "If jane doe says she paid, cross reference for payments from
+// her from any of our accepted methods"; "we send out payment confirmation
+// emails for the last few years too".
+// A message counts when WE say the money arrived (outgoing: "got your check",
+// "thank you for your payment", "payment received") or THEY say they sent it
+// (incoming: "I sent the Zelle", "check is in the mailbox", "just paid").
+// Questions don't count. Any of our methods: the sheet's method isn't required.
+// Questions, plans and memories don't date a payment: "will", "once", "if",
+// "I think", "last year"…
+const OURS = [
+  /\b(received|recieved|got|have)\b.{0,20}\b(your|the|ur)\s+(payment|check|cheque|zelle|venmo|cash ?app|paypal|money|deposit|funds)\b/i,
+  /\bthanks?( you)?\b.{0,15}\bfor (the |your |ur )?(prompt |quick )?(payment|check|cheque|zelle|venmo|cash ?app|paypal|money|deposit)\b/i,
+  /\b(payment|deposit|check)\b.{0,25}\b(has been |was |is )?(received|processed|deposited|went through)\b/i,
+  /\bpaid in full\b/i,
+]
+const THEIRS = [
+  /(?<!\byou )(?<!\byou've )\b(sent|sending|mailed|dropped off|left|zelled|venmoed)\b.{0,30}\b(payment|check|cheque|zelle|venmo|cash ?app|paypal|money|deposit|funds)\b/i,
+  /(?<!\byou )\b(sent|sending|mailed|zelled|venmoed)\b.{0,30}\$\s?\d/i,
+  /\b(i|we|just|already)\s+(have\s+|just\s+)?(paid|zelled|venmoed|venmo'd)\b/i,
+  /\bcheck\b.{0,25}\b(in the mail|mailbox|on (its|it's) way|under the (mat|door)|in (the|your) door)\b/i,
+  /\bpayment\b.{0,20}\b(sent|made|submitted|went through|completed)\b/i,
+]
+const HEDGE = /\b(will|i'?ll|we'?ll|going to|gonna|once|if|when|until|after|before|think|thought|remember|last (year|time|season)|next (year|time)|back in)\b/i
+const sentencesOf = (s) => String(s ?? '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/)
+const amountsIn = (s) => [...String(s).matchAll(/\$\s?([\d,]+(?:\.\d\d)?)/g)].map((m) => Number(m[1].replace(/,/g, '')))
+
+// One text or email -> { quote, amounts } when WE say the money arrived
+// (outgoing) or THEY say they sent it (incoming), else null.
+export function paymentSignal(direction, subject, text) {
+  const rules = direction === 'out' ? OURS : THEIRS
+  // Only the new part of an email: stop at a quoted earlier message.
+  const own = String(text ?? '').split(/\n\s*On .{5,80} wrote:|\n-{2,} ?Original Message|\nBegin forwarded message|\n>/i)[0]
+  for (const s of [String(subject ?? ''), ...sentencesOf(own)]) {
+    if (!s || /\?\s*$/.test(s) || HEDGE.test(s)) continue
+    if (rules.some((re) => re.test(s))) return { quote: s.trim().slice(0, 90), amounts: amountsIn(s) }
+  }
+  return null
+}
+
+const ten = (p) => String(p ?? '').replace(/\D/g, '').slice(-10)
+const phonesIn = (s) => (String(s ?? '').match(/(?:\+?1[\s.-]*)?\(?\d{3}\)?[\s.-]*\d{3}[\s.-]*\d{4}/g) ?? []).map(ten)
+
+// When a sheet line's money could have moved: installs July–December of their
+// season, takedowns January–April after it; a line whose sheet names the year
+// the money came in stays inside that year.
+function windowOf(p) {
+  const y = p.part === 'takedown' ? p.season + 1 : p.season
+  const [lo, hi] = p.part === 'takedown' ? [`${y}-01-01`, `${y}-04-30`] : [`${y}-07-01`, `${y}-12-31`]
+  return [lo, `${hi}T23:59:59`]
+}
+const DAY = 86400e3
+const NEAR_DAYS = 14
+
+// Check every sheet line's date against the person's texts and emails
+// (history entries: text, voicemail, email) and tag where the date comes from:
+// - no date on the sheet + a message about paying -> that message's day is
+//   the payment day ("Date from their text of 1/3/2022: “I paid the invoice
+//   with Zelle.”"); our "received" beats their "sent", then the earliest;
+// - a sheet date + a message within two weeks -> "Date checked: …";
+// - a sheet date and no such message -> "Date from the sheet (no text or email
+//   about it found)".
+// A message naming a dollar amount only counts when it is this line's amount.
+// People are matched by the line's email and phone, and by every phone and email
+// found for the same full name anywhere (`nameContacts`: nameKey -> [phones and emails]).
+export function checkSheetDates(pays, messages, nameContacts = new Map()) {
+  const byKey = new Map()
+  for (const e of messages) {
+    const d = e.data ?? {}
+    if (!['text', 'email', 'voicemail'].includes(d.kind) || !d.at) continue
+    const sig = paymentSignal(d.direction, d.subject, d.text)
+    if (!sig) continue
+    const ev = { at: String(d.at), day: String(d.at).slice(0, 10), ours: d.direction === 'out', kind: d.kind, ...sig }
+    const keys = d.kind === 'email' ? (e.match?.emails ?? []).map((x) => `e:${lower(x)}`) : [`p:${ten(d.phone)}`]
+    for (const k of keys) if (k.length > 4) byKey.set(k, [...(byKey.get(k) ?? []), ev])
+  }
+  const counts = { 'sheet payment dated by a text or email': 0, 'sheet payment date checked by a text or email': 0, 'sheet payment date from the sheet only': 0 }
+  const tag = (ev) => `${ev.ours ? 'our' : 'their'} ${ev.kind} of ${usDate(ev.day)}: “${ev.quote}”`
+  const out = pays.map((p) => {
+    const keys = new Set([
+      p.email && `e:${lower(p.email)}`,
+      ...phonesIn(p.phone).map((x) => `p:${x}`),
+      ...(nameContacts.get(nameKey(p.name)) ?? []).flatMap((v) => (v.includes('@') ? [`e:${lower(v)}`] : phonesIn(v).map((x) => `p:${x}`))),
+    ].filter(Boolean))
+    const seen = new Set()
+    const evs = [...keys].flatMap((k) => byKey.get(k) ?? [])
+      .filter((ev) => !ev.amounts.length || ev.amounts.some((a) => Math.abs(a - p.amount) <= 1))
+      .filter((ev) => !seen.has(ev.at + ev.quote) && seen.add(ev.at + ev.quote))
+      .sort((a, b) => (b.ours - a.ours) || a.at.localeCompare(b.at))
+    if (p.undated) {
+      const [lo, hi] = windowOf(p)
+      const ev = evs.find((x) => x.at >= lo && x.at <= hi)
+      if (!ev) return p
+      counts['sheet payment dated by a text or email']++
+      const items = p.items.filter((t) => !/payment date not on the sheet/i.test(t))
+      return { ...p, date: ev.day, undated: false, items: [...items, `Date from ${tag(ev)}`] }
+    }
+    const near = evs.filter((ev) => Math.abs(Date.parse(ev.day) - Date.parse(p.date)) <= NEAR_DAYS * DAY)
+      .sort((a, b) => Math.abs(Date.parse(a.day) - Date.parse(p.date)) - Math.abs(Date.parse(b.day) - Date.parse(p.date)))[0]
+    if (near) {
+      counts['sheet payment date checked by a text or email']++
+      return { ...p, items: [...p.items, `Date checked: ${tag(near)}`] }
+    }
+    counts['sheet payment date from the sheet only']++
+    return { ...p, items: [...p.items, 'Date from the sheet (no text or email about it found)'] }
+  })
+  return { pays: out, counts }
 }

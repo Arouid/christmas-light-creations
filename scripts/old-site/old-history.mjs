@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os'
 import { basename, join, sep } from 'node:path'
 import Papa from 'papaparse'
 import { phonesOf } from '../../functions/messageSync.js'
-import { contactsOf, joinSheetPayments, sheetPayments } from './customerLists.mjs'
+import { checkSheetDates, contactsOf, joinSheetPayments, nameKey, sheetPayments } from './customerLists.mjs'
 import { readEmail, streamMbox, unfold } from './mbox.mjs'
 import { formRequest, paymentEntry, paymentOf, personEmail, requestEntry, reviewAlert } from './oldHistory.mjs'
 import { namesToPhones } from './voiceTakeout.mjs'
@@ -118,6 +118,7 @@ try {
   }
   const sheets = joinSheetPayments(sheetPays, sheetContacts, payments)
   if (sheets.dropped) tally('sheet payment already in PayPal/Square mail', sheets.dropped)
+  if (sheets.invoiceDated) tally('sheet payment dated by its invoice email', sheets.invoiceDated)
   for (const p of sheets.kept) keep(paymentEntry(p), `${p.via} payment (customer list)`)
   payments.push(...sheets.kept)
 
@@ -135,6 +136,36 @@ try {
   // Texts, calls, voicemails.
   const voice = JSON.parse(readFileSync(join(DIR, 'voice-history.json'), 'utf8')).messages
   voice.forEach((v) => keep(v, 'voice'))
+
+  // Every sheet payment's date checked against the person's texts and emails,
+  // and tagged with where it comes from (customerLists.mjs, checkSheetDates).
+  // A full name's other phones and emails, from anywhere (owner: "or anywhere for
+  // that matter"): the contact books and saved Voice names, the PayPal/Square
+  // emails, the estimate request emails and the old website's requests. The 2022
+  // workbook has names only, so this is how its lines find their texts.
+  const nameContacts = new Map()
+  const addNameContact = (name, value) => {
+    const k = nameKey(name)
+    if (k.includes(' ') && value) nameContacts.set(k, [...(nameContacts.get(k) ?? []), String(value)])
+  }
+  for (const [name, phone] of namesToPhones(voiceHtml.map((f) => readFileSync(f, 'utf8')))) addNameContact(name, phone)
+  for (const f of contactFiles) {
+    for (const c of Papa.parse(readFileSync(f, 'utf8').replace(/^﻿/, ''), { header: true, skipEmptyLines: true }).data) {
+      const name = [c['First Name'], c['Middle Name'], c['Last Name']].filter(Boolean).join(' ')
+      for (const p of phonesOf([c['Phone 1 - Value'], c['Phone 2 - Value']].filter(Boolean).join(' / ').replace(/:::/g, ' / '))) addNameContact(name, p)
+    }
+  }
+  for (const p of payments) addNameContact(p.name, p.email)
+  for (const f of forms) { addNameContact(f.name, f.email); addNameContact(f.name, f.phone) }
+  for (const row of site.data) {
+    const r = cleanRow(row)
+    if (r) { addNameContact(r.name, r.email); addNameContact(r.name, r.phone) }
+  }
+  const checked = checkSheetDates(sheets.kept, [...entries.values()], nameContacts)
+  for (const [what, n] of Object.entries(checked.counts)) if (n) tally(what, n)
+  const checkedById = new Map(checked.pays.map((p) => [p.id, p]))
+  for (const p of checked.pays) entries.set(p.id, paymentEntry(p))
+  for (let i = 0; i < payments.length; i++) payments[i] = checkedById.get(payments[i].id) ?? payments[i]
 
   const messages = [...entries.values()].sort((a, b) => a.data.at.localeCompare(b.data.at))
   writeFileSync(join(DIR, 'customer-history.json'), JSON.stringify({ builtAt: new Date().toISOString(), messages }))

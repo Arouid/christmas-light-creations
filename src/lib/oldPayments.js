@@ -18,6 +18,10 @@ export function seasonOfDate(iso) {
 // (takedown is early January; installs are October–December).
 export function paymentPart(p) {
   const t = String(p.text ?? '')
+  // An old customer sheet's line says which it is ("2021 takedown (customer list…"),
+  // whatever a quoted message under it mentions.
+  const sheet = t.match(/\b20\d\d (install|takedown) \(customer list/i)?.[1]
+  if (sheet) return sheet.toLowerCase()
   if (/take\s*-?\s*down|removal/i.test(t)) return 'takedown'
   if (/install/i.test(t)) return 'install'
   const m = Number(String(p.at).slice(5, 7))
@@ -33,6 +37,11 @@ const VIA = { paypal: 'PayPal', square: 'Square', zelle: 'Zelle', check: 'Check'
 // Sheet payments with no date carry this line (scripts/old-site/customerLists.mjs):
 // their date is a stand-in, so it never fills a payment date.
 export const UNDATED = /payment date not on the sheet/i
+// …but when the sheet says the year the money came in ("Paid in 2022 (payment
+// date not on the sheet)", the 2022 revenue workbook), the Payment date gets
+// that year alone, so the year is right for taxes (owner: "if they paid in 2022
+// its important that theyre listed under 2022").
+export const PAID_IN = /paid in (20\d\d) \(payment date not on the sheet\)/i
 const empty = (v) => v == null || String(v).trim() === ''
 // Where the amount goes: install "Total due" (what they paid, after any
 // discount); takedown "Rate" (takedown has no total field).
@@ -47,11 +56,13 @@ export function seasonFills(payments, customer) {
     const season = seasonOfDate(p.at)
     const part = paymentPart(p)
     const key = `${season}|${part}`
-    const g = groups.get(key) ?? { season, part, amount: 0, count: 0, via: new Set(), last: '' }
+    const g = groups.get(key) ?? { season, part, amount: 0, count: 0, via: new Set(), last: '', years: new Set() }
     g.amount += Number(p.amount)
     g.count += 1
     g.via.add(VIA[String(p.source ?? '').toLowerCase()] ?? '')
     if (!UNDATED.test(String(p.text ?? '')) && String(p.at) > g.last) g.last = String(p.at)
+    const year = String(p.text ?? '').match(PAID_IN)?.[1]
+    if (year) g.years.add(year)
     groups.set(key, g)
   }
   const bySeason = new Map()
@@ -59,14 +70,16 @@ export function seasonFills(payments, customer) {
     const have = customer?.seasons?.[g.season]?.[g.part] ?? {}
     const base = `seasons.${g.season}.${g.part}`
     const via = [...g.via].filter(Boolean)
+    // A real day, else the one year the sheet names, else nothing.
+    const paidOn = g.last ? usDate(g.last) : g.years.size === 1 ? [...g.years][0] : ''
     const fills = [
       empty(have[AMOUNT_FIELD[g.part]]) && { path: `${base}.${AMOUNT_FIELD[g.part]}`, value: dollars(g.amount) },
       empty(have.paid) && { path: `${base}.paid`, value: 'Yes' },
       empty(have.paymentType) && via.length === 1 && { path: `${base}.paymentType`, value: via[0] },
-      empty(have.paymentDate) && g.last && { path: `${base}.paymentDate`, value: usDate(g.last) },
+      empty(have.paymentDate) && paidOn && { path: `${base}.paymentDate`, value: paidOn },
     ].filter(Boolean)
     const s = bySeason.get(g.season) ?? { season: g.season, parts: {}, fills: [] }
-    s.parts[g.part] = { amount: Math.round(g.amount * 100) / 100, count: g.count, via: via.join(' + '), date: g.last ? usDate(g.last) : '' }
+    s.parts[g.part] = { amount: Math.round(g.amount * 100) / 100, count: g.count, via: via.join(' + '), date: paidOn }
     s.fills.push(...fills)
     bySeason.set(g.season, s)
   }

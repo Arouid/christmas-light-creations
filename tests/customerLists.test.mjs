@@ -2,10 +2,10 @@
 // and the win-back list. Made-up people only. Spec: docs/specs/old-history.md.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { contactsOf, joinSheetPayments, money, seasonOf, sheetDate, sheetPayments, viaOf } from '../scripts/old-site/customerLists.mjs'
+import { checkSheetDates, contactsOf, joinSheetPayments, money, paymentSignal, seasonOf, sheetDate, sheetPayments, viaOf } from '../scripts/old-site/customerLists.mjs'
 import { paymentEntry } from '../scripts/old-site/oldHistory.mjs'
 import { cleanRow, mergePeople, pastGroup } from '../src/lib/oldEstimates.js'
-import { UNDATED, paymentsFromPast, seasonFills } from '../src/lib/oldPayments.js'
+import { UNDATED, paymentPart, paymentsFromPast, seasonFills } from '../src/lib/oldPayments.js'
 
 // The "Accounts" layout (one row per customer), as in the 2023 and 2024 lists.
 const ACCOUNTS = [
@@ -82,15 +82,22 @@ test('Accounts layout: install and takedown payments, partial payments, nothing 
   assert.equal(sheetPayments(ACCOUNTS, 'x.xlsx')[0].id, install.id)
 })
 
-test('2022 workbook: install and takedown blocks by their titles; totals and summaries are not people', () => {
+test('2022 workbook: a calendar year of money in; installs are the 2022 season, takedowns the 2021 install paid in 2022', () => {
   const pays = sheetPayments(REVENUE, 'Changes list.xlsx')
-  assert.ok(pays.every((p) => p.season === 2022), 'season from the "2022 CLC REVENUE" heading')
-  assert.deepEqual(pays.map((p) => `${p.name}|${p.part}|${p.amount}|${p.via}|${p.date}`), [
-    'Erin Sample|install|362.1|Square|2022-12-01',
-    'Gale Test|install|500|Check|2022-12-01',
-    'Erin Sample|takedown|100|Zelle|2023-01-15',
+  assert.deepEqual(pays.map((p) => `${p.name}|${p.part}|${p.season}|${p.amount}|${p.via}|${p.date}`), [
+    'Erin Sample|install|2022|362.1|Square|2022-12-01',
+    'Gale Test|install|2022|500|Check|2022-12-01',
+    'Erin Sample|takedown|2021|100|Zelle|2022-01-15',
   ])
-  assert.ok(pays.every((p) => p.undated && p.items.some((t) => UNDATED.test(t))))
+  assert.ok(pays.every((p) => p.paidYear === 2022 && p.undated && p.items.some((t) => UNDATED.test(t))))
+  assert.deepEqual(pays[2].items, ['2021 takedown (customer list: 2022 revenue sheet)', 'Paid in 2022 (payment date not on the sheet)'])
+  // Paid in 2022 → dated 2022, and the Payment date says 2022 (taxes), never a made-up day.
+  assert.ok(pays.every((p) => p.date.startsWith('2022')))
+  const fills = seasonFills(pays.map((p) => ({ ...paymentEntry(p).data, customerId: 'c1' })), { seasons: {} })
+  assert.deepEqual(fills.map((s) => [s.season, Object.keys(s.parts).join('+'), s.fills.find((f) => f.path.endsWith('paymentDate'))?.value]), [
+    ['2022', 'install', '2022'],
+    ['2021', 'takedown', '2022'],
+  ])
 })
 
 test('season from the file name only when nothing else says it; no season, no payments', () => {
@@ -126,6 +133,40 @@ test('join: contact details by name; a PayPal/Square line the mail already shows
   assert.equal(joinSheetPayments([later], [], mail).kept.length, 1)
 })
 
+test('cross-reference: a mail payment of the same amount wins over a sheet line with another method; invoices date undated lines', () => {
+  const [alex, , casey] = sheetPayments(ACCOUNTS, 'a.xlsx')
+  // The sheet says Zelle, but a PayPal email shows the same $450 install that season: the email is the record.
+  const paypal = { kind: 'payment', via: 'PayPal', date: '2023-11-02T15:00:00Z', amount: 450, name: 'Alex Sample', email: '', items: ['Christmas light install'] }
+  assert.deepEqual(joinSheetPayments([alex], [], [paypal]).kept, [])
+  // A takedown payment by PayPal doesn't cancel the install line.
+  assert.equal(joinSheetPayments([alex], [], [{ ...paypal, date: '2024-01-10', items: ['Take down'] }]).kept.length, 1)
+  // An undated line takes its invoice's date; the payment day stays unknown.
+  const invoice = { kind: 'invoice', via: 'PayPal', date: '2023-10-20T12:00:00Z', amount: 200, invoice: '2023-12', name: 'Casey Test', email: '' }
+  const { kept: [dated], invoiceDated } = joinSheetPayments([casey], [], [invoice, { ...invoice, date: '2023-10-25', invoice: '2023-19' }])
+  assert.equal(invoiceDated, 1)
+  assert.equal(dated.date, '2023-10-20', 'the first matching invoice')
+  assert.equal(dated.undated, true)
+  assert.deepEqual(dated.items.slice(-2), ['PayPal invoice sent 10/20/2023 (#2023-12)', 'Payment date not on the sheet'])
+  // Another amount or another person: no date taken.
+  assert.equal(joinSheetPayments([casey], [], [{ ...invoice, amount: 600 }]).kept[0].date, '2023-11-08')
+  assert.equal(joinSheetPayments([casey], [], [{ ...invoice, name: 'Someone Else' }]).kept[0].date, '2023-11-08')
+  // By invoice number when the names differ.
+  const byNumber = { ...casey, invoice: '1001' }
+  assert.equal(joinSheetPayments([byNumber], [], [{ ...invoice, name: 'C. Test', invoice: '1001' }]).kept[0].date, '2023-10-20')
+})
+
+test('cross-reference: a line paid in 2022 only takes a 2022 invoice date', () => {
+  const takedown = sheetPayments(REVENUE, 'r.xlsx')[2] // Erin Sample, 2021 takedown paid in 2022
+  const inv = { kind: 'invoice', via: 'Square', amount: 100, name: 'Erin Sample', email: '', invoice: '2021301', items: ['Takedown'] }
+  assert.equal(joinSheetPayments([takedown], [], [{ ...inv, date: '2021-12-20' }]).kept[0].date, '2022-01-15', 'a December 2021 invoice is not 2022 money')
+  const [dated] = joinSheetPayments([takedown], [], [{ ...inv, date: '2022-01-04' }]).kept
+  assert.equal(dated.date, '2022-01-04')
+  assert.ok(dated.items.includes('Square invoice sent 1/4/2022 (#2021301)'))
+  // Still "Paid in 2022" for the Payment date.
+  const [s] = seasonFills([{ ...paymentEntry(dated).data, customerId: 'c1' }], { seasons: {} })
+  assert.deepEqual([s.season, s.fills.find((f) => f.path.endsWith('paymentDate'))?.value], ['2021', '2022'])
+})
+
 test('a Zelle line goes through the Past requests import as a payment (win-back), not as a request', () => {
   const row = { Date: '2023-11-03', Source: 'Zelle', Email: 'alex@example.com', Phone: '281-555-0101', Address: '', 'All fields': 'Name: Alex Sample', Kind: 'payment', Amount: '450', Invoice: '1001', Items: '2023 install (customer list) · Installed 11/3/2023' }
   const r = cleanRow(row)
@@ -158,4 +199,78 @@ test('season billing: Zelle fills the payment type; an undated sheet payment nev
   const [fromCard] = seasonFills(paymentsFromPast(card, 'c2'), { seasons: {} })
   assert.ok(!fromCard.fills.some((f) => f.path.endsWith('paymentDate')))
   assert.ok(fromCard.fills.some((f) => f.path.endsWith('paymentType') && f.value === 'Venmo'))
+})
+
+test('payment messages: we say it arrived, or they say they sent it; questions, plans and hedges don\'t count', () => {
+  // Ours (outgoing).
+  for (const s of ['Payment received, thank you so much.', 'I just confirmed your payment, it was received and you’re good.', 'Got your check today, thanks!', 'Thank you for your payment!', 'Your balance is paid in full.']) {
+    assert.ok(paymentSignal('out', '', s), s)
+  }
+  for (const s of ['We will send a payment confirmation once received.', 'Did you get the invoice?', 'Please send your payment via Zelle.', 'If you have not received an email, call us.']) {
+    assert.equal(paymentSignal('out', '', s), null, s)
+  }
+  // Theirs (incoming).
+  for (const s of ['I paid the invoice with Zelle.', 'Just paid it', 'Payment sent.', 'The check is under the mat by my front door.', 'I Zelled it', 'Sent $450 on Venmo']) {
+    assert.ok(paymentSignal('in', '', s), s)
+  }
+  for (const s of ['I will leave the check under the mat', 'I think we paid 1250 for both', 'Do you need a deposit or paid in full?', 'You sent me the invoice for $450', 'I wanted to check back in with you']) {
+    assert.equal(paymentSignal('in', '', s), null, s)
+  }
+  // The direction matters: our "we sent the invoice" isn't a payment; their "thanks for the payment" isn't either.
+  assert.equal(paymentSignal('out', '', 'I sent the payment link.'), null)
+  assert.deepEqual(paymentSignal('in', 'Re: lights', 'Sent the $1,310 by Zelle.\n\nOn Mon, Dec 4, 2023 Scott wrote:\n> thank you for your payment')?.amounts, [1310])
+  // Only the new part of an email counts, not the quoted one under it.
+  assert.equal(paymentSignal('out', 'Re: lights', 'See you Monday.\n\nOn Mon, Dec 4, 2023 Pat wrote:\n> I paid today.'), null)
+})
+
+test('dates checked against texts and emails, and tagged with where they come from', () => {
+  const book = sheetPayments(REVENUE, 'r.xlsx') // undated: Erin install 2022, Gale install 2022, Erin takedown 2021 (paid 2022)
+  const [alex] = sheetPayments(ACCOUNTS, 'a.xlsx') // dated 11/3/2023
+  const withContacts = [
+    { ...book[0], phone: '281-555-0110' },
+    { ...book[1], email: 'gale@example.com' },
+    { ...book[2], phone: '281-555-0110' },
+    { ...alex, phone: '' },
+  ]
+  const text = (at, direction, body, phone = '+12815550110') => ({ id: `t${at}`, data: { kind: 'text', direction, at, phone, text: body } })
+  const messages = [
+    text('2022-11-20T15:00:00Z', 'in', 'I paid the invoice with Zelle.'),
+    text('2022-11-21T15:00:00Z', 'out', 'Payment received, thank you!'), // ours wins over theirs
+    text('2022-01-09T15:00:00Z', 'in', 'Sent $100 for the takedown.'), // the 2021 takedown, paid January 2022
+    text('2022-02-01T15:00:00Z', 'in', 'Sent $95 for the takedown.'), // another amount: not this line
+    { id: 'e1', data: { kind: 'email', direction: 'out', at: '2022-12-05T10:00:00Z', subject: 'Re: lights', text: 'Got your check, thank you!' }, match: { emails: ['GALE@example.com'] } },
+    { id: 'e2', data: { kind: 'email', direction: 'in', at: '2023-11-04T10:00:00Z', subject: 'Paid', text: 'Just paid it.' }, match: { emails: ['alex@example.com'] } },
+    text('2021-12-01T15:00:00Z', 'in', 'Payment sent.'), // outside every window here
+  ]
+  const { pays, counts } = checkSheetDates(withContacts, messages)
+  const [erin, gale, erinTd, alexOut] = pays
+  assert.equal(erin.date, '2022-11-21')
+  assert.equal(erin.undated, false)
+  assert.ok(erin.items.at(-1).startsWith('Date from our text of 11/21/2022: “Payment received'))
+  assert.ok(!erin.items.some((t) => UNDATED.test(t)), 'no longer "not on the sheet"')
+  assert.equal(gale.date, '2022-12-05')
+  assert.ok(gale.items.at(-1).startsWith('Date from our email of 12/5/2022'))
+  assert.equal(erinTd.date, '2022-01-09')
+  assert.equal(erinTd.season, 2021)
+  assert.equal(alexOut.date, '2023-11-03', 'a sheet date stays')
+  assert.ok(alexOut.items.at(-1).startsWith('Date checked: their email of 11/4/2023'))
+  assert.deepEqual(counts, { 'sheet payment dated by a text or email': 3, 'sheet payment date checked by a text or email': 1, 'sheet payment date from the sheet only': 0 })
+  // Nothing found: the sheet date is labelled as such; an undated line stays undated.
+  const lone = checkSheetDates([{ ...alex, email: 'nobody@example.com' }, book[1]], messages).pays
+  assert.equal(lone[0].items.at(-1), 'Date from the sheet (no text or email about it found)')
+  assert.equal(lone[1].undated, true)
+  // A contact-book number for the same full name finds the texts too.
+  const viaBook = checkSheetDates([book[0], book[1]], messages, new Map([['erin sample', ['(281) 555-0110']], ['gale test', ['Gale@Example.com']]])).pays[0]
+  assert.equal(viaBook.date, '2022-11-21')
+  // …and an email found for the same full name (any case) finds the emails.
+  const galeByName = checkSheetDates([book[1]], messages, new Map([['gale test', ['Gale@Example.com']]])).pays[0]
+  assert.equal(galeByName.date, '2022-12-05')
+  // Filed under that date: the Seasons fill takes the real day now.
+  const [s] = seasonFills([{ ...paymentEntry(erinTd).data, customerId: 'c1' }], { seasons: {} })
+  assert.deepEqual([s.season, s.fills.find((f) => f.path.endsWith('paymentDate'))?.value], ['2021', '1/9/2022'])
+})
+
+test('a sheet line\'s own label decides install or takedown, whatever a quote under it says', () => {
+  assert.equal(paymentPart({ at: '2022-11-21', text: 'Paid $100.00 by Zelle\n2022 install (customer list: 2022 revenue sheet)\nDate from their text of 11/21/2022: “Sent it for the install and takedown.”' }), 'install')
+  assert.equal(paymentPart({ at: '2022-11-21', text: 'Paid $100.00 by Zelle\n2021 takedown (customer list: 2022 revenue sheet)' }), 'takedown')
 })
