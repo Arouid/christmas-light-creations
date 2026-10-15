@@ -14,11 +14,31 @@ import { makeThumbs } from './gallery-thumbs.mjs'
 const SRC = new URL('../assets-source/photos/gallery-hi-res/', import.meta.url)
 const OUT = new URL('../public/images/gallery/', import.meta.url)
 const WIDTH = 1600
-const KEEP = ['friendswood-warm-white-ivy-home.jpg']
+// west-ranch-friendswood.jpg: its hi-res original was overwritten by mistake on 2026-10-15, so the
+// web copy made on 2026-10-14 is kept as it is until the owner re-downloads that rescan.
+const KEEP = ['friendswood-warm-white-ivy-home.jpg', 'west-ranch-friendswood.jpg']
 // Spelling the owner's file names carry; the web name and the URL use the fixed word.
-const FIX = { cleark: 'clear', friendwood: 'friendswood', merdiana: 'meridiana' }
+const FIX = { cleark: 'clear', friendwood: 'friendswood', merdiana: 'meridiana', glenn: 'glen' }
+
+// Privacy (decisions 2026-10-08): house numbers, plates and mailboxes a photo shows are blurred in
+// the web copy. [left, top, width, height] in the original's pixels, keyed by the original's name.
+const BLUR = {
+  'alvin-christmas-installers.jpg': [[1325, 490, 95, 55]], // "205" above the porch
+  'west-ranch-friendswood-02.jpg': [[25, 935, 85, 55]], // the pickup's front plate
+  'the-lakes-of-highland-glenn-pearland-07.jpg': [[2200, 785, 80, 55]], // address plaque on the brick
+}
 
 export const webName = (f) => `${f.toLowerCase().replace(/\.jpe?g$/, '').split('-').map((w) => FIX[w] ?? w).join('-')}.jpg`
+
+// The original with its BLUR regions blurred (same helper as scripts/process-photos.mjs).
+async function withBlur(file, regions) {
+  const buffer = await sharp(file).rotate().toBuffer()
+  if (!regions?.length) return buffer
+  const layers = await Promise.all(regions.map(async ([left, top, width, height]) => ({
+    input: await sharp(buffer).extract({ left, top, width, height }).blur(30).toBuffer(), left, top,
+  })))
+  return sharp(buffer).composite(layers).toBuffer()
+}
 
 async function main() {
   const originals = (await readdir(SRC)).filter((f) => /\.jpe?g$/i.test(f)).sort((a, b) => a.localeCompare(b))
@@ -31,8 +51,7 @@ async function main() {
   let bytes = 0
   for (const f of originals) {
     const out = new URL(webName(f), OUT)
-    await sharp(fileURLToPath(new URL(f, SRC)))
-      .rotate()
+    await sharp(await withBlur(fileURLToPath(new URL(f, SRC)), BLUR[f]))
       .resize({ width: WIDTH, withoutEnlargement: true })
       .jpeg({ quality: 82, mozjpeg: true })
       .toFile(fileURLToPath(out))
