@@ -16,7 +16,8 @@ const base = import.meta.env.BASE_URL
 // scroll, the offer bar on top, links scroll the page. Elsewhere it sticks to
 // the top on a solid background and its links go to the home page.
 // estimate: where Free estimate goes (/design/ has its own form).
-export default function Header({ home = true, estimate = home ? '#estimate' : `${base}#estimate` }) {
+// logo: another picture of the same logo (the gift-wrapping page's, with a red bow on the cottage).
+export default function Header({ home = true, estimate = home ? '#estimate' : `${base}#estimate`, logo = business.logoWide }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const menu = useRef(null)
@@ -62,7 +63,7 @@ export default function Header({ home = true, estimate = home ? '#estimate' : `$
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
         <a href={home ? '#top' : base} className="flex min-w-0 shrink-0 items-center gap-2.5" onClick={() => setOpen(false)}>
           {/* The name is part of the picture; the alt text carries it for screen readers. */}
-          <img src={business.logoWide} alt={business.name} width="517" height="168" className="h-12 w-auto sm:h-14" />
+          <img src={logo} alt={business.name} width="517" height="168" className="h-12 w-auto sm:h-14" />
         </a>
 
         <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Main">

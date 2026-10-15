@@ -32,6 +32,10 @@ const ribbonY = { backgroundImage: `url(${decor('ribbon-y.webp')})`, backgroundS
 // that above the ribbon's top edge.
 const BOW_H = 'calc(var(--band) / 0.22)'
 const BAND_TOP = `calc(${BOW_H} * 0.266)`
+// The logo with a red neon bow on the cottage's roof (owner 2026-10-15, this page only;
+// our own drawing, scripts/gift-logo.mjs).
+// Shown once the switch says on, so the built page's header is the site's own.
+const BOW_LOGO = `${base}images/gift-wrap/logo-wide-bow.png`
 const btn = 'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 py-3 text-center font-semibold'
 const title = 'font-display text-3xl font-extrabold tracking-tight md:text-4xl'
 
@@ -44,7 +48,7 @@ export default function GiftPage() {
   return (
     <>
       <a href="#main" className="skip-link">Skip to main content</a>
-      <Header home={false} estimate="#estimate" />
+      <Header home={false} estimate="#estimate" logo={on ? BOW_LOGO : undefined} />
       <main id="main" tabIndex={-1} data-behind-switch="" aria-busy={!on} className="on-snow min-h-[70svh] bg-white text-night-950">
         {on ? <Content /> : <Waiting />}
       </main>
