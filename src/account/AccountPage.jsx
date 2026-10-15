@@ -1023,7 +1023,7 @@ function Help() {
             <li key={h.id}>
               <details className="group py-1">
                 <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
-                  {h.q}<Icon name="chevron" className="size-5 shrink-0 text-glow-400 transition group-open:rotate-180" />
+                  {h.q}<Icon name="chevron" className="size-5 shrink-0 text-glow-400 motion-safe:transition group-open:rotate-180" />
                 </summary>
                 <p className="pb-3 text-sm text-slate-300">{h.a}</p>
               </details>

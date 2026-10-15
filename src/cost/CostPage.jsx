@@ -153,7 +153,7 @@ export default function CostPage() {
               <details key={q} className="group px-5">
                 <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium [&::-webkit-details-marker]:hidden">
                   {q}
-                  <Icon name="chevron" className="size-5 shrink-0 text-glow-400 transition group-open:rotate-180" />
+                  <Icon name="chevron" className="size-5 shrink-0 text-glow-400 motion-safe:transition group-open:rotate-180" />
                 </summary>
                 <p className="pb-5 text-slate-400"><Rich text={a} /></p>
               </details>
