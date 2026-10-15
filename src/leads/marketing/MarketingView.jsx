@@ -91,7 +91,7 @@ export default function MarketingView({ user, settings, names, onOpenMessages })
               <span className="min-w-0 flex-1 text-sm">{d.text}</span>
               {d.link === 'messages'
                 ? <button type="button" onClick={onOpenMessages} className={btn}>{d.linkLabel}</button>
-                : <a href={d.link} className={btn}>{d.linkLabel}</a>}
+                : <a href={d.link} className={btn} {...(d.link.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{d.linkLabel}</a>}
             </li>
           ))}
         </ul>

@@ -45,6 +45,7 @@ The "dates are filling" message stays honest because it comes from the calendar 
 | **Google Ads** (Performance Max) | Three copy swaps, Monday search-terms check, negatives, budget by phase | Medium: 30 min a week + 1 hour per swap | Owner; Claude drafts |
 | **Video ads** | Halloween cut to Oct 31; re-render without the offer on Nov 1 | Low | Owner uploads; Claude renders when asked |
 | **Facebook page, groups, Nextdoor** | 8 photo posts (drafted), answer comments, follow each group's promo-day rules | Medium: about 20 min a post | Owner |
+| **Nextdoor business page** (up 2026-10-15: verified, categories Lighting installation + Home decor service, texts in `docs/listings.md`) | Post the Nextdoor version of each social post; answer messages, comments and recommendation threads the same day (a daily item in the app's 📣 Marketing); one "Ask for recommendations" share after the first installs, the same words to everyone, nothing offered, never inside the Google review email | Low: 5 min a day | Owner |
 | **Yard and road signs** | A yard sign at installed homes where the homeowner says yes (and the HOA allows); road signs already lead to the site | Medium once: order the prints (TODO #53) | Owner; crew asks on install day |
 | **Directories** (Holiday Lighting Directory, Thumbtack, Angi, Nextdoor page, Yelp) | Covered by the SEO report, TODO #79; not repeated | One afternoon | Owner |
 | **Website** | Nothing new needed; the calendar swaps itself | None | (automatic) |
@@ -132,7 +133,7 @@ Every Monday, 15 minutes, into the log below (owner or staff). Nothing new is in
 
 1. **Say "booking closes December 15" out loud?** The site switches to next season after Dec 15 (`urgency.bookingClose`) but never says the date. The drafts avoid it; say yes and the December posts and ads can.
 2. **Was any gallery photo retouched** (sky, stars, added light)? `victory-lakes-league-city-04.jpg` has a star-filled sky. Posts use only photos you confirm as straight from the camera; it stays out of the drafts until then.
-3. **Which social accounts exist?** Facebook page, Instagram, Nextdoor business page: send the links (also wanted for the SEO report, TODO #79 (7)).
+3. **Which social accounts exist?** The Nextdoor business page is up (2026-10-15); send its link, and the Facebook page and Instagram if they exist (also wanted for the site's `sameAs`, TODO #79 (7)).
 4. **Naming businesses**: OK to name Tight Ends and Kids 'R' Kids in posts, or ask them first?
 5. **A referral thank-you?** Nothing on the site offers one, so nothing in the drafts does. Your call; reviews can never be part of it.
 6. **Ads budget by phase**: your number; the plan only says where the weight goes.

@@ -36,6 +36,8 @@ export const DAILY = [
   { text: 'Send the ⭐ review texts the day they show up in 💬.', link: 'messages', linkLabel: '💬 Messages' },
   { text: 'When a new review shows on Google, tap ★ They reviewed on that customer.', link: '#customers', linkLabel: 'Customers' },
   { text: 'Fill in a missing email or phone number when you see one: no contact, no review ask.', link: '#customers', linkLabel: 'Customers' },
+  // The business page went up 2026-10-15; its messages and recommendations only show on Nextdoor (the sync drops nextdoor.com mail as service mail).
+  { text: 'Nextdoor: answer new messages, comments and recommendations on the business page the same day.', link: 'https://nextdoor.com/', linkLabel: 'Nextdoor ↗' },
 ]
 
 // Targets, not promises.
@@ -177,7 +179,7 @@ export const WEEKS = [
 export const QUESTIONS = [
   { id: 'q-bookingclose', text: 'Say "booking closes December 15" out loud in December posts and ads?' },
   { id: 'q-retouched', text: 'Was any gallery photo retouched (sky, stars, added light)? Victory Lakes 04 has a starry sky.' },
-  { id: 'q-socials', text: 'Which social accounts exist (Facebook page, Instagram, Nextdoor)? Send the links.' },
+  { id: 'q-socials', text: 'Send the links of the Nextdoor business page (up since Oct 15) and the Facebook page and Instagram, if they exist.' },
   { id: 'q-names', text: 'OK to name Tight Ends and Kids ’R’ Kids in posts, or ask them first?' },
   { id: 'q-referral', text: 'A referral thank-you? Nothing offers one today (reviews can never be part of it).' },
   { id: 'q-budget', text: 'Google Ads budget by phase: your number.' },
