@@ -88,7 +88,7 @@ test('its own page: built as an empty shell, kept out of search, never announced
 test('the Ask button lands on the form with Gift wrapping already picked', async () => {
   const src = await read('src/gift/GiftPage.jsx')
   assert.match(src, /href="#estimate"/)
-  assert.match(src, /<section id="estimate"/)
+  assert.match(src, /<Box id="estimate"/)
   assert.match(src, /<EstimateForm service="Gift wrapping"/)
   assert.ok(SERVICES.includes('Gift wrapping'))
   assert.ok((await read('src/components/EstimateForm.jsx')).includes('useState(SERVICES.includes(startService) ? startService : SERVICES[0])'))
@@ -114,6 +114,19 @@ test('while off, nothing public mentions gift wrapping: the main copy, the prere
   assert.deepEqual(phrases.filter((p) => standing.includes(p)), [])
   assert.ok(!says(salesKnowledge()), 'the assistant learns about it only once the owner turns it on')
   assert.ok(says(giftWrapping) && giftWrapping.faq.items.length >= 3 && giftWrapping.steps.length === 3)
-  // No promises the owner hasn't made yet (prices, dates, supplies): docs/specs/gift-wrapping.md.
-  assert.doesNotMatch(JSON.stringify(giftWrapping), /\$\d|per gift|December \d/i)
+  // Only the promises the owner has made (docs/specs/gift-wrapping.md): his prices, 2026-10-15
+  // ("do $15/$22/$30/$40 with the bow included"), and no dates or supplies yet.
+  const words = JSON.stringify(giftWrapping)
+  assert.deepEqual(giftWrapping.prices.rows.map((r) => r.price), ['$15', '$22', '$30', '$40'])
+  assert.deepEqual([...new Set(words.match(/\$\d+(\.\d+)?/g))].sort(), ['$15', '$22', '$30', '$40'], 'no other amount anywhere')
+  assert.match(giftWrapping.prices.intro, /bow is included/)
+  assert.doesNotMatch(words, /December \d|Dec\.? \d|\d+(st|nd|rd|th) of December/i)
+})
+
+test('the page: the prices on the tag, the ribbon and bow pictures it draws are on disk', async () => {
+  const src = await read('src/gift/GiftPage.jsx')
+  assert.ok(src.includes('t.prices') && src.includes('<Tag />'))
+  for (const f of src.match(/decor\('([\w-]+\.webp)'\)/g).map((m) => m.slice(7, -2))) {
+    await readFile(new URL(`../public/images/gift-wrap/decor/${f}`, import.meta.url))
+  }
 })

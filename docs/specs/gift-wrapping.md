@@ -15,7 +15,7 @@ Status: **built, switched off** (2026-10-13). Owner, 2026-10-13: "put the gift w
 
 ## The page: `/gift-wrapping/`
 
-`gift-wrapping/index.html` → `src/gift/main.jsx` → `src/gift/GiftPage.jsx` (decorations in `src/gift/Art.jsx`). Words in `giftWrapping` in `src/data/content.js`.
+`gift-wrapping/index.html` → `src/gift/main.jsx` → `src/gift/GiftPage.jsx`. Words in `giftWrapping` in `src/data/content.js`.
 
 **While the switch is off, or before the answer:** the page is the shared header, an empty `<main>` (three red dots) and a footer. On an off answer it sends the visitor to the home page (`location.replace`). Chosen as the safest of the options, because each layer covers a gap in the others:
 
@@ -29,34 +29,38 @@ Status: **built, switched off** (2026-10-13). Owner, 2026-10-13: "put the gift w
 
 A redirect alone was rejected (a crawler that doesn't run JavaScript would read a page full of gift-wrapping words), and so was `noindex` alone (anyone with the link could read it while off). The JavaScript bundles still carry the words, as the home page's did before; only the HTML is kept clean.
 
-**While on:** the browser tab says "Gift Wrapping in Pearland, TX | …" and the page draws, top to bottom:
+**While on:** the browser tab says "Gift Wrapping in Pearland, TX | …" and the page draws itself as a wrapped present (owner 2026-10-15: "make the page look gift wrapped"), top to bottom:
 
-1. **Hero** (white, faint red snowflakes): a red satin ribbon across the top with a bow on it, eyebrow "New this Christmas", the title, the intro, **🎁 Ask about gift wrapping** (to the form below) and **Call 281-819-0163**, then a strip of red-and-white ornaments in Santa hats.
-2. **Wrapped by us**: the photo grid, only once `giftWrapping.photos` is filled.
-3. **How gift wrapping works** (blush band): the three steps with the holiday icons (envelope, card, gift) and red numbers; the details list ("Good to know") once `details` is filled.
-4. **Your questions, answered.**: the four gift-wrapping answers.
-5. **Ask about gift wrapping** (`#estimate`, blush band): the estimate form in its white-and-red look with **Gift wrapping already picked** (`<EstimateForm service="Gift wrapping" skin="snow" />`); on phones the form comes right after the heading, Call / Text us follow.
-6. Footer: candy-stripe edge, ← Christmas Light Creations, the phone, the footer links.
+1. **The lid:** pale wrapping paper (white-pink with faint red snowflakes), a wide red **satin ribbon** across the top with **one big many-looped bow** on it, and red ornaments hanging from the ribbon on strings (two on phones, four from 1024 px).
+2. **The same ribbon runs down the middle of the page** behind every section, so the two cross under the bow like a tied box. Each section is a **white box** lying on it (with a thin ribbon round its top edge), so the ribbon shows only between boxes and never under words. A sprig of holly is tucked into the ribbon between boxes.
+3. **Hero box:** eyebrow "New this Christmas", the title, the intro, **🎁 Ask about gift wrapping** (to the form below) and **Call 281-819-0163**.
+4. **Prices on a gift tag:** a cream tag with a red notched border and a punched hole, hung by a string from a small glossy bow on the ribbon: Small $15, Medium $22, Large $30, Oversized $40, each with examples, "Your hand-tied designer bow is included in every price", and "Not sure which size? Text us a photo".
+5. **Wrapped by us**: the photo grid, only once `giftWrapping.photos` is filled.
+6. **How gift wrapping works**: the three steps, numbered on glossy red beads; the details list ("Good to know") once `details` is filled.
+7. **Your questions, answered.**: the four gift-wrapping answers (the price one gives the four prices).
+8. **Ask about gift wrapping** (`#estimate`): the estimate form in its white-and-red look with **Gift wrapping already picked** (`<EstimateForm service="Gift wrapping" skin="snow" />`); on phones the form comes right after the heading, Call / Text us follow.
+9. Footer (white): ← Christmas Light Creations, the phone, the footer links.
 
-The shared header (night blue, logo, ☎, menu) and the Call / Free estimate bar on phones (white and red here, `MobileCta skin="snow"`) are on it too.
+The shared header (night blue, logo, ☎, menu) and the Call / Free estimate bar on phones (white and red here, `MobileCta skin="snow"`) are on it too. Decoration never covers text or buttons: the ribbon down the page is behind the boxes, the bow's tails end in the hero box's top padding, the ornaments hang beside the bow.
 
-**The look** (owner 2026-10-15, an exception to "colours from the theme tokens"): white background, red from the berry tokens (two added to `src/index.css`: `berry-50` for the blush bands, `berry-700` for ribbon shade and hover), navy and slate text, focus rings in red (`.on-snow`). Classes `gift-ribbon`, `gift-snow` and `candy-stripe` in `src/index.css`. Contrast (computed): berry-600 on white 6.6:1 (white on berry-600 buttons the same), on the blush bands 6.0:1; slate-600 body text 7.6:1; berry-700 links 9.1:1; slate-500 placeholders 4.8:1.
+**The look** (owner 2026-10-15, an exception to "colours from the theme tokens"): realistic, glossy satin ribbon like his own hand-tied bows (not flat or cartoon), white boxes on pale paper, red from the berry tokens (two added to `src/index.css`: `berry-50` #fff5f6 for the paper and hovers, `berry-700` for hover and shade), a cream tag (`amber-50`), navy and slate text, focus rings in red (`.on-snow`). The paper's snowflakes are the `gift-snow` class in `src/index.css`; the ribbon is set inline in `src/gift/GiftPage.jsx` (a slice of the stock band repeated across and, turned, down). The bow picture is placed from where the band crosses it (26.6 % to 48.6 % of its height, printed by the script), so its band lines up with the page's ribbon at every width (`--band`: 2.25rem on phones, 3rem from 768 px, 3.75rem from 1024 px). Contrast (computed): berry-600 on white 6.6:1 (white on berry-600 buttons the same), on the paper 6.0:1 or better; slate-600 body text 7.6:1; berry-700 links 9.1:1; slate-500 placeholders 4.8:1.
 
-**Christmas imagery and its sources:**
+**Christmas imagery and its sources** (all the owner's Vecteezy Pro downloads, confirmed Pro by him 2026-10-15, so no credit line; raw EPS files in `assets-source/stock/vecteezy/packs/gift-wrap/<name>/`, git-ignored; `scripts/gift-art.mjs` draws them with Ghostscript, takes out the white background the artist built in, keeps the soft shadows as see-through shade, and writes `public/images/gift-wrap/decor/`):
 
-| Where | What | Source |
-|---|---|---|
-| Hero top | Ribbon band and bow | Our own drawing (`Bow` in `src/gift/Art.jsx`, CSS ribbon) |
-| Hero background | Faint snowflakes | Our own drawing (`gift-snow`, an inline SVG pattern) |
-| Section titles | Holly sprig | Our own drawing (`Holly` in `src/gift/Art.jsx`) |
-| Hero bottom | Ornaments in Santa hats | Vecteezy Pro item 23805645 (raw file ignored in `assets-source/stock/vecteezy/packs/pack1/`), lettering removed and background whitened by `scripts/gift-art.mjs` → `public/images/holiday/ornaments-hats{,-800}.webp` |
-| Steps, form heading, home card | Envelope, card, gift, wreath with bow | The repainted SVG Repo holiday icons (`public/images/holiday/`) |
+| Where | What | Vecteezy item (folder) | File |
+|---|---|---|---|
+| Top of the page | Ribbon band and the big many-looped bow | red-realistic-ribbon-bow 69103390 | `bow-480.webp`, `bow-800.webp`, `ribbon-x.webp` (and `ribbon-y.webp`, the same slice turned, for the ribbon down the page and the home card's edge) |
+| Hanging from the top ribbon | Plain, starred and glittered ornaments on red strings | red-christmas-ornaments-set-glossy-red-baubles 86462541 | `bauble-plain.webp`, `bauble-stars.webp`, `bauble-glitter.webp` |
+| Between boxes, form box | Holly sprigs with berries | christmas-holly-leaves-and-red-berries-3d-illustration 66917022 | `holly-left.webp`, `holly-right.webp` |
+| Above the price tag, home card | Small glossy bow | red-realistic-silk-bows-elements 8656589 | `bow-small.webp` |
+| The paper | Faint red snowflakes | Our own drawing (`gift-snow`, an inline SVG pattern) | |
+| The price tag | Cream tag, red border, hole and string | Drawn in code (the stock tags' fixed shape can't hold four rows on a phone) | |
 
-Stock decorates only, never as a logo. **Every wrapped gift shown is the owner's own work**: no stock or AI gift photos, ever. Licensed Envato Elements items may be added under the rules in `assets-source/stock/envato/README.md` (download per project, raw files never committed).
+Not used (yet): the silver and gold snowflake sets (dark backgrounds baked in; the paper's own snowflakes do the job), the corner ribbons, curls and spare bows, the tag pictures, the gift certificate (has words printed on it). Stock decorates only, never as a logo. **Every wrapped gift shown is the owner's own work**: no stock or AI gift photos, ever. Licensed Envato Elements items may be added under the rules in `assets-source/stock/envato/README.md` (download per project, raw files never committed).
 
 ## What shows when it is on, elsewhere
 
-- **Home page:** one small card after Photos (`src/components/GiftTeaser.jsx`, words `giftWrapping.teaser`): white with a candy-stripe edge, the gift icon, "New this Christmas · We wrap gifts too · Crisp corners, real ribbon, bows that stay put. See gift wrapping", linking to the page (135 px tall at 375 px, under a quarter of a phone screen). No section and no gift FAQ group on the home page any more. Home at 375 px: 18.8 screens off, 19.1 on (was 21 with the old section).
+- **Home page:** one small card after Photos (`src/components/GiftTeaser.jsx`, words `giftWrapping.teaser`): white with a satin ribbon down its edge and the small glossy bow, "New this Christmas · We wrap gifts too · Crisp corners, real ribbon, bows that stay put. See gift wrapping", linking to the page (135 px tall at 375 px, under a quarter of a phone screen). No section and no gift FAQ group on the home page any more. Home at 375 px: 18.8 screens off, 19.1 on (was 21 with the old section).
 - **Menu:** a **Gift wrapping** link after Photos, desktop nav and the ☰ drawer (`navLinks()`), to `/gift-wrapping/`. Only the home page asks the server; the header on `/cost/`, `/design/` and the policy pages doesn't.
 - **Estimate form** (home, `/design/`, the gift page): **What do you need?** Christmas lights / Gift wrapping / Both, at the top. The gift page opens it on Gift wrapping; elsewhere it opens on Christmas lights. With Gift wrapping alone picked, "What would you like lit?" goes away and the form's intro, address hint, message hint, send button ("Ask for my price") and text-us line talk about wrapping (`giftWrapping.form`). Saved on the lead as `service` (`LEAD_FIELDS` in `src/lib/firebase.js`, the `leads` create rule in `firestore.rules`: one of the three, or absent). While the switch is off the form has no such field and the lead carries no `service` at all; `submitLead` drops anything that isn't one of the three. (`service` is a keyword in the rules language: the rule reads it as `request.resource.data['service']`, never `.service`; the emulator tests caught that.)
 - **Staff app:** the lead card header shows **🎁 Gift wrapping (no lights)** or **🎁 Lights + gift wrapping** (`serviceLabel()`), the details line **Needs: …**. The staff alert email (`functions/leadEmail.js`) gets 🎁 in the subject and a **Needs** row. The "Got your request" email (`functions/ack.js`) has its own next steps for wrapping alone, and one extra line for Both (`docs/specs/auto-emails.md`).
@@ -67,7 +71,7 @@ Stock decorates only, never as a logo. **Every wrapped gift shown is the owner's
 
 1. Paste the new `firestore.rules` (the lead's `service` field) in the Firebase console.
 2. Deploy the `booking` function: `npx --yes firebase-tools@14.11.0 deploy --only functions:booking --project clc-leads-site --non-interactive` (and `newLeadAlert` for the 🎁 emails: `--only functions:booking,functions:newLeadAlert`).
-3. Answer the questions below; the answers go into `giftWrapping` in `src/data/content.js` (`details`, and the FAQ answers if they change). Photos: original files (not screenshots) in `gift-wrap-incoming/` (not in git), processed like the gallery (`scripts/process-photos.mjs`: resize, strip location data, the gallery's natural touch-up), then listed in `giftWrapping.photos`.
+3. Answer the questions below (#2–6 still open); the answers go into `giftWrapping` in `src/data/content.js` (`details`, and the FAQ answers if they change); confirm the price tag's size examples. Photos: original files (not screenshots) in `gift-wrap-incoming/` (not in git), processed like the gallery (`scripts/process-photos.mjs`: resize, strip location data, the gallery's natural touch-up), then listed in `giftWrapping.photos`.
 4. Staff app → ⚙ Settings → 🎁 Gift wrapping → tick. Check the site 5 minutes later (test checklist #119–120, #181–183).
 5. Google Business Profile: add "Gift wrapping" as a service.
 
@@ -77,11 +81,11 @@ The page stays `noindex` and out of the sitemap even while the switch is on: the
 
 ## Questions for the owner
 
-Still open. The copy promises nothing on these (no prices, dates, supplies or names); fill the **Answer** column and the words get updated. Ideas from the 2026-10-15 conversation, not decided: about $15 / $22 / $30 / $40 per gift by size, or a basic wrap plus a signature-bow add-on; wrapping Dec 15–23, last drop-off Dec 21.
+#1 answered by the owner on 2026-10-15; the rest still open, and the copy promises nothing on them (no dates, supplies or names); fill the **Answer** column and the words get updated. Idea from the 2026-10-15 conversation, not decided: wrapping Dec 15–23, last drop-off Dec 21.
 
 | # | Question | Examples / notes | Answer |
 |---|---|---|---|
-| 1 | **Pricing** | Per gift by size (small $_, medium $_, large $_), a basic wrap plus a signature-bow add-on, per hour, or "contact for a quote" for the first season | |
+| 1 | **Pricing** | Per gift by size, a basic wrap plus a signature-bow add-on, per hour, or "contact for a quote" | **Owner 2026-10-15: "do $15/$22/$30/$40 with the bow included"**: per gift by size, small $15, medium $22, large $30, oversized $40, his hand-tied designer bow in every price (no add-on tier). On the page: the price tag, the price answer, step 2. **The size examples are ours, owner to confirm:** small = jewelry box, book, gift card; medium = shirt or sweater box, small toy; large = boot box, board game, robe box; oversized = big toy boxes and odd shapes. Also to confirm: whether sales tax is added (the page doesn’t say). |
 | 2 | **How gifts get to you** | Customer drops off at your place; you pick up (e.g. during an install or service call); both | |
 | 3 | **Timing** | Start date; last drop-off day before Christmas; turnaround time | |
 | 4 | **Supplies** | Paper, ribbon, bows included or extra? Can customers bring their own? | |

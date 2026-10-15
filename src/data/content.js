@@ -787,10 +787,23 @@ export const giftWrapping = {
   stepsTitle: 'How gift wrapping works',
   steps: [
     ['Tell us what you have', 'Roughly how many gifts, what sizes, and when you need them back. Ask in the estimate form, or text us a photo of the pile.'],
-    ['We send you a price', 'One clear price for the lot before you commit. Tell us a color or a theme and we choose paper, ribbon and bows to match.'],
+    ['We send you the total', 'Per gift, by size, with the bow included, added up before you commit. Tell us a color or a theme and we choose paper, ribbon and bows to match.'],
     ['Hand them over, get them back wrapped', 'We arrange the hand-off with you, then your gifts come back wrapped and ready to give.'],
   ],
-  // Fill in from the owner's answers (price by size, drop-off days, the last day before Christmas, your own paper). Shown only when filled.
+  // Owner 2026-10-15: "do $15/$22/$30/$40 with the bow included" (per gift, by size, his hand-tied
+  // designer bow in every price). The size examples are ours, for him to confirm (docs/specs/gift-wrapping.md).
+  prices: {
+    title: 'Prices',
+    intro: 'Per gift, by size. Your hand-tied designer bow is included in every price.',
+    rows: [
+      { size: 'Small', price: '$15', examples: 'Jewelry box, book, gift card' },
+      { size: 'Medium', price: '$22', examples: 'Shirt or sweater box, small toy' },
+      { size: 'Large', price: '$30', examples: 'Boot box, board game, robe box' },
+      { size: 'Oversized', price: '$40', examples: 'Big toy boxes and odd shapes' },
+    ],
+    note: 'Not sure which size? Text us a photo and we’ll tell you.',
+  },
+  // Fill in from the owner's answers (drop-off days, the last day before Christmas, your own paper). Shown only when filled.
   detailsTitle: 'Good to know',
   details: [],
   cta: 'Ask about gift wrapping',
@@ -800,7 +813,7 @@ export const giftWrapping = {
     group: 'Gift wrapping',
     items: [
       ['Do you really wrap gifts?', 'Yes. Christmas lights by day, gift wrapping by night: the same family, the same season, and we love doing both. Crisp corners, real ribbon, bows that stay put.'],
-      ['How much does gift wrapping cost?', 'It depends on how many gifts you have and their sizes. Tell us roughly what you have and we send you one clear price for the lot, before you commit.'],
+      ['How much does gift wrapping cost?', 'Per gift, by size: small $15, medium $22, large $30, oversized $40, with your hand-tied designer bow included in every price. Tell us roughly what you have and we send you the total before you commit.'],
       ['How do my gifts get to you?', 'We arrange it with you when we send your price: drop them off with us, or we collect them when we’re at your home for your lights.'],
       ['Can I get lights and gift wrapping together?', 'Yes. Pick “Both” on the estimate form and we price them together. Lights customers get first dibs on wrapping dates.'],
     ],
@@ -808,14 +821,14 @@ export const giftWrapping = {
   // The page's form section (#estimate): the estimate form with Gift wrapping already picked.
   ask: {
     title: 'Ask about gift wrapping',
-    intro: 'Tell us roughly what you have and when you need it back. We send one clear price for the lot before you commit.',
+    intro: 'Tell us roughly what you have and when you need it back. We send you the total before you commit.',
   },
   // "What do you need?" on the estimate form (the three choices are SERVICES in functions/giftWrapping.js),
   // and the form's words while Gift wrapping (alone) is picked.
   form: {
     legend: 'What do you need? *',
     placeholder: 'How many gifts, roughly what sizes, colors you like, when you need them…',
-    intro: 'Takes about a minute. We send one clear price for the lot before you commit.',
+    intro: 'Takes about a minute. We send you the total before you commit.',
     addressHint: 'So we can arrange the hand-off with you.',
     submit: 'Ask for my price',
     text: { link: 'Text a photo of the pile to', sms: 'Hi! I’d like a price for gift wrapping: ' },

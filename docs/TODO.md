@@ -31,7 +31,7 @@ Open items for the website, staff app and accounts. Newest decisions are in `dec
 | 6 | **Test Text button** end to end (copy number → Send new message → paste → send) | First real test after the number moved |
 | 7 | **Review campaign** to last year's customers | Season tab → ✉ Email these → Review request, or ★ Review texts. Season plan (TODO #80): only past customers **not** on this season's list; this season's installs are asked by the website 2 days after Install Completed (one ask per season) |
 | 9 | Watch for **Google support's reply** on merging the duplicate Business Profile | Don't edit/remove either listing until then |
-| 11 | **Gift wrapping** answers (price, how gifts get to you, dates, supplies, who wraps, businesses) | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/`. The page is built and off (item E): the answers go into `giftWrapping` in `src/data/content.js` before you turn it on |
+| 11 | **Gift wrapping** answers (how gifts get to you, dates, supplies, who wraps, businesses; prices answered 2026-10-15: confirm the tag's size examples and whether tax is added) | `docs/specs/gift-wrapping.md`; photos → `gift-wrap-incoming/`. The page is built and off (item E): the answers go into `giftWrapping` in `src/data/content.js` before you turn it on |
 | 12 | Optional: $5 budget alert in Google Cloud/Firebase | |
 | 13 | Optional: GitHub domain verification TXT (locks the domain to this GitHub) | github.com → Settings → Pages → Add a domain |
 | 17 | **Reply to the Oct 7 old-site request** (its email to you failed): itemized quote for an insurance claim | Past requests tab (shown first, red note) |
