@@ -123,10 +123,14 @@ test('while off, nothing public mentions gift wrapping: the main copy, the prere
   assert.doesNotMatch(words, /December \d|Dec\.? \d|\d+(st|nd|rd|th) of December/i)
 })
 
-test('the page: the prices on the tag, the ribbon and bow pictures it draws are on disk', async () => {
+test('the page: the prices on the tag, the bow and decoration pictures it draws are on disk', async () => {
   const src = await read('src/gift/GiftPage.jsx')
   assert.ok(src.includes('t.prices') && src.includes('<Tag />'))
-  for (const f of src.match(/decor\('([\w-]+\.webp)'\)/g).map((m) => m.slice(7, -2))) {
+  // Every decoration it names: decor('x.webp'), the step bows (src: 'x.webp'), the ornaments ['x.webp', …].
+  const files = [...new Set(src.match(/'[\w-]+\.webp'/g).map((m) => m.slice(1, -1)))]
+  assert.ok(files.length >= 10, `${files.length} pictures`)
+  for (const f of files) await readFile(new URL(`../public/images/gift-wrap/decor/${f}`, import.meta.url))
+  for (const f of (await read('src/components/GiftTeaser.jsx')).match(/[\w-]+\.webp/g)) {
     await readFile(new URL(`../public/images/gift-wrap/decor/${f}`, import.meta.url))
   }
 })

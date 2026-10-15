@@ -18,7 +18,7 @@ Reorganized on 2026-10-14; the old folder names are at the bottom.
 | `photos/gallery-hi-res/` | The owner's hi-res rescans (about 3 MB each), named by neighborhood and town | *ignored* | `scripts/process-gallery.mjs` → `public/images/gallery/` |
 | `photos/google-photos/` | Install photos from Google Photos (`originals/`); the web gallery taken down on 2026-10-14 (`old-web-gallery-2026-10-08/`) | *ignored* (customers' houses) | by hand |
 | `stock/svg-repo-icons/` | 16 free holiday icons, kept untouched | yes | `scripts/holiday-icons.mjs` → `public/images/holiday/` |
-| `stock/vecteezy/` | Vecteezy Pro downloads (zips, packs, mockups) | *ignored* (licensed) | `stock/vecteezy/make-mockups.mjs`; `scripts/gift-art.mjs` (the owner's gift-wrap pack in `packs/gift-wrap/`: ribbon, bows, holly, ornaments → `public/images/gift-wrap/decor/`; needs Ghostscript) |
+| `stock/vecteezy/` | Vecteezy Pro downloads (zips, packs, mockups) | *ignored* (licensed) | `stock/vecteezy/make-mockups.mjs`; `scripts/gift-art.mjs` (the owner's gift-wrap pack in `packs/gift-wrap/`: ribbon, bows, holly, ornaments → `public/images/gift-wrap/decor/`; needs Ghostscript); `scripts/gift-bows.mjs` (the transparent bow PNGs at the top of the folder: the step boxes' bows) |
 | `stock/envato/` | Envato Elements rules and workflow (`README.md`); downloads in `downloads/<project>/` | README yes; `downloads/` ignored (licensed) | by hand |
 | `ads/gemini/` | The owner's Gemini renders of the cottage | yes | `video/scripts/prepare-assets.mjs` |
 | `ads/image-assets/` | Google Ads image assets: landscape and square crops, the two ad logos, crop previews | yes | uploaded by hand; `scripts/ads-video.py` reads the logos |
