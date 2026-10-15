@@ -33,7 +33,8 @@ export const areas = [
     slug: 'league-city',
     name: 'League City',
     towns: ['League City', 'Tuscan Lakes', 'South Shore', 'The Lakefront Preserve', 'Westover Park', 'Victory Lakes'],
-    photos: pics('lakefront-preserve-league-city-01.jpg', 'victory-lakes-league-city-02.jpg', 'centerpointe-league-city.jpg', 'westover-park-league-city.jpg', 'tightends-league-city-commercial.jpg'),
+    // Leads with a roofline (owner 2026-10-14: "lead League City with a roofline photo instead"; tree wrapping isn't sold).
+    photos: pics('victory-lakes-league-city-04.jpg', 'victory-lakes-league-city-02.jpg', 'centerpointe-league-city.jpg', 'westover-park-league-city.jpg', 'tightends-league-city-commercial.jpg'),
     intro: 'League City is one of our busiest areas, full of tall two-story homes where a ladder-free weekend sounds pretty good.',
     local: [
       'Taller rooflines are where a professional install shows: every run is measured with a wheel and custom-fit, so there are no extra strands hanging off the roof.',
