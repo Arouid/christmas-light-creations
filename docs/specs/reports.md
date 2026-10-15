@@ -16,6 +16,7 @@ A **📊 Reports** section in the staff app (`/leads/#reports`, behind staff sig
 | **Season plan 2026** | Goals, phases, channels, reviews, what to measure, open questions; competitors; brand voice. The weekly jobs and the drafts stay in 📣 Marketing (a button goes there) | `docs/marketing/season-plan-2026.md`, `competitors-2026-10.md`, `brand-voice.md` |
 | **SEO** | The open SEO jobs (TODO #70, #79), the search positions log with the method, the live checks still waiting (test checklist #158–161), the profile texts | `docs/TODO.md`, `docs/serp-log.md`, `docs/test-checklist.md`, `docs/listings.md` |
 | **Design** | What's still open from the design review (TODO N) and the live checks of the design and designer fixes (test checklist #162–168, with their status), then the findings of both reviews and what was built for each | `docs/TODO.md`, `docs/test-checklist.md`, `docs/reviews/design-2026-10.md`, `docs/reviews/designer-2026-10.md` |
+| **Links** (added 2026-10-15, spec [staff-links.md](staff-links.md)) | Every account the business runs on: its link, what it's for, and the login it belongs to | `src/data/staffLinks.js`; the logins from `settings/app.logins` (typed on the report) |
 
 Each page says at the top which files it is drawn from, so whoever wants to change it knows where.
 
@@ -27,7 +28,7 @@ How to reach it: the **📊 Reports** button on Home (next to 📣 Marketing and
 
 - **No public page.** These hold customer counts, email drafts, ad strategy and audit findings; `/leads/` is noindex and robots-disallowed. Know what sign-in does and doesn't hide: the docs a report reads are in the GitHub repo, which is **public** (checked 2026-10-15; TODO #64 makes it private), and the Reports chunk is a plain JS file like the rest of the staff app, so their words are readable by anyone who looks there; what only staff can see is the live data (the win-back counts, the Emails tab's edits). Anything that must stay private never goes in `docs/`.
 - **No copied text.** A report never holds its own words: when a number or a line changes, it changes in the doc or the code it's read from. The one exception is the two design reviews, whose findings existed only in the artifacts: they were moved into `docs/reviews/` once, and those docs are now the source.
-- **No editing.** Reports read; ticks, statuses and Monday numbers stay where they are (📣 Marketing, Old-site requests).
+- **No editing.** Reports read; ticks, statuses and Monday numbers stay where they are (📣 Marketing, Old-site requests). The one exception is the logins on **Links**, which have no other home (they can't go in the public repo).
 - **No screenshots.** The before/after pictures of the design review stay on its claude.ai page (linked); a picture of a page on one day can't update itself.
 - **The logo and icon boards** (5 artifacts) stay as they are (owner).
 - **No new Firestore collection** and no rules change: Reports read only what the app already listens to.
