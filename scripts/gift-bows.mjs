@@ -84,3 +84,6 @@ const [greenPlaid, , red] = await sheetBows(sheet) // row 1: green plaid, brown 
 await save('bow-green-plaid', await greenPlaid(), [360])
 await save('bow-red-watercolor', await red(), [360])
 await save('bow-pink-gingham', sharp(`${SRC}/vecteezy_pink-bow-on-a-transparent-background-pink-ribbon-hand_42074935.png`), [360])
+// The big bow on the top ribbon: the owner's own pick, which he saved as top-bow.png (2026-10-15:
+// a red bow with gold edges and stars, holly on top), on the black ribbon he asked for.
+await save('bow-top', sharp(`${SRC}/top-bow.png`), [480, 720])

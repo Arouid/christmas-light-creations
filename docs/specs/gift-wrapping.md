@@ -31,7 +31,7 @@ A redirect alone was rejected (a crawler that doesn't run JavaScript would read 
 
 **While on:** the browser tab says "Gift Wrapping in Pearland, TX | …" and the page draws itself as a wrapped present (owner 2026-10-15: "make the page look gift wrapped"), top to bottom:
 
-1. **The lid:** pale wrapping paper (white-pink with faint red snowflakes), a wide red **satin ribbon** across the top with **one big many-looped bow** on it, and red ornaments hanging from the ribbon on strings (two on phones, four from 1024 px).
+1. **The lid:** pale wrapping paper (white-pink with faint red snowflakes), a wide **evergreen ribbon** across the top with a thin gold line and a red edge each side (drawn in CSS, `src/lib/giftRibbon.js`; owner 2026-10-15: "try thyer red bow with the black ribbon strips for the top", "change the black to something more christmasy", "go" on evergreen) with **his own top bow** on it (`top-bow.png`: red with gold edges and stars, holly on top; "top bow is perfect"), its knot on the ribbon, and red ornaments hanging from the ribbon on strings (two on phones, four from 1024 px).
 2. **The same ribbon runs down the middle of the page** behind every section, so the two cross under the bow like a tied box. Each section is a **white box** lying on it (with a thin ribbon round its top edge), so the ribbon shows only between boxes and never under words. A sprig of holly is tucked into the ribbon between boxes.
 3. **Hero box:** eyebrow "New this Christmas", the title, the intro, **🎁 Ask about gift wrapping** (to the form below) and **Call 281-819-0163**.
 4. **Prices on a gift tag:** a cream tag with a red notched border and a punched hole, hung by a string from a small glossy bow on the ribbon: Small $15, Medium $22, Large $30, Oversized $40, each with examples, "Your hand-tied designer bow is included in every price", and "Not sure which size? Text us a photo".
@@ -54,6 +54,8 @@ The shared header (night blue, ☎, menu) shows the logo **with a red neon bow o
 | Between boxes, form box | Holly sprigs with berries | christmas-holly-leaves-and-red-berries-3d-illustration 66917022 | `holly-left.webp`, `holly-right.webp` |
 | Above the price tag, home card | Small glossy bow | red-realistic-silk-bows-elements 8656589 | `bow-small.webp` |
 | Steps 1, 2, 3 | Green plaid, red and pink gingham watercolour bows | set-of-bows 32476415, pink-bow-on-a-transparent-background 42074935 (PNGs with real transparency; `scripts/gift-bows.mjs`) | `bow-green-plaid.webp`, `bow-red-watercolor.webp`, `bow-pink-gingham.webp` |
+| Top of the page | His top bow (red, gold edges and stars, holly) | his own file `top-bow.png` (Vecteezy Pro, `scripts/gift-bows.mjs`) | `bow-top-480.webp`, `bow-top-720.webp` |
+| The ribbon (top, down the page, box tops) | Evergreen satin, gold line, red edge | Drawn in CSS (`src/lib/giftRibbon.js`, after the band in 48804124) | |
 | The paper | Faint red snowflakes | Our own drawing (`gift-snow`, an inline SVG pattern) | |
 | The price tag | Cream tag, red border, hole and string | Drawn in code (the stock tags' fixed shape can't hold four rows on a phone) | |
 | The header, this page only | The logo with a neon bow on the cottage's roof peak | Our own drawing (`scripts/gift-logo.mjs`) on `public/images/clc-logo-wide.png` | `public/images/gift-wrap/logo-wide-bow.png` |

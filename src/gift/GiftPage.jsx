@@ -5,6 +5,7 @@ import Icon from '../components/Icon'
 import MobileCta from '../components/MobileCta'
 import Rich from '../components/Rich'
 import { business, footerLinks, giftWrapping as t } from '../data/content'
+import { ribbonX, ribbonY } from '../lib/giftRibbon'
 import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 
 // /gift-wrapping/ (docs/specs/gift-wrapping.md): the owner's second service
@@ -23,15 +24,13 @@ import { useGiftWrappingAnswer } from '../lib/giftWrapping'
 // switch is on. Off (or no answer) sends the visitor to the home page.
 const base = import.meta.env.BASE_URL
 const decor = (f) => `${base}images/gift-wrap/decor/${f}`
-// The satin ribbon: a thin slice of the stock band, repeated along it.
-const ribbonX = { backgroundImage: `url(${decor('ribbon-x.webp')})`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x' }
-const ribbonY = { backgroundImage: `url(${decor('ribbon-y.webp')})`, backgroundSize: '100% auto', backgroundRepeat: 'repeat-y' }
-// The bow picture (bow-800.webp, 1082 × 1226 as cut): the band crosses it from
-// 26.6 % to 48.6 % of its height (printed by scripts/gift-art.mjs), so with the
-// page's ribbon --band tall the bow is --band / 0.22 tall and sits 26.6 % of
-// that above the ribbon's top edge.
-const BOW_H = 'calc(var(--band) / 0.22)'
-const BAND_TOP = `calc(${BOW_H} * 0.266)`
+// The big bow on the top ribbon (bow-top, 480 × 555: the owner's own pick, top-bow.png, a red bow
+// with gold edges and stars and holly on top; scripts/gift-bows.mjs): its knot is 50 % across and
+// 45 % down. It is 5.2 ribbons wide, and the ribbon runs through its knot: the ribbon's top edge
+// sits at the knot's height less half the ribbon.
+const BOW_W = 'calc(var(--band) * 5.2)'
+const BOW_H = `calc(${BOW_W} * 1.156)`
+const BAND_TOP = `calc(${BOW_H} * 0.45 - var(--band) / 2)`
 // The logo with a red neon bow on the cottage's roof (owner 2026-10-15, this page only;
 // our own drawing, scripts/gift-logo.mjs).
 // Shown once the switch says on, so the built page's header is the site's own.
@@ -114,14 +113,15 @@ const BAUBLES = [
 ]
 function Lid() {
   return (
-    <div className="relative -mx-4" style={{ height: `calc(${BOW_H} * 0.92)` }} aria-hidden="true">
+    <div className="relative -mx-4" style={{ height: `calc(${BOW_H} * 0.95)` }} aria-hidden="true">
       {BAUBLES.map(([file, where, width, drop, show]) => (
         <img key={where} src={decor(file)} alt="" width="160" height="268" className={`absolute h-auto ${where} ${width} ${show}`}
           style={{ top: `calc(${BAND_TOP} + var(--band) / 2 + ${drop})` }} />
       ))}
       <div className="absolute inset-x-0 h-(--band) shadow-md" style={{ top: BAND_TOP, ...ribbonX }} />
-      <img src={decor('bow-480.webp')} srcSet={`${decor('bow-480.webp')} 480w, ${decor('bow-800.webp')} 800w`} sizes="(min-width: 64rem) 16rem, (min-width: 48rem) 13rem, 10rem"
-        alt="" width="800" height="906" className="absolute left-1/2 top-0 z-10 w-auto max-w-none -translate-x-1/2 drop-shadow-lg" style={{ height: BOW_H }} />
+      <img src={decor('bow-top-480.webp')} srcSet={`${decor('bow-top-480.webp')} 480w, ${decor('bow-top-720.webp')} 720w`}
+        sizes="(min-width: 64rem) 20rem, (min-width: 48rem) 16rem, 12rem" alt="" width="480" height="555"
+        className="absolute left-1/2 top-0 z-10 h-auto max-w-none -translate-x-1/2 drop-shadow-lg" style={{ width: BOW_W }} />
     </div>
   )
 }
