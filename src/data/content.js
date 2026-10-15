@@ -315,6 +315,23 @@ export const accountReviewCard = {
   thanks: 'Thank you! It means a lot to our family.',
 }
 
+// "At a glance" under the greeting on /account/ (design review 2026-10-14: the
+// amount due sat about four screens down): each row jumps to its section.
+export const accountGlance = {
+  label: 'At a glance',
+  lightsUp: 'Lights up',
+  takedown: 'Takedown',
+  due: 'Due now',
+  pay: 'Pay',
+  paid: 'Payments',
+  paidUp: 'All paid up ✓',
+  problem: 'Something out?',
+  report: 'Report a problem',
+  chat: 'Questions?',
+  write: 'Chat with us',
+  welcome: 'Welcome', // the greeting when we don't know their name
+}
+
 // The picture of their house on top of the "Hi, <name>" card on /account/
 // (docs/specs/account-house-photo.md, owner 2026-10-14): our own photo when
 // staff picked one, else Google Street View of the address, else nothing.

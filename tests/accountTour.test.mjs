@@ -44,7 +44,10 @@ test('opens by itself only when there is something of theirs to show, not for â˜
   const nothing = { email: 'new@example.com', proposals: [], invoices: [], customer: null, schedule: null, service: null, chat: null }
   assert.deepEqual(ids(accountTourSteps(nothing, { installed: true })), ['menu'])
   assert.equal(tourWorthOpening(accountTourSteps(nothing, { installed: true })), false)
-  assert.equal(tourWorthOpening(accountTourSteps(nothing)), true) // Get the app is theirs too
+  // Nothing of theirs yet: no Get the app either (design review 2026-10-14), so no tour by itself.
+  assert.deepEqual(ids(accountTourSteps(nothing)), ['menu'])
+  assert.equal(tourWorthOpening(accountTourSteps(nothing)), false)
+  assert.ok(ids(accountTourSteps({ ...nothing, customer: { name: 'Pat' } })).includes('app'), 'a customer record is theirs')
   assert.equal(tourWorthOpening(accountTourSteps(full)), true)
   assert.deepEqual(accountTourSteps(null, { installed: true }).map((s) => s.id), ['menu'])
 })

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { accountReviewCard, business } from '../data/content'
+import { accountGlance, accountReviewCard, business } from '../data/content'
 import { laterValue, reviewCardHidden, saveReviewCard } from './reviewCard'
 import DepositPanel from '../proposal/DepositPanel.jsx'
 import { STATUS_LABEL, dueText, fmt, isPayIn3, partLabel } from '../proposals/model.js'
@@ -103,16 +103,18 @@ export default function AccountPage() {
   const tourOpen = tour ?? (Boolean(data) && (preview || !tourSeen) && tourWorthOpening(tourSteps))
   const closeTour = () => { if (!preview) markTourDone(); setTour(false) }
   // What the drawer links to, by what's on the page (anchors below).
+  // In the page's own order (Account below).
+  const hasRecords = Boolean(data) && ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0 || Boolean(data.customer))
   const menuItems = data ? [
     (data.schedule || data.service) && { href: '#lights', label: 'Your lights', icon: '🎄' },
     data.chat && { href: '#chat', label: 'Chat with us', icon: '💬' },
     ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0) && { href: '#agreements', label: 'Agreements & payments', icon: '🧾' },
-    (data.invoices ?? []).some((i) => i.state === 'paid') && { href: '#paid', label: 'Paid invoices', icon: '✓' },
     data.price && { href: '#price', label: 'Your yearly price', icon: '💲' },
+    (data.invoices ?? []).some((i) => i.state === 'paid') && { href: '#paid', label: 'Paid invoices', icon: '✓' },
     data.price?.history?.length > 0 && { href: '#history', label: 'What you’ve paid', icon: '📒' },
     data.details && { href: '#property-details', label: 'Your property details', icon: '🏡' },
     data.details && { href: '#emails', label: 'Email preferences', icon: '✉️' },
-    !installed && { href: '#app', label: 'Get the app', icon: '📱' },
+    !installed && hasRecords && { href: '#app', label: 'Get the app', icon: '📱' },
     { href: '#help', label: 'Help', icon: '❓' },
   ].filter(Boolean) : [{ href: '#help', label: 'Help', icon: '❓' }]
 
@@ -249,19 +251,23 @@ export default function AccountPage() {
   return (
     <>
     {preview && <PreviewBanner name={data?.preview?.name} noSignIn={data?.preview?.canSignIn === false} raised={tourOpen && tourSteps.length > 0 && !menu} />}
-    <main className="mx-auto min-h-svh max-w-3xl px-4 pb-24 pt-6">
-      <header className="mb-6 flex items-center justify-between gap-3">
-        <a href={`${import.meta.env.BASE_URL}account/`} className="flex items-center gap-2">
+    {/* Sticks to the top (design review 2026-10-14), so Call and ☰ are one tap away all the way
+        down; not in a staff preview, where the red banner holds the top. */}
+    <header data-sticky-top={preview ? undefined : ''} className={`${preview ? '' : 'sticky top-0'} z-30 border-b border-white/10 bg-night-950/90 backdrop-blur print:static`}>
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-2.5">
+        <a href={`${import.meta.env.BASE_URL}account/`} className="flex min-h-11 items-center gap-2">
           <img src={business.logo} alt="" className="size-10" />
           <span className="font-display text-lg font-extrabold leading-tight">Your account</span>
         </a>
         <div className="flex items-center gap-2">
-          <a href={business.phoneHref} className={`${btn} bg-glow-400 px-4 text-night-950`} aria-label={`Call ${business.phone}`}>
-            <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span><span className="sm:hidden">Call</span>
+          <a href={business.phoneHref} className={`${btn} min-w-11 border border-white/20 px-3 text-glow-300 sm:px-4`} aria-label={`Call ${business.phone}`}>
+            <Icon name="phone" className="size-5" /> <span className="hidden sm:inline">{business.phone}</span>
           </a>
           <button type="button" id="account-menu" onClick={() => setMenu(true)} aria-label="Menu" aria-expanded={menu} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-xl print:hidden">☰</button>
         </div>
-      </header>
+      </div>
+    </header>
+    <main className="mx-auto min-h-svh max-w-3xl px-4 pb-24 pt-6">
       <AccountDrawer open={menu} onClose={() => setMenu(false)} items={menuItems} email={data?.email || prettyPhone(data?.phone ?? '')} onSignOut={data && !demo && !preview ? logOut : null} onTour={tourSteps.length ? () => setTour(true) : null} />
       {tourOpen && tourSteps.length > 0 && <AccountTour steps={tourSteps} name={(data.proposals?.[0]?.customer ?? data.customer ?? data.invoices?.[0]?.customer)?.name} onClose={closeTour} />}
       {demo && <p className="mb-4 rounded-xl bg-berry-600 px-4 py-2 text-center text-sm">Preview with sample data{demoSignIn ? ': nothing is sent, any 6 digits sign in' : ''}</p>}
@@ -422,13 +428,14 @@ function Account({ data, reload, logOut }) {
   }
   const unpaid = invoices.filter((i) => i.state === 'open' || i.state === 'overdue')
   const owed = list.flatMap((p) => p.parts.filter((x) => x.state === 'due')).reduce((t, x) => t + x.amount, 0) + unpaid.reduce((t, i) => t + i.cents, 0)
+  const hasRecords = list.length > 0 || invoices.length > 0 || Boolean(data.customer)
   return (
     <div className="space-y-6">
       {/* Their house on top, like the staff Accounts card (owner 2026-10-14), without its buttons. */}
       <section className="overflow-hidden rounded-3xl border border-white/10 bg-night-900">
         {(data.house || me?.address) && <AccountHouse house={data.house} address={me?.address} />}
         <div className="space-y-1 p-4 sm:p-5">
-          <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : 'Your account'}</h1>
+          <h1 className="font-display text-3xl font-extrabold">{me?.name ? `Hi, ${me.name.split(' ')[0]}` : accountGlance.welcome}</h1>
           {me?.address && <p className="text-slate-300">{me.address}</p>}
           {/* The phones and emails linked to the account (any of them signs in), like the staff card's line. */}
           {linked.length > 0 && <p className="text-slate-300 [overflow-wrap:anywhere]">{linked.join(' · ')}</p>}
@@ -440,16 +447,10 @@ function Account({ data, reload, logOut }) {
           <p className="text-sm text-slate-400">Signed in as {signedInAs}. <button type="button" onClick={logOut} disabled={preview} title={offTip} className="min-h-11 underline disabled:opacity-60">Sign out</button></p>
         </div>
       </section>
-      {data.review?.show && <ReviewCard />}
-      {data.details && <DetailsNudge details={data.details} />}
-      <Lights schedule={data.schedule} service={data.service} reload={reload} />
-      {data.chat && <Chat chat={data.chat} reload={reload} draft={chatDraft} />}
-      {data.details && <Details details={data.details} onSaved={reload} />}
-      {data.details && <EmailPrefs details={data.details} onSaved={reload} />}
-      {data.price && <YearlyPrice price={data.price} />}
+      <Glance data={data} owed={owed} />
       {/* Signed in with an email or phone we don't have (owner 2026-10-14: less friction): try another,
           or text us with the details already filled in; Call stays. */}
-      {!list.length && !data.customer && !invoices.length && (
+      {!hasRecords && (
         <Notice
           title={`Nothing under this ${data.email ? 'email' : 'phone number'} yet`}
           text={`We may have a different email or phone number for you. Try another way to sign in, or text us and we’ll link ${signedInAs} to your records.`}
@@ -459,6 +460,11 @@ function Account({ data, reload, logOut }) {
           </>}
         />
       )}
+      {data.details && <DetailsNudge details={data.details} />}
+      {/* Order (design review 2026-10-14): the season, then a word with us, then money, then the
+          review ask (it used to come first, above anything due), then the household details. */}
+      <Lights schedule={data.schedule} service={data.service} reload={reload} />
+      {data.chat && <Chat chat={data.chat} reload={reload} draft={chatDraft} />}
       <div id="agreements" className="scroll-mt-24 space-y-6">
         {(list.length > 0 || invoices.length > 0) && (
           <p className={`rounded-2xl px-5 py-3 font-semibold ${owed ? 'bg-glow-400/10 text-glow-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
@@ -468,9 +474,13 @@ function Account({ data, reload, logOut }) {
         {unpaid.map((i) => <InvoiceCard key={i.token} i={i} reload={reload} />)}
         {list.map((p) => <ProposalCard key={p.token} p={p} reload={reload} />)}
       </div>
+      {data.review?.show && <ReviewCard />}
+      {data.price && <YearlyPrice price={data.price} />}
       {invoices.length > unpaid.length && <PaidInvoices invoices={invoices.filter((i) => i.state === 'paid')} />}
       {data.price?.history?.length > 0 && <PaymentHistory history={data.price.history} />}
-      <GetTheApp />
+      {data.details && <Details details={data.details} onSaved={reload} />}
+      {data.details && <EmailPrefs details={data.details} onSaved={reload} />}
+      {hasRecords && <GetTheApp />}
       <Help />
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-slate-400">Questions about your lights or a bill?</span>
@@ -483,6 +493,38 @@ function Account({ data, reload, logOut }) {
 // Your lights this season (docs/specs/account-service.md): the schedule line
 // from the season fields staff fill in, and Report a problem, which becomes a
 // service call on the Service tab (through the server, never from here).
+// At a glance (design review 2026-10-14: the amount due sat about four screens
+// down): the next date, anything due with Pay, Report a problem and Chat, each
+// a tap to its section further down. Only what this page really has.
+function Glance({ data, owed }) {
+  const g = accountGlance
+  const sched = scheduleText(data.schedule)
+  const up = sched && !sched.none && sched.install === 'Up ✓'
+  const rows = [
+    sched && !sched.none && { href: '#lights', icon: '🎄', label: up ? g.takedown : g.lightsUp, value: up ? sched.takedown : sched.install },
+    ((data.proposals?.length ?? 0) > 0 || (data.invoices?.length ?? 0) > 0) && (owed
+      ? { href: '#agreements', icon: '🧾', label: g.due, value: fmt(owed), action: g.pay }
+      : { href: '#agreements', icon: '🧾', label: g.paid, value: g.paidUp }),
+    data.service && { href: '#lights', icon: '🛠', label: g.problem, value: g.report },
+    data.chat && { href: '#chat', icon: '💬', label: g.chat, value: g.write },
+  ].filter(Boolean)
+  if (rows.length < 2) return null
+  return (
+    <nav aria-label={g.label} className="grid gap-2 sm:grid-cols-2">
+      {rows.map((r) => (
+        <a key={r.label} href={r.href} className="flex min-h-14 items-center gap-3 rounded-2xl border border-white/10 bg-night-900 px-4 py-2 hover:border-glow-400/50">
+          <span aria-hidden="true" className="w-7 shrink-0 text-center text-xl">{r.icon}</span>
+          <span className="min-w-0 flex-1 leading-tight">
+            <span className="block text-xs uppercase tracking-wider text-slate-400">{r.label}</span>
+            <span className="font-semibold">{r.value}</span>
+          </span>
+          {r.action && <span className="shrink-0 rounded-full bg-glow-400 px-4 py-1.5 text-sm font-semibold text-night-950">{r.action}</span>}
+        </a>
+      ))}
+    </nav>
+  )
+}
+
 function Lights({ schedule, service, reload }) {
   const sched = scheduleText(schedule)
   if (!sched && !service) return null

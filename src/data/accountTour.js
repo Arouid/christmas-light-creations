@@ -46,13 +46,15 @@ export const ACCOUNT_TOUR_UI = {
 // draw each section. installed: they're in the installed app (no Get the app).
 export function accountTourFacts(data, { installed = false } = {}) {
   const sched = scheduleText(data?.schedule)
+  const pay = (data?.proposals?.length ?? 0) > 0 || (data?.invoices?.length ?? 0) > 0
   return {
     schedule: Boolean(sched && !sched.none),
     rebook: Boolean(sched?.none),
     problem: Boolean(data?.service),
     chat: Boolean(data?.chat),
-    pay: (data?.proposals?.length ?? 0) > 0 || (data?.invoices?.length ?? 0) > 0,
-    app: !installed,
+    pay,
+    // Get the app shows only when we have something of theirs (design review 2026-10-14).
+    app: !installed && (pay || Boolean(data?.customer)),
   }
 }
 
