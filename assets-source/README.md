@@ -31,7 +31,7 @@ Reorganized on 2026-10-14; the old folder names are at the bottom.
 | `ads/video/` | Rendered ads; `keep/` and `Dont-Delete/` are the owner's | *ignored*, except its README and the 5-second ad | `video/`, `scripts/ads-video.py` |
 | `print/` | Road and yard signs, banner, cards, door decals, magnet, sticker | yes | `scripts/print-vectors.mjs` |
 | `listings/` | Pictures for profiles outside the site (Nextdoor, Thumbtack, Angi, Google): `profile-1080.png` (the cottage render, centred for round crops) and 2:1 covers from roofline photos | yes | `scripts/listing-images.mjs`; uploaded by hand, words in `docs/listings.md` |
-| `shirts/` | Crew shirt art; `designs/`; `recraft/` (AI-made designs downloaded from Recraft and their navy knock-out prints `*-on-navy.png`) | yes; big PNGs in `designs/` and all of `recraft/` ignored | `scripts/shirt-art.mjs`, `scripts/shirt-designs.mjs`, `scripts/shirt-knockout.mjs`, `scripts/shirt-collegiate.mjs`, `scripts/shirt-polo.mjs`, `scripts/shirt-mascot.mjs`, `scripts/shirt-lit.mjs` |
+| `shirts/` | Crew shirt art; `designs/`; `recraft/` (AI-made designs downloaded from Recraft and their navy knock-out prints `*-on-navy.png`) | yes; big PNGs in `designs/` and all of `recraft/` ignored | `scripts/shirt-art.mjs`, `scripts/shirt-designs.mjs`, `scripts/shirt-knockout.mjs`, `scripts/shirt-collegiate.mjs`, `scripts/shirt-polo.mjs`, `scripts/shirt-mascot.mjs`, `scripts/shirt-lit.mjs`, `scripts/shirt-retro.mjs` |
 
 The logo's tracing scripts are in `logo-vector.local/` at the repo root (ignored).
 

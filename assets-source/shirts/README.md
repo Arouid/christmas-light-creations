@@ -175,3 +175,19 @@ old house) and writes, 11 in wide front, PNG (300 dpi), SVG and PDF in `recraft/
 | `lit-2011-on-white` | white, light grey, cream | navy `#112A4A` and gold |
 
 `lit-2011-mockups.png` shows both on a tee.
+
+## Retro CLC (Recraft, 2026-10-16)
+
+The owner's retro design (`recraft/retro-clc.svg`): CHRISTMAS LIGHT CREATIONS arched over a gold and red rainbow, a
+night sky with a cottage between snowy pines, PEARLAND, TX · EST. 2011 under it. Owner, on swapping in our real
+cottage: "if you can make it work". `node scripts/shirt-retro.mjs` removes Recraft's cottage, paints the sky back
+over the hole it leaves, and stands our colour cottage on the snow with its neon in this design's colours (roof line
+red like a light strand, window and posts gold, snow and smoke cream). 11 in wide, PNG (300 dpi), SVG, PDF:
+
+| File | Shirt | How it prints |
+|---|---|---|
+| `retro-clc-color` | cream, white, sand, light grey | as drawn: DTG or DTF |
+| `retro-clc-5-color` | the same | five spot colours (navy, red, gold, cream, orange) for screen printing |
+
+The snow is the shirt itself, so this is a light-shirt design: on navy the pines, the roof and the town line would
+vanish. `retro-clc-mockups.png` shows both.
