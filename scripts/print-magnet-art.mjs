@@ -305,7 +305,9 @@ const FLAT_THEMES = {
   gold: { bg: FLAT.gold, ink: FLAT.blue, accent: FLAT.blue, band: FLAT.blue, bandText: FLAT.gold },
   cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold }, // the flat cottage file's own cream (owner: "this is the background color")
   'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold, cottage: bulbCottage, bulbs: C9 },
-  'cream-bulbs-nobar': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, cottage: bulbCottage, bulbs: C9, year: true, frame: true },
+  // lineGold: the 2011 line's deeper gold (4.2:1 on the cream; the light gold was 2.0:1, faint in sun); site: the short
+  // domain, which 301s to the site (owner: "I do own clcxmas.com thats a 301 redirect to the main site", checked 2026-10-16).
+  'cream-bulbs-nobar': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, cottage: bulbCottage, bulbs: C9, year: true, frame: true, lineGold: '#9A7428', site: 'clcxmas.com' },
 }
 const BAND = 2.4 // inches: the website's band along the bottom edge (its flat part; the drifts rise above it)
 // The drifts: soft mounds of random width and height along the band's top, from a fixed seed so a rebuild is the same.
@@ -324,14 +326,14 @@ function drifts(top, seed = 2011) {
 // a thin line in the ink, inset FRAME_INSET from the edge (a cut can drift about 1/16 in, so a line on the edge would
 // look uneven), its corners concentric with the magnet's 0.75-in ones; 2 pt, as thin as prints cleanly.
 const FRAME_INSET = 0.35, FRAME_LINE = 2 / 72
-for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage, year, bulbs, frame }] of Object.entries(FLAT_THEMES)) {
+for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage, year, bulbs, frame, lineGold = FLAT.gold, site: shortSite }] of Object.entries(FLAT_THEMES)) {
   const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
   const topH = band ? H - BAND : H // the area above the band
   const HOUSE = 6.4
   // With a band the cottage stands on it (its bottom 0.25 in into the band); without, it is centred on the door.
   // Inside the frame (owner: "are the elements spaced from each other aesthetically?"), measured on the print: the house and
   // the text block equally far from the frame (about 1.15 in), 1.4 in apart, and level with each other.
-  const nudge = frame ? { house: 0.19, text: 0.07, up: 0.1 } : { house: 0, text: 0, up: 0 }
+  const nudge = frame ? { house: 0.19, text: 0.07, up: 0.01 } : { house: 0, text: 0, up: 0 }
   const house = cottage(ink, { x: MARGIN + nudge.house, cy: band ? topH + 0.25 - HOUSE / 2 : H / 2, h: HOUSE, windows, bulbs })
   const col0 = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col0, col = col0 + nudge.text, cx = col + colW / 2
   const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
@@ -339,7 +341,7 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   // art as the year, all gold but the navy ornament, the words as tall as the digits (owner: "leave everything gold on
   // that line other than the bulb", "match the city size to 2011"), the whole line 0.78 of the column wide (no rules; the
 // words and digits about 0.53 in tall).
-  const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: FLAT.gold })), yr: yearArt(d, { gold: FLAT.gold, navy: ink, wreath: true }) })
+  const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: lineGold })), yr: yearArt(d, { gold: lineGold, navy: ink, wreath: true }) })
   const unitLine = year && fitYear(1), d = year && (colW * 0.78) / (unitLine.est.width / U + 0.3 + unitLine.yr.w) // owner: "lower the font for the whole gold line"
   const { est, yr } = year ? fitYear(d) : {}
   const yGap = year && 0.3 * d, lineW = year && est.width / U + yGap + yr.w
@@ -352,7 +354,8 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   const rTag = year ? wmH + 0.24 + yr.above : wmH + 0.85, rPhone = rTag + (year ? 0.94 : 0.55) + phone.cap / U
   // No band: the site on its own line under the phone, as large as fits.
   // The site's i-dots gold like the wordmark's (owner tried the bulbs' red, green and blue, then "turn the i's back to gold").
-  const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: windows || accent })
+  // A short domain is set smaller than the column (it would otherwise rival the phone): 0.6 of it.
+  const lineSite = band ? null : dottedLine(shortSite || SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * (shortSite ? 0.6 : 0.96), tracking: 0.01, fill: ink, dot: windows || accent })
   const rEnd = lineSite ? rPhone + 0.52 + lineSite.cap / U : rPhone
   const top = (band ? (topH - 0.6) / 2 + 0.05 : H / 2) - rEnd / 2 - nudge.up // the block centred above the drifts, or on the door
   // Gold rules either side of the tag line.
