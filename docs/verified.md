@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-16 | **Site i-dots back to gold** (owner: "turn the i's back to gold") | `node scripts/print-magnet-art.mjs`: the three i-dots in christmas-light-creations.com gold again (zoomed). Not printed yet |
 | 2026-10-16 | **Wreath as the 0 in the magnet's 2011** (owner: "maybe one of the blue and gold icon wreaths I made instead?") | `node scripts/print-magnet-art.mjs`: the top-right wreath of `recraft/icon-pack-blue-1.svg` (30 shapes, 19 gold, checked), as tall as the digits where the ornament was, navy ring, gold berries and bow, cream leaves and centre cut out; the ornament's shapes and highlight left out of the mask; compared with the red ornament at real size (`recraft/ornament-vs-wreath.png`) and zoomed. Not printed yet |
 | 2026-10-16 | **Plain red ornament in the 2011 line** (owner: "the ornament still is clashing, you think so?") | `node scripts/print-magnet-art.mjs`: the gold bands and sparkles kept as an option (`festive.trim`) but off on the magnet: a plain red ball with its shine, gold cap and ring; the two side by side at the line's real size (`recraft/ornament-trimmed-vs-plain.png`). Not printed yet |
 | 2026-10-16 | **Gold 2011 line smaller** (owner: "lower the font for the whole gold line") | `node scripts/print-magnet-art.mjs`: the line 0.78 of the column wide (was 0.96), words and digits about 0.53 in tall, centred; viewed on the red-door mock. Not printed yet |

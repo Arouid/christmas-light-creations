@@ -342,8 +342,8 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   const phone = T(PHONE, sans(600, { fit: colW * 0.96, tracking: 0 }))
   const rTag = year ? wmH + 0.45 + yr.above : wmH + 0.85, rPhone = rTag + 0.55 + phone.cap / U
   // No band: the site on its own line under the phone, as large as fits.
-  // The site's i-dots in the bulbs' red, green and blue (owner: "what if we made the i's dots multicolored instead of gold?").
-  const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: bulbs ? [C9[0], C9[2], C9[3]] : windows || accent })
+  // The site's i-dots gold like the wordmark's (owner tried the bulbs' red, green and blue, then "turn the i's back to gold").
+  const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: windows || accent })
   const rEnd = lineSite ? rPhone + 0.62 + lineSite.cap / U : rPhone
   const top = (band ? (topH - 0.6) / 2 + 0.05 : H / 2) - rEnd / 2 // the block centred above the drifts, or on the door
   // Gold rules either side of the tag line.
