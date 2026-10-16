@@ -29,11 +29,13 @@ const SLAB = SYS('georgiab.ttf') ? { wght: 700 } : { opsz: 144, wght: 900 }
 const DISPLAY = { opsz: 144, wght: 900 }, ITAL = { opsz: 144, wght: 600 }
 
 const { navyDeep: NAVY, white: WHITE, gold: GOLD, pale: PALE, magenta: MAGENTA, green: GREEN } = COLORS
+// ribbonDark on gold: the ribbon's folded ends, a deep navy (it was #02060f, which prints black; owner: "some of the font
+// we have in these designs is black, cant have that").
 const INK = '#0a1530', RED = '#ff3a3a', BERRY = '#b51d31', HOLLY = '#1f8a5b', CYAN = '#4ad1e0', NIGHT800 = '#12214a', NIGHT700 = '#1c2f63'
 // What goes on which shirt.
 const SHIRTS = {
   navy: { tee: '#152040', teeEdge: '#0b1430', ink: WHITE, accent: GOLD, soft: PALE, rays: NIGHT800, ribbon: GOLD, ribbonDark: '#c99a2e', ribbonInk: NAVY, art: 'white', bulbs: [RED, GOLD, GREEN, MAGENTA, CYAN, RED, GOLD] },
-  gold: { tee: '#f2b63a', teeEdge: '#d39a22', ink: NAVY, accent: BERRY, soft: INK, rays: '#d9a021', ribbon: NAVY, ribbonDark: '#02060f', ribbonInk: WHITE, art: 'navy', bulbs: [BERRY, NAVY, HOLLY, MAGENTA, NIGHT700, BERRY, HOLLY] },
+  gold: { tee: '#f2b63a', teeEdge: '#d39a22', ink: NAVY, accent: BERRY, soft: INK, rays: '#d9a021', ribbon: NAVY, ribbonDark: '#16233A', ribbonInk: WHITE, art: 'navy', bulbs: [BERRY, NAVY, HOLLY, MAGENTA, NIGHT700, BERRY, HOLLY] },
 }
 
 // --- art ---
