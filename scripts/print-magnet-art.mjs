@@ -8,7 +8,7 @@
 //   round night window, words in navy and dark gold (dark trucks, or simply a lighter look).
 // Run: node scripts/print-magnet-art.mjs   → recraft/vehicle-magnet-24x12-cottage-3d[-cream].{pdf,png,svg}
 // (24 x 12 in, 0.75-in rounded corners; the picture embedded at about 150 dpi, the text vector).
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 import { FONTS, fmt, glyphs, textLine } from './lib/logoArt.mjs'
@@ -117,4 +117,57 @@ for (const [theme, th] of Object.entries(THEMES)) {
   // A drive-by check: the magnet at 1/40 size, about how it reads from 50 feet.
   await sharp(png).resize({ width: Math.round((W * 150) / 40) }).png().toFile(out + '-50ft.png')
   console.log(`${th.file}: ${W} x ${H} in, night ${NIGHT}, cottage ${fmt(p.w)} x ${fmt(p.h)} in at ${p.dpi} dpi, words from ${fmt(col)} in`)
+}
+
+// --- the flat magnets (owner: "Lets try a just flat gold and blue magnet with that font", "use one of the flat blue
+// cottages we have now"): the flat cottage from his Recraft logo batch (recraft/navy-cottage.svg, its shapes 1–7; the
+// file's lettering below is left out), the name in Outfit (the geometric sans of the AI wordmark he liked; Google
+// Fonts, OFL, assets-source/brand/fonts/outfit/): gold on blue or blue on gold (two inks; the cottage's snow band, a
+// gap in the drawing, and its window panes show the ground), and cream (owner: "my truck is red and I just think the
+// cream color will look a lot nicer"): blue on cream with the window panes gold, the small line in a deeper gold.
+const OUTFIT = fileURLToPath(new URL('../assets-source/brand/fonts/outfit/Outfit-Variable.ttf', import.meta.url))
+const FLAT = { blue: '#1F304B', gold: '#D4AF63' } // the flat cottage's own navy and window gold
+const flatSrc = readFileSync(DIR + 'navy-cottage.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+const flatPaths = [...flatSrc.matchAll(/<path ([^>]*)\/>/g)].map((m) => ({ fill: m[1].match(/fill="([^"]*)"/)[1].toUpperCase(), d: m[1].match(/ d="([^"]*)"/)[1] }))
+const HOUSE_PATHS = [1, 2, 3, 4, 5, 6, 7], HOUSE_BOX = [217, 276, 705, 740] // checked below
+{
+  const n = HOUSE_PATHS.flatMap((i) => flatPaths[i].d.match(/-?[0-9.]+/g).map(Number))
+  const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
+  const b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(Math.round)
+  if (b.some((v, i) => Math.abs(v - HOUSE_BOX[i]) > 2)) throw new Error(`navy-cottage.svg: shapes 1–7 are not the cottage any more (box ${b})`)
+}
+function flatCottage(ink, { x, cy, h, windows }) {
+  const [x0, y0, x1, y1] = HOUSE_BOX, w = (h * (x1 - x0)) / (y1 - y0)
+  const area = `x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"`
+  const inkOf = (p) => (p.fill === '#1F304B' ? ink : windows) // its navy in the ink; its gold panes in windows, or cut out
+  const mask = HOUSE_PATHS.map((i) => `<path fill="${inkOf(flatPaths[i]) ? '#fff' : '#000'}" d="${flatPaths[i].d}"/>`).join('')
+  const shapes = HOUSE_PATHS.filter((i) => inkOf(flatPaths[i])).map((i) => `<path fill="${inkOf(flatPaths[i])}" d="${flatPaths[i].d}"/>`).join('')
+  return { w, svg: `<svg x="${fmt(x * U)}" y="${fmt((cy - h / 2) * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}">` +
+    `<defs><mask id="flat" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#flat)">${shapes}</g></svg>` }
+}
+const FLAT_THEMES = {
+  blue: { bg: FLAT.blue, ink: FLAT.gold },
+  gold: { bg: FLAT.gold, ink: FLAT.blue },
+  cream: { bg: '#F7F1E3', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428' },
+}
+for (const [ground, { bg, ink, windows, small = ink }] of Object.entries(FLAT_THEMES)) {
+  const house = flatCottage(ink, { x: MARGIN, cy: H / 2, h: 7.0, windows })
+  const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
+  const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
+  const name1 = T('christmas light', sans(600, { fit: colW, tracking: -0.01 }))
+  const name2 = T('creations', sans(600, { cap: name1.cap / U, tracking: -0.01 }))
+  const tag = T('FREE ESTIMATES  ·  PEARLAND, TX', sans(600, { cap: 0.27, tracking: 0.28, fill: small }))
+  const phone = T(PHONE, sans(600, { fit: colW * 0.94, tracking: 0 }))
+  const site = T(SITE, sans(500, { fit: colW * 0.8, tracking: 0.01 }))
+  const r1 = name1.cap / U, r2 = r1 + (name1.cap / U) * 1.3, rTag = r2 + 1.0, rPhone = rTag + 0.6 + phone.cap / U, rSite = rPhone + 0.6 + site.cap / U
+  const top = H / 2 - rSite / 2
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
+    `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${house.svg}` +
+    name1.svg(cx * U, (top + r1) * U, 'middle') + name2.svg(cx * U, (top + r2) * U, 'middle') + tag.svg(cx * U, (top + rTag) * U, 'middle') +
+    phone.svg(cx * U, (top + rPhone) * U, 'middle') + site.svg(cx * U, (top + rSite) * U, 'middle') + '</svg>'
+  const out = `${DIR}vehicle-magnet-24x12-flat-${ground}`
+  writeFileSync(out + '.svg', svg)
+  svgToPdf(svg, W, H, out + '.pdf')
+  await sharp(Buffer.from(svg), { density: Math.sqrt(72 * 150) }).withMetadata({ density: 150 }).png({ compressionLevel: 9 }).toFile(out + '.png')
+  console.log(`vehicle-magnet-24x12-flat-${ground}: ${W} x ${H} in, ${ink} on ${bg}, cottage ${fmt(house.w)} x 7 in, all vector`)
 }
