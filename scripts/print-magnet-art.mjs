@@ -247,8 +247,9 @@ const YEAR = { art: [1, 2, 3, 4, 5, 6, 7], ornament: 1, digits: [5, 6, 7], box: 
   if (b.some((v, i) => Math.abs(v - YEAR.box[i]) > 2)) throw new Error(`2011-light.svg: shapes 1–7 are not the 2011 any more (box ${b})`)
 }
 // festive (owner: "maybe we can do something with that ornament to make it a bit more festive"): the ball in festive.ball,
-// its cap and ring gold (the ornament is one outline: above y 465 is the cap and ring), a gold band round the ball's
-// middle with a thin line either side, and two small gold sparkles by the ring. In the file's units (before its scale):
+// its cap and ring gold (the ornament is one outline: above y 465 is the cap and ring); with festive.trim also a gold
+// band round the ball's middle with a thin line either side and two small gold sparkles by the ring (at the magnet's
+// half-inch line they read as noise, owner: "the ornament still is clashing", so the magnet has the plain ball). In the file's units (before its scale):
 // the ball's centre is about (477, 615), radius 150.
 const ORN_CAP_END = 465
 const sparkle = (cx, cy, r) => `M${cx} ${cy - r} Q${cx} ${cy} ${cx + r} ${cy} Q${cx} ${cy} ${cx} ${cy + r} Q${cx} ${cy} ${cx - r} ${cy} Q${cx} ${cy} ${cx} ${cy - r} Z`
@@ -263,13 +264,13 @@ function yearArt(digitsH, { gold, navy, festive }) {
   const area = `x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"`
   const orn = yearPaths[YEAR.ornament], [bx0, , bx1] = YEAR.box
   const mask = YEAR.art.map((i) => `<path fill="${ink(i) ? '#fff' : '#000'}" d="${yearPaths[i]}"/>`).join('') +
-    (festive ? SPARKLES.map((d) => `<path fill="#fff" d="${d}"/>`).join('') : '')
+    (festive?.trim ? SPARKLES.map((d) => `<path fill="#fff" d="${d}"/>`).join('') : '')
   const band = (y, hgt) => `<rect x="${bx0}" y="${y}" width="${bx1 - bx0}" height="${hgt}" fill="${gold}"/>`
   const ornament = festive
     ? `<defs><clipPath id="ycap"><rect x="${bx0}" y="0" width="${bx1 - bx0}" height="${ORN_CAP_END}"/></clipPath>` +
       `<clipPath id="yball"><rect x="${bx0}" y="${ORN_CAP_END}" width="${bx1 - bx0}" height="1000"/></clipPath><clipPath id="yorn"><path d="${orn}"/></clipPath></defs>` +
       `<path clip-path="url(#ycap)" fill="${gold}" d="${orn}"/><path clip-path="url(#yball)" fill="${festive.ball}" d="${orn}"/>` +
-      `<g clip-path="url(#yorn)">${band(598, 7)}${band(612, 34)}${band(653, 7)}</g>` + SPARKLES.map((d) => `<path fill="${gold}" d="${d}"/>`).join('')
+      (festive.trim ? `<g clip-path="url(#yorn)">${band(598, 7)}${band(612, 34)}${band(653, 7)}</g>` + SPARKLES.map((d) => `<path fill="${gold}" d="${d}"/>`).join('') : '')
     : `<path fill="${navy}" d="${orn}"/>`
   const shapes = YEAR.art.filter((i) => ink(i) && i !== YEAR.ornament).map((i) => `<path fill="${ink(i)}" d="${yearPaths[i]}"/>`).join('') + ornament
   return { w, above, svg: (x, base) => `<svg x="${fmt(x * U)}" y="${fmt((base - above) * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}">` +
