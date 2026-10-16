@@ -200,3 +200,16 @@ bulb to navy. Pearland, TX --- Est. 2011. bump the font size up on it so we can 
 `recraft/2011-ornament` PNG (300 dpi, transparent), SVG, PDF, 11 x 6.1 in: gold `#D4AF63` numbers, a navy `#1F304B` ornament
 (its highlight and ring hole show the shirt), PEARLAND, TX — EST. 2011 in Outfit as wide as the numbers (0.45 in tall).
 Two inks; for cream, white or light grey shirts (`2011-ornament-preview.png`), stickers or a 15th-season post.
+
+## Install Crew (Recraft, 2026-10-16): red neon, not pink
+
+The owner's Recraft back print (`recraft/install-crew-v2-pearland-white.svg`: INSTALL CREW arched over the 3D-style
+cottage, PEARLAND, TX and the name under it). The AI drew the roofline neon in 17 shades of pink (fills and gradient
+stops), so it printed pink (owner: "do I just need to live with this red"). `scripts/shirt-knockout.mjs --map` swaps
+each to a red, the darkest pink to #D7262E and the lightest to #F06E72, so the line still glows but reads red:
+
+    cd assets-source/shirts/recraft
+    node ../../../scripts/shirt-knockout.mjs install-crew-v2-pearland-white.svg install-crew-red-on-navy.png 12 1F2742,141A39,25263C,23202A --drop-bg --map FEB9BD=E7555B,FE9FA9=E04047,FB7E88=D7262E,FFCBC9=EC6468,FE9EA2=E04046,FFAFB4=E54D53,FDD8DD=F06E72,FF999F=DF3C42,FFBBC0=E8575C,FF9DA0=E03F45,FFC5C7=EB5F64,FF9DA3=E03F45,FFCBCE=EC6468,FF9BA1=DF3D44,FFC9C8=EC6267,FF979A=DE3A41,FFBDBF=E9585E
+
+`install-crew-red-on-navy.png`: 3600 x 4752 px = 12 x 15.84 in, the shirt's navy knocked out. The pink original stays
+as `install-crew-on-navy.png`.
