@@ -19,6 +19,9 @@ const crew = (place) => [`front-chest-${place}`, `back-full-${place}`]
 const D = (name, what) => [`designs/${name}`, what]
 const R = (name, what, extra = []) => [`recraft/${name}`, what, extra]
 const POLO = ['wordmark', 'caps', 'logo', 'icon-1', 'icon-2']
+// scripts/shirt-new-art.mjs: the owner's new artwork combined, a navy and a gold version of each.
+const NEW = [['lit-house', 'the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath'], ['wreath-2011', 'LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark'],
+  ['services', 'six service icons with labels over the wordmark (back)'], ['chest', 'the bulb cottage beside the wordmark (left chest)']]
 const FOLDERS = {
   navy: {
     title: 'Navy (blue) shirts',
@@ -34,6 +37,7 @@ const FOLDERS = {
       R('mascot-gold-on-navy', 'Bradley in his flat cap, gold ink'),
       R('mascot-medal-on-navy', 'Brad Medel medal, white and gold'),
       R('mascot-medal-color', 'Brad Medel medal as drawn (any shirt, DTG/DTF)'),
+      ...NEW.map(([n, what]) => R(`new-${n}-on-navy`, what)),
       ...POLO.map((m) => D(`polo-${m}-on-navy`, `navy polo, left chest ${m} (embroidery)`)),
     ],
   },
@@ -46,6 +50,7 @@ const FOLDERS = {
       R('mascot-gold-on-gold', 'Bradley in his flat cap, navy ink'),
       R('mascot-line-on-light', 'Bradley line art, navy ink'),
       R('mascot-medal-color', 'Brad Medel medal as drawn (DTG/DTF)'),
+      ...NEW.map(([n, what]) => R(`new-${n}-on-gold`, what)),
       R('big-cottage-mustard-limited-dtg', 'big cottage, 12 in, for a mustard shirt (DTG)', ['recraft/big-cottage-mustard-limited-snow.svg']),
       R('big-cottage-mustard-dtf', 'big cottage to the hem, transparent (DTF transfer on mustard)'),
       R('big-cottage-mustard-allover', 'big cottage, mustard edge to edge (all-over sublimation; the exact look)'),

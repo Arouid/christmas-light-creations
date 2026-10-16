@@ -215,3 +215,17 @@ each to a red, the darkest pink to #D7262E and the lightest to #F06E72, so the l
 
 `install-crew-red-on-navy.png`: 3600 x 4752 px = 12 x 15.84 in, the shirt's navy knocked out. The pink original stays
 as `install-crew-on-navy.png`.
+
+## New combinations for navy and gold (2026-10-16)
+
+Owner: "create me any other shirts I can make with all our new artwork in gold/navy". `node scripts/shirt-new-art.mjs`
+combines his Recraft vectors (the wordmark, the bulb cottage, the solid icon pack, the 2011 digits with the wreath as
+the 0), text in Outfit; each design `recraft/new-<design>-on-navy` and `-on-gold` (PNG 300 dpi, SVG, PDF), all in
+`new-mockups.png`. On navy the art's navy prints cream; on gold its gold turns red; its cream is cut out.
+
+| Design | Size | What |
+|---|---|---|
+| `lit-house` | 11 x 11.1 in | the bulb cottage (multicolour C9s) over the wordmark and PEARLAND, TX — EST. 2011 |
+| `wreath-2011` | 11 x 7.8 in | LIGHTING UP PEARLAND SINCE, a big 2011 with the wreath, the wordmark |
+| `services` | 12 x 11 in | rooflines, trees, wreaths, install, storage, on schedule: icons and labels over the wordmark (back) |
+| `chest` | 4 x 1.55 in | the bulb cottage beside the wordmark (left chest, pairs with any back) |

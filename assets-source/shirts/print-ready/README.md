@@ -5,7 +5,7 @@ per shirt colour; a design that prints well on several colours is in each. For e
 upload (300 dpi, transparent, print size); the `.svg` / `.pdf`, where there is one, is the vector for a screen
 printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../README.md` and `../designs/README.md`.
 
-## Navy (blue) shirts: `navy/` (26)
+## Navy (blue) shirts: `navy/` (30)
 
 | File | Size | What |
 |---|---|---|
@@ -30,13 +30,17 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `mascot-gold-on-navy` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, gold ink |
 | `mascot-medal-on-navy` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal, white and gold |
 | `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (any shirt, DTG/DTF) |
+| `new-lit-house-on-navy` (png, svg, pdf) | 11.0 x 11.1 in | the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath |
+| `new-wreath-2011-on-navy` (png, svg, pdf) | 11.0 x 7.8 in | LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark |
+| `new-services-on-navy` (png, svg, pdf) | 12.0 x 11.0 in | six service icons with labels over the wordmark (back) |
+| `new-chest-on-navy` (png, svg, pdf) | 4.0 x 1.6 in | the bulb cottage beside the wordmark (left chest) |
 | `polo-wordmark-on-navy` (png, svg, pdf) | 3.6 x 1.4 in | navy polo, left chest wordmark (embroidery) |
 | `polo-caps-on-navy` (png, svg, pdf) | 3.6 x 1.1 in | navy polo, left chest caps (embroidery) |
 | `polo-logo-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest logo (embroidery) |
 | `polo-icon-1-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-1 (embroidery) |
 | `polo-icon-2-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-2 (embroidery) |
 
-## Gold or mustard shirts: `gold/` (15)
+## Gold or mustard shirts: `gold/` (19)
 
 | File | Size | What |
 |---|---|---|
@@ -52,6 +56,10 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `mascot-gold-on-gold` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, navy ink |
 | `mascot-line-on-light` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, navy ink |
 | `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (DTG/DTF) |
+| `new-lit-house-on-gold` (png, svg, pdf) | 11.0 x 11.1 in | the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath |
+| `new-wreath-2011-on-gold` (png, svg, pdf) | 11.0 x 7.8 in | LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark |
+| `new-services-on-gold` (png, svg, pdf) | 12.0 x 11.0 in | six service icons with labels over the wordmark (back) |
+| `new-chest-on-gold` (png, svg, pdf) | 4.0 x 1.6 in | the bulb cottage beside the wordmark (left chest) |
 | `big-cottage-mustard-limited-dtg` (png, svg) | 12.0 x 12.3 in | big cottage, 12 in, for a mustard shirt (DTG) |
 | `big-cottage-mustard-dtf` (png, svg) | 20.0 x 26.8 in | big cottage to the hem, transparent (DTF transfer on mustard) |
 | `big-cottage-mustard-allover` (png, svg) | 20.0 x 26.8 in | big cottage, mustard edge to edge (all-over sublimation; the exact look) |
