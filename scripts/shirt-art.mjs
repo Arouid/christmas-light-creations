@@ -7,6 +7,10 @@
 // in three looks: full colour with the neon glow rasterised cleanly (faint haze
 // clipped), full colour "flat" (solid outlines, no blur: the safe DTG upload) and
 // one-colour white (screen print). Plus a navy preview of each and a same-scale sheet.
+// And "-flat-knockout" for navy shirts: the flat look without the dark wall and window
+// (owner, 2026-10-16, of a dark-shirt proof: "why is this showing up faded"). On a dark shirt
+// DTG lays white under every inked pixel, so the logo's near-navy wall prints as a greyish
+// patch lighter than the shirt; left out, the shirt itself is the wall.
 //
 // Print prep, not a redesign: strokes thinner than 2 pt at the print size are
 // thickened to 2 pt (an added stroke in the same colour) or dropped (specks, the
@@ -71,13 +75,14 @@ const color = checkRoles(parseLogo('clc-logo-stacked-color.svg'), COLOR_ROLES)
 const white = checkRoles(parseLogo('clc-logo-stacked-one-color-white.svg'), WHITE_ROLES)
 
 const made = [] // for the console table and the sheet
-for (const [name, size, look] of [
+for (const [name, size, look, knock = []] of [
   ['front-chest', 'chest', 'glow'], ['front-chest-flat', 'chest', 'flat'], ['front-chest-one-color-white', 'chest', 'white'],
   ['back-full', 'back', 'glow'], ['back-full-flat', 'back', 'flat'], ['back-full-one-color-white', 'back', 'white'],
+  ['front-chest-flat-knockout', 'chest', 'flat', ['wall', 'windowInterior']], ['back-full-flat-knockout', 'back', 'flat', ['wall', 'windowInterior']],
 ]) {
   const logo = look === 'white' ? white : color
   const roles = look === 'white' ? WHITE_ROLES : COLOR_ROLES
-  const drop = ['specks', ...(size === 'chest' ? DROP_AT_CHEST[look === 'white' ? 'white' : 'color'] : [])]
+  const drop = ['specks', ...(size === 'chest' ? DROP_AT_CHEST[look === 'white' ? 'white' : 'color'] : []), ...knock]
   const cottage = prepCottage(logo, roles, { minUnits: minUnits(SIZES[size]), look, drop, keepFlakeMin: KEEP_FLAKE_MIN })
   const body = [cottage.svg, ...letteringGroups(logo.lettering, LETTER_EXTRA[size])]
   let bottom = 1752 + VB_TOP // the lockup's own bottom edge
@@ -108,7 +113,7 @@ for (const [name, size, look] of [
 // Same-scale sheet: chest and back side by side at 100 px per inch, so the proportion on a shirt is visible.
 {
   const PPI = 100, pad = 60
-  const items = made.filter((m) => m.look !== 'glow')
+  const items = made.filter((m) => m.look !== 'glow' && !m.name.endsWith('-knockout'))
   const cells = await Promise.all(items.map(async (m) => {
     const w = Math.round(SIZES[m.size] * PPI)
     const buf = await sharp(m.png).resize({ width: w }).png().toBuffer()

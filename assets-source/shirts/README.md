@@ -16,6 +16,7 @@ thinner than 2 pt at the print size were thickened in their own colour to 2 pt, 
 | `back-full-flat.png` | full back | 12 × 10.76 in (3600 × 3228 px) | full colour, digital printing |
 | `front-chest-one-color-white.png` | left chest | 4 × 3.05 in | one colour, white ink: screen printing (12-shirt minimum, the cheap route at 20+) |
 | `back-full-one-color-white.png` | full back | 12 × 10.76 in | one colour, white ink: screen printing |
+| `front-chest-flat-knockout.png`, `back-full-flat-knockout.png` | same places, **navy or dark shirts** | same sizes | the `-flat` files without the logo's near-navy wall and window: the shirt is the wall. **Best upload for navy.** DTG lays white under every inked pixel, so dark ink on a dark shirt prints greyish and lighter than the shirt (owner's proof 2026-10-16 looked "faded") |
 | `front-chest.png`, `back-full.png` | same places | same sizes | full colour with the neon glow kept as a soft fade; only if Uberprints' art team says fades print well on navy (next section) |
 
 `preview-<file>.png` shows each file on navy (#1b2340); `preview-sheet.png` has chest and back at
