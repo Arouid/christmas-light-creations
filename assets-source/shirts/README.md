@@ -189,9 +189,11 @@ red like a light strand, window and posts gold, snow and smoke cream). 11 in wid
 |---|---|---|
 | `retro-clc-color` | cream, white, sand, light grey | as drawn: DTG or DTF |
 | `retro-clc-5-color` | the same | five spot colours (navy, red, gold, cream, orange) for screen printing |
+| `retro-clc-on-gold` | gold or mustard | as drawn but the outer ring navy, the lettering's gold shadows cream, and a cream snow drift under the cottage (on gold the design's gold vanished and the snow, being the shirt, turned gold) |
 
-The snow is the shirt itself, so this is a light-shirt design: on navy the pines, the roof and the town line would
-vanish. `retro-clc-mockups.png` shows both.
+The snow is the shirt itself on the cream and white versions; the gold version prints it. Not for navy shirts: the
+pines, the roof and the town line would vanish. The roofline is one thin red line (owner: the two solid glow lines
+read as a red bleed). `retro-clc-mockups.png` shows both.
 
 ## 2011 with an ornament (2026-10-16)
 

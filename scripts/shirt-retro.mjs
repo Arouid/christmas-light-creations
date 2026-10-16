@@ -8,7 +8,8 @@
 // Run: node scripts/shirt-retro.mjs   → recraft/retro-clc-*.{png,svg,pdf} (11 in wide, 300 dpi) and the mockups:
 // - color: as drawn (the cream page dropped), for DTG/DTF on cream, white, sand or light grey shirts.
 // - 5-color: the same folded into five spot colours (navy, red, gold, cream, orange) for screen printing.
-// Light shirts only: on a navy shirt the pines, the roof and the town line vanish into the shirt.
+// - on-gold: for gold or mustard shirts (navy outer ring, cream letter shadows, a cream snow drift).
+// Not for navy shirts: there the pines, the roof and the town line vanish into the shirt.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
@@ -32,7 +33,8 @@ const COTTAGE_AT = { cx: 530, bottom: 965, w: 470 }
 const ROLE_COLOURS = {
   smoke: C.cream, wall: C.navy, wallLines: C.cream, windowInterior: C.gold, windowGlow: C.gold, windowFrame: C.cream,
   doorGlow: C.gold, door: C.cream, doorLines: C.navy, postsGlow: C.gold, posts: C.cream, ground: null,
-  roofGlowOuter: C.red, roofGlowInner: C.red, roof: C.cream, chimneyGlow: C.gold, chimneyWhite: C.cream, chimney: C.navy, chimneyDot: C.gold,
+  // the roofline one thin red line (roofGlowOuter left out: both drawn solid read as a thick red bleed, owner)
+  roofGlowOuter: null, roofGlowInner: C.red, roof: C.cream, chimneyGlow: C.gold, chimneyWhite: C.cream, chimney: C.navy, chimneyDot: C.gold,
 }
 const DROP = ['specks', 'snow', 'postHighlights']
 
@@ -80,6 +82,24 @@ const body = paths.map((p, i) => {
 }).join('') + `<g transform="${SCALE}">${cottage}</g>`
 const draw = (b) => `${head}${defs}${b}</svg>`
 
+// The gold-shirt version (owner: "we've gotta set these up better for print on gold"): on a gold shirt the design's
+// gold vanishes and its snow (the shirt) turns gold. So the outer ring goes navy, the lettering's gold shadows go cream
+// (gold shapes outside the rainbow or under the scene; the stars and moon in the sky stay gold), and a cream drift
+// fills the ground under the cottage, between the pines and above the town line (drawing units, before the 0.9 scale).
+const RING = 2, RING_CENTRE = [511, 659], GOLD_FILL = /fill="#E4A734"/i
+const GROUND = 'M70 900 L955 900 L955 930 Q512 1044 70 930 Z'
+if (!GOLD_FILL.test(paths[RING])) throw new Error('retro-clc.svg: path 2 is not the gold ring any more')
+const onGold = `<path transform="${SCALE}" fill="${C.cream}" d="${GROUND}"/>` + paths.map((p, i) => {
+  if (i === 0 || HOUSE.includes(i)) return ''
+  let q = p
+  if (GOLD_FILL.test(p)) {
+    const [x0, y0, x1, y1] = box(p.match(/ d="([^"]*)"/)[1]), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2
+    if (i === RING) q = p.replace(GOLD_FILL, `fill="${C.navy}"`)
+    else if (cy > 930 || Math.hypot(cx - RING_CENTRE[0], cy - RING_CENTRE[1]) > 400) q = p.replace(GOLD_FILL, `fill="${C.cream}"`)
+  }
+  return i === 1 ? q + `<path transform="${SCALE}" fill="${C.navy}" d="${SKY}"/>` : q
+}).join('') + `<g transform="${SCALE}">${cottage}</g>`
+
 // Five spot colours: every colour to the nearest of navy, red, gold, cream, orange.
 const SPOT = Object.values(C)
 const rgb = (h) => [0, 2, 4].map((i) => parseInt(h.replace('#', '').slice(i, i + 2), 16))
@@ -99,7 +119,7 @@ const sized = (b) => draw(b).replace(head, `<svg xmlns="http://www.w3.org/2000/s
 const PPI = 60
 const TEE = 'M2.6 1.6 L8.4 0.9 Q11 3.3 13.6 0.9 L19.4 1.6 L21.8 6.6 L19.2 8.4 L18 6.9 L18 26.9 Q18 27.3 17.6 27.3 L4.4 27.3 Q4 27.3 4 26.9 L4 6.9 L2.8 8.4 L0.2 6.6 Z'
 const tiles = []
-for (const [name, b, tee, edge] of [['color', body, '#F3EBDB', '#cfc6b2'], ['5-color', fiveColor, '#f6f6f3', '#c9ced8']]) {
+for (const [name, b, tee, edge] of [['color', body, '#F3EBDB', '#cfc6b2'], ['5-color', fiveColor, '#f6f6f3', '#c9ced8'], ['on-gold', onGold, '#EAA92B', '#c48d1f']]) {
   const svg = sized(b)
   writeFileSync(`${DIR}retro-clc-${name}.svg`, svg)
   svgToPdf(svg, PRINT_IN, hIn, `${DIR}retro-clc-${name}.pdf`)
@@ -110,12 +130,12 @@ for (const [name, b, tee, edge] of [['color', body, '#F3EBDB', '#cfc6b2'], ['5-c
   console.log(`retro-clc-${name}: ${PRINT_IN} x ${fmt(hIn)} in`)
   const shirt = `<svg xmlns="http://www.w3.org/2000/svg" width="${22 * PPI}" height="${22 * PPI}" viewBox="0 0 22 22"><rect width="22" height="22" fill="#e9ebf0"/>` +
     `<path d="${TEE}" fill="${tee}" stroke="${edge}" stroke-width="0.06" stroke-linejoin="round"/>` +
-    `<text x="0.4" y="21.6" font-family="sans-serif" font-size="0.5" fill="#555b6b">${name === 'color' ? 'cream tee' : 'white tee, 5 spot colours'}, ${PRINT_IN} in wide</text></svg>`
+    `<text x="0.4" y="21.6" font-family="sans-serif" font-size="0.5" fill="#555b6b">${{ color: 'cream tee', '5-color': 'white tee, 5 spot colours', 'on-gold': 'gold tee' }[name]}, ${PRINT_IN} in wide</text></svg>`
   const art = await sharp(png).resize({ width: PRINT_IN * PPI }).toBuffer()
   // composite first, then size down (sharp would otherwise resize before compositing)
   const dressed = await sharp(Buffer.from(shirt)).composite([{ input: art, left: Math.round((11 - PRINT_IN / 2) * PPI), top: Math.round(3.6 * PPI) }]).png().toBuffer()
   tiles.push(await sharp(dressed).resize({ width: 660 }).png().toBuffer())
 }
-await sharp({ create: { width: 660 * 2 + 10, height: 660, channels: 3, background: '#3b3f4b' } })
+await sharp({ create: { width: 660 * 3 + 20, height: 660, channels: 3, background: '#3b3f4b' } })
   .composite(tiles.map((input, i) => ({ input, left: i * 670, top: 0 }))).png().toFile(`${DIR}retro-clc-mockups.png`)
-console.log('retro-clc-mockups.png: cream tee (colour), white tee (5 spot colours)')
+console.log('retro-clc-mockups.png: cream tee (colour), white tee (5 spot colours), gold tee (on-gold)')
