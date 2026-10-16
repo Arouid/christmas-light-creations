@@ -8,6 +8,7 @@
 // - medal: the round tribute (BRAD MEDEL over his beanie portrait, CHRISTMAS LIGHT CREATIONS under it), navy, white
 //   and gold with grey shading. Navy shirt: white and gold inks, the navy disc left as shirt. White shirt: navy and
 //   gold inks. Colour: as drawn (greys too), for digital printing on any shirt. Also as a 4-in chest print.
+//   Patch: the whole medal, navy disc included (the patch's twill), 3.5 in, its colours cut to five threads.
 // The downloads keep a full-page backing square (dropped here) and draw light shapes over dark ones, so unprinted
 // parts are cut out with a mask (the shirt shows through), not just left unpainted.
 // Run: node scripts/shirt-mascot.mjs   (reads and writes assets-source/shirts/recraft/, not in git)
@@ -39,6 +40,19 @@ const PRINTS = {
   'medal-on-navy': { art: 'medal', inks: { light: WHITE, gold: GOLD, dark: null }, chest: 4 },
   'medal-on-white': { art: 'medal', inks: { dark: '#1c2b44', gold: '#b8862b', light: null }, chest: 4 }, // its own navy (ours prints near black on white), dark gold
   'medal-color': { art: 'medal', inks: 'as drawn', chest: 4 },
+  'medal-patch': { art: 'medal', inks: (sh) => thread(sh), w: 3.5 },
+}
+
+// The patch's five threads (owner, 2026-10-16: "this is the patch im wanting", the medal). The download's 13 colours
+// fold into them by brightness: its navies and near-blacks, the beanie's two greys, its whites, its gold.
+const THREADS = { navy: '#1C2B44', grey: '#8E95A9', lightGrey: '#CED3DF', white: '#FFFFFF', gold: '#B6964F' }
+function thread({ shade, colour }) {
+  if (shade === 'gold') return THREADS.gold
+  if (shade === 'dark') return THREADS.navy
+  const h = colour.replace('#', '')
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16))
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+  return lum > 0.88 ? THREADS.white : lum > 0.7 ? THREADS.lightGrey : THREADS.grey
 }
 
 const box = (d) => {
@@ -101,7 +115,7 @@ for (const a of Object.values(arts)) {
 function printed(a, inks, { x = 0, y = 0, w }) {
   const { box: b } = a, h = (w * b.h) / b.w
   const area = `x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"`
-  const inkOf = (sh) => (inks === 'as drawn' ? sh.colour : inks[sh.shade])
+  const inkOf = (sh) => (inks === 'as drawn' ? sh.colour : typeof inks === 'function' ? inks(sh) : inks[sh.shade])
   const mask = a.shapes.map((sh) => sh.draw(inkOf(sh) ? '#fff' : '#000')).join('')
   const ink = a.shapes.filter(inkOf).map((sh) => sh.draw(inkOf(sh))).join('')
   return { w, h, svg: `<svg x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}">` +
@@ -113,8 +127,8 @@ const png = (svg, w) => sharp(Buffer.from(svg), { density: Math.sqrt(72 * DPI * 
   .withMetadata({ density: DPI }).png({ compressionLevel: 9 }).toBuffer()
 
 const prints = {}
-for (const [name, { art, inks, chest }] of Object.entries(PRINTS)) {
-  const p = printed(arts[art], inks, { w: PRINT_IN })
+for (const [name, { art, inks, chest, w = PRINT_IN }] of Object.entries(PRINTS)) {
+  const p = printed(arts[art], inks, { w })
   const svg = page(p.w, p.h, p.svg)
   writeFileSync(`${DIR}mascot-${name}.svg`, svg)
   svgToPdf(svg, p.w, p.h, `${DIR}mascot-${name}.pdf`)

@@ -132,6 +132,7 @@ portraits made from his photos (`recraft/bradley-blue-line art.svg`, `recraft/br
 | `mascot-medal-on-navy` | navy | white and gold (the navy disc is the shirt) |
 | `mascot-medal-on-white` | white or light | navy and dark gold |
 | `mascot-medal-color` | any (digital printing: DTG, DTF) | as drawn, greys too |
+| `mascot-medal-patch` | the patch (owner: "this is the patch im wanting") | 3.5 in, navy disc included, 5 threads |
 
 The fishing cap's patch (another company's fish logo) is replaced by our cottage. `mascot-mockups.png`: him on a
 navy polo's left sleeve (2.25 in), on the back of a navy tee (gold) and a mustard tee (line art) over the name, and
@@ -139,6 +140,16 @@ laser-engraved on a leather cap patch, and the medal on a navy tee's chest and b
 chest PNG (`-chest.png`); its lettering is 0.18 in tall there, fine for print, too small to embroider. Open: the owner picks the master look; a character artist redraws him in a
 few poses (also gives a human-made version that can be copyrighted); his name or nickname on anything is the
 owner's call.
+
+### The Brad Medel patch: what to send a patch maker
+
+- Art: `recraft/mascot-medal-patch.pdf` (vector) and `.png` (300 dpi), 3.5 in round.
+- Threads: navy `#1C2B44` (the twill and lines), white, light grey `#CED3DF` and grey `#8E95A9` (the beanie's
+  shading), gold `#B6964F` (metallic gold is an option).
+- Type: **woven** at 3.5 in keeps his face and the 0.15-in lettering; **embroidered** needs about 4.5 in for the
+  lettering to stitch cleanly, and the face gets simpler.
+- Navy merrowed (rolled) border; backing iron-on for shirts, sew-on for jackets, hook-and-loop for caps and gear.
+- Ask for a digital proof and a sewn sample before production; 2–3 weeks plus shipping.
 
 ## LIT SINCE 2011 (Recraft, 2026-10-16)
 
