@@ -5,7 +5,7 @@
 // Run: node scripts/shirt-print-ready.mjs → assets-source/shirts/print-ready/<colour>/ (copies, not in git: the
 // Recraft art stays on this computer) and print-ready/README.md (the index, in git). Run it again after a design
 // changes; it only replaces its own copies.
-import { copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
@@ -35,7 +35,7 @@ const FOLDERS = {
       ...['scene', 'varsity', 'badge', 'badge-chest', 'sign', 'treepair', 'sunburst', 'crew', 'bulbs'].map((d) => D(`${d}-on-navy`, `${d} design (scripts/shirt-designs.mjs)`)),
       R('collegiate-on-navy', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink'),
       R('holiday-lights-badge-on-navy', 'Holiday Lights badge (Recraft), navy knocked out'),
-      R('install-crew-thin-on-navy', 'Install Crew back print, one thin red roofline (scripts/shirt-install-crew-thin.mjs)'),
+      R('install-crew-red-on-navy', 'Install Crew back print, red neon roofline'),
       R('lit-2011-on-navy', 'LIT SINCE 2011 with our cottage, cream and gold'),
       R('mascot-line-on-navy', 'Bradley line art, white ink'),
       R('mascot-gold-on-navy', 'Bradley in his flat cap, gold ink'),
@@ -56,7 +56,7 @@ const FOLDERS = {
       R('mascot-line-on-light', 'Bradley line art, navy ink'),
       R('mascot-medal-color', 'Brad Medel medal as drawn (DTG/DTF)'),
       ...NEW.map(([n, what]) => R(`new-${n}-on-gold`, what)),
-      R('install-crew-thin-on-gold', 'Install Crew back print set up for gold, one thin red roofline (scripts/shirt-install-crew-thin.mjs)'),
+      R('install-crew-on-gold', 'Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs)'),
       ...NEW_GOLD.map(([n, what]) => R(`new-${n}-on-gold`, what)),
       ...MAGNET.map(([d, pl, what]) => R(`magnet-${d}-${pl}-on-gold`, what)),
       R('big-cottage-mustard-limited-dtg', 'big cottage, 12 in, for a mustard shirt (DTG)', ['recraft/big-cottage-mustard-limited-snow.svg']),
@@ -112,8 +112,12 @@ const index = ['# Print-ready shirt designs', '', 'Made by `node scripts/shirt-p
   'upload (300 dpi, transparent, print size); the `.svg` / `.pdf`, where there is one, is the vector for a screen',
   'printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../README.md` and `../designs/README.md`.', '']
 for (const [folder, { title, items }] of Object.entries(FOLDERS)) {
-  rmSync(OUT + folder, { recursive: true, force: true })
+  // Clear the folder's files, not the folder: Windows refuses to remove a folder while a file in it is open (the
+  // owner editing one in Inkscape), and that file is left as it is.
   mkdirSync(OUT + folder, { recursive: true })
+  for (const f of readdirSync(OUT + folder)) {
+    try { rmSync(`${OUT}${folder}/${f}`, { force: true }) } catch { console.log(`${folder}/${f}: open in another program, left as it is`) }
+  }
   const here = items.filter(([f]) => existsSync(SHIRTS + f + '.png'))
   index.push(`## ${title}: \`${folder}/\` (${here.length})`, '', '| File | Size | What |', '|---|---|---|')
   for (const [f, what, extra = []] of here) {
