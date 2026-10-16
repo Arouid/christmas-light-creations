@@ -237,7 +237,10 @@ the 0), text in Outfit; each design `recraft/new-<design>-on-navy` and `-on-gold
 
 Tried and dropped the same day: moving the mustard cottage's roof (or its whole house) onto Install Crew. The two AI
 drawings don't share a house shape, and every fit left a gap or squashed the walls (owner: "these are messed up. just
-return them to how they were"). The prints stay `install-crew-red-on-navy.png` and `install-crew-on-gold.png`.
+return them to how they were"). Instead (owner, with an MS Paint sketch: "why cant we just fix it like this?"): `node scripts/shirt-install-crew-thin.mjs`
+keeps Install Crew's own roof and house, turns the thick pink neon and its dark shadow side above the eave to snow,
+and draws one smooth red line along the eave, over everything: `install-crew-thin-on-navy.png` and
+`install-crew-thin-on-gold.png` (12 x 15.84 in), the ones in `print-ready/`.
 
 Also in `scripts/shirt-new-art.mjs`: `new-minimal-on-navy` / `-on-gold` (the ultra-minimalist wordmark, 10 in) and, for
 gold or mustard shirts, `new-mustard-name-on-gold` and `new-mustard-name-phone-on-gold` (the mustard cottage over the

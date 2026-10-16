@@ -24,7 +24,7 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `bulbs-on-navy` (png, svg, pdf) | 11.0 x 6.6 in | bulbs design (scripts/shirt-designs.mjs) |
 | `collegiate-on-navy` (png, svg, pdf) | 11.0 x 3.5 in | CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink |
 | `holiday-lights-badge-on-navy` (png) | 10.0 x 10.1 in | Holiday Lights badge (Recraft), navy knocked out |
-| `install-crew-red-on-navy` (png) | 12.0 x 15.8 in | Install Crew back print, red neon roofline |
+| `install-crew-thin-on-navy` (png) | 12.0 x 15.8 in | Install Crew back print, one thin red roofline (scripts/shirt-install-crew-thin.mjs) |
 | `lit-2011-on-navy` (png, svg, pdf) | 11.0 x 9.1 in | LIT SINCE 2011 with our cottage, cream and gold |
 | `mascot-line-on-navy` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, white ink |
 | `mascot-gold-on-navy` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, gold ink |
@@ -67,7 +67,7 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `new-services-on-gold` (png, svg, pdf) | 12.0 x 11.0 in | six service icons with labels over the wordmark (back) |
 | `new-chest-on-gold` (png, svg, pdf) | 4.0 x 1.6 in | the bulb cottage beside the wordmark (left chest) |
 | `new-minimal-on-gold` (png, svg, pdf) | 10.0 x 3.1 in | the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front) |
-| `install-crew-on-gold` (png) | 12.0 x 15.8 in | Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs) |
+| `install-crew-thin-on-gold` (png) | 12.0 x 15.8 in | Install Crew back print set up for gold, one thin red roofline (scripts/shirt-install-crew-thin.mjs) |
 | `new-mustard-name-on-gold` (png, svg, pdf) | 12.0 x 12.8 in | the mustard cottage over the wordmark (gold or mustard shirt) |
 | `new-mustard-name-phone-on-gold` (png, svg, pdf) | 12.0 x 14.0 in | the mustard cottage over the wordmark and the phone (gold or mustard shirt) |
 | `magnet-badge-back-on-gold` (png) | 11.0 x 8.2 in | truck-magnet artwork badge, back, 11 in |
