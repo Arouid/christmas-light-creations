@@ -20,7 +20,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { COLOR_ROLES, WHITE_ROLES, checkRoles, fmt, letteringGroups, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
+import { checkRoles, COLOR_ROLES, fmt, letteringGroups, parseLogo, prepCottage, textLine, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 
 const OUT = fileURLToPath(new URL('../assets-source/shirts/', import.meta.url))
 
@@ -100,7 +100,7 @@ for (const [name, size, look, knock = []] of [
   const vbH = bottom - VB_TOP
   const widthPx = SIZES[size] * DPI
   const heightPx = Math.round((vbH * widthPx) / VB_W)
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${VB_TOP} ${VB_W} ${fmt(vbH)}" width="${widthPx}" height="${heightPx}">${look === 'glow' ? logo.defs : ''}${body.join('\n')}</svg>`
+  const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${VB_TOP} ${VB_W} ${fmt(vbH)}" width="${widthPx}" height="${heightPx}">${look === 'glow' ? logo.defs : ''}${body.join('\n')}</svg>`)
   const png = await raster(svg, widthPx, heightPx, { haze: look === 'glow' })
   writeFileSync(`${OUT}${name}.png`, png)
   await preview(name, png, size === 'back' ? 0.5 : 1)

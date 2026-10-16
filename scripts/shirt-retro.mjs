@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { COLOR_ROLES, checkRoles, fmt, parseLogo, prepCottage } from './lib/logoArt.mjs'
+import { checkRoles, COLOR_ROLES, fmt, parseLogo, prepCottage, unifyNavy } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
@@ -114,7 +114,7 @@ const fiveColor = body.replace(/(fill|stroke)="(#[0-9A-Fa-f]{6}|url\(#([^)]*)\))
 const { info } = await sharp(Buffer.from(draw(body)), { density: 72 }).trim().toBuffer({ resolveWithObject: true })
 const B = { x: -info.trimOffsetLeft, y: -info.trimOffsetTop, w: info.width, h: info.height }
 const hIn = (PRINT_IN * B.h) / B.w
-const sized = (b) => draw(b).replace(head, `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PRINT_IN}in" height="${fmt(hIn)}in" viewBox="${B.x} ${B.y} ${B.w} ${B.h}">`)
+const sized = (b) => unifyNavy(draw(b)).replace(head, `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PRINT_IN}in" height="${fmt(hIn)}in" viewBox="${B.x} ${B.y} ${B.w} ${B.h}">`)
 
 const PPI = 60
 const TEE = 'M2.6 1.6 L8.4 0.9 Q11 3.3 13.6 0.9 L19.4 1.6 L21.8 6.6 L19.2 8.4 L18 6.9 L18 26.9 Q18 27.3 17.6 27.3 L4.4 27.3 Q4 27.3 4 26.9 L4 6.9 L2.8 8.4 L0.2 6.6 Z'

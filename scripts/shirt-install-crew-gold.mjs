@@ -8,10 +8,11 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { unifyNavy } from './lib/logoArt.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
 const KNOCKOUT = fileURLToPath(new URL('shirt-knockout.mjs', import.meta.url))
-const NAVY = '#1F2742'
+const NAVY = '#1F2742' // made the one print navy by unifyNavy below
 const BELOW_HOUSE = 2850 // file units: the ribbon starts below this
 // The AI's pink neon to red (same as the navy print, assets-source/shirts/README.md).
 const PINK = 'FEB9BD=E7555B,FE9FA9=E04047,FB7E88=D7262E,FFCBC9=EC6468,FE9EA2=E04046,FFAFB4=E54D53,FDD8DD=F06E72,FF999F=DF3C42,FFBBC0=E8575C,FF9DA0=E03F45,FFC5C7=EB5F64,FF9DA3=E03F45,FFCBCE=EC6468,FF9BA1=DF3D44,FFC9C8=EC6267,FF979A=DE3A41,FFBDBF=E9585E'
@@ -28,7 +29,7 @@ const svg = readFileSync(DIR + 'install-crew-v2-pearland-white.svg', 'utf8').rep
   return tag
 })
 const tmp = DIR + 'install-crew-gold-prep.svg'
-writeFileSync(tmp, svg)
+writeFileSync(tmp, unifyNavy(svg))
 // Nothing is knocked out (000001 is no colour in the file): on gold every shape prints.
 execFileSync('node', [KNOCKOUT, tmp, DIR + 'install-crew-on-gold.png', '12', '000001', '--drop-bg', '--map', PINK], { stdio: 'inherit' })
 rmSync(tmp)

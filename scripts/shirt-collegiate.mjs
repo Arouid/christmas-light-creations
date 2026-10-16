@@ -12,7 +12,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { COLORS, FONTS, fmt, glyphs, textLine } from './lib/logoArt.mjs'
+import { COLORS, fmt, FONTS, glyphs, textLine, unifyNavy } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
@@ -60,8 +60,8 @@ for (const [name, make] of [['collegiate', traced], ['collegiate-font', font]]) 
   const left = v.left - PAD, top = v.top - PAD, w = v.right - v.left + 2 * PAD, h = EST.baseline + PAD - top
   const hIn = (WIDTH_IN * h) / w
   for (const [shirt, ink] of Object.entries(INKS)) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(WIDTH_IN)}in" height="${fmt(hIn)}in" viewBox="${fmt(left)} ${fmt(top)} ${fmt(w)} ${fmt(h)}">` +
-      `<g fill="${ink}">${(v.body + estSvg).replace(/ fill="[^"]*"/g, '')}</g></svg>`
+    const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(WIDTH_IN)}in" height="${fmt(hIn)}in" viewBox="${fmt(left)} ${fmt(top)} ${fmt(w)} ${fmt(h)}">` +
+      `<g fill="${ink}">${(v.body + estSvg).replace(/ fill="[^"]*"/g, '')}</g></svg>`)
     const file = `${name}-on-${shirt}`
     writeFileSync(DIR + file + '.svg', svg)
     svgToPdf(svg, WIDTH_IN, hIn, DIR + file + '.pdf')

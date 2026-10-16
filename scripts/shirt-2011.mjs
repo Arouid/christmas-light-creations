@@ -8,7 +8,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { fmt, glyphs, textLine } from './lib/logoArt.mjs'
+import { fmt, glyphs, textLine, unifyNavy } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
@@ -45,7 +45,7 @@ const area = `x="${x0}" y="${y0}" width="${artW}" height="${y1 - y0}"`
 const body = `<defs><mask id="cut" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${g(mask)}</mask></defs>` +
   `<g mask="url(#cut)">${g(shapes)}</g>${line.svg(x0 + artW / 2, y1 + gap + capH, 'middle')}`
 const hIn = h * unit
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH_IN}in" height="${fmt(hIn)}in" viewBox="${fmt(x0)} ${fmt(y0)} ${fmt(artW)} ${fmt(h)}">${body}</svg>`
+const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH_IN}in" height="${fmt(hIn)}in" viewBox="${fmt(x0)} ${fmt(y0)} ${fmt(artW)} ${fmt(h)}">${body}</svg>`)
 writeFileSync(DIR + '2011-ornament.svg', svg)
 svgToPdf(svg, WIDTH_IN, hIn, DIR + '2011-ornament.pdf')
 // librsvg reads the inch size at `density` dpi and sharp scales by density/72 again: density²/72 px per inch.

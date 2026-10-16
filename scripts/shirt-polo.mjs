@@ -15,7 +15,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { COLORS, FONTS, NAVY_ROLES, WHITE_ROLES, checkRoles, fmt, glyphs, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
+import { checkRoles, COLORS, fmt, FONTS, glyphs, NAVY_ROLES, parseLogo, prepCottage, textLine, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const OUT = fileURLToPath(new URL('../assets-source/shirts/designs/', import.meta.url))
@@ -161,7 +161,7 @@ for (const [key, make] of Object.entries(marks)) {
     const m = make(P), body = m.body
     const w = m.w + 2 * EDGE, h = m.h + 2 * EDGE
     const name = `polo-${key}-on-${polo}`
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(w)}in" height="${fmt(h)}in" viewBox="${fmt(-EDGE * U)} ${fmt(-EDGE * U)} ${fmt(w * U)} ${fmt(h * U)}">${body.join('\n')}</svg>`
+    const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(w)}in" height="${fmt(h)}in" viewBox="${fmt(-EDGE * U)} ${fmt(-EDGE * U)} ${fmt(w * U)} ${fmt(h * U)}">${body.join('\n')}</svg>`)
     writeFileSync(`${OUT}${name}.svg`, svg)
     svgToPdf(svg, w, h, `${OUT}${name}.pdf`)
     // librsvg turns the inch size into pixels at the density and sharp scales by density/72 again: render big, size down.

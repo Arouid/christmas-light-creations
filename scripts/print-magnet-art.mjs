@@ -11,7 +11,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { FONTS, fmt, glyphs, textLine } from './lib/logoArt.mjs'
+import { fmt, FONTS, glyphs, textLine, unifyNavy } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
@@ -107,7 +107,7 @@ for (const [theme, th] of Object.entries(THEMES)) {
       `<circle cx="${fmt(wx * U)}" cy="${fmt(wy * U)}" r="${fmt((r + 0.12) * U)}" fill="none" stroke="${th.accent}" stroke-width="${fmt(0.05 * U)}"/>`,
       ...words(th, col)]
   }
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">${body.join('')}</svg>`
+  const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">${body.join('')}</svg>`)
   const out = DIR + th.file
   writeFileSync(out + '.svg', svg)
   svgToPdf(svg, W, H, out + '.pdf')
@@ -371,12 +371,13 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
       `<rect x="${fmt(1.5 * U)}" y="${fmt((siteBase - site.cap / U - 0.42) * U)}" width="${fmt((W - 3) * U)}" height="${fmt(0.035 * U)}" fill="${bandText}"/></g>`
     siteSvg = site.svg((W / 2) * U, siteBase * U, 'middle')
   }
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
     `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${bandSvg}${house.svg}` +
     (frame ? `<rect x="${fmt(FRAME_INSET * U)}" y="${fmt(FRAME_INSET * U)}" width="${fmt((W - 2 * FRAME_INSET) * U)}" height="${fmt((H - 2 * FRAME_INSET) * U)}" rx="${fmt((0.75 - FRAME_INSET) * U)}" fill="none" stroke="${ink}" stroke-width="${fmt(FRAME_LINE * U)}"/>` : '') +
     flatWordmark(ink, windows || ink, { cx, y: top, w: wmW }).svg +
     (year ? '' : rule(col + 0.3, cx - half - gap)) + tag.svg(cx * U, (top + rTag) * U, 'middle') + (year ? '' : rule(cx + half + gap, col + colW - 0.3)) +
     phone.svg(cx * U, (top + rPhone) * U, 'middle') + siteSvg + '</svg>'
+  svg = unifyNavy(svg)
   const out = `${DIR}vehicle-magnet-24x12-flat-${ground}`
   writeFileSync(out + '.svg', svg)
   svgToPdf(svg, W, H, out + '.pdf')

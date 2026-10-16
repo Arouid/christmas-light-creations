@@ -18,7 +18,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { COLORS, FONTS, NAVY_ROLES, WHITE_ROLES, checkRoles, fmt, glyphs, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
+import { checkRoles, COLORS, fmt, FONTS, glyphs, NAVY_ROLES, parseLogo, prepCottage, textLine, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
@@ -121,7 +121,7 @@ function printed(a, inks, { x = 0, y = 0, w }) {
   return { w, h, svg: `<svg x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}">` +
     `<defs><mask id="cut" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#cut)">${ink}</g></svg>` }
 }
-const page = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(w)}in" height="${fmt(h)}in" viewBox="0 0 ${fmt(w)} ${fmt(h)}">${body}</svg>`
+const page = (w, h, body) => unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(w)}in" height="${fmt(h)}in" viewBox="0 0 ${fmt(w)} ${fmt(h)}">${body}</svg>`)
 // librsvg reads the inch size at `density` dpi and sharp scales by density/72 again: density²/72 px per inch.
 const png = (svg, w) => sharp(Buffer.from(svg), { density: Math.sqrt(72 * DPI * 1.5) }).resize({ width: Math.round(w * DPI), kernel: 'lanczos3' })
   .withMetadata({ density: DPI }).png({ compressionLevel: 9 }).toBuffer()

@@ -12,7 +12,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { COLORS, COLOR_ROLES, FONTS, NAVY_ROLES, WHITE_ROLES, checkRoles, flattenArt, fmt, glyphs, parseArt, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
+import { checkRoles, COLOR_ROLES, COLORS, flattenArt, fmt, FONTS, glyphs, NAVY_ROLES, parseArt, parseLogo, prepCottage, textLine, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const OUT = fileURLToPath(new URL('../assets-source/shirts/designs/', import.meta.url))
@@ -172,7 +172,7 @@ function bulb(x, y, colour) {
     `<path d="M${fmt((x - 0.16) * U)} ${fmt((y + 0.28) * U)} C${fmt((x - 0.62) * U)} ${fmt((y + 0.75) * U)} ${fmt((x - 0.5) * U)} ${fmt((y + 1.5) * U)} ${fmt(x * U)} ${fmt((y + 1.62) * U)} C${fmt((x + 0.5) * U)} ${fmt((y + 1.5) * U)} ${fmt((x + 0.62) * U)} ${fmt((y + 0.75) * U)} ${fmt((x + 0.16) * U)} ${fmt((y + 0.28) * U)} Z" fill="${colour}"/>` +
     `<ellipse cx="${fmt((x - 0.15) * U)}" cy="${fmt((y + 0.72) * U)}" rx="${fmt(0.07 * U)}" ry="${fmt(0.22 * U)}" fill="${WHITE}"/>`
 }
-const doc = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}in" height="${h}in" viewBox="0 0 ${fmt(w * U)} ${fmt(h * U)}">${body.join('\n')}</svg>`
+const doc = (w, h, body) => unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}in" height="${h}in" viewBox="0 0 ${fmt(w * U)} ${fmt(h * U)}">${body.join('\n')}</svg>`)
 
 // --- the designs: each returns { w, h, body } for a shirt palette S ---
 const designs = {

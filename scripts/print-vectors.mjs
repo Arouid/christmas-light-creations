@@ -16,7 +16,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import QRCode from 'qrcode'
 import sharp from 'sharp'
-import { COLORS, COLOR_ROLES, FONTS, NAVY_ROLES, WHITE_ROLES, checkRoles, fmt, glyphs, letteringGroups, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
+import { checkRoles, COLOR_ROLES, COLORS, fmt, FONTS, glyphs, letteringGroups, NAVY_ROLES, parseLogo, prepCottage, textLine, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const OUT = fileURLToPath(new URL('../assets-source/print/', import.meta.url))
@@ -79,8 +79,8 @@ async function qr(code, { x, y, size }) {
   return { svg, url }
 }
 
-const doc = (w, h, bg, body) => // (LF only: the logo files carry CRLF)
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}in" height="${h}in" viewBox="0 0 ${fmt(w * U)} ${fmt(h * U)}">${bg || ''}${body.join('\n')}</svg>`.replace(/\r\n?/g, '\n')
+const doc = (w, h, bg, body) => // (LF only: the logo files carry CRLF; one print navy: unifyNavy)
+  unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}in" height="${h}in" viewBox="0 0 ${fmt(w * U)} ${fmt(h * U)}">${bg || ''}${body.join('\n')}</svg>`.replace(/\r\n?/g, '\n'))
 const rect = (w, h, fill, rx = 0) => `<rect width="${fmt(w * U)}" height="${fmt(h * U)}" rx="${fmt(rx * U)}" fill="${fill}"/>`
 
 // --- the items ---

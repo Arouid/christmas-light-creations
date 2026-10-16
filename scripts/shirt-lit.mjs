@@ -12,7 +12,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { WHITE_ROLES, checkRoles, fmt, parseLogo, prepCottage } from './lib/logoArt.mjs'
+import { checkRoles, fmt, parseLogo, prepCottage, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
@@ -85,8 +85,8 @@ function design(inks) {
   const ink = shapes.filter((s) => inks[s.role]).map((s) => s.svg(inks[s.role])).join('') +
     cottage((r) => (r === 'windowFrame' || r === 'door' ? inks.gold : inks.cream))
   const h = (PRINT_IN * B.h) / B.w
-  return { h, svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${PRINT_IN}in" height="${fmt(h)}in" viewBox="${B.x} ${B.y} ${B.w} ${B.h}">` +
-    `<defs><mask id="cut" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#cut)">${ink}</g></svg>` }
+  return { h, svg: unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${PRINT_IN}in" height="${fmt(h)}in" viewBox="${B.x} ${B.y} ${B.w} ${B.h}">` +
+    `<defs><mask id="cut" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#cut)">${ink}</g></svg>`) }
 }
 
 const PPI = 60

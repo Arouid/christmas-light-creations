@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { fmt, glyphs, textLine } from './lib/logoArt.mjs'
+import { fmt, glyphs, textLine, unifyNavy } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
@@ -151,7 +151,7 @@ const TEE = 'M2.6 1.6 L8.4 0.9 Q11 3.3 13.6 0.9 L19.4 1.6 L21.8 6.6 L19.2 8.4 L1
 const tiles = []
 for (const [key, make] of Object.entries(designs)) for (const [shirt, S] of Object.entries(SHIRTS)) {
   const { W, H, body } = make(S)
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${fmt(H)}in" viewBox="0 0 ${fmt(W * U)} ${fmt(H * U)}">${body}</svg>`
+  const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${fmt(H)}in" viewBox="0 0 ${fmt(W * U)} ${fmt(H * U)}">${body}</svg>`)
   const name = `new-${key}-on-${shirt}`
   writeFileSync(`${DIR}${name}.svg`, svg)
   svgToPdf(svg, W, H, `${DIR}${name}.pdf`)
