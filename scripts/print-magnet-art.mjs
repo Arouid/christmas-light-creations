@@ -193,47 +193,95 @@ function flatWordmark(ink, dot, { cx, y, w }) {
 }
 
 // accent: the gold touches (rules and the band's line); band: the website's band across the bottom, its text in
-// bandText (owner: "lay the website across the bottom of it in larger font? with gold accents where we can").
+// bandText (owner: "lay the website across the bottom of it in larger font? with gold accents where we can"). The
+// band's top is a row of snow drifts of random sizes and the cottage stands on it, its own drift melting into the
+// band (owner: "lower the house down until it meets up and blends with the blue navy bar; then make that blue navy bar
+// have some random sized waves like its snow. Or just take the blue bar off": both made, nobar is the second).
+// A line of text sized to a width, the dots of its i's in another colour, like the wordmark's gold dot (owner:
+// "website goes to navy. the i get a gold dot"). The font draws each i as one glyph of two outlines: the higher one is
+// the dot.
+function dottedLine(str, { font, location, fit, tracking, fill, dot }) {
+  const g = glyphs(str, font, location)
+  const advEm = g.glyphs.reduce((sum, gl) => sum + gl.advance, 0) / g.upem + tracking * (g.glyphs.length - 1)
+  const em = (fit * U) / advEm, k = em / g.upem, width = advEm * em
+  const lowest = (d) => Math.min(...d.match(/-?[0-9.]+/g).map(Number).filter((_, i) => i % 2 === 1))
+  return { cap: (g.capHeight / g.upem) * em, width, svg: (x, y, anchor = 'start') => {
+    let cx = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x
+    const parts = []
+    for (const gl of g.glyphs) {
+      const at = (d, colour) => `<path transform="translate(${fmt(cx)} 0) scale(${k} ${-k})" d="${d}" fill="${colour}"/>`
+      if (gl.d && gl.char === 'i') {
+        const outlines = gl.d.split(/(?=M)/).filter(Boolean)
+        const top = Math.max(...outlines.map(lowest))
+        for (const o of outlines) parts.push(at(o, lowest(o) === top ? dot : fill))
+      } else if (gl.d) parts.push(at(gl.d, fill))
+      cx += gl.advance * k + tracking * em
+    }
+    return `<g transform="translate(0 ${fmt(y)})">${parts.join('')}</g>`
+  } }
+}
+
 const FLAT_THEMES = {
   blue: { bg: FLAT.blue, ink: FLAT.gold, accent: FLAT.gold, band: FLAT.gold, bandText: FLAT.blue },
   gold: { bg: FLAT.gold, ink: FLAT.blue, accent: FLAT.blue, band: FLAT.blue, bandText: FLAT.gold },
   cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold }, // the flat cottage file's own cream (owner: "this is the background color")
   'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold, cottage: bulbCottage },
+  'cream-bulbs-nobar': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, cottage: bulbCottage },
 }
-const BAND = 2.4 // inches: the website's band along the bottom edge
+const BAND = 2.4 // inches: the website's band along the bottom edge (its flat part; the drifts rise above it)
+// The drifts: soft mounds of random width and height along the band's top, from a fixed seed so a rebuild is the same.
+function drifts(top, seed = 2011) {
+  let t = seed
+  const rand = () => { t = (t + 0x6d2b79f5) | 0; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296 }
+  let x = -0.5, d = `M0 ${fmt(H * U)} L0 ${fmt(top * U)}`
+  while (x < W) {
+    const w = 1.6 + rand() * 3.2, a = 0.18 + rand() * 0.42, x1 = Math.min(x + w, W + 0.5)
+    d += ` L${fmt(x * U)} ${fmt(top * U)} C${fmt((x + w * 0.25) * U)} ${fmt((top - a * 1.33) * U)} ${fmt((x1 - w * 0.25) * U)} ${fmt((top - a * 1.33) * U)} ${fmt(x1 * U)} ${fmt(top * U)}`
+    x = x1
+  }
+  return d + ` L${fmt(W * U)} ${fmt(H * U)} Z`
+}
 for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage }] of Object.entries(FLAT_THEMES)) {
-  const topH = H - BAND, cy = topH / 2 + 0.15 // the area above the band, and its middle line
-  const house = cottage(ink, { x: MARGIN, cy, h: 6.4, windows })
-  const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
   const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
+  const topH = band ? H - BAND : H // the area above the band
+  const HOUSE = 6.4
+  // With a band the cottage stands on it (its bottom 0.25 in into the band); without, it is centred on the door.
+  const house = cottage(ink, { x: MARGIN, cy: band ? topH + 0.25 - HOUSE / 2 : H / 2, h: HOUSE, windows })
+  const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
   const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
   const tag = T('FREE ESTIMATES  ·  PEARLAND, TX', sans(600, { cap: 0.27, tracking: 0.28, fill: small }))
   const phone = T(PHONE, sans(600, { fit: colW * 0.96, tracking: 0 }))
   const rTag = wmH + 0.85, rPhone = rTag + 0.55 + phone.cap / U
-  const top = cy - rPhone / 2
+  // No band: the site on its own line under the phone, as large as fits.
+  const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: windows || accent })
+  const rEnd = lineSite ? rPhone + 0.62 + lineSite.cap / U : rPhone
+  const top = (band ? (topH - 0.6) / 2 + 0.05 : H / 2) - rEnd / 2 // the block centred above the drifts, or on the door
   // Gold rules either side of the tag line.
   const half = tag.width / U / 2, gap = 0.28, ry = top + rTag - 0.15
   const rule = (x0, x1) => `<rect x="${fmt(x0 * U)}" y="${fmt(ry * U)}" width="${fmt((x1 - x0) * U)}" height="${fmt(0.035 * U)}" fill="${accent}"/>`
-  // The band: the magnet's own rounded shape clips it, so its bottom corners follow the magnet's.
-  const site = T(SITE.toUpperCase(), sans(600, { fit: W - 2 * 1.5, tracking: 0.06, fill: bandText }))
-  const siteBase = topH + BAND / 2 + 0.12 + site.cap / U / 2
-  const shape = `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}"/>`
-  const bandSvg = `<defs><clipPath id="magnet">${shape}</clipPath></defs><g clip-path="url(#magnet)">` +
-    `<rect y="${fmt(topH * U)}" width="${W * U}" height="${fmt(BAND * U)}" fill="${band}"/>` +
-    `<rect x="${fmt(1.5 * U)}" y="${fmt((topH + 0.32) * U)}" width="${fmt((W - 3) * U)}" height="${fmt(0.035 * U)}" fill="${band === FLAT.gold ? FLAT.blue : FLAT.gold}"/></g>`
+  let bandSvg = '', siteSvg = lineSite ? lineSite.svg(cx * U, (top + rEnd) * U, 'middle') : ''
+  if (band) {
+    // The band, clipped to the magnet's rounded shape; the site in large capitals, a thin line of the other colour.
+    const site = T(SITE.toUpperCase(), sans(600, { fit: W - 2 * 1.5, tracking: 0.06, fill: bandText }))
+    const siteBase = topH + BAND / 2 + 0.2 + site.cap / U / 2
+    bandSvg = `<defs><clipPath id="magnet"><rect width="${W * U}" height="${H * U}" rx="${0.75 * U}"/></clipPath></defs><g clip-path="url(#magnet)">` +
+      `<path d="${drifts(topH)}" fill="${band}"/>` +
+      `<rect x="${fmt(1.5 * U)}" y="${fmt((siteBase - site.cap / U - 0.42) * U)}" width="${fmt((W - 3) * U)}" height="${fmt(0.035 * U)}" fill="${bandText}"/></g>`
+    siteSvg = site.svg((W / 2) * U, siteBase * U, 'middle')
+  }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
     `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${bandSvg}${house.svg}` +
     flatWordmark(ink, windows || ink, { cx, y: top, w: wmW }).svg +
     rule(col + 0.3, cx - half - gap) + tag.svg(cx * U, (top + rTag) * U, 'middle') + rule(cx + half + gap, col + colW - 0.3) +
-    phone.svg(cx * U, (top + rPhone) * U, 'middle') + site.svg((W / 2) * U, siteBase * U, 'middle') + '</svg>'
+    phone.svg(cx * U, (top + rPhone) * U, 'middle') + siteSvg + '</svg>'
   const out = `${DIR}vehicle-magnet-24x12-flat-${ground}`
   writeFileSync(out + '.svg', svg)
   svgToPdf(svg, W, H, out + '.pdf')
   await sharp(Buffer.from(svg), { density: Math.sqrt(72 * 150) }).withMetadata({ density: 150 }).png({ compressionLevel: 9 }).toFile(out + '.png')
-  console.log(`vehicle-magnet-24x12-flat-${ground}: ${W} x ${H} in, ${ink} on ${bg}, website ${fmt(site.cap / U)} in tall in the band, all vector`)
+  console.log(`vehicle-magnet-24x12-flat-${ground}: ${W} x ${H} in, ${ink} on ${bg}${band ? ', snow-drift band' : ', no band'}, all vector`)
 }
 // The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
-for (const name of ['cream', 'cream-bulbs']) {
+for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar']) {
   const art = await sharp(`${DIR}vehicle-magnet-24x12-flat-${name}.png`).resize({ width: 820 }).png().toBuffer()
   const door = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560"><rect width="1000" height="560" fill="#b3191f"/><rect width="1000" height="40" fill="#8e1218"/>' +
     '<path d="M960 0 L960 560" stroke="#7a0f14" stroke-width="6"/><rect x="880" y="250" width="60" height="16" rx="8" fill="#cfd3d8"/></svg>'
