@@ -305,7 +305,7 @@ const FLAT_THEMES = {
   gold: { bg: FLAT.gold, ink: FLAT.blue, accent: FLAT.blue, band: FLAT.blue, bandText: FLAT.gold },
   cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold }, // the flat cottage file's own cream (owner: "this is the background color")
   'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold, cottage: bulbCottage, bulbs: C9 },
-  'cream-bulbs-nobar': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, cottage: bulbCottage, bulbs: C9, year: true },
+  'cream-bulbs-nobar': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, cottage: bulbCottage, bulbs: C9, year: true, frame: true },
 }
 const BAND = 2.4 // inches: the website's band along the bottom edge (its flat part; the drifts rise above it)
 // The drifts: soft mounds of random width and height along the band's top, from a fixed seed so a rebuild is the same.
@@ -320,7 +320,11 @@ function drifts(top, seed = 2011) {
   }
   return d + ` L${fmt(W * U)} ${fmt(H * U)} Z`
 }
-for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage, year, bulbs }] of Object.entries(FLAT_THEMES)) {
+// frame (owner: "should we frame it with a 1px blue border that follows the curvature of the outside edge of the magnet?"):
+// a thin line in the ink, inset FRAME_INSET from the edge (a cut can drift about 1/16 in, so a line on the edge would
+// look uneven), its corners concentric with the magnet's 0.75-in ones; 2 pt, as thin as prints cleanly.
+const FRAME_INSET = 0.35, FRAME_LINE = 2 / 72
+for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage, year, bulbs, frame }] of Object.entries(FLAT_THEMES)) {
   const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
   const topH = band ? H - BAND : H // the area above the band
   const HOUSE = 6.4
@@ -361,6 +365,7 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
     `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${bandSvg}${house.svg}` +
+    (frame ? `<rect x="${fmt(FRAME_INSET * U)}" y="${fmt(FRAME_INSET * U)}" width="${fmt((W - 2 * FRAME_INSET) * U)}" height="${fmt((H - 2 * FRAME_INSET) * U)}" rx="${fmt((0.75 - FRAME_INSET) * U)}" fill="none" stroke="${ink}" stroke-width="${fmt(FRAME_LINE * U)}"/>` : '') +
     flatWordmark(ink, windows || ink, { cx, y: top, w: wmW }).svg +
     (year ? '' : rule(col + 0.3, cx - half - gap)) + tag.svg(cx * U, (top + rTag) * U, 'middle') + (year ? '' : rule(cx + half + gap, col + colW - 0.3)) +
     phone.svg(cx * U, (top + rPhone) * U, 'middle') + siteSvg + '</svg>'
