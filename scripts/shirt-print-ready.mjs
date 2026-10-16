@@ -21,7 +21,9 @@ const R = (name, what, extra = []) => [`recraft/${name}`, what, extra]
 const POLO = ['wordmark', 'caps', 'logo', 'icon-1', 'icon-2']
 // scripts/shirt-new-art.mjs: the owner's new artwork combined, a navy and a gold version of each.
 const NEW = [['lit-house', 'the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath'], ['wreath-2011', 'LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark'],
-  ['services', 'six service icons with labels over the wordmark (back)'], ['chest', 'the bulb cottage beside the wordmark (left chest)']]
+  ['services', 'six service icons with labels over the wordmark (back)'], ['chest', 'the bulb cottage beside the wordmark (left chest)'],
+  ['minimal', 'the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front)']]
+const NEW_GOLD = [['mustard-name', 'the mustard cottage over the wordmark (gold or mustard shirt)'], ['mustard-name-phone', 'the mustard cottage over the wordmark and the phone (gold or mustard shirt)']]
 const FOLDERS = {
   navy: {
     title: 'Navy (blue) shirts',
@@ -31,7 +33,7 @@ const FOLDERS = {
       ...['scene', 'varsity', 'badge', 'badge-chest', 'sign', 'treepair', 'sunburst', 'crew', 'bulbs'].map((d) => D(`${d}-on-navy`, `${d} design (scripts/shirt-designs.mjs)`)),
       R('collegiate-on-navy', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink'),
       R('holiday-lights-badge-on-navy', 'Holiday Lights badge (Recraft), navy knocked out'),
-      R('install-crew-red-on-navy', 'Install Crew back print, red neon roofline'),
+      R('install-crew-v3-on-navy', 'Install Crew back print with the mustard cottage's house (thin red roofline)'),
       R('lit-2011-on-navy', 'LIT SINCE 2011 with our cottage, cream and gold'),
       R('mascot-line-on-navy', 'Bradley line art, white ink'),
       R('mascot-gold-on-navy', 'Bradley in his flat cap, gold ink'),
@@ -51,7 +53,8 @@ const FOLDERS = {
       R('mascot-line-on-light', 'Bradley line art, navy ink'),
       R('mascot-medal-color', 'Brad Medel medal as drawn (DTG/DTF)'),
       ...NEW.map(([n, what]) => R(`new-${n}-on-gold`, what)),
-      R('install-crew-on-gold', 'Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs)'),
+      R('install-crew-v3-on-gold', 'Install Crew back print with the mustard cottage's house, set up for gold (navy lettering and sky)'),
+      ...NEW_GOLD.map(([n, what]) => R(`new-${n}-on-gold`, what)),
       R('big-cottage-mustard-limited-dtg', 'big cottage, 12 in, for a mustard shirt (DTG)', ['recraft/big-cottage-mustard-limited-snow.svg']),
       R('big-cottage-mustard-dtf', 'big cottage to the hem, transparent (DTF transfer on mustard)'),
       R('big-cottage-mustard-allover', 'big cottage, mustard edge to edge (all-over sublimation; the exact look)'),

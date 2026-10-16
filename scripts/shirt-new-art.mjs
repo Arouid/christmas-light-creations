@@ -7,6 +7,11 @@
 // - wreath-2011: LIGHTING UP PEARLAND SINCE, a big 2011 with the wreath, the wordmark (front or back, 11 in).
 // - services: the six icons with labels over the wordmark (back, 12 in).
 // - chest: the bulb cottage beside the wordmark (left chest, 4 in).
+// - minimal: his ultra-minimalist wordmark with PEARLAND TX — EST 2011 under it (recraft/vector-recraft-images/
+//   ultra-minimalist-t-shirt-print-on-a-plain-cream-ba.svg; owner: "set that up for gold and navy"), front, 10 in.
+// - mustard-name, mustard-name-phone: the mustard cottage (recraft/big-cottage-mustard-limited-snow.svg, as drawn)
+//   over the wordmark, the second with the phone (owner: "the mustard cottage if I can get business name/phone on
+//   some of them"); gold or mustard shirts only (its walls are the mustard), 12 in.
 // On a navy shirt the art's navy prints cream and its gold stays gold; on a gold shirt the navy stays navy and the
 // gold turns red (gold would vanish); the art's cream is cut out (the shirt shows); the bulbs are red, amber, green,
 // blue. Run: node scripts/shirt-new-art.mjs → recraft/new-<design>-on-<shirt>.{png,svg,pdf} and new-mockups.png.
@@ -76,6 +81,24 @@ const year = (() => {
   return { ...piece([...digits, ...wreath]), base: BASE * sy, digitH: (BASE - DIGIT_TOP) * sy }
 })()
 
+// The ultra-minimalist: wordmark and tagline in its navy, the dot in its gold, its cream cut out.
+const minimal = piece(parse('vector-recraft-images/ultra-minimalist-t-shirt-print-on-a-plain-cream-ba.svg').filter((p) => !isPage(p))
+  .map((p) => place(p, { '#0B2149': 'ink', '#BE9744': 'accent' }[p.fill] || 'cut')))
+if (minimal.items.filter((i) => i.role === 'accent').length !== 1) throw new Error('ultra-minimalist svg: not the one-dot wordmark any more')
+
+// The mustard cottage as drawn (its own gradients), as a nested svg cropped to its art (rendered, then trimmed).
+const mustardSrc = readFileSync(DIR + 'big-cottage-mustard-limited-snow.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+const mustardBox = await (async () => {
+  const [, , vw, vh] = mustardSrc.match(/viewBox="([^"]*)"/)[1].split(/[ ,]+/).map(Number)
+  const { info } = await sharp(Buffer.from(mustardSrc), { density: 72 }).trim().toBuffer({ resolveWithObject: true })
+  return { x: -info.trimOffsetLeft, y: -info.trimOffsetTop, w: info.width, h: info.height, vw, vh }
+})()
+function mustard({ x, y, w }) {
+  const b = mustardBox, h = (w * b.h) / b.w
+  const inner = mustardSrc.replace(/^[^]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '')
+  return { w, h, svg: `<svg x="${fmt(x * U)}" y="${fmt(y * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}">${inner}</svg>` }
+}
+
 // --- drawing ---
 let maskId = 0
 // A piece in a shirt's colours, w inches wide (or h tall), its top-left at (x, y) inches.
@@ -138,6 +161,12 @@ const designs = {
     const wm = draw(wordmark, S, { x: 1.5, y: 2 * 4.2 + 0.2, w: W - 3 })
     return { W, H: 8.6 + wm.h + 0.05, body: body + wm.svg }
   },
+  minimal: (S) => {
+    const W = 10, m = draw(minimal, S, { x: 0, y: 0, w: W })
+    return { W, H: m.h, body: m.svg }
+  },
+  'mustard-name': (S) => mustardName(S, false),
+  'mustard-name-phone': (S) => mustardName(S, true),
   chest: (S) => {
     const W = 4, hh = 1.55, hs = draw(house, S, { x: 0, y: 0, h: hh })
     const wmW = W - hs.w - 0.22, wm = draw(wordmark, S, { x: hs.w + 0.22, y: 0, w: wmW })
@@ -145,11 +174,30 @@ const designs = {
   },
 }
 
+// The mustard cottage over the wordmark (and the phone): 12 in wide, the cottage 9.6 in.
+function mustardName(S, withPhone) {
+  const W = 12, c = mustard({ x: 1.2, y: 0, w: 9.6 })
+  let y = c.h + 0.45
+  const wm = draw(wordmark, S, { x: 1.3, y, w: W - 2.6 })
+  y += wm.h
+  let body = c.svg + wm.svg
+  if (withPhone) {
+    const ph = T(PHONE, { fit: 6.6, wght: 600, tracking: 0.02, fill: S.ink })
+    y += 0.5 + ph.cap
+    body += ph.at(W / 2, y)
+  }
+  return { W, H: y + 0.05, body }
+}
+const PHONE = '281-819-0163'
+// Designs printed on one shirt colour only (the rest on both).
+const ONLY = { 'mustard-name': ['gold'], 'mustard-name-phone': ['gold'] }
+
 // --- output ---
 const PPI = 50
 const TEE = 'M2.6 1.6 L8.4 0.9 Q11 3.3 13.6 0.9 L19.4 1.6 L21.8 6.6 L19.2 8.4 L18 6.9 L18 26.9 Q18 27.3 17.6 27.3 L4.4 27.3 Q4 27.3 4 26.9 L4 6.9 L2.8 8.4 L0.2 6.6 Z'
 const tiles = []
 for (const [key, make] of Object.entries(designs)) for (const [shirt, S] of Object.entries(SHIRTS)) {
+  if (ONLY[key] && !ONLY[key].includes(shirt)) continue
   const { W, H, body } = make(S)
   const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${fmt(H)}in" viewBox="0 0 ${fmt(W * U)} ${fmt(H * U)}">${body}</svg>`)
   const name = `new-${key}-on-${shirt}`
@@ -170,6 +218,7 @@ for (const [key, make] of Object.entries(designs)) for (const [shirt, S] of Obje
   tiles.push(await sharp(dressed).resize({ width: 440 }).png().toBuffer())
 }
 const th = (await sharp(tiles[0]).metadata()).height
-await sharp({ create: { width: 440 * 4 + 30, height: th * 2 + 10, channels: 3, background: '#3b3f4b' } })
-  .composite(tiles.map((input, i) => ({ input, left: Math.floor(i / 2) * 450, top: (i % 2) * (th + 10) }))).png().toFile(`${DIR}new-mockups.png`)
-console.log('new-mockups.png: the four designs (columns) on navy (top) and gold (bottom)')
+const cols = 5
+await sharp({ create: { width: 450 * cols - 10, height: (th + 10) * Math.ceil(tiles.length / cols) - 10, channels: 3, background: '#3b3f4b' } })
+  .composite(tiles.map((input, i) => ({ input, left: (i % cols) * 450, top: Math.floor(i / cols) * (th + 10) }))).png().toFile(`${DIR}new-mockups.png`)
+console.log(`new-mockups.png: ${tiles.length} mockups`)

@@ -27,7 +27,8 @@ const isKnock = (f) => knock.includes(f.replace('#', '').toUpperCase())
 let svg = readFileSync(src, 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
 if (mapArg) svg = svg.replace(/(fill|stop-color)="#([0-9A-Fa-f]{6})"/g, (m, attr, hex) => (swaps[hex.toUpperCase()] ? `${attr}="#${swaps[hex.toUpperCase()]}"` : m))
 if (flags.includes('--drop-bg')) svg = svg.replace(/<path fill="[^"]*" d="M0 0L(\d+) 0L\1 \1L0 \1L0 0Z"\/>/, '')
-const mask = svg.replace(/fill="([^"]*)"/gi, (m, f) => (f === 'none' ? m : `fill="${isKnock(f) ? '#000000' : '#ffffff'}"`))
+// Fills and strokes alike (a stroke left in its own colour would read as part coverage).
+const mask = svg.replace(/(fill|stroke)="([^"]*)"/gi, (m, attr, f) => (f === 'none' || f.startsWith('url(') && attr === 'stroke' ? m : `${attr}="${isKnock(f) ? '#000000' : '#ffffff'}"`))
 
 // Render 1.5x larger than the file's own size, then size down to the print width (crisper than sizing up).
 const density = 108
