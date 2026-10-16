@@ -2,9 +2,10 @@
 // this?"): its own roof and house, the thick pink neon band (17 pinks in fills and gradients, as the AI drew it) turned
 // to snow, and one red line along the band's lower edge, where the eave meets the walls, drawn over everything (shapes
 // drawn after the band covered it in places; owner: "now we don't have the red neon line", "we need the line we don't
-// need the bleed everywhere"). The neon's dark plum shadow side above the line goes to snow as well, so the snow and
-// its icicles fill solid down to the line (owner: "gotta fill in the icicles too"); the same plums lower down are the
-// corner posts' shading and stay.
+// need the bleed everywhere"). Everything above the line is snow (owner: "gotta fill in the icicles too", then his
+// painting, "I painted it in more"): the neon's plum shadow side and the wall's wood that rose above it (the gable over
+// the door) go to snow, and a snow fill covers the band's strip down to the line; the same plums and woods lower down
+// are the posts and walls and stay. The icicles hang below the line.
 // Run: node scripts/shirt-install-crew-thin.mjs → recraft/install-crew-thin-on-navy.png (the navies knocked out) and
 // recraft/install-crew-thin-on-gold.png (scripts/shirt-install-crew-gold.mjs), 12 in wide, 300 dpi.
 import { execFileSync } from 'node:child_process'
@@ -43,19 +44,35 @@ const lineAt = (x) => smoothAt[Math.max(cols[0], Math.min(cols[cols.length - 1],
 const pts = cols.filter((x) => x % 6 === 0).map((x) => `${x},${lineAt(x)}`)
 const line = `<polyline points="${pts.join(' ')}" fill="none" stroke="${RED}" stroke-width="${LINE}" stroke-linecap="round" stroke-linejoin="round"/>`
 
-// Pinks to snow (fills and gradient stops); plums above the line to snow; the line last.
+// Snow down to the line (owner, painting it in: "I painted it in more"): the band's own strip, from just above its
+// upper edge (the snow's outline there) down to the line, is filled with snow, drawn just before the line.
+const high = new Array(info.width).fill(-1)
+for (let x = 0; x < info.width; x++) for (let y = info.height - 1; y >= 0; y--) if (data[y * info.width + x] < 128) high[x] = y
+const topEdge = cols.map((x) => high[x])
+const topMed = topEdge.map((_, i) => window(topEdge, i, 40).sort((a, b) => a - b)[window(topEdge, i, 40).length >> 1])
+const every6 = cols.map((x, i) => [x, i]).filter(([x]) => x % 6 === 0)
+const fillPts = [...every6.map(([x, i]) => `${x},${topMed[i] - 14}`), ...every6.reverse().map(([x]) => `${x},${lineAt(x)}`)]
+const snowFill = `<polygon fill="${SNOW}" points="${fillPts.join(' ')}"/>`
+
+// Pinks to snow (fills and gradient stops); the house's wood and plum above the line to snow (the gable over the door
+// rose above it); then the snow fill and the line, last.
+const WALLS = ['785436', '824A37', '9D6B37', '392C2B', '7C4A35', '974F32', '834C35', '854C60']
+const WALL_GRADIENTS = ['gradient_0', 'gradient_1', 'gradient_2', 'gradient_5']
 let svg = src.replace(/(fill|stop-color)="#([0-9A-Fa-f]{6})"/g, (m, attr, hex) => (PINKS.includes(hex.toUpperCase()) ? `${attr}="${SNOW}"` : m))
-let plums = 0
+let covered = 0
 svg = svg.replace(/<path ([^>]*)\/>/g, (t, a) => {
-  const fill = (a.match(/fill="#([0-9A-Fa-f]{6})"/) || [])[1]?.toUpperCase()
-  if (!PLUMS.includes(fill)) return t
+  const fill = (a.match(/fill="([^"]*)"/) || [])[1] || ''
+  const hex = fill.replace('#', '').toUpperCase(), grad = (fill.match(/url\(#([^)]*)\)/) || [])[1]
+  if (!PLUMS.includes(hex) && !WALLS.includes(hex) && !WALL_GRADIENTS.includes(grad)) return t
   const n = a.match(/ d="([^"]*)"/)[1].match(/-?[0-9.]+/g).map(Number)
   const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
-  if ((Math.min(...ys) + Math.max(...ys)) / 2 >= lineAt((Math.min(...xs) + Math.max(...xs)) / 2)) return t
-  plums++
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+  if (cx < cols[0] || cx > cols[cols.length - 1] || (Math.min(...ys) + Math.max(...ys)) / 2 >= lineAt(cx)) return t
+  covered++
   return t.replace(/fill="[^"]*"/, `fill="${SNOW}"`)
 })
-svg = svg.replace(/<\/svg>\s*$/, line + '</svg>')
+const plums = covered
+svg = svg.replace(/<\/svg>\s*$/, snowFill + line + '</svg>')
 const prep = DIR + 'install-crew-thin.svg'
 writeFileSync(prep, svg)
 console.log(`install-crew-thin.svg: neon to snow (and ${plums} of its shadow shapes), a ${LINE}-unit red line over everything`)
