@@ -148,7 +148,7 @@ function flatCottage(ink, { x, cy, h, windows }) {
 const FLAT_THEMES = {
   blue: { bg: FLAT.blue, ink: FLAT.gold },
   gold: { bg: FLAT.gold, ink: FLAT.blue },
-  cream: { bg: '#F7F1E3', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428' },
+  cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428' }, // the flat cottage file's own cream (owner: "this is the background color")
 }
 for (const [ground, { bg, ink, windows, small = ink }] of Object.entries(FLAT_THEMES)) {
   const house = flatCottage(ink, { x: MARGIN, cy: H / 2, h: 7.0, windows })
