@@ -51,6 +51,7 @@ const FOLDERS = {
       R('mascot-line-on-light', 'Bradley line art, navy ink'),
       R('mascot-medal-color', 'Brad Medel medal as drawn (DTG/DTF)'),
       ...NEW.map(([n, what]) => R(`new-${n}-on-gold`, what)),
+      R('install-crew-on-gold', 'Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs)'),
       R('big-cottage-mustard-limited-dtg', 'big cottage, 12 in, for a mustard shirt (DTG)', ['recraft/big-cottage-mustard-limited-snow.svg']),
       R('big-cottage-mustard-dtf', 'big cottage to the hem, transparent (DTF transfer on mustard)'),
       R('big-cottage-mustard-allover', 'big cottage, mustard edge to edge (all-over sublimation; the exact look)'),

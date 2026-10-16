@@ -40,7 +40,7 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `polo-icon-1-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-1 (embroidery) |
 | `polo-icon-2-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-2 (embroidery) |
 
-## Gold or mustard shirts: `gold/` (19)
+## Gold or mustard shirts: `gold/` (20)
 
 | File | Size | What |
 |---|---|---|
@@ -60,6 +60,7 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `new-wreath-2011-on-gold` (png, svg, pdf) | 11.0 x 7.8 in | LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark |
 | `new-services-on-gold` (png, svg, pdf) | 12.0 x 11.0 in | six service icons with labels over the wordmark (back) |
 | `new-chest-on-gold` (png, svg, pdf) | 4.0 x 1.6 in | the bulb cottage beside the wordmark (left chest) |
+| `install-crew-on-gold` (png) | 12.0 x 15.8 in | Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs) |
 | `big-cottage-mustard-limited-dtg` (png, svg) | 12.0 x 12.3 in | big cottage, 12 in, for a mustard shirt (DTG) |
 | `big-cottage-mustard-dtf` (png, svg) | 20.0 x 26.8 in | big cottage to the hem, transparent (DTF transfer on mustard) |
 | `big-cottage-mustard-allover` (png, svg) | 20.0 x 26.8 in | big cottage, mustard edge to edge (all-over sublimation; the exact look) |
