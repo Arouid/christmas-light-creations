@@ -40,3 +40,20 @@ Shirt colours in the mockups: navy #152040 and gold #f2b63a, close to Bella+Canv
 The gold versions also work on yellow, mustard or heather-gold tees; the navy versions on black,
 forest green or heather navy. Change the words, colours or sizes at the top of
 `scripts/shirt-designs.mjs` and rerun.
+
+## Polo chest marks (embroidery)
+
+Left-chest marks for the sales polos, made by `node scripts/shirt-polo.mjs` (a few seconds). Owner,
+2026-10-16: Recraft kept drawing toy-like badges, so these are built from the real logo and fonts. Each comes
+`-on-navy` (white and gold thread) and `-on-white` (navy and dark-gold `#b8862b` thread: the bright gold
+vanishes on white). `mockup-polo-<mark>-on-<polo>.png` shows each on a polo; `mockup-polo-sheet.png` has all six.
+
+| Mark | What | Size |
+|---|---|---|
+| `polo-wordmark` | text only: Christmas Light / Creations in Fraunces (the logo's lettering), Creations in gold, PEARLAND, TX | 3.56 × 1.35 in |
+| `polo-caps` | text only: CHRISTMAS LIGHT / CREATIONS (spaced, gold) in Inter ExtraBold, EST. 2011 between gold rules | 3.56 × 1.1 in |
+| `polo-logo` | the cottage beside the Fraunces name: the horizontal logo made stitchable | 4.31 × 1.53 in |
+
+Made for thread: two colours, no line under 3 pt (about 1 mm, a satin column), no letters under 0.15 in, the
+cottage without its snowflakes, specks and sketch lines, Fraunces' thin strokes thickened 0.012 in. Send the
+embroidery shop the SVG or PDF; they digitize it into stitches (usually a one-time fee) and sew a sample.

@@ -13,6 +13,7 @@ Reorganized on 2026-10-14; the old folder names are at the bottom.
 |---|---|---|---|
 | `brand/logo-vector/` | The cottage logo as SVG (colour, one-colour white/navy, stacked, horizontal), tiles, sign-and-trees | yes | `scripts/lib/logoArt.mjs` (print, shirts), `scripts/make-account-icons.mjs`, `video/scripts/prepare-assets.mjs` |
 | `brand/logo-exports/` | PNG exports: social 1080, Google Business 720, transparent 3x | yes | uploaded by hand |
+| `brand/fonts/` | Fonts the print scripts outline that the site doesn't ship: Graduate (collegiate, SIL Open Font License, licence beside it) | yes | `scripts/shirt-collegiate.mjs` |
 | `brand/2012-backdrop/` | The 2012 site's winter art the logo was traced from | yes; `hi-res-3x/` ignored | reference |
 | `site/sample-house.svg` | The designer page's sample house | yes | `scripts/sample-house.mjs` → `public/images/design/` |
 | `photos/gallery-hi-res/` | The owner's hi-res rescans (about 3 MB each), named by neighborhood and town | *ignored* | `scripts/process-gallery.mjs` → `public/images/gallery/` |
@@ -30,7 +31,7 @@ Reorganized on 2026-10-14; the old folder names are at the bottom.
 | `ads/video/` | Rendered ads; `keep/` and `Dont-Delete/` are the owner's | *ignored*, except its README and the 5-second ad | `video/`, `scripts/ads-video.py` |
 | `print/` | Road and yard signs, banner, cards, door decals, magnet, sticker | yes | `scripts/print-vectors.mjs` |
 | `listings/` | Pictures for profiles outside the site (Nextdoor, Thumbtack, Angi, Google): `profile-1080.png` (the cottage render, centred for round crops) and 2:1 covers from roofline photos | yes | `scripts/listing-images.mjs`; uploaded by hand, words in `docs/listings.md` |
-| `shirts/` | Crew shirt art; `designs/`; `recraft/` (AI-made designs downloaded from Recraft and their navy knock-out prints `*-on-navy.png`) | yes; big PNGs in `designs/` and all of `recraft/` ignored | `scripts/shirt-art.mjs`, `scripts/shirt-designs.mjs`, `scripts/shirt-knockout.mjs`, `scripts/shirt-collegiate.mjs` |
+| `shirts/` | Crew shirt art; `designs/`; `recraft/` (AI-made designs downloaded from Recraft and their navy knock-out prints `*-on-navy.png`) | yes; big PNGs in `designs/` and all of `recraft/` ignored | `scripts/shirt-art.mjs`, `scripts/shirt-designs.mjs`, `scripts/shirt-knockout.mjs`, `scripts/shirt-collegiate.mjs`, `scripts/shirt-polo.mjs` |
 
 The logo's tracing scripts are in `logo-vector.local/` at the repo root (ignored).
 
