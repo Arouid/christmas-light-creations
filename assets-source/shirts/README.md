@@ -139,3 +139,18 @@ laser-engraved on a leather cap patch, and the medal on a navy tee's chest and b
 chest PNG (`-chest.png`); its lettering is 0.18 in tall there, fine for print, too small to embroider. Open: the owner picks the master look; a character artist redraws him in a
 few poses (also gives a human-made version that can be copyrighted); his name or nickname on anything is the
 owner's call.
+
+## LIT SINCE 2011 (Recraft, 2026-10-16)
+
+The owner's retro design (`recraft/lit-2011.svg`): groovy LIT / SINCE 2011 in gold and cream, CHRISTMAS LIGHT
+CREATIONS under it. Owner: "change the house to our cottage". `node scripts/shirt-lit.mjs` swaps the cartoon house
+for our cottage (cream, window and door lit gold, no smoke curl, a thin keyline of shirt so its snowy roof stands
+clear of the cream 2011 behind it; it covers the bottoms of the 0 and the 1s, which the download had cut off under the
+old house) and writes, 11 in wide front, PNG (300 dpi), SVG and PDF in `recraft/`:
+
+| File | Shirt | Inks |
+|---|---|---|
+| `lit-2011-on-navy` | navy or black | cream `#F5E2C1` and gold `#D9A445` |
+| `lit-2011-on-white` | white, light grey, cream | navy `#112A4A` and gold |
+
+`lit-2011-mockups.png` shows both on a tee.
