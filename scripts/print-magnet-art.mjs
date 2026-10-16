@@ -121,8 +121,10 @@ for (const [theme, th] of Object.entries(THEMES)) {
 
 // --- the flat magnets (owner: "Lets try a just flat gold and blue magnet with that font", "use one of the flat blue
 // cottages we have now"): the flat cottage from his Recraft logo batch (recraft/navy-cottage.svg, its shapes 1–7; the
-// file's lettering below is left out), the name in Outfit (the geometric sans of the AI wordmark he liked; Google
-// Fonts, OFL, assets-source/brand/fonts/outfit/): gold on blue or blue on gold (two inks; the cottage's snow band, a
+// file's lettering below is left out), the name as the exact lettering of his Recraft wordmark (recraft/
+// minimal-clc-name.svg, owner: "you have this exact image vector you can use"; its gold dot kept), the other lines in
+// Outfit, the Google Font closest to it (OFL, assets-source/brand/fonts/outfit/): gold on blue or blue on gold (two
+// inks; the cottage's snow band, a
 // gap in the drawing, and its window panes show the ground), and cream (owner: "my truck is red and I just think the
 // cream color will look a lot nicer"): blue on cream with the window panes gold, the small line in a deeper gold.
 const OUTFIT = fileURLToPath(new URL('../assets-source/brand/fonts/outfit/Outfit-Variable.ttf', import.meta.url))
@@ -145,6 +147,35 @@ function flatCottage(ink, { x, cy, h, windows }) {
   return { w, svg: `<svg x="${fmt(x * U)}" y="${fmt((cy - h / 2) * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}">` +
     `<defs><mask id="flat" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#flat)">${shapes}</g></svg>` }
 }
+// The wordmark: "christmas light" and "creations" with their letter holes (drawn in the page cream over the navy) and
+// the gold dot, in the file's own units after its scale; the PEARLAND TX — EST 2011 line under them is left out.
+const wmSrc = readFileSync(DIR + 'minimal-clc-name.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+const WM_SCALE = wmSrc.match(/transform="scale\(([^)]*)\)"/)[1].split(/[ ,]+/).map(Number)
+const wmPaths = [...wmSrc.matchAll(/<path ([^>]*)\/>/g)].map((m) => {
+  const d = m[1].match(/ d="([^"]*)"/)[1], n = d.match(/-?[0-9.]+/g).map(Number)
+  const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
+  return { fill: m[1].match(/fill="([^"]*)"/)[1].toUpperCase(), d, box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] }
+})
+const WM_NAVY = '#012753', WM_GOLD = '#C99E38', WM_LINE_END = 700 // the tagline starts below 700 (file units)
+const wordmark = wmPaths.filter((p, i) => i > 0 && p.box[1] < WM_LINE_END)
+if (wordmark.filter((p) => p.fill === WM_NAVY).length !== 25 || wordmark.filter((p) => p.fill === WM_GOLD).length !== 1) throw new Error('minimal-clc-name.svg: not the wordmark any more (new download?)')
+const WM_BOX = (() => {
+  const ink = wordmark.filter((p) => p.fill !== '#FEFDF4')
+  const [x0, y0, x1, y1] = [0, 1, 2, 3].map((k) => (k < 2 ? Math.min : Math.max)(...ink.map((p) => p.box[k])))
+  return { x: x0 * WM_SCALE[0], y: y0 * WM_SCALE[1], w: (x1 - x0) * WM_SCALE[0], h: (y1 - y0) * WM_SCALE[1] }
+})()
+// The wordmark w inches wide, centred on cx, its top at y: navy in ink, the dot in dot, the letter holes cut out.
+function flatWordmark(ink, dot, { cx, y, w }) {
+  const h = (w * WM_BOX.h) / WM_BOX.w
+  const area = `x="${WM_BOX.x}" y="${WM_BOX.y}" width="${WM_BOX.w}" height="${WM_BOX.h}"`
+  const paint = (p) => (p.fill === WM_NAVY ? ink : p.fill === WM_GOLD ? dot : null)
+  const mask = wordmark.map((p) => `<path fill="${paint(p) ? '#fff' : '#000'}" d="${p.d}"/>`).join('')
+  const shapes = wordmark.filter(paint).map((p) => `<path fill="${paint(p)}" d="${p.d}"/>`).join('')
+  const g = (body) => `<g transform="scale(${WM_SCALE.join(' ')})">${body}</g>`
+  return { h, svg: `<svg x="${fmt((cx - w / 2) * U)}" y="${fmt(y * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${WM_BOX.x} ${WM_BOX.y} ${WM_BOX.w} ${WM_BOX.h}">` +
+    `<defs><mask id="wm" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${g(mask)}</mask></defs><g mask="url(#wm)">${g(shapes)}</g></svg>` }
+}
+
 const FLAT_THEMES = {
   blue: { bg: FLAT.blue, ink: FLAT.gold },
   gold: { bg: FLAT.gold, ink: FLAT.blue },
@@ -154,16 +185,15 @@ for (const [ground, { bg, ink, windows, small = ink }] of Object.entries(FLAT_TH
   const house = flatCottage(ink, { x: MARGIN, cy: H / 2, h: 7.0, windows })
   const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
   const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
-  const name1 = T('christmas light', sans(600, { fit: colW, tracking: -0.01 }))
-  const name2 = T('creations', sans(600, { cap: name1.cap / U, tracking: -0.01 }))
+  const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
   const tag = T('FREE ESTIMATES  ·  PEARLAND, TX', sans(600, { cap: 0.27, tracking: 0.28, fill: small }))
   const phone = T(PHONE, sans(600, { fit: colW * 0.94, tracking: 0 }))
   const site = T(SITE, sans(500, { fit: colW * 0.8, tracking: 0.01 }))
-  const r1 = name1.cap / U, r2 = r1 + (name1.cap / U) * 1.3, rTag = r2 + 1.0, rPhone = rTag + 0.6 + phone.cap / U, rSite = rPhone + 0.6 + site.cap / U
+  const rTag = wmH + 0.95, rPhone = rTag + 0.6 + phone.cap / U, rSite = rPhone + 0.6 + site.cap / U
   const top = H / 2 - rSite / 2
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
     `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${house.svg}` +
-    name1.svg(cx * U, (top + r1) * U, 'middle') + name2.svg(cx * U, (top + r2) * U, 'middle') + tag.svg(cx * U, (top + rTag) * U, 'middle') +
+    flatWordmark(ink, windows || ink, { cx, y: top, w: wmW }).svg + tag.svg(cx * U, (top + rTag) * U, 'middle') +
     phone.svg(cx * U, (top + rPhone) * U, 'middle') + site.svg(cx * U, (top + rSite) * U, 'middle') + '</svg>'
   const out = `${DIR}vehicle-magnet-24x12-flat-${ground}`
   writeFileSync(out + '.svg', svg)
