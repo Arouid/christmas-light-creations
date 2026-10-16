@@ -1,0 +1,175 @@
+// Bradley, co-owner (died October 2025), as the company mascot: the owner's two Recraft portraits of him made
+// print-ready and tried on clothes. Owner, 2026-10-16: "I wanna make him the business mascot".
+// - line: head and shoulders in his fishing cap, navy line art. The cap's patch (another company's fish logo) is
+//   swapped for our cottage. Navy shirt: the white parts in white ink, the lines left as shirt. White, gold or
+//   mustard shirt: the lines in navy ink, the rest left as shirt.
+// - gold: half length in his flat cap, coat and scarf, gold on navy. Navy shirt: one gold ink. Gold or mustard
+//   shirt: one navy ink.
+// Both downloads keep a full-page backing square (dropped here) and draw light shapes over dark ones, so unprinted
+// parts are cut out with a mask (the shirt shows through), not just left unpainted.
+// Run: node scripts/shirt-mascot.mjs   (reads and writes assets-source/shirts/recraft/, not in git)
+// Output: mascot-<art>-on-<shirt>.{png,svg,pdf} (11 in wide, 300 dpi, transparent), mascot-mockups.png (a navy polo
+// with him on the sleeve, navy and gold tees with him on the back, a cap with a leather patch).
+import { readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import sharp from 'sharp'
+import { COLORS, FONTS, NAVY_ROLES, WHITE_ROLES, checkRoles, fmt, glyphs, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
+import { svgToPdf } from './lib/pdf.mjs'
+
+const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
+const DPI = 300
+const PRINT_IN = 11 // back-print width
+const { navyDeep: NAVY, white: WHITE, gold: GOLD } = COLORS
+const SOURCES = {
+  // The patch: path 206 is its white face (box checked below); 207–209 are the fish and its two highlights.
+  line: { file: 'bradley-blue-line art.svg', patch: { face: 206, box: [380, 116, 637, 242], drop: [207, 208, 209] } },
+  gold: { file: 'bradley-navy-gold.svg' },
+}
+// Which ink each kind of shape gets per shirt (null: not printed, the shirt shows).
+const PRINTS = {
+  'line-on-navy': { art: 'line', inks: { light: WHITE, dark: null, gold: null } },
+  'line-on-light': { art: 'line', inks: { dark: NAVY, light: null, gold: null } }, // white, gold or mustard shirts
+  'gold-on-navy': { art: 'gold', inks: { gold: GOLD, dark: null, light: null } },
+  'gold-on-gold': { art: 'gold', inks: { dark: NAVY, gold: null, light: null } },
+}
+
+const box = (d) => {
+  const n = d.match(/-?[0-9.]+/g).map(Number)
+  const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]
+}
+function shade(hex) {
+  let h = hex.replace('#', '')
+  if (h.length === 3) h = [...h].map((c) => c + c).join('')
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16))
+  if (r - b > 40 && r > 150) return 'gold'
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5 ? 'dark' : 'light'
+}
+// The one-colour cottage, its sketch lines, flakes and specks dropped, every paint in `fill` (for the cap patch).
+const COTTAGE = parseLogo('clc-cottage-one-color-navy.svg')
+const COTTAGE_ROLES = COTTAGE.paths.length === 12 ? NAVY_ROLES : WHITE_ROLES
+checkRoles(COTTAGE, COTTAGE_ROLES)
+function cottage(fill, [x0, y0, x1, y1]) {
+  const vb = COTTAGE.viewBox
+  const h = (y1 - y0), w = (h * vb.w) / vb.h
+  const inner = prepCottage(COTTAGE, COTTAGE_ROLES, { minUnits: 0, look: 'white', drop: ['specks', 'snow', 'wallLines', 'doorLines', 'postHighlights'] }).svg
+    .replace(/(fill|stroke)="(?!none)[^"]*"/g, `$1="${fill}"`)
+  return `<svg x="${fmt((x0 + x1) / 2 - w / 2)}" y="${fmt(y0)}" width="${fmt(w)}" height="${fmt(h)}" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}">${inner}</svg>`
+}
+
+// A portrait as a list of shapes, each { shade, draw(fill) }, without the backing square; the line art's patch swapped.
+function load({ file, patch }) {
+  const src = readFileSync(DIR + file, 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+  const [, , vw, vh] = src.match(/viewBox="([^"]*)"/)[1].split(/[ ,]+/).map(Number)
+  const stops = Object.fromEntries([...src.matchAll(/<linearGradient id="([^"]*)"[^>]*>\s*<stop[^>]*stop-color="([^"]*)"/g)].map((m) => [m[1], m[2]]))
+  const paths = [...src.matchAll(/<path ([^>]*)\/>/g)].map((m) => {
+    const fill = m[1].match(/fill="([^"]*)"/)[1]
+    const grad = fill.match(/url\(#([^)]*)\)/)
+    return { colour: grad ? stops[grad[1]] : fill, d: m[1].match(/ d="([^"]*)"/)[1] }
+  })
+  const shapes = []
+  paths.forEach((p, i) => {
+    const [x0, y0, x1, y1] = box(p.d)
+    if (x1 - x0 >= vw * 0.98 && y1 - y0 >= vh * 0.98) return // the backing square
+    if (patch?.drop.includes(i)) return
+    shapes.push({ shade: shade(p.colour), draw: (fill) => `<path fill="${fill}" d="${p.d}"/>` })
+    if (patch && i === patch.face) {
+      if (box(p.d).some((v, k) => Math.abs(v - patch.box[k]) > 2)) throw new Error(`${file}: path ${i} is not the cap patch any more (new download?)`)
+      const [px0, py0, px1, py1] = patch.box, inset = (py1 - py0) * 0.09
+      shapes.push({ shade: 'dark', draw: (fill) => `<g transform="rotate(-3 ${fmt((px0 + px1) / 2)} ${fmt((py0 + py1) / 2)})">${cottage(fill, [px0, py0 + inset, px1, py1 - inset])}</g>` })
+    }
+  })
+  return { vw, vh, shapes }
+}
+const arts = Object.fromEntries(Object.entries(SOURCES).map(([k, s]) => [k, load(s)]))
+// The art's box: every shape rendered, then trimmed.
+for (const a of Object.values(arts)) {
+  const all = `<svg xmlns="http://www.w3.org/2000/svg" width="${a.vw}" height="${a.vh}" viewBox="0 0 ${a.vw} ${a.vh}">${a.shapes.map((s) => s.draw('#000')).join('')}</svg>`
+  const { info } = await sharp(Buffer.from(all), { density: 72 }).trim().toBuffer({ resolveWithObject: true })
+  a.box = { x: -info.trimOffsetLeft, y: -info.trimOffsetTop, w: info.width, h: info.height }
+}
+// The printed parts in their inks, the rest cut out (mask), as a nested <svg> w inches wide at (x, y) inches.
+function printed(a, inks, { x = 0, y = 0, w }) {
+  const { box: b } = a, h = (w * b.h) / b.w
+  const area = `x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"`
+  const mask = a.shapes.map((s) => s.draw(inks[s.shade] ? '#fff' : '#000')).join('')
+  const ink = a.shapes.filter((s) => inks[s.shade]).map((s) => s.draw(inks[s.shade])).join('')
+  return { w, h, svg: `<svg x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}">` +
+    `<defs><mask id="cut" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#cut)">${ink}</g></svg>` }
+}
+const page = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(w)}in" height="${fmt(h)}in" viewBox="0 0 ${fmt(w)} ${fmt(h)}">${body}</svg>`
+// librsvg reads the inch size at `density` dpi and sharp scales by density/72 again: density²/72 px per inch.
+const png = (svg, w) => sharp(Buffer.from(svg), { density: Math.sqrt(72 * DPI * 1.5) }).resize({ width: Math.round(w * DPI), kernel: 'lanczos3' })
+  .withMetadata({ density: DPI }).png({ compressionLevel: 9 }).toBuffer()
+
+const prints = {}
+for (const [name, { art, inks }] of Object.entries(PRINTS)) {
+  const p = printed(arts[art], inks, { w: PRINT_IN })
+  const svg = page(p.w, p.h, p.svg)
+  writeFileSync(`${DIR}mascot-${name}.svg`, svg)
+  svgToPdf(svg, p.w, p.h, `${DIR}mascot-${name}.pdf`)
+  prints[name] = await png(svg, p.w)
+  writeFileSync(`${DIR}mascot-${name}.png`, prints[name])
+  console.log(`mascot-${name}: ${fmt(p.w)} x ${fmt(p.h)} in`)
+}
+
+// --- mockups (60 px per inch) ---
+const PPI = 60
+const T = (s, opts) => { // a line of text in inches
+  const g = glyphs(s, opts.font, opts.location)
+  const t = textLine(s, { ...opts, em: (opts.cap * g.upem) / g.capHeight })
+  return t
+}
+const TEE = 'M2.6 1.6 L8.4 0.9 Q11 3.3 13.6 0.9 L19.4 1.6 L21.8 6.6 L19.2 8.4 L18 6.9 L18 26.9 Q18 27.3 17.6 27.3 L4.4 27.3 Q4 27.3 4 26.9 L4 6.9 L2.8 8.4 L0.2 6.6 Z'
+const shirt = (fill, edge, extra = '') => `<svg xmlns="http://www.w3.org/2000/svg" width="${22 * PPI}" height="${28 * PPI}" viewBox="0 0 22 28"><rect width="22" height="28" fill="#e9ebf0"/>` +
+  `<path d="${TEE}" fill="${fill}" stroke="${edge}" stroke-width="0.06" stroke-linejoin="round"/>${extra}</svg>`
+const POLO_BITS = (fill, edge) => `<rect x="10.5" y="2.2" width="1" height="5.2" rx="0.1" fill="${fill}" stroke="${edge}" stroke-width="0.06"/>` +
+  `<circle cx="11" cy="4.1" r="0.17" fill="${edge}"/><circle cx="11" cy="5.9" r="0.17" fill="${edge}"/>` +
+  `<path d="M8.4 0.9 L11 2.2 L9.7 3.9 L7.5 1.3 Z M13.6 0.9 L11 2.2 L12.3 3.9 L14.5 1.3 Z" fill="${fill}" stroke="${edge}" stroke-width="0.08" stroke-linejoin="round"/>`
+const BACK_NECK = (edge) => `<path d="M8.4 0.9 Q11 1.7 13.6 0.9" fill="none" stroke="${edge}" stroke-width="0.28"/>`
+const label = (s) => `<text x="0.4" y="27.7" font-family="sans-serif" font-size="0.5" fill="#555b6b">${s}</text>`
+const at = async (base, art, w, x, y, rotate = 0) => {
+  let a = await sharp(art).resize({ width: Math.round(w * PPI) }).png().toBuffer()
+  if (rotate) a = await sharp(a).rotate(rotate, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer()
+  const { width, height } = await sharp(a).metadata()
+  return sharp(base).composite([{ input: a, left: Math.round(x * PPI - width / 2), top: Math.round(y * PPI - height / 2) }]).png().toBuffer()
+}
+// The name under a back print, in the logo's Fraunces and the tagline in Inter.
+const backName = (ink, y) => {
+  const name = T('Christmas Light Creations', { font: FONTS.fraunces, location: { opsz: 144, wght: 900 }, cap: 0.62, tracking: 0, fill: ink })
+  const tag = T('PEARLAND, TX  ·  EST. 2011', { font: FONTS.inter, location: { wght: 800 }, cap: 0.26, tracking: 0.16, fill: ink })
+  return name.svg(11, y, 'middle') + tag.svg(11, y + 0.85, 'middle')
+}
+// A tee seen from the back: the portrait w inches wide, its top 3 in below the collar, the name an inch under it.
+const backTee = async (fill, edge, ink, art, w, note) => {
+  const { width, height } = await sharp(art).metadata()
+  const h = (w * height) / width, top = 3.4
+  const base = await sharp(Buffer.from(shirt(fill, edge, BACK_NECK(edge) + backName(ink, top + h + 1.15) + label(note)))).png().toBuffer()
+  return at(base, art, w, 11, top + h / 2)
+}
+const tiles = [
+  // 1. navy polo, him on the left sleeve (seen from the front: the sleeve on the right of the picture)
+  await at(await sharp(Buffer.from(shirt('#152040', '#0b1430', POLO_BITS('#152040', '#0b1430') + label('navy polo: left sleeve, 2.25 in')))).png().toBuffer(),
+    prints['line-on-navy'], 2.25, 20.1, 4.6, 28),
+  // 2. navy tee back: the gold portrait over the name
+  await backTee('#152040', '#0b1430', GOLD, prints['gold-on-navy'], 10, 'navy tee, back: 10 in'),
+  // 3. mustard tee back: the line art in navy over the name
+  await backTee('#C9911F', '#a87a17', NAVY, prints['line-on-light'], 10, 'mustard tee, back: 10 in'),
+]
+// 4. a cap with his face laser-engraved on a leather patch
+{
+  const P = printed(arts.line, { dark: '#3d2614', light: null, gold: null }, { w: 2.3 })
+  const cap = `<svg xmlns="http://www.w3.org/2000/svg" width="${22 * PPI}" height="${28 * PPI}" viewBox="0 0 22 28"><rect width="22" height="28" fill="#e9ebf0"/>` +
+    `<path d="M3.5 15 Q3.2 5.5 11 5 Q18.8 5.5 18.5 15 Z" fill="#20242e" stroke="#11141b" stroke-width="0.08"/>` +
+    `<path d="M11 5.05 L11 15" stroke="#11141b" stroke-width="0.06"/><circle cx="11" cy="5.2" r="0.35" fill="#2b303b"/>` +
+    `<path d="M2.2 15.2 Q11 13.6 19.8 15.2 Q20.6 18.4 11 18.9 Q1.4 18.4 2.2 15.2 Z" fill="#2b303b" stroke="#11141b" stroke-width="0.08"/>` +
+    `<rect x="8.9" y="7.6" width="4.2" height="4.4" rx="0.5" fill="#b07a45" stroke="#7a5230" stroke-width="0.05"/>` +
+    `<rect x="9.05" y="7.75" width="3.9" height="4.1" rx="0.4" fill="none" stroke="#5c3b1f" stroke-width="0.04" stroke-dasharray="0.12 0.08"/>` +
+    `<g transform="translate(${fmt(11 - P.w / 2)} ${fmt(9.8 - P.h / 2)})">${P.svg}</g>${label('cap: laser-engraved leather patch, 2.3 in')}</svg>`
+  tiles.push(await sharp(Buffer.from(cap)).png().toBuffer())
+}
+const crop = { left: 0, top: 0, width: 22 * PPI, height: 22 * PPI }
+const cut = await Promise.all(tiles.map((t) => sharp(t).extract(crop).resize({ width: 660 }).png().toBuffer()))
+await sharp({ create: { width: 660 * 4 + 30, height: 660, channels: 3, background: '#3b3f4b' } })
+  .composite(cut.map((input, i) => ({ input, left: i * 670, top: 0 }))).png().toFile(`${DIR}mascot-mockups.png`)
+console.log('mascot-mockups.png: polo sleeve, navy tee back, mustard tee back, leather-patch cap')

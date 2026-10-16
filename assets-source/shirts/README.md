@@ -115,3 +115,22 @@ the front, in two inks: `collegiate-on-navy` (gold `#ffcf4d`, for the navy shirt
 `collegiate-preview.png` on navy, gold and mustard. The download's dark slivers between the letters are dropped,
 every letter is one solid ink, and EST. 2011 (traced as blobs) is set again in Inter ExtraBold at the mockup's size.
 One ink, so it also screen-prints as a single colour. A second version, `collegiate-font-on-*`, sets the words in Graduate (a real collegiate face, Google Fonts, SIL Open Font License, in `assets-source/brand/fonts/graduate/`) as outlines: straight clean edges, but lighter and wider than the mockup's letters; `collegiate-preview.png` shows traced (top) and font (bottom). Owner picks.
+
+## Bradley as the mascot (2026-10-16)
+
+In memory of Bradley, co-owner, who died in October 2025. Owner: "I wanna make him the business mascot". Two Recraft
+portraits made from his photos (`recraft/bradley-blue-line art.svg`, `recraft/bradley-navy-gold.svg`, local only);
+`node scripts/shirt-mascot.mjs` makes them print-ready, 11 in wide, as PNG (300 dpi), SVG and PDF in `recraft/`:
+
+| File | Shirt | Ink |
+|---|---|---|
+| `mascot-line-on-navy` | navy | white (the lines are the shirt) |
+| `mascot-line-on-light` | white, gold or mustard | navy |
+| `mascot-gold-on-navy` | navy | gold, one ink |
+| `mascot-gold-on-gold` | gold or mustard | navy, one ink |
+
+The fishing cap's patch (another company's fish logo) is replaced by our cottage. `mascot-mockups.png`: him on a
+navy polo's left sleeve (2.25 in), on the back of a navy tee (gold) and a mustard tee (line art) over the name, and
+laser-engraved on a leather cap patch. Open: the owner picks the master look; a character artist redraws him in a
+few poses (also gives a human-made version that can be copyrighted); his name or nickname on anything is the
+owner's call.
