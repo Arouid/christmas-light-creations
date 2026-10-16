@@ -254,7 +254,19 @@ const YEAR = { art: [1, 2, 3, 4, 5, 6, 7], ornament: 1, digits: [5, 6, 7], box: 
 const ORN_CAP_END = 465
 const sparkle = (cx, cy, r) => `M${cx} ${cy - r} Q${cx} ${cy} ${cx + r} ${cy} Q${cx} ${cy} ${cx} ${cy + r} Q${cx} ${cy} ${cx - r} ${cy} Q${cx} ${cy} ${cx} ${cy - r} Z`
 const SPARKLES = [sparkle(578, 392, 26), sparkle(392, 432, 16)]
-function yearArt(digitsH, { gold, navy, festive }) {
+// wreath (owner: "maybe one of the blue and gold icon wreaths I made instead?"): the 0 is the wreath from his Recraft
+// icon pack (recraft/icon-pack-blue-1.svg, top right: navy ring, gold berries and bow, cream leaves and centre), as tall
+// as the digits and centred where the ornament's ball was; its navy in navy, its gold in gold, its cream cut out.
+const iconSrc = readFileSync(DIR + 'icon-pack-blue-1.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+const WREATH_PATHS = [...iconSrc.matchAll(/<path ([^>]*)\/>/g)].map((m) => {
+  const d = m[1].match(/ d="([^"]*)"/)[1], n = d.match(/-?[0-9.]+/g).map(Number)
+  const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
+  return { fill: m[1].match(/fill="([^"]*)"/)[1].toUpperCase(), d, box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] }
+}).filter((p) => p.box[0] >= 840 && p.box[3] <= 440 && p.box[2] - p.box[0] < 1000) // the top-right icon, not the page
+const WREATH_BOX = [0, 1, 2, 3].map((k) => (k < 2 ? Math.min : Math.max)(...WREATH_PATHS.map((p) => p.box[k])))
+if (WREATH_PATHS.length !== 30 || WREATH_PATHS.filter((p) => p.fill === '#E4B149').length !== 19) throw new Error('icon-pack-blue-1.svg: the top-right icon is not the wreath any more')
+const ORNAMENT_PARTS = [1, 2, 3, 4] // the ornament, its little line, highlight and ring hole
+function yearArt(digitsH, { gold, navy, festive, wreath }) {
   const [sx, sy] = YEAR_SCALE
   const [x0, y0, x1, y1] = [YEAR.box[0] * sx, YEAR.box[1] * sy, YEAR.box[2] * sx, YEAR.box[3] * sy]
   const u = digitsH / ((YEAR.base - YEAR.digitTop) * sy) // inches per scaled unit
@@ -263,10 +275,21 @@ function yearArt(digitsH, { gold, navy, festive }) {
   const g = (body) => `<g transform="scale(${sx} ${sy})">${body}</g>`
   const area = `x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"`
   const orn = yearPaths[YEAR.ornament], [bx0, , bx1] = YEAR.box
-  const mask = YEAR.art.map((i) => `<path fill="${ink(i) ? '#fff' : '#000'}" d="${yearPaths[i]}"/>`).join('') +
-    (festive?.trim ? SPARKLES.map((d) => `<path fill="#fff" d="${d}"/>`).join('') : '')
+  // The wreath, scaled to the digits' height (file units) and centred on the ornament's ball (x 477); paint(p) gives
+  // each of its shapes its ink, or null to cut it out.
+  const wreathSvg = (paint) => {
+    const [wx0, wy0, wx1, wy1] = WREATH_BOX, k = (YEAR.base - YEAR.digitTop) / (wy1 - wy0)
+    const tx = 477 - ((wx0 + wx1) / 2) * k, ty = YEAR.digitTop - wy0 * k
+    return `<g transform="translate(${fmt(tx)} ${fmt(ty)}) scale(${fmt(k)})">${WREATH_PATHS.map((p) => (paint(p) === undefined ? '' : `<path fill="${paint(p)}" d="${p.d}"/>`)).join('')}</g>`
+  }
+  const wreathInk = (p) => (p.fill === '#10223E' ? navy : p.fill === '#E4B149' ? gold : null)
+  const mask = YEAR.art.filter((i) => !(wreath && ORNAMENT_PARTS.includes(i))).map((i) => `<path fill="${ink(i) ? '#fff' : '#000'}" d="${yearPaths[i]}"/>`).join('') +
+    (festive?.trim ? SPARKLES.map((d) => `<path fill="#fff" d="${d}"/>`).join('') : '') +
+    (wreath ? wreathSvg((p) => (wreathInk(p) ? '#fff' : '#000')) : '')
   const band = (y, hgt) => `<rect x="${bx0}" y="${y}" width="${bx1 - bx0}" height="${hgt}" fill="${gold}"/>`
-  const ornament = festive
+  const ornament = wreath
+    ? wreathSvg((p) => wreathInk(p) || undefined)
+    : festive
     ? `<defs><clipPath id="ycap"><rect x="${bx0}" y="0" width="${bx1 - bx0}" height="${ORN_CAP_END}"/></clipPath>` +
       `<clipPath id="yball"><rect x="${bx0}" y="${ORN_CAP_END}" width="${bx1 - bx0}" height="1000"/></clipPath><clipPath id="yorn"><path d="${orn}"/></clipPath></defs>` +
       `<path clip-path="url(#ycap)" fill="${gold}" d="${orn}"/><path clip-path="url(#yball)" fill="${festive.ball}" d="${orn}"/>` +
@@ -309,7 +332,7 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   // art as the year, all gold but the navy ornament, the words as tall as the digits (owner: "leave everything gold on
   // that line other than the bulb", "match the city size to 2011"), the whole line 0.78 of the column wide (no rules; the
 // words and digits about 0.53 in tall).
-  const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: FLAT.gold })), yr: yearArt(d, { gold: FLAT.gold, navy: ink, festive: { ball: C9[0] } }) })
+  const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: FLAT.gold })), yr: yearArt(d, { gold: FLAT.gold, navy: ink, wreath: true }) })
   const unitLine = year && fitYear(1), d = year && (colW * 0.78) / (unitLine.est.width / U + 0.3 + unitLine.yr.w) // owner: "lower the font for the whole gold line"
   const { est, yr } = year ? fitYear(d) : {}
   const yGap = year && 0.3 * d, lineW = year && est.width / U + yGap + yr.w
