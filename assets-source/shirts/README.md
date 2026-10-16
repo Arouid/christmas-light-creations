@@ -242,3 +242,12 @@ return them to how they were"). The prints stay `install-crew-red-on-navy.png` a
 Also in `scripts/shirt-new-art.mjs`: `new-minimal-on-navy` / `-on-gold` (the ultra-minimalist wordmark, 10 in) and, for
 gold or mustard shirts, `new-mustard-name-on-gold` and `new-mustard-name-phone-on-gold` (the mustard cottage over the
 wordmark, the second with the phone, 12 in).
+
+## The truck-magnet artworks as back and sleeve prints (2026-10-16)
+
+Owner: "set this one up to be a sleeve/back piece. gold/navy", "these two as well" (his three Recraft magnet artworks in
+`recraft/vector-recraft-images/a-landscape-truck-door-magnet-design--flat-artwork*.svg`). `node scripts/shirt-magnet-art.mjs`:
+`recraft/magnet-<badge|panel|lights>-<back|sleeve>-on-<navy|gold>.png` (back 11 in, sleeve 3.5 in), `magnet-art-mockups.png`.
+Their near-black navies (lettering, outlines, the light string) are the one print navy now (`unifyNavy`). On navy the
+badge's and the panel's navy is knocked out (the shirt is the panel); on gold it prints, as a badge; the cream panel
+prints on both. Full-bleed panels get rounded corners.

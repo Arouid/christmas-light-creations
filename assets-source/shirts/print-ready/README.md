@@ -5,7 +5,7 @@ per shirt colour; a design that prints well on several colours is in each. For e
 upload (300 dpi, transparent, print size); the `.svg` / `.pdf`, where there is one, is the vector for a screen
 printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../README.md` and `../designs/README.md`.
 
-## Navy (blue) shirts: `navy/` (31)
+## Navy (blue) shirts: `navy/` (37)
 
 | File | Size | What |
 |---|---|---|
@@ -35,13 +35,19 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `new-services-on-navy` (png, svg, pdf) | 12.0 x 11.0 in | six service icons with labels over the wordmark (back) |
 | `new-chest-on-navy` (png, svg, pdf) | 4.0 x 1.6 in | the bulb cottage beside the wordmark (left chest) |
 | `new-minimal-on-navy` (png, svg, pdf) | 10.0 x 3.1 in | the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front) |
+| `magnet-badge-back-on-navy` (png) | 11.0 x 8.2 in | truck-magnet artwork badge, back, 11 in |
+| `magnet-badge-sleeve-on-navy` (png) | 3.5 x 2.6 in | truck-magnet artwork badge, sleeve, 3.5 in |
+| `magnet-panel-back-on-navy` (png) | 11.0 x 6.6 in | truck-magnet artwork panel, back, 11 in |
+| `magnet-panel-sleeve-on-navy` (png) | 3.5 x 2.1 in | truck-magnet artwork panel, sleeve, 3.5 in |
+| `magnet-lights-back-on-navy` (png) | 11.0 x 8.3 in | truck-magnet artwork lights, back, 11 in |
+| `magnet-lights-sleeve-on-navy` (png) | 3.5 x 2.6 in | truck-magnet artwork lights, sleeve, 3.5 in |
 | `polo-wordmark-on-navy` (png, svg, pdf) | 3.6 x 1.4 in | navy polo, left chest wordmark (embroidery) |
 | `polo-caps-on-navy` (png, svg, pdf) | 3.6 x 1.1 in | navy polo, left chest caps (embroidery) |
 | `polo-logo-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest logo (embroidery) |
 | `polo-icon-1-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-1 (embroidery) |
 | `polo-icon-2-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-2 (embroidery) |
 
-## Gold or mustard shirts: `gold/` (22)
+## Gold or mustard shirts: `gold/` (28)
 
 | File | Size | What |
 |---|---|---|
@@ -64,6 +70,12 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `install-crew-on-gold` (png) | 12.0 x 15.8 in | Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs) |
 | `new-mustard-name-on-gold` (png, svg, pdf) | 12.0 x 12.8 in | the mustard cottage over the wordmark (gold or mustard shirt) |
 | `new-mustard-name-phone-on-gold` (png, svg, pdf) | 12.0 x 14.0 in | the mustard cottage over the wordmark and the phone (gold or mustard shirt) |
+| `magnet-badge-back-on-gold` (png) | 11.0 x 8.2 in | truck-magnet artwork badge, back, 11 in |
+| `magnet-badge-sleeve-on-gold` (png) | 3.5 x 2.6 in | truck-magnet artwork badge, sleeve, 3.5 in |
+| `magnet-panel-back-on-gold` (png) | 11.0 x 8.3 in | truck-magnet artwork panel, back, 11 in |
+| `magnet-panel-sleeve-on-gold` (png) | 3.5 x 2.6 in | truck-magnet artwork panel, sleeve, 3.5 in |
+| `magnet-lights-back-on-gold` (png) | 11.0 x 8.3 in | truck-magnet artwork lights, back, 11 in |
+| `magnet-lights-sleeve-on-gold` (png) | 3.5 x 2.6 in | truck-magnet artwork lights, sleeve, 3.5 in |
 | `big-cottage-mustard-limited-dtg` (png, svg) | 12.0 x 12.3 in | big cottage, 12 in, for a mustard shirt (DTG) |
 | `big-cottage-mustard-dtf` (png, svg) | 20.0 x 26.8 in | big cottage to the hem, transparent (DTF transfer on mustard) |
 | `big-cottage-mustard-allover` (png, svg) | 20.0 x 26.8 in | big cottage, mustard edge to edge (all-over sublimation; the exact look) |

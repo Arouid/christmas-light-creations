@@ -23,6 +23,8 @@ const POLO = ['wordmark', 'caps', 'logo', 'icon-1', 'icon-2']
 const NEW = [['lit-house', 'the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath'], ['wreath-2011', 'LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark'],
   ['services', 'six service icons with labels over the wordmark (back)'], ['chest', 'the bulb cottage beside the wordmark (left chest)'],
   ['minimal', 'the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front)']]
+// scripts/shirt-magnet-art.mjs: the three truck-magnet artworks as back (11 in) and sleeve (3.5 in) prints.
+const MAGNET = ['badge', 'panel', 'lights'].flatMap((d) => [['back', 'back, 11 in'], ['sleeve', 'sleeve, 3.5 in']].map(([pl, what]) => [d, pl, `truck-magnet artwork ${d}, ${what}`]))
 const NEW_GOLD = [['mustard-name', 'the mustard cottage over the wordmark (gold or mustard shirt)'], ['mustard-name-phone', 'the mustard cottage over the wordmark and the phone (gold or mustard shirt)']]
 const FOLDERS = {
   navy: {
@@ -40,6 +42,7 @@ const FOLDERS = {
       R('mascot-medal-on-navy', 'Brad Medel medal, white and gold'),
       R('mascot-medal-color', 'Brad Medel medal as drawn (any shirt, DTG/DTF)'),
       ...NEW.map(([n, what]) => R(`new-${n}-on-navy`, what)),
+      ...MAGNET.map(([d, pl, what]) => R(`magnet-${d}-${pl}-on-navy`, what)),
       ...POLO.map((m) => D(`polo-${m}-on-navy`, `navy polo, left chest ${m} (embroidery)`)),
     ],
   },
@@ -55,6 +58,7 @@ const FOLDERS = {
       ...NEW.map(([n, what]) => R(`new-${n}-on-gold`, what)),
       R('install-crew-on-gold', 'Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs)'),
       ...NEW_GOLD.map(([n, what]) => R(`new-${n}-on-gold`, what)),
+      ...MAGNET.map(([d, pl, what]) => R(`magnet-${d}-${pl}-on-gold`, what)),
       R('big-cottage-mustard-limited-dtg', 'big cottage, 12 in, for a mustard shirt (DTG)', ['recraft/big-cottage-mustard-limited-snow.svg']),
       R('big-cottage-mustard-dtf', 'big cottage to the hem, transparent (DTF transfer on mustard)'),
       R('big-cottage-mustard-allover', 'big cottage, mustard edge to edge (all-over sublimation; the exact look)'),

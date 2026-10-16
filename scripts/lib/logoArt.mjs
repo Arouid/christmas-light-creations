@@ -19,7 +19,8 @@ const TEXT_PY = fileURLToPath(new URL('text-outlines.py', import.meta.url))
 // fill, stroke and gradient stop colours. Tints that are not "our navy" (the window glass #0a2a52, the sunburst rays
 // #12214a, the bulb blue #1c2f63, the ribbon's fold shadow #02060f) are left alone. The site keeps its own night-950.
 export const PRINT_NAVY = '#1F304B'
-const OTHER_NAVIES = ['#050B1A', '#06132C', '#0A1530', '#0C2341', '#0C2F4A', '#112A4A', '#1C2B44', '#1B2638', '#1F2742', '#141A39', '#25263C', '#23202A', '#061031', '#2E2C50', '#012753', '#10223E', '#071633', '#091838', '#0A1937']
+const OTHER_NAVIES = ['#050B1A', '#06132C', '#0A1530', '#0C2341', '#0C2F4A', '#112A4A', '#1C2B44', '#1B2638', '#1F2742', '#141A39', '#25263C', '#23202A', '#061031', '#2E2C50', '#012753', '#10223E', '#071633', '#091838', '#0A1937',
+  '#021934', '#0E1826', '#031A3D', '#0B1C34', '#101931', '#011531', '#0D1726', '#0C152C'] // the truck-magnet artworks' near-blacks
 export const unifyNavy = (svg) => svg.replace(/(fill|stroke|stop-color)="(#[0-9a-fA-F]{6})"/g, (m, attr, hex) => (OTHER_NAVIES.includes(hex.toUpperCase()) ? `${attr}="${PRINT_NAVY}"` : m))
 
 // Brand colours (src/index.css tokens and the logo files).
