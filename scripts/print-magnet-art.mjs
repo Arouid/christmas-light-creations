@@ -216,14 +216,15 @@ function dottedLine(str, { font, location, fit, tracking, fill, dot }) {
   const em = (fit * U) / advEm, k = em / g.upem, width = advEm * em
   const lowest = (d) => Math.min(...d.match(/-?[0-9.]+/g).map(Number).filter((_, i) => i % 2 === 1))
   return { cap: (g.capHeight / g.upem) * em, width, svg: (x, y, anchor = 'start') => {
-    let cx = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x
-    const parts = []
+    let cx = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x, nDot = 0
+    const parts = [], dots = [].concat(dot) // one colour, or a list taken in turn
     for (const gl of g.glyphs) {
       const at = (d, colour) => `<path transform="translate(${fmt(cx)} 0) scale(${k} ${-k})" d="${d}" fill="${colour}"/>`
       if (gl.d && gl.char === 'i') {
         const outlines = gl.d.split(/(?=M)/).filter(Boolean)
         const top = Math.max(...outlines.map(lowest))
-        for (const o of outlines) parts.push(at(o, lowest(o) === top ? dot : fill))
+        for (const o of outlines) parts.push(at(o, lowest(o) === top ? dots[nDot % dots.length] : fill))
+        nDot++
       } else if (gl.d) parts.push(at(gl.d, fill))
       cx += gl.advance * k + tracking * em
     }
@@ -245,7 +246,14 @@ const YEAR = { art: [1, 2, 3, 4, 5, 6, 7], ornament: 1, digits: [5, 6, 7], box: 
   const b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(Math.round)
   if (b.some((v, i) => Math.abs(v - YEAR.box[i]) > 2)) throw new Error(`2011-light.svg: shapes 1–7 are not the 2011 any more (box ${b})`)
 }
-function yearArt(digitsH, { gold, navy }) {
+// festive (owner: "maybe we can do something with that ornament to make it a bit more festive"): the ball in festive.ball,
+// its cap and ring gold (the ornament is one outline: above y 465 is the cap and ring), a gold band round the ball's
+// middle with a thin line either side, and two small gold sparkles by the ring. In the file's units (before its scale):
+// the ball's centre is about (477, 615), radius 150.
+const ORN_CAP_END = 465
+const sparkle = (cx, cy, r) => `M${cx} ${cy - r} Q${cx} ${cy} ${cx + r} ${cy} Q${cx} ${cy} ${cx} ${cy + r} Q${cx} ${cy} ${cx - r} ${cy} Q${cx} ${cy} ${cx} ${cy - r} Z`
+const SPARKLES = [sparkle(578, 392, 26), sparkle(392, 432, 16)]
+function yearArt(digitsH, { gold, navy, festive }) {
   const [sx, sy] = YEAR_SCALE
   const [x0, y0, x1, y1] = [YEAR.box[0] * sx, YEAR.box[1] * sy, YEAR.box[2] * sx, YEAR.box[3] * sy]
   const u = digitsH / ((YEAR.base - YEAR.digitTop) * sy) // inches per scaled unit
@@ -253,8 +261,17 @@ function yearArt(digitsH, { gold, navy }) {
   const ink = (i) => (i === YEAR.ornament ? navy : YEAR.digits.includes(i) ? gold : null)
   const g = (body) => `<g transform="scale(${sx} ${sy})">${body}</g>`
   const area = `x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"`
-  const mask = YEAR.art.map((i) => `<path fill="${ink(i) ? '#fff' : '#000'}" d="${yearPaths[i]}"/>`).join('')
-  const shapes = YEAR.art.filter(ink).map((i) => `<path fill="${ink(i)}" d="${yearPaths[i]}"/>`).join('')
+  const orn = yearPaths[YEAR.ornament], [bx0, , bx1] = YEAR.box
+  const mask = YEAR.art.map((i) => `<path fill="${ink(i) ? '#fff' : '#000'}" d="${yearPaths[i]}"/>`).join('') +
+    (festive ? SPARKLES.map((d) => `<path fill="#fff" d="${d}"/>`).join('') : '')
+  const band = (y, hgt) => `<rect x="${bx0}" y="${y}" width="${bx1 - bx0}" height="${hgt}" fill="${gold}"/>`
+  const ornament = festive
+    ? `<defs><clipPath id="ycap"><rect x="${bx0}" y="0" width="${bx1 - bx0}" height="${ORN_CAP_END}"/></clipPath>` +
+      `<clipPath id="yball"><rect x="${bx0}" y="${ORN_CAP_END}" width="${bx1 - bx0}" height="1000"/></clipPath><clipPath id="yorn"><path d="${orn}"/></clipPath></defs>` +
+      `<path clip-path="url(#ycap)" fill="${gold}" d="${orn}"/><path clip-path="url(#yball)" fill="${festive.ball}" d="${orn}"/>` +
+      `<g clip-path="url(#yorn)">${band(598, 7)}${band(612, 34)}${band(653, 7)}</g>` + SPARKLES.map((d) => `<path fill="${gold}" d="${d}"/>`).join('')
+    : `<path fill="${navy}" d="${orn}"/>`
+  const shapes = YEAR.art.filter((i) => ink(i) && i !== YEAR.ornament).map((i) => `<path fill="${ink(i)}" d="${yearPaths[i]}"/>`).join('') + ornament
   return { w, above, svg: (x, base) => `<svg x="${fmt(x * U)}" y="${fmt((base - above) * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}">` +
     `<defs><mask id="year" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${g(mask)}</mask></defs><g mask="url(#year)">${g(shapes)}</g></svg>` }
 }
@@ -291,7 +308,7 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   // art as the year, all gold but the navy ornament, the words as tall as the digits (owner: "leave everything gold on
   // that line other than the bulb", "match the city size to 2011"), the whole line as wide as the column (no rules: at the
 // width the words and digits come out about 0.65 in tall).
-  const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: FLAT.gold })), yr: yearArt(d, { gold: FLAT.gold, navy: ink }) })
+  const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: FLAT.gold })), yr: yearArt(d, { gold: FLAT.gold, navy: ink, festive: { ball: C9[0] } }) })
   const unitLine = year && fitYear(1), d = year && (colW * 0.96) / (unitLine.est.width / U + 0.3 + unitLine.yr.w)
   const { est, yr } = year ? fitYear(d) : {}
   const yGap = year && 0.3 * d, lineW = year && est.width / U + yGap + yr.w
@@ -301,7 +318,8 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   const phone = T(PHONE, sans(600, { fit: colW * 0.96, tracking: 0 }))
   const rTag = year ? wmH + 0.45 + yr.above : wmH + 0.85, rPhone = rTag + 0.55 + phone.cap / U
   // No band: the site on its own line under the phone, as large as fits.
-  const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: windows || accent })
+  // The site's i-dots in the bulbs' red, green and blue (owner: "what if we made the i's dots multicolored instead of gold?").
+  const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: bulbs ? [C9[0], C9[2], C9[3]] : windows || accent })
   const rEnd = lineSite ? rPhone + 0.62 + lineSite.cap / U : rPhone
   const top = (band ? (topH - 0.6) / 2 + 0.05 : H / 2) - rEnd / 2 // the block centred above the drifts, or on the door
   // Gold rules either side of the tag line.
