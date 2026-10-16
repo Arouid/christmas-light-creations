@@ -192,29 +192,50 @@ function flatWordmark(ink, dot, { cx, y, w }) {
     `<defs><mask id="wm" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${g(mask)}</mask></defs><g mask="url(#wm)">${g(shapes)}</g></svg>` }
 }
 
+// accent: the gold touches (rules and the band's line); band: the website's band across the bottom, its text in
+// bandText (owner: "lay the website across the bottom of it in larger font? with gold accents where we can").
 const FLAT_THEMES = {
-  blue: { bg: FLAT.blue, ink: FLAT.gold },
-  gold: { bg: FLAT.gold, ink: FLAT.blue },
-  cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428' }, // the flat cottage file's own cream (owner: "this is the background color")
-  'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', cottage: bulbCottage },
+  blue: { bg: FLAT.blue, ink: FLAT.gold, accent: FLAT.gold, band: FLAT.gold, bandText: FLAT.blue },
+  gold: { bg: FLAT.gold, ink: FLAT.blue, accent: FLAT.blue, band: FLAT.blue, bandText: FLAT.gold },
+  cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold }, // the flat cottage file's own cream (owner: "this is the background color")
+  'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold, cottage: bulbCottage },
 }
-for (const [ground, { bg, ink, windows, small = ink, cottage = flatCottage }] of Object.entries(FLAT_THEMES)) {
-  const house = cottage(ink, { x: MARGIN, cy: H / 2, h: 7.0, windows })
+const BAND = 2.4 // inches: the website's band along the bottom edge
+for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage }] of Object.entries(FLAT_THEMES)) {
+  const topH = H - BAND, cy = topH / 2 + 0.15 // the area above the band, and its middle line
+  const house = cottage(ink, { x: MARGIN, cy, h: 6.4, windows })
   const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
   const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
   const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
   const tag = T('FREE ESTIMATES  ·  PEARLAND, TX', sans(600, { cap: 0.27, tracking: 0.28, fill: small }))
-  const phone = T(PHONE, sans(600, { fit: colW * 0.94, tracking: 0 }))
-  const site = T(SITE, sans(500, { fit: colW * 0.8, tracking: 0.01 }))
-  const rTag = wmH + 0.95, rPhone = rTag + 0.6 + phone.cap / U, rSite = rPhone + 0.6 + site.cap / U
-  const top = H / 2 - rSite / 2
+  const phone = T(PHONE, sans(600, { fit: colW * 0.96, tracking: 0 }))
+  const rTag = wmH + 0.85, rPhone = rTag + 0.55 + phone.cap / U
+  const top = cy - rPhone / 2
+  // Gold rules either side of the tag line.
+  const half = tag.width / U / 2, gap = 0.28, ry = top + rTag - 0.15
+  const rule = (x0, x1) => `<rect x="${fmt(x0 * U)}" y="${fmt(ry * U)}" width="${fmt((x1 - x0) * U)}" height="${fmt(0.035 * U)}" fill="${accent}"/>`
+  // The band: the magnet's own rounded shape clips it, so its bottom corners follow the magnet's.
+  const site = T(SITE.toUpperCase(), sans(600, { fit: W - 2 * 1.5, tracking: 0.06, fill: bandText }))
+  const siteBase = topH + BAND / 2 + 0.12 + site.cap / U / 2
+  const shape = `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}"/>`
+  const bandSvg = `<defs><clipPath id="magnet">${shape}</clipPath></defs><g clip-path="url(#magnet)">` +
+    `<rect y="${fmt(topH * U)}" width="${W * U}" height="${fmt(BAND * U)}" fill="${band}"/>` +
+    `<rect x="${fmt(1.5 * U)}" y="${fmt((topH + 0.32) * U)}" width="${fmt((W - 3) * U)}" height="${fmt(0.035 * U)}" fill="${band === FLAT.gold ? FLAT.blue : FLAT.gold}"/></g>`
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
-    `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${house.svg}` +
-    flatWordmark(ink, windows || ink, { cx, y: top, w: wmW }).svg + tag.svg(cx * U, (top + rTag) * U, 'middle') +
-    phone.svg(cx * U, (top + rPhone) * U, 'middle') + site.svg(cx * U, (top + rSite) * U, 'middle') + '</svg>'
+    `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${bandSvg}${house.svg}` +
+    flatWordmark(ink, windows || ink, { cx, y: top, w: wmW }).svg +
+    rule(col + 0.3, cx - half - gap) + tag.svg(cx * U, (top + rTag) * U, 'middle') + rule(cx + half + gap, col + colW - 0.3) +
+    phone.svg(cx * U, (top + rPhone) * U, 'middle') + site.svg((W / 2) * U, siteBase * U, 'middle') + '</svg>'
   const out = `${DIR}vehicle-magnet-24x12-flat-${ground}`
   writeFileSync(out + '.svg', svg)
   svgToPdf(svg, W, H, out + '.pdf')
   await sharp(Buffer.from(svg), { density: Math.sqrt(72 * 150) }).withMetadata({ density: 150 }).png({ compressionLevel: 9 }).toFile(out + '.png')
-  console.log(`vehicle-magnet-24x12-flat-${ground}: ${W} x ${H} in, ${ink} on ${bg}, cottage ${fmt(house.w)} x 7 in, all vector`)
+  console.log(`vehicle-magnet-24x12-flat-${ground}: ${W} x ${H} in, ${ink} on ${bg}, website ${fmt(site.cap / U)} in tall in the band, all vector`)
+}
+// The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
+for (const name of ['cream', 'cream-bulbs']) {
+  const art = await sharp(`${DIR}vehicle-magnet-24x12-flat-${name}.png`).resize({ width: 820 }).png().toBuffer()
+  const door = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560"><rect width="1000" height="560" fill="#b3191f"/><rect width="1000" height="40" fill="#8e1218"/>' +
+    '<path d="M960 0 L960 560" stroke="#7a0f14" stroke-width="6"/><rect x="880" y="250" width="60" height="16" rx="8" fill="#cfd3d8"/></svg>'
+  await sharp(Buffer.from(door)).composite([{ input: art, left: 40, top: 70 }]).png().toFile(`${DIR}vehicle-magnet-24x12-flat-${name}-on-red.png`)
 }
