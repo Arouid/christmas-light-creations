@@ -66,14 +66,17 @@ function art(file, { x, y, w, flip = false }) {
   return { h, svg: nested(vb, x, y, w, h, flip ? `<g transform="translate(${fmt(2 * vb.x + vb.w)} 0) scale(-1 1)">${inner}</g>` : inner) }
 }
 // A pine from the 2012 art made whole from its clean half, mirrored about the trunk (axis, in the file's own units):
-// the strip each tree hid behind the sign was rebuilt badly in the trace (blocky, missing snow).
+// the strip each tree hid behind the sign was rebuilt badly in the trace (blocky, missing snow). recolor swaps
+// colours ({ '#from': '#to' }, lower-case hex), e.g. the light strings.
 let clips = 0
-function mirrored(file, { x, y, w, axis, keep }) {
+function mirrored(file, { x, y, w, axis, keep, recolor = {} }) {
   arts[file] ??= parseArt('sign-and-trees/' + file)
   const a = arts[file], vb = a.viewBox
   const h = (w * vb.h) / vb.w, id = `half${++clips}`
-  const [rx, rw] = keep === 'left' ? [vb.x, axis - vb.x] : [axis, vb.x + vb.w - axis]
-  const half = `<g clip-path="url(#${id})">${flattenArt(a.inner)}</g>`
+  // The kept half runs 1 unit past the axis, so the two copies overlap there and no hairline seam shows.
+  const [rx, rw] = keep === 'left' ? [vb.x, axis - vb.x + 1] : [axis - 1, vb.x + vb.w - axis + 1]
+  const inner = flattenArt(a.inner).replace(/#[0-9a-fA-F]{6}/g, (c) => recolor[c.toLowerCase()] ?? c)
+  const half = `<g clip-path="url(#${id})">${inner}</g>`
   const clip = `<clipPath id="${id}"><rect x="${fmt(rx)}" y="${vb.y}" width="${fmt(rw)}" height="${vb.h}"/></clipPath>`
   return { h, svg: nested(vb, x, y, w, h, clip + half + `<g transform="translate(${fmt(2 * axis)} 0) scale(-1 1)">${half}</g>`) }
 }
@@ -191,7 +194,10 @@ const designs = {
       `<path d="M0.9 11.05 C3.5 11.28 7.5 11.28 10.15 11.02 C10.35 11.2 10.2 11.28 10 11.32 C7.5 11.55 3.5 11.55 1 11.32 C0.8 11.28 0.75 11.15 0.9 11.05 Z" transform="scale(${U})" fill="#c9d9e6"/>`,
       `<ellipse cx="${fmt(3.0 * U)}" cy="${fmt(10.3 * U)}" rx="${fmt(1.3 * U)}" ry="${fmt(0.11 * U)}" fill="#c9d9e6"/>`,
       `<ellipse cx="${fmt(8.45 * U)}" cy="${fmt(10.2 * U)}" rx="${fmt(1.7 * U)}" ry="${fmt(0.13 * U)}" fill="#c9d9e6"/>`,
-      mirrored('clc-tree-small-color.svg', { x: 0.77, y: 3.75, w: 3.6, axis: 313.4, keep: 'left' }).svg,
+      // The left pine is the big pine smaller, in the small pine's lights (magenta top, gold and red strings): the small
+      // pine's lowest tier is one blank sheet of snow in the 2012 art, so mirrored it showed a white column ("there is an
+      // inch of snow in the core of the tree").
+      mirrored('clc-tree-big-color.svg', { x: 0.69, y: 4.54, w: 3.7, axis: 939.4, keep: 'right', recolor: { '#494fe1': '#be45d1', '#4ad1e0': '#dca466', '#be45d1': '#d92e2b' } }).svg,
       mirrored('clc-tree-big-color.svg', { x: 5.33, y: 2.47, w: 5.0, axis: 939.4, keep: 'right' }).svg,
       art('clc-sign-color.svg', { x: 3.45, y: 7.58, w: 2.6 }).svg,
       `<ellipse cx="${fmt(4.75 * U)}" cy="${fmt(10.47 * U)}" rx="${fmt(0.6 * U)}" ry="${fmt(0.15 * U)}" fill="${WHITE}"/>`,
