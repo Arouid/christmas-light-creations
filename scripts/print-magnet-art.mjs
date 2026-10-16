@@ -162,7 +162,17 @@ const BULB_PATHS = [...bulbSrc.matchAll(/<path ([^>]*)\/>/g)].map((m) => {
 const BULB_GOLD = '#FCC84A'
 if (BULB_PATHS.filter((p) => p.fill === BULB_GOLD).length !== 14) throw new Error('blue-navy-cottage-vector.svg: not the bulb cottage any more (new download?)')
 const BULB_BOX = [0, 1, 2, 3].map((k) => (k < 2 ? Math.min : Math.max)(...BULB_PATHS.filter((p) => p.fill !== 'WHITE').map((p) => p.box[k])))
-const bulbCottage = (ink, o) => cottageArt(BULB_PATHS, BULB_BOX, (p) => (p.fill === BULB_GOLD ? o.windows : p.fill === 'WHITE' ? null : ink), o)
+// Its gold shapes are 10 bulbs (tall drops) and 4 window panes (squares). With o.bulbs the bulbs take those colours in
+// turn from left to right (owner: "make the lights on the house multicolor"); the window stays in windows.
+const isBulb = (p) => (p.box[3] - p.box[1]) / (p.box[2] - p.box[0]) > 1.15
+const BULB_ORDER = BULB_PATHS.filter((p) => p.fill === BULB_GOLD && isBulb(p)).sort((a, b) => a.box[0] - b.box[0])
+if (BULB_ORDER.length !== 10) throw new Error(`blue-navy-cottage-vector.svg: ${BULB_ORDER.length} bulbs, not 10`)
+const bulbCottage = (ink, o) => cottageArt(BULB_PATHS, BULB_BOX, (p) => {
+  if (p.fill === 'WHITE') return null
+  if (p.fill !== BULB_GOLD) return ink
+  return o.bulbs && isBulb(p) ? o.bulbs[BULB_ORDER.indexOf(p) % o.bulbs.length] : o.windows
+}, o)
+const C9 = ['#D7262E', '#F2A93B', '#2E9E5B', '#3E8EDE'] // red, amber, green, blue
 // The wordmark: "christmas light" and "creations" with their letter holes (drawn in the page cream over the navy) and
 // the gold dot, in the file's own units after its scale; the PEARLAND TX — EST 2011 line under them is left out.
 const wmSrc = readFileSync(DIR + 'minimal-clc-name.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
@@ -221,12 +231,40 @@ function dottedLine(str, { font, location, fit, tracking, fill, dot }) {
   } }
 }
 
+// The year as the 2011-with-an-ornament art (owner: "Numbers to gold, bulb to navy. Pearland, TX --- Est. 2011. bump
+// the font size up on it so we can see", then "yea no bar. But do add the est 2011 stuff I asked for"): shapes 1–7 of
+// recraft/2011-light.svg, the digits gold, the ornament navy, its highlight and ring hole cut out. It stands on the
+// text baseline with its digits digitsH tall.
+const yearSrc = readFileSync(DIR + '2011-light.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+const YEAR_SCALE = yearSrc.match(/transform="scale\(([^)]*)\)"/)[1].split(/[ ,]+/).map(Number)
+const yearPaths = [...yearSrc.matchAll(/<path ([^>]*)\/>/g)].map((m) => m[1].match(/ d="([^"]*)"/)[1])
+const YEAR = { art: [1, 2, 3, 4, 5, 6, 7], ornament: 1, digits: [5, 6, 7], box: [72, 364, 952, 776], digitTop: 435, base: 767 }
+{
+  const n = YEAR.art.flatMap((i) => yearPaths[i].match(/-?[0-9.]+/g).map(Number))
+  const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
+  const b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(Math.round)
+  if (b.some((v, i) => Math.abs(v - YEAR.box[i]) > 2)) throw new Error(`2011-light.svg: shapes 1–7 are not the 2011 any more (box ${b})`)
+}
+function yearArt(digitsH, { gold, navy }) {
+  const [sx, sy] = YEAR_SCALE
+  const [x0, y0, x1, y1] = [YEAR.box[0] * sx, YEAR.box[1] * sy, YEAR.box[2] * sx, YEAR.box[3] * sy]
+  const u = digitsH / ((YEAR.base - YEAR.digitTop) * sy) // inches per scaled unit
+  const w = (x1 - x0) * u, h = (y1 - y0) * u, above = (YEAR.base * sy - y0) * u // height above the baseline
+  const ink = (i) => (i === YEAR.ornament ? navy : YEAR.digits.includes(i) ? gold : null)
+  const g = (body) => `<g transform="scale(${sx} ${sy})">${body}</g>`
+  const area = `x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"`
+  const mask = YEAR.art.map((i) => `<path fill="${ink(i) ? '#fff' : '#000'}" d="${yearPaths[i]}"/>`).join('')
+  const shapes = YEAR.art.filter(ink).map((i) => `<path fill="${ink(i)}" d="${yearPaths[i]}"/>`).join('')
+  return { w, above, svg: (x, base) => `<svg x="${fmt(x * U)}" y="${fmt((base - above) * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}">` +
+    `<defs><mask id="year" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${g(mask)}</mask></defs><g mask="url(#year)">${g(shapes)}</g></svg>` }
+}
+
 const FLAT_THEMES = {
   blue: { bg: FLAT.blue, ink: FLAT.gold, accent: FLAT.gold, band: FLAT.gold, bandText: FLAT.blue },
   gold: { bg: FLAT.gold, ink: FLAT.blue, accent: FLAT.blue, band: FLAT.blue, bandText: FLAT.gold },
   cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold }, // the flat cottage file's own cream (owner: "this is the background color")
-  'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold, cottage: bulbCottage },
-  'cream-bulbs-nobar': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, cottage: bulbCottage },
+  'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, band: FLAT.blue, bandText: FLAT.gold, cottage: bulbCottage, bulbs: C9 },
+  'cream-bulbs-nobar': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', accent: FLAT.gold, cottage: bulbCottage, bulbs: C9, year: true },
 }
 const BAND = 2.4 // inches: the website's band along the bottom edge (its flat part; the drifts rise above it)
 // The drifts: soft mounds of random width and height along the band's top, from a fixed seed so a rebuild is the same.
@@ -241,23 +279,33 @@ function drifts(top, seed = 2011) {
   }
   return d + ` L${fmt(W * U)} ${fmt(H * U)} Z`
 }
-for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage }] of Object.entries(FLAT_THEMES)) {
+for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cottage = flatCottage, year, bulbs }] of Object.entries(FLAT_THEMES)) {
   const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
   const topH = band ? H - BAND : H // the area above the band
   const HOUSE = 6.4
   // With a band the cottage stands on it (its bottom 0.25 in into the band); without, it is centred on the door.
-  const house = cottage(ink, { x: MARGIN, cy: band ? topH + 0.25 - HOUSE / 2 : H / 2, h: HOUSE, windows })
+  const house = cottage(ink, { x: MARGIN, cy: band ? topH + 0.25 - HOUSE / 2 : H / 2, h: HOUSE, windows, bulbs })
   const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
   const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
-  const tag = T('FREE ESTIMATES  ·  PEARLAND, TX', sans(600, { cap: 0.27, tracking: 0.28, fill: small }))
+  // The line under the name: FREE ESTIMATES · PEARLAND, TX small in gold, or (year) PEARLAND, TX — EST. and the 2011
+  // art as the year, all gold but the navy ornament, the words as tall as the digits (owner: "leave everything gold on
+  // that line other than the bulb", "match the city size to 2011"), the whole line as wide as the column (no rules: at the
+// width the words and digits come out about 0.65 in tall).
+  const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: FLAT.gold })), yr: yearArt(d, { gold: FLAT.gold, navy: ink }) })
+  const unitLine = year && fitYear(1), d = year && (colW * 0.96) / (unitLine.est.width / U + 0.3 + unitLine.yr.w)
+  const { est, yr } = year ? fitYear(d) : {}
+  const yGap = year && 0.3 * d, lineW = year && est.width / U + yGap + yr.w
+  const tag = year ? { width: lineW * U, cap: est.cap,
+    svg: (x, y) => est.svg(x - (lineW * U) / 2, y) + yr.svg(x / U - lineW / 2 + est.width / U + yGap, y / U) }
+    : T('FREE ESTIMATES  ·  PEARLAND, TX', sans(600, { cap: 0.27, tracking: 0.28, fill: small }))
   const phone = T(PHONE, sans(600, { fit: colW * 0.96, tracking: 0 }))
-  const rTag = wmH + 0.85, rPhone = rTag + 0.55 + phone.cap / U
+  const rTag = year ? wmH + 0.45 + yr.above : wmH + 0.85, rPhone = rTag + 0.55 + phone.cap / U
   // No band: the site on its own line under the phone, as large as fits.
   const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: windows || accent })
   const rEnd = lineSite ? rPhone + 0.62 + lineSite.cap / U : rPhone
   const top = (band ? (topH - 0.6) / 2 + 0.05 : H / 2) - rEnd / 2 // the block centred above the drifts, or on the door
   // Gold rules either side of the tag line.
-  const half = tag.width / U / 2, gap = 0.28, ry = top + rTag - 0.15
+  const half = tag.width / U / 2, gap = year ? 0.22 : 0.28, ry = top + rTag - tag.cap / U / 2 - 0.0175
   const rule = (x0, x1) => `<rect x="${fmt(x0 * U)}" y="${fmt(ry * U)}" width="${fmt((x1 - x0) * U)}" height="${fmt(0.035 * U)}" fill="${accent}"/>`
   let bandSvg = '', siteSvg = lineSite ? lineSite.svg(cx * U, (top + rEnd) * U, 'middle') : ''
   if (band) {
@@ -272,7 +320,7 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
     `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>${bandSvg}${house.svg}` +
     flatWordmark(ink, windows || ink, { cx, y: top, w: wmW }).svg +
-    rule(col + 0.3, cx - half - gap) + tag.svg(cx * U, (top + rTag) * U, 'middle') + rule(cx + half + gap, col + colW - 0.3) +
+    (year ? '' : rule(col + 0.3, cx - half - gap)) + tag.svg(cx * U, (top + rTag) * U, 'middle') + (year ? '' : rule(cx + half + gap, col + colW - 0.3)) +
     phone.svg(cx * U, (top + rPhone) * U, 'middle') + siteSvg + '</svg>'
   const out = `${DIR}vehicle-magnet-24x12-flat-${ground}`
   writeFileSync(out + '.svg', svg)
