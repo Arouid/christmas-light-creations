@@ -119,7 +119,8 @@ One ink, so it also screen-prints as a single colour. A second version, `collegi
 ## Bradley as the mascot (2026-10-16)
 
 In memory of Bradley, co-owner, who died in October 2025. Owner: "I wanna make him the business mascot". Two Recraft
-portraits made from his photos (`recraft/bradley-blue-line art.svg`, `recraft/bradley-navy-gold.svg`, local only);
+portraits made from his photos (`recraft/bradley-blue-line art.svg`, `recraft/bradley-navy-gold.svg`) and a round tribute
+(`recraft/brad-medel-circle-tribute.svg`: BRAD MEDEL over his beanie portrait, CHRISTMAS LIGHT CREATIONS under it), local only;
 `node scripts/shirt-mascot.mjs` makes them print-ready, 11 in wide, as PNG (300 dpi), SVG and PDF in `recraft/`:
 
 | File | Shirt | Ink |
@@ -128,9 +129,13 @@ portraits made from his photos (`recraft/bradley-blue-line art.svg`, `recraft/br
 | `mascot-line-on-light` | white, gold or mustard | navy |
 | `mascot-gold-on-navy` | navy | gold, one ink |
 | `mascot-gold-on-gold` | gold or mustard | navy, one ink |
+| `mascot-medal-on-navy` | navy | white and gold (the navy disc is the shirt) |
+| `mascot-medal-on-white` | white or light | navy and dark gold |
+| `mascot-medal-color` | any (digital printing: DTG, DTF) | as drawn, greys too |
 
 The fishing cap's patch (another company's fish logo) is replaced by our cottage. `mascot-mockups.png`: him on a
 navy polo's left sleeve (2.25 in), on the back of a navy tee (gold) and a mustard tee (line art) over the name, and
-laser-engraved on a leather cap patch. Open: the owner picks the master look; a character artist redraws him in a
+laser-engraved on a leather cap patch, and the medal on a navy tee's chest and back. The medal also comes as a 4-in
+chest PNG (`-chest.png`); its lettering is 0.18 in tall there, fine for print, too small to embroider. Open: the owner picks the master look; a character artist redraws him in a
 few poses (also gives a human-made version that can be copyrighted); his name or nickname on anything is the
 owner's call.

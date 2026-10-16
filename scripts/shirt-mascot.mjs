@@ -5,11 +5,15 @@
 //   mustard shirt: the lines in navy ink, the rest left as shirt.
 // - gold: half length in his flat cap, coat and scarf, gold on navy. Navy shirt: one gold ink. Gold or mustard
 //   shirt: one navy ink.
-// Both downloads keep a full-page backing square (dropped here) and draw light shapes over dark ones, so unprinted
+// - medal: the round tribute (BRAD MEDEL over his beanie portrait, CHRISTMAS LIGHT CREATIONS under it), navy, white
+//   and gold with grey shading. Navy shirt: white and gold inks, the navy disc left as shirt. White shirt: navy and
+//   gold inks. Colour: as drawn (greys too), for digital printing on any shirt. Also as a 4-in chest print.
+// The downloads keep a full-page backing square (dropped here) and draw light shapes over dark ones, so unprinted
 // parts are cut out with a mask (the shirt shows through), not just left unpainted.
 // Run: node scripts/shirt-mascot.mjs   (reads and writes assets-source/shirts/recraft/, not in git)
-// Output: mascot-<art>-on-<shirt>.{png,svg,pdf} (11 in wide, 300 dpi, transparent), mascot-mockups.png (a navy polo
-// with him on the sleeve, navy and gold tees with him on the back, a cap with a leather patch).
+// Output: mascot-<art>-on-<shirt>.{png,svg,pdf} (11 in wide, 300 dpi, transparent; the medal also -chest.png, 4 in),
+// mascot-mockups.png (a navy polo with him on the sleeve, navy and gold tees with him on the back, a cap with a
+// leather patch, the medal on a navy tee's chest and back).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
@@ -24,6 +28,7 @@ const SOURCES = {
   // The patch: path 206 is its white face (box checked below); 207–209 are the fish and its two highlights.
   line: { file: 'bradley-blue-line art.svg', patch: { face: 206, box: [380, 116, 637, 242], drop: [207, 208, 209] } },
   gold: { file: 'bradley-navy-gold.svg' },
+  medal: { file: 'brad-medel-circle-tribute.svg' },
 }
 // Which ink each kind of shape gets per shirt (null: not printed, the shirt shows).
 const PRINTS = {
@@ -31,6 +36,9 @@ const PRINTS = {
   'line-on-light': { art: 'line', inks: { dark: NAVY, light: null, gold: null } }, // white, gold or mustard shirts
   'gold-on-navy': { art: 'gold', inks: { gold: GOLD, dark: null, light: null } },
   'gold-on-gold': { art: 'gold', inks: { dark: NAVY, gold: null, light: null } },
+  'medal-on-navy': { art: 'medal', inks: { light: WHITE, gold: GOLD, dark: null }, chest: 4 },
+  'medal-on-white': { art: 'medal', inks: { dark: '#1c2b44', gold: '#b8862b', light: null }, chest: 4 }, // its own navy (ours prints near black on white), dark gold
+  'medal-color': { art: 'medal', inks: 'as drawn', chest: 4 },
 }
 
 const box = (d) => {
@@ -72,11 +80,11 @@ function load({ file, patch }) {
     const [x0, y0, x1, y1] = box(p.d)
     if (x1 - x0 >= vw * 0.98 && y1 - y0 >= vh * 0.98) return // the backing square
     if (patch?.drop.includes(i)) return
-    shapes.push({ shade: shade(p.colour), draw: (fill) => `<path fill="${fill}" d="${p.d}"/>` })
+    shapes.push({ shade: shade(p.colour), colour: p.colour, draw: (fill) => `<path fill="${fill}" d="${p.d}"/>` })
     if (patch && i === patch.face) {
       if (box(p.d).some((v, k) => Math.abs(v - patch.box[k]) > 2)) throw new Error(`${file}: path ${i} is not the cap patch any more (new download?)`)
       const [px0, py0, px1, py1] = patch.box, inset = (py1 - py0) * 0.09
-      shapes.push({ shade: 'dark', draw: (fill) => `<g transform="rotate(-3 ${fmt((px0 + px1) / 2)} ${fmt((py0 + py1) / 2)})">${cottage(fill, [px0, py0 + inset, px1, py1 - inset])}</g>` })
+      shapes.push({ shade: 'dark', colour: NAVY, draw: (fill) => `<g transform="rotate(-3 ${fmt((px0 + px1) / 2)} ${fmt((py0 + py1) / 2)})">${cottage(fill, [px0, py0 + inset, px1, py1 - inset])}</g>` })
     }
   })
   return { vw, vh, shapes }
@@ -89,11 +97,13 @@ for (const a of Object.values(arts)) {
   a.box = { x: -info.trimOffsetLeft, y: -info.trimOffsetTop, w: info.width, h: info.height }
 }
 // The printed parts in their inks, the rest cut out (mask), as a nested <svg> w inches wide at (x, y) inches.
+// inks 'as drawn': every shape in its own colour, nothing cut out.
 function printed(a, inks, { x = 0, y = 0, w }) {
   const { box: b } = a, h = (w * b.h) / b.w
   const area = `x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"`
-  const mask = a.shapes.map((s) => s.draw(inks[s.shade] ? '#fff' : '#000')).join('')
-  const ink = a.shapes.filter((s) => inks[s.shade]).map((s) => s.draw(inks[s.shade])).join('')
+  const inkOf = (sh) => (inks === 'as drawn' ? sh.colour : inks[sh.shade])
+  const mask = a.shapes.map((sh) => sh.draw(inkOf(sh) ? '#fff' : '#000')).join('')
+  const ink = a.shapes.filter(inkOf).map((sh) => sh.draw(inkOf(sh))).join('')
   return { w, h, svg: `<svg x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}">` +
     `<defs><mask id="cut" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#cut)">${ink}</g></svg>` }
 }
@@ -103,14 +113,18 @@ const png = (svg, w) => sharp(Buffer.from(svg), { density: Math.sqrt(72 * DPI * 
   .withMetadata({ density: DPI }).png({ compressionLevel: 9 }).toBuffer()
 
 const prints = {}
-for (const [name, { art, inks }] of Object.entries(PRINTS)) {
+for (const [name, { art, inks, chest }] of Object.entries(PRINTS)) {
   const p = printed(arts[art], inks, { w: PRINT_IN })
   const svg = page(p.w, p.h, p.svg)
   writeFileSync(`${DIR}mascot-${name}.svg`, svg)
   svgToPdf(svg, p.w, p.h, `${DIR}mascot-${name}.pdf`)
   prints[name] = await png(svg, p.w)
   writeFileSync(`${DIR}mascot-${name}.png`, prints[name])
-  console.log(`mascot-${name}: ${fmt(p.w)} x ${fmt(p.h)} in`)
+  if (chest) {
+    const c = printed(arts[art], inks, { w: chest })
+    writeFileSync(`${DIR}mascot-${name}-chest.png`, await png(page(c.w, c.h, c.svg), c.w))
+  }
+  console.log(`mascot-${name}: ${fmt(p.w)} x ${fmt(p.h)} in${chest ? `, chest ${chest} in` : ''}`)
 }
 
 // --- mockups (60 px per inch) ---
@@ -144,7 +158,8 @@ const backName = (ink, y) => {
 const backTee = async (fill, edge, ink, art, w, note) => {
   const { width, height } = await sharp(art).metadata()
   const h = (w * height) / width, top = 3.4
-  const base = await sharp(Buffer.from(shirt(fill, edge, BACK_NECK(edge) + backName(ink, top + h + 1.15) + label(note)))).png().toBuffer()
+  const name = ink ? backName(ink, top + h + 1.15) : '' // no ink: the art carries the name itself
+  const base = await sharp(Buffer.from(shirt(fill, edge, BACK_NECK(edge) + name + label(note)))).png().toBuffer()
   return at(base, art, w, 11, top + h / 2)
 }
 const tiles = [
@@ -168,8 +183,11 @@ const tiles = [
     `<g transform="translate(${fmt(11 - P.w / 2)} ${fmt(9.8 - P.h / 2)})">${P.svg}</g>${label('cap: laser-engraved leather patch, 2.3 in')}</svg>`
   tiles.push(await sharp(Buffer.from(cap)).png().toBuffer())
 }
+// 5–6. the medal: a navy tee's left chest (4 in) and its back (10 in)
+tiles.push(await at(await sharp(Buffer.from(shirt('#152040', '#0b1430', label('navy tee, left chest: 4 in')))).png().toBuffer(), prints['medal-on-navy'], 4, 14.6, 6.4))
+tiles.push(await backTee('#152040', '#0b1430', null, prints['medal-on-navy'], 10, 'navy tee, back: 10 in'))
 const crop = { left: 0, top: 0, width: 22 * PPI, height: 22 * PPI }
 const cut = await Promise.all(tiles.map((t) => sharp(t).extract(crop).resize({ width: 660 }).png().toBuffer()))
-await sharp({ create: { width: 660 * 4 + 30, height: 660, channels: 3, background: '#3b3f4b' } })
-  .composite(cut.map((input, i) => ({ input, left: i * 670, top: 0 }))).png().toFile(`${DIR}mascot-mockups.png`)
-console.log('mascot-mockups.png: polo sleeve, navy tee back, mustard tee back, leather-patch cap')
+await sharp({ create: { width: 670 * 3 - 10, height: 670 * 2 - 10, channels: 3, background: '#3b3f4b' } })
+  .composite(cut.map((input, i) => ({ input, left: (i % 3) * 670, top: Math.floor(i / 3) * 670 }))).png().toFile(`${DIR}mascot-mockups.png`)
+console.log('mascot-mockups.png: polo sleeve, navy and mustard tee backs, leather-patch cap, the medal on chest and back')
