@@ -151,6 +151,16 @@ owner's call.
 - Navy merrowed (rolled) border; backing iron-on for shirts, sew-on for jackets, hook-and-loop for caps and gear.
 - Ask for a digital proof and a sewn sample before production; 2–3 weeks plus shipping.
 
+### The trucker / outdoor hat
+
+Owner: "a trucker style / fishing / outdoor hat with this patch and probably some stitching or smaller leather
+patches". `mascot-hat-patch` (2.75 x 3.25 in, arched top): the line art in navy thread on cream twill `#EFE6D2`,
+navy border, our cottage on his cap, shoulders running off the bottom edge. `mascot-hat-leather` (1.6 x 1.1 in): the
+cottage and EST. 2011 burned into leather; `mascot-hat-leather-engrave` is the laser file (black art, red hairline cut
+line). `mascot-hat.png`: both on a navy trucker cap. On a mesh trucker the sides and back are mesh, so the leather
+patch goes where the front panel wraps round; a full-fabric outdoor or rope hat has room for side patches and back
+stitching.
+
 ## LIT SINCE 2011 (Recraft, 2026-10-16)
 
 The owner's retro design (`recraft/lit-2011.svg`): groovy LIT / SINCE 2011 in gold and cream, CHRISTMAS LIGHT

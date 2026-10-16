@@ -205,3 +205,62 @@ const cut = await Promise.all(tiles.map((t) => sharp(t).extract(crop).resize({ w
 await sharp({ create: { width: 670 * 3 - 10, height: 670 * 2 - 10, channels: 3, background: '#3b3f4b' } })
   .composite(cut.map((input, i) => ({ input, left: (i % 3) * 670, top: Math.floor(i / 3) * 670 }))).png().toFile(`${DIR}mascot-mockups.png`)
 console.log('mascot-mockups.png: polo sleeve, navy and mustard tee backs, leather-patch cap, the medal on chest and back')
+
+// --- the hat (owner, 2026-10-16: "a trucker style / fishing / outdoor hat with this patch and probably some
+// stitching or smaller leather patches"): the line art on an arched twill patch for the front (the shape of his
+// Recraft patch mockup, our cottage on the cap), a small leather patch with the cottage for the side, a mockup.
+const HAT = { w: 2.75, h: 3.25, border: 0.11, twill: '#EFE6D2', thread: '#1C2B44' }
+const LEATHER = { w: 1.6, h: 1.1, hide: '#B07A45', edge: '#7A5230', burn: '#3D2614' }
+// The arched patch: a half-circle top, straight sides, rounded bottom corners; i insets it (the border's inner edge).
+const archPath = (w, h, i, c = 0.28) => {
+  const r = w / 2 - i
+  return `M${fmt(i)} ${fmt(w / 2)} A${fmt(r)} ${fmt(r)} 0 0 1 ${fmt(w - i)} ${fmt(w / 2)} L${fmt(w - i)} ${fmt(h - i - c)} ` +
+    `Q${fmt(w - i)} ${fmt(h - i)} ${fmt(w - i - c)} ${fmt(h - i)} L${fmt(i + c)} ${fmt(h - i)} Q${fmt(i)} ${fmt(h - i)} ${fmt(i)} ${fmt(h - i - c)} Z`
+}
+function hatPatch() {
+  const { w, h, border, twill, thread } = HAT
+  const artW = w * 1.06 // shoulders run off the bottom edge, as on his patch; a sliver of twill above the cap
+  const art = printed(arts.line, { dark: thread, light: null, gold: null }, { x: (w - artW) / 2, y: 0.3, w: artW })
+  return `<defs><clipPath id="inside"><path d="${archPath(w, h, border)}"/></clipPath></defs>` +
+    `<path d="${archPath(w, h, 0)}" fill="${thread}"/><path d="${archPath(w, h, border)}" fill="${twill}"/><g clip-path="url(#inside)">${art.svg}</g>`
+}
+// The leather patch: the cottage and EST. 2011 burned in. engrave: the laser file (black art, red hairline cut line).
+function leatherPatch(engrave = false) {
+  const { w, h, hide, edge, burn } = LEATHER
+  const ink = engrave ? '#000' : burn
+  const est = T('EST. 2011', { font: FONTS.inter, location: { wght: 800 }, cap: 0.1, tracking: 0.2, fill: ink })
+  const shape = engrave
+    ? `<rect x="0.005" y="0.005" width="${fmt(w - 0.01)}" height="${fmt(h - 0.01)}" rx="0.14" fill="none" stroke="#FF0000" stroke-width="0.003"/>`
+    : `<rect width="${w}" height="${h}" rx="0.14" fill="${hide}" stroke="${edge}" stroke-width="0.03"/>` +
+      `<rect x="0.07" y="0.07" width="${fmt(w - 0.14)}" height="${fmt(h - 0.14)}" rx="0.1" fill="none" stroke="${burn}" stroke-width="0.014" stroke-dasharray="0.05 0.035"/>`
+  return shape + cottage(ink, [w / 2, 0.13, w / 2, 0.8]) + est.svg(w / 2, 0.98, 'middle')
+}
+for (const [name, w, h, body] of [['hat-patch', HAT.w, HAT.h, hatPatch()], ['hat-leather', LEATHER.w, LEATHER.h, leatherPatch()], ['hat-leather-engrave', LEATHER.w, LEATHER.h, leatherPatch(true)]]) {
+  const svg = page(w, h, body)
+  writeFileSync(`${DIR}mascot-${name}.svg`, svg)
+  svgToPdf(svg, w, h, `${DIR}mascot-${name}.pdf`)
+  prints[name] = await png(svg, w)
+  writeFileSync(`${DIR}mascot-${name}.png`, prints[name])
+  console.log(`mascot-${name}: ${w} x ${h} in`)
+}
+// A trucker cap from the front (the patch) and from the left side (the leather patch where the front panel wraps
+// round; the rest of the side and the back are mesh).
+{
+  const crown = '#1D2A44', dark = '#111a2e', mesh = '#ECEAE3'
+  const hat = `<svg xmlns="http://www.w3.org/2000/svg" width="${26 * PPI}" height="${11 * PPI}" viewBox="0 0 26 11"><rect width="26" height="11" fill="#e9ebf0"/>` +
+    `<defs><pattern id="mesh" width="0.16" height="0.16" patternUnits="userSpaceOnUse"><rect width="0.16" height="0.16" fill="${mesh}"/><circle cx="0.08" cy="0.08" r="0.04" fill="#b9b6ac"/></pattern></defs>` +
+    // front view
+    `<path d="M2.5 7.2 C2.5 3.3 4.3 2.2 6.5 2.2 C8.7 2.2 10.5 3.3 10.5 7.2 Z" fill="${crown}" stroke="${dark}" stroke-width="0.06"/>` +
+    `<circle cx="6.5" cy="2.25" r="0.2" fill="${crown}" stroke="${dark}" stroke-width="0.04"/>` +
+    `<path d="M1.5 7.2 Q6.5 6.3 11.5 7.2 Q12 9.2 6.5 9.6 Q1 9.2 1.5 7.2 Z" fill="${dark}"/>` +
+    // side view (brim to the left): mesh crown, the front panel over it, the brim
+    `<path d="M14.6 7.2 C14.6 3.8 16.3 2.3 18.9 2.3 C21.6 2.3 23.7 3.8 23.9 7.2 Z" fill="url(#mesh)" stroke="${dark}" stroke-width="0.06"/>` +
+    `<path d="M14.6 7.2 C14.6 3.8 16.3 2.3 18.9 2.3 C18.4 4 18.2 5.6 18.3 7.2 Z" fill="${crown}" stroke="${dark}" stroke-width="0.06"/>` +
+    `<rect x="22.6" y="6.3" width="1.3" height="0.6" rx="0.1" fill="${dark}"/>` +
+    `<path d="M14.8 7.1 Q12.6 7.2 11.6 8.3 Q13.4 8.6 15.4 7.6 Z" fill="${dark}"/>` +
+    `<text x="0.4" y="10.7" font-family="sans-serif" font-size="0.42" fill="#555b6b">trucker cap: arched patch 2.75 x 3.25 in front; leather 1.6 x 1.1 in side</text></svg>`
+  let out = await at(await sharp(Buffer.from(hat)).png().toBuffer(), prints['hat-patch'], HAT.w, 6.5, 2.7 + HAT.h / 2)
+  out = await at(out, prints['hat-leather'], LEATHER.w, 16.4, 5.4, -8)
+  await sharp(out).png().toFile(`${DIR}mascot-hat.png`)
+  console.log('mascot-hat.png: trucker cap, front and side')
+}
