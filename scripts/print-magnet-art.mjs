@@ -17,7 +17,7 @@ const W = 24, H = 12, U = 100 // inches; SVG units per inch
 // The cottage in the render (fractions of its width and height): between the baked-in title and the bottom rule.
 const CROP = { x0: 0.285, x1: 0.715, y0: 0.19, y1: 0.835 } // y0 below the title's descenders
 const ART_H = 10.0 // inches tall on the magnet
-const CREAM = '#F3E6C8', GOLD = '#E2B65C', PALE = '#B9C2D6' // the render's own cream and gold
+const CREAM = '#F3E6C8', GOLD = '#E2B65C' // the render's own cream and gold
 const PHONE = '281-819-0163', SITE = 'christmas-light-creations.com'
 
 const meta = await sharp(SRC).metadata()
@@ -40,20 +40,28 @@ const T = (s, { font = FONTS.inter, location = { wght: 800 }, cap, fit, tracking
   const g = glyphs(s, font, location)
   return textLine(s, { font, location, em: cap ? (cap * U * g.upem) / g.capHeight : undefined, fitWidth: fit ? fit * U : undefined, tracking, fill })
 }
-const col = 11.6, colW = W - 0.8 - col // the text column
-const serif = { font: FONTS.fraunces, location: { opsz: 144, wght: 900 }, tracking: 0 }
-const name1 = T('Christmas Light', { ...serif, fit: colW, fill: CREAM })
-const name2 = T('Creations', { ...serif, cap: name1.cap / U, fill: GOLD })
+// The words, one calm centred block (owner, of the first layout: "some of the fonts are offputting and things kind
+// of just clash"): the name in Fraunces at a lighter weight, all cream; one small gold line between thin rules; the
+// phone in Inter (Fraunces' hairline numerals vanish at a distance), the only big gold thing; one quiet line under it.
+const col = 12.0, colW = W - 0.8 - col, cx = col + colW / 2
+const serif = { font: FONTS.fraunces, location: { opsz: 144, wght: 600 }, tracking: 0, fill: CREAM }
+const name1 = T('Christmas Light', { ...serif, fit: colW * 0.92 })
+const name2 = T('Creations', { ...serif, cap: name1.cap / U })
+const tag = T('PROFESSIONAL CHRISTMAS LIGHTS', { location: { wght: 600 }, cap: 0.24, tracking: 0.24, fill: GOLD })
+const phone = T(PHONE, { location: { wght: 600 }, fit: colW * 0.94, tracking: 0.01, fill: GOLD })
+const foot = T(`FREE ESTIMATES  ·  ${SITE.toUpperCase()}`, { location: { wght: 500 }, fit: colW * 0.9, tracking: 0.06, fill: CREAM })
+const top = 2.55 // the name's cap line; the block is centred on the door
+const b1 = top + name1.cap / U, b2 = b1 + (name1.cap / U) * 1.38, bTag = b2 + 1.05, bPhone = bTag + 0.55 + phone.cap / U, bFoot = bPhone + 1.0
+const ruleGap = 0.3, tagHalf = tag.width / U / 2
+const rule = (x0, x1) => `<rect x="${fmt(x0 * U)}" y="${fmt((bTag - 0.135) * U)}" width="${fmt((x1 - x0) * U)}" height="${fmt(0.03 * U)}" fill="${GOLD}"/>`
 const body = [
   `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${BG}"/>`,
   `<image x="${fmt(0.5 * U)}" y="${fmt(((H - ART_H) / 2) * U)}" width="${fmt(artW * U)}" height="${fmt(ART_H * U)}" href="data:image/png;base64,${art.toString('base64')}"/>`,
-  name1.svg(col * U, 2.25 * U),
-  name2.svg(col * U, 2.25 * U + name1.cap * 1.4),
-  `<rect x="${fmt(col * U)}" y="${fmt(4.55 * U)}" width="${fmt(colW * U)}" height="${fmt(0.04 * U)}" fill="${GOLD}"/>`,
-  T('PROFESSIONAL CHRISTMAS LIGHTS', { location: { wght: 700 }, fit: colW, tracking: 0.16, fill: PALE }).svg(col * U, 5.3 * U),
-  T(PHONE, { fit: colW, fill: GOLD }).svg(col * U, 8.0 * U),
-  T(SITE, { location: { wght: 700 }, fit: colW * 0.86, tracking: 0.01, fill: CREAM }).svg(col * U, 9.35 * U),
-  T('FREE ESTIMATES', { cap: 0.42, tracking: 0.14, fill: GOLD }).svg(col * U, 10.45 * U),
+  name1.svg(cx * U, b1 * U, 'middle'),
+  name2.svg(cx * U, b2 * U, 'middle'),
+  rule(col + 0.4, cx - tagHalf - ruleGap), tag.svg(cx * U, bTag * U, 'middle'), rule(cx + tagHalf + ruleGap, col + colW - 0.4),
+  phone.svg(cx * U, bPhone * U, 'middle'),
+  foot.svg(cx * U, bFoot * U, 'middle'),
 ]
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">${body.join('')}</svg>`
 const out = DIR + 'vehicle-magnet-24x12-cottage-3d'
