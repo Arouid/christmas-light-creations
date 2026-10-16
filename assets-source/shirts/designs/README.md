@@ -4,20 +4,20 @@ Eight designs built from the vector art (the cottage, the 2012 pines and Merry X
 whole scene) with arched and stacked type, a round badge, a sunburst and ribbon, a string of C9
 bulbs and a crew back. Made by `node scripts/shirt-designs.mjs` (about two minutes). Not shipped.
 
-Most designs come in two versions: **`-on-navy`** for the navy tee (white and gold ink, colour
-art) and **`-on-gold`** for a yellow or gold tee (navy ink, one-colour navy art, berry-red
+Most designs come in two versions: **`-on-navy`** for the navy tee (white and gold ink; the cottage
+in white ink, the scene and sign in colour) and **`-on-gold`** for a yellow or gold tee (navy ink, one-colour navy art, berry-red
 accents). `mockup-<name>.png` shows each on a tee at size, 3 in below the collar;
 `preview-sheet.png` has all sixteen.
 
 | Design | Shirts | What | Print size |
 |---|---|---|---|
-| `scene` | navy | the whole 2012 scene (pines, Merry X-MAS sign, snow) under the name on an arch, Fraunces | 11 × 13.1 in front |
-| `varsity` | navy, gold | CHRISTMAS LIGHT arched in Bahnschrift condensed with an outline, the cottage, CREATIONS, EST · 2011 | 11 × 12.2 in front |
+| `scene` | navy | the 2012 pines and Merry X-MAS sign on a snow drift under the name on an arch in Inter heavy (sized to keep 0.35 in from each edge); each pine is its clean half mirrored, the sign's post in a snow mound | 11 × 13.1 in front |
+| `varsity` | navy, gold | CHRISTMAS LIGHT arched in Bahnschrift condensed (sized to the shirt), the one-ink cottage, CREATIONS, EST · 2011 between gold rules | 11 × 12.2 in front |
 | `badge` | navy, gold | round badge: the name around the top, PEARLAND · TEXAS around the bottom, cottage and two pines inside, SINCE 2011 | 10 in front |
 | `badge-chest` | navy, gold | the badge at left-chest size (pines left out, lines held to 2 pt) | 3.5 in left chest |
-| `sign` | navy | the Merry X-MAS sign, "from your friends at" above, the name below in Fraunces | 10 × 11.5 in front |
+| `sign` | navy | the Merry X-MAS sign planted in a snow drift inside a night-sky circle with a gold ring, CHRISTMAS LIGHT / CREATIONS in Inter heavy, Pearland · since 2011 between gold rules | 10 × 11.6 in front |
 | `treepair` | navy, gold | two pines flanking CHRISTMAS / LIGHT / CREATIONS in Impact, phone under: **one colour**, the cheap screen print | 12 × 7.2 in front or back |
-| `sunburst` | navy, gold | sunburst behind the cottage, the name on a ribbon in Georgia Bold, SINCE 2011 | 11 × 10.9 in front |
+| `sunburst` | navy, gold | sunburst behind the one-ink cottage, the name on a ribbon in Georgia Bold 0.75 in under the snow, SINCE 2011 | 11 × 10.1 in front |
 | `crew` | navy, gold | INSTALL CREW in Impact, "You never lift a finger.", name, phone and site | 12 × 8.4 in back |
 | `bulbs` | navy, gold | a drooping string of seven C9 bulbs over the name in Fraunces | 11 × 6.6 in front |
 
