@@ -73,3 +73,45 @@ the first thing to go soft on a chest print; a 4.5-in chest print or dropping th
 chest fixes it (say so and the script does it). The site line on the back is 0.41 in tall rather
 than 0.6 in: at 0.6 in it would be 15 in wide, wider than the print area; the phone number is the
 0.69-in line.
+
+## Big cottage on mustard (back burner, 2026-10-16)
+
+The owner's Recraft design: the big snowed-in cottage with falling flakes on a mustard shirt, art
+running to the hem. Owner: "Im gonna go for the exact look ... this will go on the back burner until
+I can locate someone to do it". Files in `recraft/` (ignored, local only):
+
+| File | Size at 300 dpi | For |
+|---|---|---|
+| `big-cottage-mustard.svg` | vector, 896 × 1200 | the owner's Recraft original (white page) |
+| `big-cottage-mustard-allover.png` / `.svg` | 6000 × 8036 px = 20 × 26.8 in | **all-over print** (the exact look): mustard `#C9911F` edge to edge, snow ground added under the house |
+| `big-cottage-mustard-dtf.png` / `.svg` | 6000 × 8036 px, transparent | DTF on a mustard blank: front, bottom placement, about 1 in above the hem |
+| `big-cottage-mustard-limited-dtg.png` (+ `-limited-snow.svg`) | 3600 × 3695 px = 12 × 12.3 in, transparent | the owner's smaller Recraft version (`-limited-size.svg`) with a snow mound added: fits the usual 12 × 16 in DTG box, so any DTG shop can print it on a mustard blank today |
+| `Big-cottage-mustard-mockups.zip` | 3 × 896 × 1200 px | Recraft's cut-outs, low-res: reference only |
+
+What to tell a printer:
+
+- **All-over (sublimation)** is the only way to get the art all the way to the hem and seams. It
+  prints on a white polyester shirt and the mustard is ink, so the shirt feels like a sports tee,
+  not cotton; seams and armpits can show thin white creases. Ask for their template and send the
+  allover PNG; they place it.
+- **DTF** on a mustard cotton blank keeps the cotton feel, but a 20 × 27 in transfer feels like a
+  large sticker and doesn't breathe. Ask for the closest blank to `#C9911F` and send the dtf PNG.
+- **DTG** won't go past about 12 × 16 in: send the limited PNG.
+- The house walls are close to the mustard (`#C98427` on `#C9911F`); the dark outlines carry them.
+
+The snow added under the house (behind everything), in the 896 × 1200 drawing's units: big file
+`<path fill="#FEFFFF" d="M0 1016C150 991 300 996 448 993C600 990 750 988 896 1012L896 1200L0 1200Z"/>`
+and `<path fill="#ACD2E0" d="M110 1030C300 1016 600 1014 790 1026C600 1023 300 1025 110 1036Z"/>`;
+limited file `<path fill="#FEFFFF" d="M150 1026C170 1000 300 986 460 985C620 984 740 996 780 1022C784 1030 772 1035 740 1036C600 1041 300 1041 182 1037C152 1036 146 1031 150 1026Z"/>`
+and `<path fill="#ACD2E0" d="M200 1027C340 1018 600 1016 740 1023C600 1026 340 1028 200 1033Z"/>`.
+The PNGs are sharp renders of those SVGs (metadata stripped, trimmed for the limited one).
+
+## Collegiate (Recraft, 2026-10-16)
+
+The owner's CHRISTMAS LIGHT / CREATIONS / EST. 2011 in collegiate block letters (`recraft/CLC-collegiate-svg.svg`,
+mockup `CLC-collegiate-mockup.png`). `node scripts/shirt-collegiate.mjs` makes it print-ready, 11 × 3.4 in on
+the front, in two inks: `collegiate-on-navy` (gold `#ffcf4d`, for the navy shirt) and `collegiate-on-gold` (navy
+`#050b1a`, for a gold or mustard shirt), each as PNG (300 dpi, transparent), SVG and PDF, plus
+`collegiate-preview.png` on navy, gold and mustard. The download's dark slivers between the letters are dropped,
+every letter is one solid ink, and EST. 2011 (traced as blobs) is set again in Inter ExtraBold at the mockup's size.
+One ink, so it also screen-prints as a single colour.
