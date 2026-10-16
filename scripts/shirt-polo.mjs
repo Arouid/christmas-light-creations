@@ -6,15 +6,20 @@
 //   two rules; text only.
 // - logo: the cottage (one colour, sketch lines and flakes dropped) beside the Fraunces name: the horizontal logo
 //   made stitchable.
+// - icon-1, icon-2: the owner's Recraft cottages (made with a style built from the logo, 2026-10-16) beside the same
+//   name. Read from assets-source/shirts/recraft/polo-icon-*.svg (not in git; skipped when missing). Their navy is
+//   sewn in the polo's ink (white on navy, navy on white), their white is left unsewn so the shirt shows through,
+//   their bulbs in gold. Lines as drawn: the digitizer sets the stitch widths (the bulb wire becomes a running stitch).
 // Run: node scripts/shirt-polo.mjs   → assets-source/shirts/designs/polo-*.{png,svg,pdf}, mockup-polo-*.png and
-// mockup-polo-sheet.png (all six on polos). The embroidery shop digitizes the SVG or PDF into stitches.
-import { writeFileSync } from 'node:fs'
+// mockup-polo-sheet.png (all of them on polos). The embroidery shop digitizes the SVG or PDF into stitches.
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 import { COLORS, FONTS, NAVY_ROLES, WHITE_ROLES, checkRoles, fmt, glyphs, parseLogo, prepCottage, textLine } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const OUT = fileURLToPath(new URL('../assets-source/shirts/designs/', import.meta.url))
+const RECRAFT = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
 const U = 100 // SVG units per inch
 const DPI = 300
 const MIN_PT = 3 // thinnest line at stitch size (about 1 mm, a satin column)
@@ -45,7 +50,62 @@ function cottage(kind, { x, y, w }) {
   const h = (w * vb.h) / vb.w
   const minUnits = (MIN_PT / 72) * (vb.w / w)
   const c = prepCottage(logo, roles, { minUnits, look: 'white', drop: ['specks', 'snow', 'wallLines', 'doorLines', 'postHighlights'] })
-  return { h, svg: `<svg x="${fmt(x * U)}" y="${fmt(y * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}">${c.svg}</svg>` }
+  return { w, h, svg: `<svg x="${fmt(x * U)}" y="${fmt(y * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}">${c.svg}</svg>` }
+}
+
+// A Recraft icon: its paths without the full-page backing square, each sorted by colour into navy, white or gold
+// (hairline edge slivers in between go by brightness), and the art's box (rendered, then trimmed).
+async function loadIcon(file) {
+  const src = readFileSync(file, 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+  const [vx, vy, vw, vh] = src.match(/viewBox="([^"]*)"/)[1].split(/[ ,]+/).map(Number)
+  const shade = (fill) => {
+    let h = fill.toLowerCase() === 'white' ? 'ffffff' : fill.replace('#', '')
+    if (h.length === 3) h = [...h].map((c) => c + c).join('')
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16))
+    if (r - b > 40 && r > 150) return 'gold'
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5 ? 'navy' : 'white'
+  }
+  const covers = (d) => {
+    const n = d.match(/-?[0-9.]+/g).map(Number)
+    const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
+    return Math.max(...xs) - Math.min(...xs) >= vw * 0.98 && Math.max(...ys) - Math.min(...ys) >= vh * 0.98
+  }
+  const paths = [...src.matchAll(/<path ([^>]*)\/>/g)]
+    .map((m) => ({ shade: shade(m[1].match(/fill="([^"]*)"/)[1]), d: m[1].match(/ d="([^"]*)"/)[1] }))
+    .filter((p) => !covers(p.d))
+  const all = `<svg xmlns="http://www.w3.org/2000/svg" width="${vw}" height="${vh}" viewBox="${vx} ${vy} ${vw} ${vh}">${paths.map((p) => `<path d="${p.d}"/>`).join('')}</svg>`
+  const { info } = await sharp(Buffer.from(all), { density: 72 }).trim().toBuffer({ resolveWithObject: true })
+  return { paths, box: { x: vx - info.trimOffsetLeft, y: vy - info.trimOffsetTop, w: info.width, h: info.height } }
+}
+// The icon h inches tall at (x, y): navy in the polo's ink, gold in its accent, white unsewn (cut out with a mask,
+// so white parts drawn over navy leave the shirt showing, not the navy under them).
+function iconArt(icon, P, { x, y, h }) {
+  const ink = { navy: P.ink, gold: P.accent, white: null }
+  const { box } = icon
+  const w = (h * box.w) / box.h
+  const mask = icon.paths.map((p) => `<path fill="${ink[p.shade] ? '#fff' : '#000'}" d="${p.d}"/>`).join('')
+  const sewn = icon.paths.filter((p) => ink[p.shade]).map((p) => `<path fill="${ink[p.shade]}" d="${p.d}"/>`).join('')
+  const area = `x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}"`
+  return { w, h, svg: `<svg x="${fmt(x * U)}" y="${fmt(y * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${box.x} ${box.y} ${box.w} ${box.h}">` +
+    `<defs><mask id="unsewn" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#unsewn)">${sewn}</g></svg>` }
+}
+const icons = {}
+for (const n of [1, 2]) if (existsSync(`${RECRAFT}polo-icon-${n}.svg`)) icons[`icon-${n}`] = await loadIcon(`${RECRAFT}polo-icon-${n}.svg`)
+
+// A picture (the cottage or an icon) with the name beside it: two Fraunces lines and the town line, centred on it.
+function lockup(P, pic, w = 4.25) {
+  const gap = 0.18, tx = pic.w + gap, tw = w - tx
+  const cap = capFor('Christmas Light', tw, { font: FONTS.fraunces, location: SERIF, tracking: 0 })
+  const serif = { cap, font: FONTS.fraunces, location: SERIF, tracking: 0, hairline: HAIRLINE }
+  const block = cap * 2.32 + 0.27 + 0.15 // two name lines and the town line
+  const top = Math.max(0, (pic.h - block) / 2 + 0.06)
+  const b1 = top + cap, b2 = b1 + cap * 1.32, b3 = b2 + 0.27 + 0.15
+  return { w, h: Math.max(pic.h, b3 + 0.02), body: [
+    pic.svg,
+    text('Christmas Light', { ...serif, fill: P.ink }).at(tx, b1),
+    text('Creations', { ...serif, fill: P.accent }).at(tx, b2),
+    text('PEARLAND, TX', { cap: 0.15, fill: P.ink, tracking: 0.22 }).at(tx + 0.02, b3),
+  ] }
 }
 
 const marks = {
@@ -74,21 +134,8 @@ const marks = {
       rule(w / 2 + est.width / 2 + gap, w - 0.03, mid, P.accent),
     ] }
   },
-  logo: (P) => {
-    const w = 4.25, cw = 1.3, gap = 0.18, tx = cw + gap, tw = w - tx
-    const c = cottage(P.art, { x: 0, y: 0, w: cw })
-    const cap = capFor('Christmas Light', tw, { font: FONTS.fraunces, location: SERIF, tracking: 0 })
-    const serif = { cap, font: FONTS.fraunces, location: SERIF, tracking: 0, hairline: HAIRLINE }
-    const block = cap * 2.32 + 0.27 + 0.15 // two name lines and the town line
-    const top = Math.max(0, (c.h - block) / 2 + 0.06)
-    const b1 = top + cap, b2 = b1 + cap * 1.32, b3 = b2 + 0.27 + 0.15
-    return { w, h: Math.max(c.h, b3 + 0.02), body: [
-      c.svg,
-      text('Christmas Light', { ...serif, fill: P.ink }).at(tx, b1),
-      text('Creations', { ...serif, fill: P.accent }).at(tx, b2),
-      text('PEARLAND, TX', { cap: 0.15, fill: P.ink, tracking: 0.22 }).at(tx + 0.02, b3),
-    ] }
-  },
+  logo: (P) => lockup(P, cottage(P.art, { x: 0, y: 0, w: 1.3 })),
+  ...Object.fromEntries(Object.entries(icons).map(([key, icon]) => [key, (P) => lockup(P, iconArt(icon, P, { x: 0, y: 0, h: 1.4 }))])),
 }
 
 // A polo (collar, placket, two buttons), the mark on the left chest.
@@ -125,10 +172,10 @@ for (const [key, make] of Object.entries(marks)) {
     console.log(`${name}: ${fmt(w)} x ${fmt(h)} in, ${Math.round(w * DPI)}x${Math.round(h * DPI)} px`)
   }
 }
-// The six mockups, cropped to the chest, in one sheet: a row per mark, navy polo left, white right.
+// The mockups, cropped to the chest, in one sheet: a row per mark, navy polo left, white right.
 const PPI = 60, crop = { left: 7 * PPI, top: 0, width: 13 * PPI, height: 9.5 * PPI }
 const tiles = await Promise.all(made.map((m) => sharp(m).extract(crop).png().toBuffer()))
-await sharp({ create: { width: crop.width * 2 + 10, height: (crop.height + 10) * 3 - 10, channels: 3, background: '#3b3f4b' } })
+await sharp({ create: { width: crop.width * 2 + 10, height: (crop.height + 10) * (made.length / 2) - 10, channels: 3, background: '#3b3f4b' } })
   .composite(tiles.map((input, i) => ({ input, left: (i % 2) * (crop.width + 10), top: Math.floor(i / 2) * (crop.height + 10) })))
   .png({ palette: true, compressionLevel: 9 }).toFile(`${OUT}mockup-polo-sheet.png`)
-console.log('mockup-polo-sheet.png: wordmark, caps, logo (rows) on navy and white polos')
+console.log(`mockup-polo-sheet.png: ${Object.keys(marks).join(', ')} (rows) on navy and white polos`)

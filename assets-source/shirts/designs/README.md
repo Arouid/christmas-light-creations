@@ -46,13 +46,14 @@ forest green or heather navy. Change the words, colours or sizes at the top of
 Left-chest marks for the sales polos, made by `node scripts/shirt-polo.mjs` (a few seconds). Owner,
 2026-10-16: Recraft kept drawing toy-like badges, so these are built from the real logo and fonts. Each comes
 `-on-navy` (white and gold thread) and `-on-white` (navy and dark-gold `#b8862b` thread: the bright gold
-vanishes on white). `mockup-polo-<mark>-on-<polo>.png` shows each on a polo; `mockup-polo-sheet.png` has all six.
+vanishes on white). `mockup-polo-<mark>-on-<polo>.png` shows each on a polo; `mockup-polo-sheet.png` has them all.
 
 | Mark | What | Size |
 |---|---|---|
 | `polo-wordmark` | text only: Christmas Light / Creations in Fraunces (the logo's lettering), Creations in gold, PEARLAND, TX | 3.56 × 1.35 in |
 | `polo-caps` | text only: CHRISTMAS LIGHT / CREATIONS (spaced, gold) in Inter ExtraBold, EST. 2011 between gold rules | 3.56 × 1.1 in |
 | `polo-logo` | the cottage beside the Fraunces name: the horizontal logo made stitchable | 4.31 × 1.53 in |
+| `polo-icon-1`, `polo-icon-2` | the owner's Recraft cottages (a Recraft style built from the logo; `recraft/polo-icon-*.svg`, skipped when missing) beside the same name: their navy sewn in the polo's ink, their white left unsewn (the shirt shows through), bulbs in gold | 4.31 × 1.46 in |
 
 Made for thread: two colours, no line under 3 pt (about 1 mm, a satin column), no letters under 0.15 in, the
 cottage without its snowflakes, specks and sketch lines, Fraunces' thin strokes thickened 0.012 in. Send the
