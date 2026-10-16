@@ -329,8 +329,11 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   const topH = band ? H - BAND : H // the area above the band
   const HOUSE = 6.4
   // With a band the cottage stands on it (its bottom 0.25 in into the band); without, it is centred on the door.
-  const house = cottage(ink, { x: MARGIN, cy: band ? topH + 0.25 - HOUSE / 2 : H / 2, h: HOUSE, windows, bulbs })
-  const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
+  // Inside the frame (owner: "are the elements spaced from each other aesthetically?"), measured on the print: the house and
+  // the text block equally far from the frame (about 1.15 in), 1.4 in apart, and level with each other.
+  const nudge = frame ? { house: 0.19, text: 0.07, up: 0.1 } : { house: 0, text: 0, up: 0 }
+  const house = cottage(ink, { x: MARGIN + nudge.house, cy: band ? topH + 0.25 - HOUSE / 2 : H / 2, h: HOUSE, windows, bulbs })
+  const col0 = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col0, col = col0 + nudge.text, cx = col + colW / 2
   const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
   // The line under the name: FREE ESTIMATES · PEARLAND, TX small in gold, or (year) PEARLAND, TX — EST. and the 2011
   // art as the year, all gold but the navy ornament, the words as tall as the digits (owner: "leave everything gold on
@@ -344,12 +347,14 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
     svg: (x, y) => est.svg(x - (lineW * U) / 2, y) + yr.svg(x / U - lineW / 2 + est.width / U + yGap, y / U) }
     : T('FREE ESTIMATES  ·  PEARLAND, TX', sans(600, { cap: 0.27, tracking: 0.28, fill: small }))
   const phone = T(PHONE, sans(600, { fit: colW * 0.96, tracking: 0 }))
-  const rTag = year ? wmH + 0.45 + yr.above : wmH + 0.85, rPhone = rTag + 0.55 + phone.cap / U
+  // Two groups (owner: "is the line spacing where it should be?"): the name with its gold line close under it, then a
+  // wider gap, then the phone with the site close under it. Measured on the print: about 0.45, 0.75 and 0.45 in.
+  const rTag = year ? wmH + 0.24 + yr.above : wmH + 0.85, rPhone = rTag + (year ? 0.94 : 0.55) + phone.cap / U
   // No band: the site on its own line under the phone, as large as fits.
   // The site's i-dots gold like the wordmark's (owner tried the bulbs' red, green and blue, then "turn the i's back to gold").
   const lineSite = band ? null : dottedLine(SITE, { font: OUTFIT, location: { wght: 600 }, fit: colW * 0.96, tracking: 0.01, fill: ink, dot: windows || accent })
-  const rEnd = lineSite ? rPhone + 0.62 + lineSite.cap / U : rPhone
-  const top = (band ? (topH - 0.6) / 2 + 0.05 : H / 2) - rEnd / 2 // the block centred above the drifts, or on the door
+  const rEnd = lineSite ? rPhone + 0.52 + lineSite.cap / U : rPhone
+  const top = (band ? (topH - 0.6) / 2 + 0.05 : H / 2) - rEnd / 2 - nudge.up // the block centred above the drifts, or on the door
   // Gold rules either side of the tag line.
   const half = tag.width / U / 2, gap = year ? 0.22 : 0.28, ry = top + rTag - tag.cap / U / 2 - 0.0175
   const rule = (x0, x1) => `<rect x="${fmt(x0 * U)}" y="${fmt(ry * U)}" width="${fmt((x1 - x0) * U)}" height="${fmt(0.035 * U)}" fill="${accent}"/>`
