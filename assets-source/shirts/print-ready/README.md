@@ -1,0 +1,95 @@
+# Print-ready shirt designs
+
+Made by `node scripts/shirt-print-ready.mjs` (copies, kept on this computer; this index is in git). One folder
+per shirt colour; a design that prints well on several colours is in each. For every design: the `.png` is the
+upload (300 dpi, transparent, print size); the `.svg` / `.pdf`, where there is one, is the vector for a screen
+printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../README.md` and `../designs/README.md`.
+
+## Navy (blue) shirts: `navy/` (26)
+
+| File | Size | What |
+|---|---|---|
+| `front-chest-flat-knockout` (png) | 4.0 x 3.0 in | the crew logo, full colour, wall knocked out to the shirt: the navy upload (DTG) |
+| `back-full-flat-knockout` (png) | 12.0 x 10.8 in | the crew logo, full colour, wall knocked out to the shirt: the navy upload (DTG) |
+| `front-chest-one-color-white` (png) | 4.0 x 3.0 in | the crew logo in white only: screen print, 12+ shirts |
+| `back-full-one-color-white` (png) | 12.0 x 10.8 in | the crew logo in white only: screen print, 12+ shirts |
+| `scene-on-navy` (png, svg, pdf) | 11.0 x 13.1 in | scene design (scripts/shirt-designs.mjs) |
+| `varsity-on-navy` (png, svg, pdf) | 11.0 x 10.9 in | varsity design (scripts/shirt-designs.mjs) |
+| `badge-on-navy` (png, svg, pdf) | 10.0 x 10.0 in | badge design (scripts/shirt-designs.mjs) |
+| `badge-chest-on-navy` (png, svg, pdf) | 3.5 x 3.5 in | badge-chest design (scripts/shirt-designs.mjs) |
+| `sign-on-navy` (png, svg, pdf) | 10.0 x 11.6 in | sign design (scripts/shirt-designs.mjs) |
+| `treepair-on-navy` (png, svg, pdf) | 12.0 x 7.2 in | treepair design (scripts/shirt-designs.mjs) |
+| `sunburst-on-navy` (png, svg, pdf) | 11.0 x 10.1 in | sunburst design (scripts/shirt-designs.mjs) |
+| `crew-on-navy` (png, svg, pdf) | 12.0 x 8.4 in | crew design (scripts/shirt-designs.mjs) |
+| `bulbs-on-navy` (png, svg, pdf) | 11.0 x 6.6 in | bulbs design (scripts/shirt-designs.mjs) |
+| `collegiate-on-navy` (png, svg, pdf) | 11.0 x 3.5 in | CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink |
+| `holiday-lights-badge-on-navy` (png) | 10.0 x 10.1 in | Holiday Lights badge (Recraft), navy knocked out |
+| `install-crew-red-on-navy` (png) | 12.0 x 15.8 in | Install Crew back print, red neon roofline |
+| `lit-2011-on-navy` (png, svg, pdf) | 11.0 x 9.1 in | LIT SINCE 2011 with our cottage, cream and gold |
+| `mascot-line-on-navy` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, white ink |
+| `mascot-gold-on-navy` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, gold ink |
+| `mascot-medal-on-navy` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal, white and gold |
+| `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (any shirt, DTG/DTF) |
+| `polo-wordmark-on-navy` (png, svg, pdf) | 3.6 x 1.4 in | navy polo, left chest wordmark (embroidery) |
+| `polo-caps-on-navy` (png, svg, pdf) | 3.6 x 1.1 in | navy polo, left chest caps (embroidery) |
+| `polo-logo-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest logo (embroidery) |
+| `polo-icon-1-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-1 (embroidery) |
+| `polo-icon-2-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-2 (embroidery) |
+
+## Gold or mustard shirts: `gold/` (15)
+
+| File | Size | What |
+|---|---|---|
+| `varsity-on-gold` (png, svg, pdf) | 11.0 x 10.9 in | varsity design in navy ink (scripts/shirt-designs.mjs) |
+| `badge-on-gold` (png, svg, pdf) | 10.0 x 10.0 in | badge design in navy ink (scripts/shirt-designs.mjs) |
+| `badge-chest-on-gold` (png, svg, pdf) | 3.5 x 3.5 in | badge-chest design in navy ink (scripts/shirt-designs.mjs) |
+| `treepair-on-gold` (png, svg, pdf) | 12.0 x 7.2 in | treepair design in navy ink (scripts/shirt-designs.mjs) |
+| `sunburst-on-gold` (png, svg, pdf) | 11.0 x 10.1 in | sunburst design in navy ink (scripts/shirt-designs.mjs) |
+| `crew-on-gold` (png, svg, pdf) | 12.0 x 8.4 in | crew design in navy ink (scripts/shirt-designs.mjs) |
+| `bulbs-on-gold` (png, svg, pdf) | 11.0 x 6.6 in | bulbs design in navy ink (scripts/shirt-designs.mjs) |
+| `collegiate-on-gold` (png, svg, pdf) | 11.0 x 3.5 in | CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, navy ink |
+| `retro-clc-on-gold` (png, svg, pdf) | 11.0 x 11.9 in | Retro CLC rainbow, set up for gold (navy ring, cream shadows and snow) |
+| `mascot-gold-on-gold` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, navy ink |
+| `mascot-line-on-light` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, navy ink |
+| `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (DTG/DTF) |
+| `big-cottage-mustard-limited-dtg` (png, svg) | 12.0 x 12.3 in | big cottage, 12 in, for a mustard shirt (DTG) |
+| `big-cottage-mustard-dtf` (png, svg) | 20.0 x 26.8 in | big cottage to the hem, transparent (DTF transfer on mustard) |
+| `big-cottage-mustard-allover` (png, svg) | 20.0 x 26.8 in | big cottage, mustard edge to edge (all-over sublimation; the exact look) |
+
+## Cream (natural) shirts: `cream/` (7)
+
+| File | Size | What |
+|---|---|---|
+| `retro-clc-color` (png, svg, pdf) | 11.0 x 11.9 in | Retro CLC rainbow as drawn (DTG/DTF) |
+| `retro-clc-5-color` (png, svg, pdf) | 11.0 x 11.9 in | Retro CLC rainbow in five spot colours (screen print) |
+| `lit-2011-on-white` (png, svg, pdf) | 11.0 x 9.1 in | LIT SINCE 2011 with our cottage, navy and gold |
+| `2011-ornament` (png, svg, pdf) | 11.0 x 6.1 in | 2011 with an ornament, gold numbers, PEARLAND, TX — EST. 2011 |
+| `mascot-line-on-light` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, navy ink |
+| `mascot-medal-on-white` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal, navy and gold |
+| `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (DTG/DTF) |
+
+## White or light grey shirts: `white/` (12)
+
+| File | Size | What |
+|---|---|---|
+| `retro-clc-color` (png, svg, pdf) | 11.0 x 11.9 in | Retro CLC rainbow as drawn (DTG/DTF) |
+| `retro-clc-5-color` (png, svg, pdf) | 11.0 x 11.9 in | Retro CLC rainbow in five spot colours (screen print) |
+| `lit-2011-on-white` (png, svg, pdf) | 11.0 x 9.1 in | LIT SINCE 2011 with our cottage, navy and gold |
+| `2011-ornament` (png, svg, pdf) | 11.0 x 6.1 in | 2011 with an ornament, gold numbers, PEARLAND, TX — EST. 2011 |
+| `mascot-line-on-light` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, navy ink |
+| `mascot-medal-on-white` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal, navy and gold |
+| `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (DTG/DTF) |
+| `polo-wordmark-on-white` (png, svg, pdf) | 3.6 x 1.4 in | white polo, left chest wordmark (embroidery) |
+| `polo-caps-on-white` (png, svg, pdf) | 3.6 x 1.1 in | white polo, left chest caps (embroidery) |
+| `polo-logo-on-white` (png, svg, pdf) | 4.3 x 1.5 in | white polo, left chest logo (embroidery) |
+| `polo-icon-1-on-white` (png, svg, pdf) | 4.3 x 1.5 in | white polo, left chest icon-1 (embroidery) |
+| `polo-icon-2-on-white` (png, svg, pdf) | 4.3 x 1.5 in | white polo, left chest icon-2 (embroidery) |
+
+## Hats and patches: `hats-and-patches/` (4)
+
+| File | Size | What |
+|---|---|---|
+| `mascot-medal-patch` (png, svg, pdf) | 3.5 x 3.6 in | Brad Medel patch, 3.5 in, five threads |
+| `mascot-hat-patch` (png, svg, pdf) | 2.8 x 3.3 in | arched front patch for the trucker hat, Bradley line art |
+| `mascot-hat-leather` (png, svg, pdf) | 1.6 x 1.1 in | leather side patch, cottage and EST. 2011 |
+| `mascot-hat-leather-engrave` (png, svg, pdf) | 1.6 x 1.1 in | the leather patch as a laser file (black art, red cut line) |

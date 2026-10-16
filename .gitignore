@@ -56,6 +56,9 @@ assets-source/shirts/designs/*.png
 # AI-made shirt art downloaded from Recraft (up to 15 MB each) and the knock-out prints made from it
 # (scripts/shirt-knockout.mjs): kept on this computer only.
 assets-source/shirts/recraft/
+# The print-ready folders (scripts/shirt-print-ready.mjs) are copies, some of the Recraft art above: this computer only;
+# their index README.md stays in git.
+assets-source/shirts/print-ready/*/
 
 # Stock downloads (Vecteezy): licensed to us, never redistributed; the repo is public.
 assets-source/stock/vecteezy/
