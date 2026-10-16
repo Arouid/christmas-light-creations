@@ -233,16 +233,11 @@ the 0), text in Outfit; each design `recraft/new-<design>-on-navy` and `-on-gold
 | `services` | 12 x 11 in | rooflines, trees, wreaths, install, storage, on schedule: icons and labels over the wordmark (back) |
 | `chest` | 4 x 1.55 in | the bulb cottage beside the wordmark (left chest, pairs with any back) |
 
-## Install Crew v3: the mustard cottage's house (2026-10-16)
+## Install Crew: kept as drawn (2026-10-16)
 
-Owner: "the mustard cottage roof is much nicer", "just a strip of red is all we want on the install crew and the new roof
-from mustard cottage". The two AI drawings don't share a house shape, so `node scripts/shirt-install-crew-v3.mjs` moves
-the whole house: Install Crew's house shapes out (those inside its big white house shape, above the snow line; the
-old eaves' icicles beside it; the vectorizer's near-invisible specks), the sky disc and its two thin ring lines
-redrawn as clean circles (the old disc had a roof-shaped hole), the mustard cottage in (its snowflakes and smoke white,
-falling in the night sky), the snow bank and banner over its foot. Writes `recraft/install-crew-v3.svg` and the prints
-`install-crew-v3-on-navy.png` and `install-crew-v3-on-gold.png` (12 x 15.84 in). They replace the v2 prints in
-`print-ready/`. `shirt-knockout.mjs` now masks strokes as well as fills (the ring lines printed faint without it).
+Tried and dropped the same day: moving the mustard cottage's roof (or its whole house) onto Install Crew. The two AI
+drawings don't share a house shape, and every fit left a gap or squashed the walls (owner: "these are messed up. just
+return them to how they were"). The prints stay `install-crew-red-on-navy.png` and `install-crew-on-gold.png`.
 
 Also in `scripts/shirt-new-art.mjs`: `new-minimal-on-navy` / `-on-gold` (the ultra-minimalist wordmark, 10 in) and, for
 gold or mustard shirts, `new-mustard-name-on-gold` and `new-mustard-name-phone-on-gold` (the mustard cottage over the

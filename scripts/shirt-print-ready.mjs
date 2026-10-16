@@ -33,7 +33,7 @@ const FOLDERS = {
       ...['scene', 'varsity', 'badge', 'badge-chest', 'sign', 'treepair', 'sunburst', 'crew', 'bulbs'].map((d) => D(`${d}-on-navy`, `${d} design (scripts/shirt-designs.mjs)`)),
       R('collegiate-on-navy', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink'),
       R('holiday-lights-badge-on-navy', 'Holiday Lights badge (Recraft), navy knocked out'),
-      R('install-crew-v3-on-navy', 'Install Crew back print with the mustard cottage's house (thin red roofline)'),
+      R('install-crew-red-on-navy', 'Install Crew back print, red neon roofline'),
       R('lit-2011-on-navy', 'LIT SINCE 2011 with our cottage, cream and gold'),
       R('mascot-line-on-navy', 'Bradley line art, white ink'),
       R('mascot-gold-on-navy', 'Bradley in his flat cap, gold ink'),
@@ -53,7 +53,7 @@ const FOLDERS = {
       R('mascot-line-on-light', 'Bradley line art, navy ink'),
       R('mascot-medal-color', 'Brad Medel medal as drawn (DTG/DTF)'),
       ...NEW.map(([n, what]) => R(`new-${n}-on-gold`, what)),
-      R('install-crew-v3-on-gold', 'Install Crew back print with the mustard cottage's house, set up for gold (navy lettering and sky)'),
+      R('install-crew-on-gold', 'Install Crew back print set up for gold: navy lettering and sky, red neon (scripts/shirt-install-crew-gold.mjs)'),
       ...NEW_GOLD.map(([n, what]) => R(`new-${n}-on-gold`, what)),
       R('big-cottage-mustard-limited-dtg', 'big cottage, 12 in, for a mustard shirt (DTG)', ['recraft/big-cottage-mustard-limited-snow.svg']),
       R('big-cottage-mustard-dtf', 'big cottage to the hem, transparent (DTF transfer on mustard)'),
@@ -101,7 +101,7 @@ for (const { items } of Object.values(FOLDERS)) for (const [f, , extra = []] of 
   if (!existsSync(SHIRTS + f + '.png')) missing.push(f + '.png')
   for (const e of extra) if (!existsSync(SHIRTS + e)) missing.push(e)
 }
-if (missing.length) throw new Error(`missing: ${missing.join(', ')} (rebuild with its script first)`)
+if (missing.length) console.log(`skipped, not on this computer (deleted, or not built yet): ${missing.join(', ')}`)
 
 const index = ['# Print-ready shirt designs', '', 'Made by `node scripts/shirt-print-ready.mjs` (copies, kept on this computer; this index is in git). One folder',
   'per shirt colour; a design that prints well on several colours is in each. For every design: the `.png` is the',
@@ -110,8 +110,9 @@ const index = ['# Print-ready shirt designs', '', 'Made by `node scripts/shirt-p
 for (const [folder, { title, items }] of Object.entries(FOLDERS)) {
   rmSync(OUT + folder, { recursive: true, force: true })
   mkdirSync(OUT + folder, { recursive: true })
-  index.push(`## ${title}: \`${folder}/\` (${items.length})`, '', '| File | Size | What |', '|---|---|---|')
-  for (const [f, what, extra = []] of items) {
+  const here = items.filter(([f]) => existsSync(SHIRTS + f + '.png'))
+  index.push(`## ${title}: \`${folder}/\` (${here.length})`, '', '| File | Size | What |', '|---|---|---|')
+  for (const [f, what, extra = []] of here) {
     const files = ['.png', '.svg', '.pdf'].map((x) => f + x).filter((p) => existsSync(SHIRTS + p)).concat(extra)
     for (const p of files) copyFileSync(SHIRTS + p, `${OUT}${folder}/${basename(p)}`)
     const { width, height } = await sharp(SHIRTS + f + '.png').metadata()
@@ -119,7 +120,7 @@ for (const [folder, { title, items }] of Object.entries(FOLDERS)) {
     index.push(`| \`${basename(f)}\` (${kinds}) | ${(width / DPI).toFixed(1)} x ${(height / DPI).toFixed(1)} in | ${what} |`)
   }
   index.push('')
-  console.log(`${folder}/: ${items.length} designs`)
+  console.log(`${folder}/: ${here.length} designs`)
 }
 writeFileSync(OUT + 'README.md', index.join('\n'))
 console.log('print-ready/README.md written')

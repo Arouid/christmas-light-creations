@@ -5,7 +5,7 @@
 // second gold (#C69C57) goes navy below the house (the ribbon's edge, the M of CHRISTMAS, the ornament line) but stays
 // on the window panes. The pink neon roofline is red, as on the navy print.
 // Run: node scripts/shirt-install-crew-gold.mjs [source.svg] [out.png] → recraft/install-crew-on-gold.png by default (12 in,
-// 300 dpi, transparent); scripts/shirt-install-crew-v3.mjs runs it on the version with the mustard cottage's house.
+// 300 dpi, transparent).
 import { execFileSync } from 'node:child_process'
 import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
