@@ -138,15 +138,31 @@ const HOUSE_PATHS = [1, 2, 3, 4, 5, 6, 7], HOUSE_BOX = [217, 276, 705, 740] // c
   const b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(Math.round)
   if (b.some((v, i) => Math.abs(v - HOUSE_BOX[i]) > 2)) throw new Error(`navy-cottage.svg: shapes 1–7 are not the cottage any more (box ${b})`)
 }
-function flatCottage(ink, { x, cy, h, windows }) {
-  const [x0, y0, x1, y1] = HOUSE_BOX, w = (h * (x1 - x0)) / (y1 - y0)
+// A cottage drawing (paths in order, its box) h inches tall at x, centred on cy: inkOf gives each shape its ink, or
+// null to cut it out (drawn over the shapes under it, so the ground shows through).
+function cottageArt(paths, [x0, y0, x1, y1], inkOf, { x, cy, h }) {
+  const w = (h * (x1 - x0)) / (y1 - y0)
   const area = `x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"`
-  const inkOf = (p) => (p.fill === '#1F304B' ? ink : windows) // its navy in the ink; its gold panes in windows, or cut out
-  const mask = HOUSE_PATHS.map((i) => `<path fill="${inkOf(flatPaths[i]) ? '#fff' : '#000'}" d="${flatPaths[i].d}"/>`).join('')
-  const shapes = HOUSE_PATHS.filter((i) => inkOf(flatPaths[i])).map((i) => `<path fill="${inkOf(flatPaths[i])}" d="${flatPaths[i].d}"/>`).join('')
+  const mask = paths.map((p) => `<path fill="${inkOf(p) ? '#fff' : '#000'}" d="${p.d}"/>`).join('')
+  const shapes = paths.filter(inkOf).map((p) => `<path fill="${inkOf(p)}" d="${p.d}"/>`).join('')
   return { w, svg: `<svg x="${fmt(x * U)}" y="${fmt((cy - h / 2) * U)}" width="${fmt(w * U)}" height="${fmt(h * U)}" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}">` +
     `<defs><mask id="flat" maskUnits="userSpaceOnUse" ${area}><rect ${area} fill="#000"/>${mask}</mask></defs><g mask="url(#flat)">${shapes}</g></svg>` }
 }
+// Its navy in the ink; its gold panes in windows, or cut out.
+const flatCottage = (ink, o) => cottageArt(HOUSE_PATHS.map((i) => flatPaths[i]), HOUSE_BOX, (p) => (p.fill === '#1F304B' ? ink : o.windows), o)
+// The second flat cottage (owner: "just added blue-navy-cottage-vector to the folder too", "take a look at that one"):
+// C9 bulbs along the eave, a gold window, white highlights, door and drift line. Its navy in the ink, its gold bulbs
+// and window in windows, its white cut out (the cream shows); the full-page white square left out.
+const bulbSrc = readFileSync(DIR + 'blue-navy-cottage-vector.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+const BULB_PATHS = [...bulbSrc.matchAll(/<path ([^>]*)\/>/g)].map((m) => {
+  const d = m[1].match(/ d="([^"]*)"/)[1], n = d.match(/-?[0-9.]+/g).map(Number)
+  const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1)
+  return { fill: m[1].match(/fill="([^"]*)"/)[1].toUpperCase(), d, box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] }
+}).filter((p) => !(p.box[2] - p.box[0] >= 1000 && p.box[3] - p.box[1] >= 1000))
+const BULB_GOLD = '#FCC84A'
+if (BULB_PATHS.filter((p) => p.fill === BULB_GOLD).length !== 14) throw new Error('blue-navy-cottage-vector.svg: not the bulb cottage any more (new download?)')
+const BULB_BOX = [0, 1, 2, 3].map((k) => (k < 2 ? Math.min : Math.max)(...BULB_PATHS.filter((p) => p.fill !== 'WHITE').map((p) => p.box[k])))
+const bulbCottage = (ink, o) => cottageArt(BULB_PATHS, BULB_BOX, (p) => (p.fill === BULB_GOLD ? o.windows : p.fill === 'WHITE' ? null : ink), o)
 // The wordmark: "christmas light" and "creations" with their letter holes (drawn in the page cream over the navy) and
 // the gold dot, in the file's own units after its scale; the PEARLAND TX — EST 2011 line under them is left out.
 const wmSrc = readFileSync(DIR + 'minimal-clc-name.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
@@ -180,9 +196,10 @@ const FLAT_THEMES = {
   blue: { bg: FLAT.blue, ink: FLAT.gold },
   gold: { bg: FLAT.gold, ink: FLAT.blue },
   cream: { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428' }, // the flat cottage file's own cream (owner: "this is the background color")
+  'cream-bulbs': { bg: '#FEFCF1', ink: FLAT.blue, windows: FLAT.gold, small: '#9A7428', cottage: bulbCottage },
 }
-for (const [ground, { bg, ink, windows, small = ink }] of Object.entries(FLAT_THEMES)) {
-  const house = flatCottage(ink, { x: MARGIN, cy: H / 2, h: 7.0, windows })
+for (const [ground, { bg, ink, windows, small = ink, cottage = flatCottage }] of Object.entries(FLAT_THEMES)) {
+  const house = cottage(ink, { x: MARGIN, cy: H / 2, h: 7.0, windows })
   const col = MARGIN + house.w + GUTTER + 0.2, colW = W - MARGIN - col, cx = col + colW / 2
   const sans = (wght, rest) => ({ font: OUTFIT, location: { wght }, fill: ink, ...rest })
   const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
