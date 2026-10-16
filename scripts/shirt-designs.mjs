@@ -263,7 +263,10 @@ for (const [key, d] of Object.entries(designs)) {
     const svg = doc(w, h, body)
     writeFileSync(`${OUT}${name}.svg`, svg)
     svgToPdf(svg, w, h, `${OUT}${name}.pdf`)
-    const png = await sharp(Buffer.from(svg), { density: DPI }).ensureAlpha().withMetadata({ density: DPI }).png({ compressionLevel: 9 }).toBuffer()
+    // librsvg already turns the "in" size into 300-dpi pixels and sharp's density scales it again (300/72), so the
+    // render comes out 4.17x too big (a 10-in badge at 12500 px, read by print sites as 42 in): size it to the print size.
+    const png = await sharp(await sharp(Buffer.from(svg), { density: DPI }).ensureAlpha().png().toBuffer())
+      .resize(Math.round(w * DPI), Math.round(h * DPI), { fit: 'fill' }).withMetadata({ density: DPI }).png({ compressionLevel: 9 }).toBuffer()
     writeFileSync(`${OUT}${name}.png`, png)
     made.push({ name, mock: await mockup(name, S, w, png) })
     console.log(`${name}: ${w} x ${h} in, ${Math.round(w * DPI)}x${Math.round(h * DPI)} px, ${Math.round(png.length / 1024)} KB  (${d.note})`)
