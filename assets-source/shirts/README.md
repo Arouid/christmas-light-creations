@@ -191,3 +191,11 @@ red like a light strand, window and posts gold, snow and smoke cream). 11 in wid
 
 The snow is the shirt itself, so this is a light-shirt design: on navy the pines, the roof and the town line would
 vanish. `retro-clc-mockups.png` shows both.
+
+## 2011 with an ornament (2026-10-16)
+
+The top of the owner's Recraft design `recraft/2011-light.svg` (its lettering left out), as he asked: "Numbers to gold,
+bulb to navy. Pearland, TX --- Est. 2011. bump the font size up on it so we can see". `node scripts/shirt-2011.mjs`:
+`recraft/2011-ornament` PNG (300 dpi, transparent), SVG, PDF, 11 x 6.1 in: gold `#D4AF63` numbers, a navy `#1F304B` ornament
+(its highlight and ring hole show the shirt), PEARLAND, TX — EST. 2011 in Outfit as wide as the numbers (0.45 in tall).
+Two inks; for cream, white or light grey shirts (`2011-ornament-preview.png`), stickers or a 15th-season post.
