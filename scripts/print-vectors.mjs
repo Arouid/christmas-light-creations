@@ -132,6 +132,23 @@ async function magnet() {
   return { name: 'vehicle-magnet-24x12', w, h, bleed: 0, svg: doc(w, h, rect(w, h, NAVY, 0.75), body), note: `rounded corners 0.75 in; QR → ${q.url}` }
 }
 
+// The calm magnet (owner, 2026-10-16, after AI art came out "ugly gaudy"): the logo, what we do, the phone big,
+// the site, free estimates; nothing else. Navy for white or light trucks, cream for dark ones.
+const CREAM = '#F7F1E3', DARK_GOLD = '#9A7020', SLATE = '#5B6478'
+function magnetClean(bg) {
+  const w = 24, h = 12, m = 0.8, col = 14.2, colW = w - m - col
+  const cream = bg === 'cream'
+  const ink = cream ? INK : WHITE
+  const body = [
+    logo(cream ? 'horizontalNavy' : 'horizontal', { x: m, y: 3.1, w: 12.4 }).svg,
+    text('CHRISTMAS LIGHT INSTALLATION', { fit: colW, fill: cream ? SLATE : PALE, tracking: 0.08 }).at(col, 4.05),
+    text(PHONE, { fit: colW, fill: ink, tracking: 0.02 }).at(col, 6.35),
+    text(SITE, { fit: colW, location: BOLD, fill: ink, tracking: 0.01 }).at(col, 7.65),
+    text(FREE, { cap: 0.42, fill: cream ? DARK_GOLD : GOLD, tracking: 0.12 }).at(col, 8.75),
+  ]
+  return { name: `vehicle-magnet-24x12-clean-${bg}`, w, h, bleed: 0, svg: doc(w, h, rect(w, h, cream ? CREAM : NAVY, 0.75), body), previewBg: cream ? '#3b3f4b' : undefined, note: 'rounded corners 0.75 in; logo, phone, site only' }
+}
+
 function decal(colour) {
   const w = 20
   const ink = colour === 'white' ? WHITE : INK
@@ -212,7 +229,7 @@ async function preview(item) {
 }
 
 mkdirSync(OUT, { recursive: true })
-const items = [...(await Promise.all(signCodes.map(roadSign))), await yardSign(), await magnet(), decal('white'), decal('navy'), await banner(), cardFront(), await cardBack(), sticker()]
+const items = [...(await Promise.all(signCodes.map(roadSign))), await yardSign(), await magnet(), magnetClean('navy'), magnetClean('cream'), decal('white'), decal('navy'), await banner(), cardFront(), await cardBack(), sticker()]
 const previews = []
 for (const item of items) {
   writeFileSync(`${OUT}${item.name}.svg`, item.svg)
