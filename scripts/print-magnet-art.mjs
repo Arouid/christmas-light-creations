@@ -306,10 +306,10 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   const wmW = colW * 0.96, wmH = (wmW * WM_BOX.h) / WM_BOX.w
   // The line under the name: FREE ESTIMATES · PEARLAND, TX small in gold, or (year) PEARLAND, TX — EST. and the 2011
   // art as the year, all gold but the navy ornament, the words as tall as the digits (owner: "leave everything gold on
-  // that line other than the bulb", "match the city size to 2011"), the whole line as wide as the column (no rules: at the
-// width the words and digits come out about 0.65 in tall).
+  // that line other than the bulb", "match the city size to 2011"), the whole line 0.78 of the column wide (no rules; the
+// words and digits about 0.53 in tall).
   const fitYear = (d) => ({ est: T('PEARLAND, TX — EST.', sans(600, { cap: d, tracking: 0.04, fill: FLAT.gold })), yr: yearArt(d, { gold: FLAT.gold, navy: ink, festive: { ball: C9[0] } }) })
-  const unitLine = year && fitYear(1), d = year && (colW * 0.96) / (unitLine.est.width / U + 0.3 + unitLine.yr.w)
+  const unitLine = year && fitYear(1), d = year && (colW * 0.78) / (unitLine.est.width / U + 0.3 + unitLine.yr.w) // owner: "lower the font for the whole gold line"
   const { est, yr } = year ? fitYear(d) : {}
   const yGap = year && 0.3 * d, lineW = year && est.width / U + yGap + yr.w
   const tag = year ? { width: lineW * U, cap: est.cap,
