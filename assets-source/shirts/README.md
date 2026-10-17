@@ -245,7 +245,18 @@ return them to how they were"). A thin red line drawn along the eave, with the s
 the red left showing as one line). `node scripts/shirt-install-crew-fixed.mjs` lays that layer over both prints:
 `install-crew-fixed-on-gold.png` and `install-crew-fixed-on-navy.png` (his navy outlines knocked out to the shirt, like
 the rest of the navy print). They replace `install-crew-red-on-navy.png` and `install-crew-on-gold.png` in
-`print-ready/`, which stay as the bases. A new change of his goes in his file, then rerun the script.
+`print-ready/`. A new change of his goes in his file, then rerun the script.
+
+**Lettering in real fonts** (owner: "the fonts in Install Crew all need replaced with actual fonts"): the AI drew every
+letter by hand. `node scripts/shirt-install-crew-fonts.mjs` takes the 46 drawn letters out and sets the same words in
+the same places, sizes and colours: INSTALL CREW in Passion One Bold on the same arc (a circle fitted to the old
+letters; a little smaller, so the wide letters keep a gap), PEARLAND, TX and CHRISTMAS LIGHT CREATIONS in Barlow
+Condensed Bold (`assets-source/brand/fonts/`, OFL). It writes `install-crew-fonts.svg` and the two base prints
+(`install-crew-fonts-red-on-navy.png`, `install-crew-fonts-on-gold.png`, 12 x 16.08 in); the roofline script then
+lays his layer over those, placed by measuring where the art sits in the old print and the new one. Order:
+
+    node scripts/shirt-install-crew-fonts.mjs
+    node scripts/shirt-install-crew-fixed.mjs
 
 Also in `scripts/shirt-new-art.mjs`: `new-minimal-on-navy` / `-on-gold` (the ultra-minimalist wordmark, 10 in) and, for
 gold or mustard shirts, `new-mustard-name-on-gold` and `new-mustard-name-phone-on-gold` (the mustard cottage over the
