@@ -395,7 +395,9 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
 // everything to this"): tall narrow capitals only (its lowercase is drawn as capitals), and its i has no dot, so that
 // version has no gold dot; its words sized for narrow letters (the phone still the column's width). One weight each,
 // SIL Open Font License, assets-source/brand/fonts/. Then every word in Finlandica Headline (owner: "we'll try this one
-// next"): the name Bold, the rest SemiBold, the gold dot kept.
+// next"): the name Bold, the rest SemiBold, the gold dot kept. Then every word in Madimi One (sent next; rounded and
+// heavy, one weight, its dotted i keeps the gold dot).
+const MADIMI = { font: fileURLToPath(new URL('../assets-source/brand/fonts/madimi-one/MadimiOne-Regular.ttf', import.meta.url)), location: {} }
 const FINLANDICA = fileURLToPath(new URL('../assets-source/brand/fonts/finlandica-headline/FinlandicaHeadline-Variable.ttf', import.meta.url))
 const NEW_AMSTERDAM = { font: fileURLToPath(new URL('../assets-source/brand/fonts/new-amsterdam/NewAmsterdam-Regular.ttf', import.meta.url)), location: {} }
 const NAME_FONTS = {
@@ -405,6 +407,7 @@ const NAME_FONTS = {
   'cream-art-poetsen': { name: { font: fileURLToPath(new URL('../assets-source/brand/fonts/poetsen-one/PoetsenOne-Regular.ttf', import.meta.url)), location: {} } },
   'cream-art-new-amsterdam': { name: NEW_AMSTERDAM, all: NEW_AMSTERDAM, xh: 1.3, noDot: true, cityCap: 0.62, siteW: 4.6, phoneW: 0.88 },
   'cream-art-finlandica': { name: { font: FINLANDICA, location: { wght: 700 } }, all: { font: FINLANDICA, location: { wght: 600 } }, cityCap: 0.6, siteW: 6.2, estCap: 0.74 },
+  'cream-art-madimi': { name: MADIMI, all: MADIMI, cityCap: 0.58, siteW: 6.2, estCap: 0.72 },
 }
 for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
@@ -451,7 +454,7 @@ for (const [variant, v] of Object.entries(NAME_FONTS)) {
 }
 
 // The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
-for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous', 'cream-art-adlam', 'cream-art-poetsen', 'cream-art-new-amsterdam', 'cream-art-finlandica']) {
+for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous', 'cream-art-adlam', 'cream-art-poetsen', 'cream-art-new-amsterdam', 'cream-art-finlandica', 'cream-art-madimi']) {
   const art = await sharp(`${DIR}vehicle-magnet-24x12-flat-${name}.png`).resize({ width: 820 }).png().toBuffer()
   const door = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560"><rect width="1000" height="560" fill="#b3191f"/><rect width="1000" height="40" fill="#8e1218"/>' +
     '<path d="M960 0 L960 560" stroke="#7a0f14" stroke-width="6"/><rect x="880" y="250" width="60" height="16" rx="8" fill="#cfd3d8"/></svg>'
