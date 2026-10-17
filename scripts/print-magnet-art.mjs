@@ -402,6 +402,7 @@ const FASCINATE = { font: fileURLToPath(new URL('../assets-source/brand/fonts/fa
 // And Princess Sofia (owner: "business name"): a script, set with no extra tracking so its letters join.
 const PRINCESS = { font: fileURLToPath(new URL('../assets-source/brand/fonts/princess-sofia/PrincessSofia-Regular.ttf', import.meta.url)), location: {}, tracking: 0 }
 // And Elsie Swash Caps Black (owner: "try this the name"): an elegant high-contrast face; Black, the heavier of its two.
+const MONTSERRAT = fileURLToPath(new URL('../assets-source/brand/fonts/montserrat/Montserrat-Variable.ttf', import.meta.url))
 const ELSIE = { font: fileURLToPath(new URL('../assets-source/brand/fonts/elsie-swash-caps/ElsieSwashCaps-Black.ttf', import.meta.url)), location: {} }
 const MADIMI = { font: fileURLToPath(new URL('../assets-source/brand/fonts/madimi-one/MadimiOne-Regular.ttf', import.meta.url)), location: {} }
 const FINLANDICA = fileURLToPath(new URL('../assets-source/brand/fonts/finlandica-headline/FinlandicaHeadline-Variable.ttf', import.meta.url))
@@ -416,7 +417,10 @@ const NAME_FONTS = {
   'cream-art-madimi': { name: MADIMI, all: MADIMI, cityCap: 0.58, siteW: 6.2, estCap: 0.72 },
   'cream-art-fascinate': { name: FASCINATE },
   'cream-art-princess-sofia': { name: PRINCESS, xh: 0.92 }, // its tall ascenders cleared the frame by a hair at 1.06
-  'cream-art-elsie': { name: ELSIE },
+  // The owner's pick for the name ("I like elsie for the name. set the font to everything else, what you think will look
+  // best"): Elsie with Montserrat for the rest, the classic partner for a high-contrast serif and the family of the
+  // town's Montserrat Underline (kept): FREE ESTIMATES SemiBold capitals spaced wide, the phone SemiBold, the site Bold.
+  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, keepCity: true, estCap: 0.62, estTracking: 0.14, siteW: 6.6 },
 }
 for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
@@ -428,17 +432,17 @@ for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const wm = setWords([{ text: 'christmas light', x0: x0 * U, x1: x1 * U, base: L.wm[0] * U }, { text: 'creations', x0: x0 * U, x1: x1 * U, base: L.wm[1] * U }],
     { ...v.name, xh: (v.xh || L.xh) * U, accent: v.noDot ? undefined : [0, 3], accentScale: 1.45 })
   const wmSvg = wm.map((it) => `<path transform="${it.tf}" fill="${it.role === 'accent' ? gold : ink}" d="${it.d}"/>`).join('')
-  const est = T('FREE ESTIMATES', { ...(v.all || { font: OSWALD, location: { wght: 500 } }), cap: v.estCap || L.estCap, tracking: v.all ? 0.04 : 0.01, fill: deep })
+  const est = T('FREE ESTIMATES', { ...(v.all || { font: OSWALD, location: { wght: 500 } }), cap: v.estCap || L.estCap, tracking: v.estTracking ?? (v.all ? 0.04 : 0.01), fill: deep })
   const phone = T(PHONE, { ...(v.all || { font: OUTFIT, location: { wght: 600 } }), fit: L.colW * (v.phoneW || 1), tracking: v.all ? 0.02 : 0, fill: ink })
   // FREE ESTIMATES the same 0.66 in above the phone in every version (his mockup's gap), however tall the phone sets
   const estBase = L.foot - phone.cap / U - 0.66
   // The town in Montserrat Underline (owner: "for the city name"; OFL): its underline is drawn into every letter, so
   // the font's own spacing (extra tracking would break the line), as tall as before.
-  const city = v.all ? T('PEARLAND, TX', { ...v.all, cap: v.cityCap, tracking: 0.1, fill: deep })
+  const city = v.all && !v.keepCity ? T('PEARLAND, TX', { ...v.all, cap: v.cityCap, tracking: 0.1, fill: deep })
     : T('PEARLAND, TX', { font: MONTSERRAT_UNDERLINE, location: { wght: 600 }, cap: 0.55, tracking: 0, fill: deep })
   // The site: navy, its x in the bulbs' red, right edge on the column's.
   const site = (() => {
-    const sf = v.all || { font: OUTFIT, location: { wght: 700 } }, siteW = v.siteW || L.siteW
+    const sf = v.site || v.all || { font: OUTFIT, location: { wght: 700 } }, siteW = v.siteW || L.siteW
     const g = glyphs('clcxmas.com', sf.font, sf.location)
     const advEm = g.glyphs.reduce((t, gl) => t + gl.advance, 0) / g.upem + 0.01 * (g.glyphs.length - 1)
     const em = (siteW * U) / advEm, k = em / g.upem
