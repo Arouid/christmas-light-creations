@@ -91,7 +91,7 @@ export const highlights = [
   },
   {
     title: 'Family-owned & insured',
-    body: `Serving south Houston since ${business.since}, fully insured, safety first.`,
+    body: `Serving south Houston since ${business.since}, insured, safety first.`,
     icon: 'shield-heart',
   },
 ]
