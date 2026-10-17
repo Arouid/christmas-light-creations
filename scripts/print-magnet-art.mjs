@@ -420,7 +420,7 @@ const NAME_FONTS = {
   // The owner's pick for the name ("I like elsie for the name. set the font to everything else, what you think will look
   // best"): Elsie with Montserrat for the rest, the classic partner for a high-contrast serif and the family of the
   // town's Montserrat Underline (kept): FREE ESTIMATES SemiBold capitals spaced wide, the phone SemiBold, the site Bold.
-  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, keepCity: true, estCap: 0.62, estTracking: 0.14, siteW: 6.6 },
+  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, keepCity: true, estCap: 0.62, estTracking: 0.14, siteW: 6.6, divider: true },
 }
 for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
@@ -436,6 +436,15 @@ for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const phone = T(PHONE, { ...(v.all || { font: OUTFIT, location: { wght: 600 } }), fit: L.colW * (v.phoneW || 1), tracking: v.all ? 0.02 : 0, fill: ink })
   // FREE ESTIMATES the same 0.66 in above the phone in every version (his mockup's gap), however tall the phone sets
   const estBase = L.foot - phone.cap / U - 0.66
+  // divider (owner: "add some kind of decorative divider under the business name and above free estimates"): a gold
+  // four-point sparkle, like the badges' stars, between two thin rules that taper away from it; deep gold, as wide as
+  // FREE ESTIMATES, halfway between the name and FREE ESTIMATES.
+  let divider = ''
+  if (v.divider) {
+    const y = (L.wm[1] + estBase - est.cap / U) / 2, half = est.width / U / 2, r = 0.34, gap = 0.24, t = 0.085
+    const rule = (inner, outer) => `<path fill="${deep}" d="M${fmt(outer * U)} ${fmt(y * U)} L${fmt(inner * U)} ${fmt((y - t / 2) * U)} Q${fmt((inner + Math.sign(inner - outer) * t / 2) * U)} ${fmt(y * U)} ${fmt(inner * U)} ${fmt((y + t / 2) * U)} Z"/>`
+    divider = rule(L.cx - r - gap, L.cx - half) + rule(L.cx + r + gap, L.cx + half) + `<path fill="${deep}" d="${sparkle(L.cx * U, y * U, r * U)}"/>`
+  }
   // The town in Montserrat Underline (owner: "for the city name"; OFL): its underline is drawn into every letter, so
   // the font's own spacing (extra tracking would break the line), as tall as before.
   const city = v.all && !v.keepCity ? T('PEARLAND, TX', { ...v.all, cap: v.cityCap, tracking: 0.1, fill: deep })
@@ -457,7 +466,7 @@ for (const [variant, v] of Object.entries(NAME_FONTS)) {
     `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>` +
     `<rect x="${fmt(FRAME_INSET * U)}" y="${fmt(FRAME_INSET * U)}" width="${fmt((W - 2 * FRAME_INSET) * U)}" height="${fmt((H - 2 * FRAME_INSET) * U)}" rx="${fmt((0.75 - FRAME_INSET) * U)}" fill="none" stroke="${ink}" stroke-width="${fmt(FRAME_LINE * U)}"/>` +
     house.svg + city.svg((L.houseX + house.w / 2) * U, (L.foot + L.cityGap) * U + city.cap, 'middle') +
-    wmSvg + est.svg(L.cx * U, estBase * U, 'middle') + phone.svg(L.cx * U, L.foot * U, 'middle') + site + '</svg>'
+    wmSvg + divider + est.svg(L.cx * U, estBase * U, 'middle') + phone.svg(L.cx * U, L.foot * U, 'middle') + site + '</svg>'
   svg = unifyNavy(svg)
   const out = `${DIR}vehicle-magnet-24x12-flat-${variant}`
   writeFileSync(out + '.svg', svg)
