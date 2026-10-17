@@ -2,7 +2,7 @@
 // are predominantly for putting in completed installs' front yards"; pieces in scripts/lib/elsieParts.mjs): LIGHTS BY
 // over the name across the top (neighbours want to know who lit the house) with the gold sparkle divider, what we do (the road sign's own service line, scripts/print-vectors.mjs), a big QR code (7 in of
 // printed squares, the old sign's was 4.8 in) with SCAN FOR A FREE ESTIMATE, and beside it FREE ESTIMATES, the phone
-// as the biggest thing, clcxmas.com; along the bottom the town and the trust line. Square corners (coroplast), the
+// as the biggest thing, clcxmas.com; along the bottom the town and since when. Square corners (coroplast), the
 // frame's corners rounded.
 // The QR code is tagged ?sign=<code> (src/lib/sign.js; the Signs tab counts each code): yard-sign, like the old
 // 18 x 12 "Lights by" sign; a corner sign's code for one used at a corner:
@@ -18,7 +18,8 @@ import { svgToPdf } from './lib/pdf.mjs'
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
 const W = 24, H = 18 // inches
 const SERVICE = 'INSTALLED · SERVICED ALL SEASON · TAKEN DOWN IN JANUARY' // as on the road sign (print-vectors.mjs)
-const AREA = 'PEARLAND, TX · SERVING SOUTH HOUSTON SINCE 2011 · FAMILY-OWNED & INSURED'
+// Not "family-owned & insured" (owner, 2026-10-16: "take the family owned and insured off. I haven't renewed my insurance yet")
+const AREA = 'PEARLAND, TX · SERVING SOUTH HOUSTON SINCE 2011'
 const args = process.argv.slice(2)
 const slug = (s) => s.toLowerCase().replace(/&/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)
 const codes = args.includes('--signs') ? args.slice(args.indexOf('--signs') + 1).map(slug).filter(Boolean) : ['yard-sign']
