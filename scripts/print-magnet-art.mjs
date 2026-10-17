@@ -11,6 +11,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { setWords } from './lib/lettering.mjs'
 import { fmt, FONTS, glyphs, textLine, unifyNavy } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
@@ -384,8 +385,50 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
   await sharp(Buffer.from(svg), { density: Math.sqrt(72 * 150) }).withMetadata({ density: 150 }).png({ compressionLevel: 9 }).toFile(out + '.png')
   console.log(`vehicle-magnet-24x12-flat-${ground}: ${W} x ${H} in, ${ink} on ${bg}${band ? ', snow-drift band' : ', no band'}, all vector`)
 }
+// --- the owner's own layout (2026-10-16, his mockup: "update the magnets to look like this. I want my magnets to look
+// like a clean elegant piece of artwork", "update the font to outfit"): the bulb cottage on the left with PEARLAND, TX
+// under it; on the right one column, centred: the wordmark (now in Outfit, setWords, its gold dot kept), FREE
+// ESTIMATES in Oswald, a condensed gold, the phone the biggest thing, its foot level with the cottage's; clcxmas.com, its x red,
+// right-aligned to the column at the bottom. Every word real font outlines; positions measured from his mockup.
+{
+  const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
+  const ink = FLAT.blue, gold = FLAT.gold, deep = '#9A7428', red = C9[0], bg = '#FEFCF1'
+  const L = { houseX: 1.55, houseH: 6.34, foot: 9.22, cx: 15.95, colW: 12.5, wm: [2.45, 4.05], xh: 1.06, est: 7.16, estCap: 0.95, cityGap: 0.18, site: 10.95, siteW: 7.4 }
+  const house = bulbCottage(ink, { x: L.houseX, cy: L.foot - L.houseH / 2, h: L.houseH, windows: gold, bulbs: C9 })
+  const x0 = L.cx - L.colW / 2, x1 = L.cx + L.colW / 2
+  const wm = setWords([{ text: 'christmas light', x0: x0 * U, x1: x1 * U, base: L.wm[0] * U }, { text: 'creations', x0: x0 * U, x1: x1 * U, base: L.wm[1] * U }],
+    { font: OUTFIT, location: { wght: 700 }, xh: L.xh * U, accent: [0, 3], accentScale: 1.45 })
+  const wmSvg = wm.map((it) => `<path transform="${it.tf}" fill="${it.role === 'accent' ? gold : ink}" d="${it.d}"/>`).join('')
+  const est = T('FREE ESTIMATES', { font: OSWALD, location: { wght: 500 }, cap: L.estCap, tracking: 0.01, fill: deep })
+  const phone = T(PHONE, { font: OUTFIT, location: { wght: 600 }, fit: L.colW, tracking: 0, fill: ink })
+  const city = T('PEARLAND, TX', { font: OUTFIT, location: { wght: 600 }, fit: house.w, tracking: 0.08, fill: deep })
+  // The site: navy, its x in the bulbs' red, right edge on the column's.
+  const site = (() => {
+    const g = glyphs('clcxmas.com', OUTFIT, { wght: 700 })
+    const advEm = g.glyphs.reduce((t, gl) => t + gl.advance, 0) / g.upem + 0.01 * (g.glyphs.length - 1)
+    const em = (L.siteW * U) / advEm, k = em / g.upem
+    let x = x1 * U - L.siteW * U
+    return g.glyphs.map((gl, i) => {
+      const p = gl.d ? `<path transform="translate(${fmt(x)} ${fmt(L.site * U)}) scale(${k} ${-k})" fill="${i === 3 ? red : ink}" d="${gl.d}"/>` : ''
+      x += gl.advance * k + 0.01 * em
+      return p
+    }).join('')
+  })()
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}in" height="${H}in" viewBox="0 0 ${W * U} ${H * U}">` +
+    `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>` +
+    `<rect x="${fmt(FRAME_INSET * U)}" y="${fmt(FRAME_INSET * U)}" width="${fmt((W - 2 * FRAME_INSET) * U)}" height="${fmt((H - 2 * FRAME_INSET) * U)}" rx="${fmt((0.75 - FRAME_INSET) * U)}" fill="none" stroke="${ink}" stroke-width="${fmt(FRAME_LINE * U)}"/>` +
+    house.svg + city.svg((L.houseX + house.w / 2) * U, (L.foot + L.cityGap) * U + city.cap, 'middle') +
+    wmSvg + est.svg(L.cx * U, L.est * U, 'middle') + phone.svg(L.cx * U, L.foot * U, 'middle') + site + '</svg>'
+  svg = unifyNavy(svg)
+  const out = `${DIR}vehicle-magnet-24x12-flat-cream-art`
+  writeFileSync(out + '.svg', svg)
+  svgToPdf(svg, W, H, out + '.pdf')
+  await sharp(Buffer.from(svg), { density: Math.sqrt(72 * 150) }).withMetadata({ density: 150 }).png({ compressionLevel: 9 }).toFile(out + '.png')
+  console.log(`vehicle-magnet-24x12-flat-cream-art: the owner's layout, phone ${(phone.cap / U).toFixed(2)} in tall, FREE ESTIMATES ${(est.width / U).toFixed(2)} in wide, PEARLAND, TX ${(city.cap / U).toFixed(2)} in`)
+}
+
 // The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
-for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar']) {
+for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art']) {
   const art = await sharp(`${DIR}vehicle-magnet-24x12-flat-${name}.png`).resize({ width: 820 }).png().toBuffer()
   const door = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560"><rect width="1000" height="560" fill="#b3191f"/><rect width="1000" height="40" fill="#8e1218"/>' +
     '<path d="M960 0 L960 560" stroke="#7a0f14" stroke-width="6"/><rect x="880" y="250" width="60" height="16" rx="8" fill="#cfd3d8"/></svg>'
