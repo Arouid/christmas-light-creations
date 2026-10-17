@@ -128,10 +128,13 @@ export function straightText(text, { font, location = {}, fill, old, base, top, 
 }
 
 // Re-letters a drawing line by line. Each line: { text, colours (the old letters' fills), box [x0 y0 x1 y1] (they lie
-// inside it), count (how many shapes they are: checked), font, location, fill (default: the old letters' commonest
-// colour), arc: 'top' | 'bottom' (default straight), and any arcText/straightText option }. The old letters go, and
+// inside it), count (how many shapes they are: checked), where (an extra test, e.g. distance from a badge's centre),
+// skipSmallest (n: the smallest old shapes, a comma or a bullet, left out of the size), font, location, fill
+// (default: the old letters' commonest colour), arc: 'top' | 'bottom' (default straight), and
+// any arcText/straightText option }. The old letters go, and
 // with them every shape drawn after a letter inside its box (the holes of A, R, O drawn in the background colour on
 // top, and specks). Returns { svg, notes, letters, extras }.
+const area = (s) => (s.box[2] - s.box[0]) * (s.box[3] - s.box[1])
 export function reletter(svg, lines) {
   const shapes = parseShapes(svg)
   const drop = [], notes = [], made = []
@@ -139,12 +142,14 @@ export function reletter(svg, lines) {
   for (const line of lines) {
     const colours = line.colours.map((c) => c.toUpperCase())
     const [bx0, by0, bx1, by1] = line.box
-    const old = pick(shapes, `"${line.text}"`, line.count, (s) => colours.includes(s.fill) && s.box[0] >= bx0 && s.box[1] >= by0 && s.box[2] <= bx1 && s.box[3] <= by1)
+    const old = pick(shapes, `"${line.text}"`, line.count, (s) => colours.includes(s.fill) && s.box[0] >= bx0 && s.box[1] >= by0 && s.box[2] <= bx1 && s.box[3] <= by1 && (!line.where || line.where(s)))
     const holes = shapes.filter((s) => !old.includes(s) && old.some((l) => s.i > l.i && s.box[0] >= l.box[0] - 2 && s.box[1] >= l.box[1] - 2 && s.box[2] <= l.box[2] + 2 && s.box[3] <= l.box[3] + 2))
     const counts = {}
     for (const s of old) counts[s.fill] = (counts[s.fill] || 0) + 1
     const fill = line.fill || Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]
-    const opts = { ...line, font: line.font, fill, old }
+    // skipSmallest: that many of the smallest old shapes (a comma, a bullet) left out of the arc's circle and size
+    const skipForSize = line.skipSmallest ? [...old].sort((a, b) => area(a) - area(b)).slice(0, line.skipSmallest) : line.skipForSize
+    const opts = { ...line, skipForSize, font: line.font, fill, old }
     const t = line.arc ? arcText(line.text, { ...opts, bottom: line.arc === 'bottom' }) : straightText(line.text, opts)
     drop.push(...old, ...holes)
     made.push(t.svg)
@@ -152,5 +157,5 @@ export function reletter(svg, lines) {
     letters += old.length
     extras += holes.length
   }
-  return { svg: relettered(svg, drop, made.join('')), notes, letters, extras }
+  return { svg: relettered(svg, drop, made.join('')), notes, letters, extras, dropped: drop.map((s) => s.i) }
 }

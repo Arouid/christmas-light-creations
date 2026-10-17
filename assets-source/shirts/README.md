@@ -262,6 +262,13 @@ Also in `scripts/shirt-new-art.mjs`: `new-minimal-on-navy` / `-on-gold` (the ult
 gold or mustard shirts, `new-mustard-name-on-gold` and `new-mustard-name-phone-on-gold` (the mustard cottage over the
 wordmark, the second with the phone, 12 in).
 
+## Holiday Lights badge (Recraft)
+
+`recraft/holiday-lights-svg2.svg` (HOLIDAY LIGHTS arched over the cottage in a starry ring, PEARLAND, TX under it).
+`node scripts/shirt-holiday-lights.mjs` sets both lines again in Passion One Bold on arcs fitted to the old letters
+(owner: "start replacing the letters with actual font in all the designs") and knocks the navies out:
+`holiday-lights-badge-on-navy.png`, 10 in. The greys print white.
+
 ## The truck-magnet artworks as back and sleeve prints (2026-10-16)
 
 Owner: "set this one up to be a sleeve/back piece. gold/navy", "these two as well" (his three Recraft magnet artworks in

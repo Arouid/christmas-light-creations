@@ -23,7 +23,7 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `crew-on-navy` (png, svg, pdf) | 12.0 x 8.4 in | crew design (scripts/shirt-designs.mjs) |
 | `bulbs-on-navy` (png, svg, pdf) | 11.0 x 6.6 in | bulbs design (scripts/shirt-designs.mjs) |
 | `collegiate-on-navy` (png, svg, pdf) | 11.0 x 3.5 in | CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink |
-| `holiday-lights-badge-on-navy` (png) | 10.0 x 10.1 in | Holiday Lights badge (Recraft), navy knocked out |
+| `holiday-lights-badge-on-navy` (png) | 10.0 x 10.1 in | Holiday Lights badge (Recraft), lettering in real fonts, navy knocked out (scripts/shirt-holiday-lights.mjs) |
 | `install-crew-fixed-on-navy` (png) | 12.0 x 16.1 in | Install Crew back print: lettering in real fonts, the owner's roofline fix (scripts/shirt-install-crew-fonts.mjs, then -fixed.mjs) |
 | `lit-2011-on-navy` (png, svg, pdf) | 11.0 x 9.1 in | LIT SINCE 2011 with our cottage, cream and gold |
 | `mascot-line-on-navy` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, white ink |

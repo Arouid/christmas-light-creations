@@ -34,7 +34,7 @@ const FOLDERS = {
       ...crew('one-color-white').map((f) => [f, 'the crew logo in white only: screen print, 12+ shirts']),
       ...['scene', 'varsity', 'badge', 'badge-chest', 'sign', 'treepair', 'sunburst', 'crew', 'bulbs'].map((d) => D(`${d}-on-navy`, `${d} design (scripts/shirt-designs.mjs)`)),
       R('collegiate-on-navy', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink'),
-      R('holiday-lights-badge-on-navy', 'Holiday Lights badge (Recraft), navy knocked out'),
+      R('holiday-lights-badge-on-navy', 'Holiday Lights badge (Recraft), lettering in real fonts, navy knocked out (scripts/shirt-holiday-lights.mjs)'),
       R('install-crew-fixed-on-navy', "Install Crew back print: lettering in real fonts, the owner's roofline fix (scripts/shirt-install-crew-fonts.mjs, then -fixed.mjs)"),
       R('lit-2011-on-navy', 'LIT SINCE 2011 with our cottage, cream and gold'),
       R('mascot-line-on-navy', 'Bradley line art, white ink'),
