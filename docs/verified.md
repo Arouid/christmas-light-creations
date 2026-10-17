@@ -4,6 +4,7 @@ What was actually checked working, and how. Newest first.
 
 | Date | What | How |
 |---|---|---|
+| 2026-10-16 | **Truck magnet: PEARLAND, TX in Montserrat Underline** (owner: "for the city name") | Variable font's weight checked (I stem 130/1000 at 600, 20 at the default 100); set at cap 0.55 in with the font's own spacing so the built-in underline runs unbroken (6.03 in wide under the 6.88-in cottage); all four name versions rebuilt; the town zoomed. Not printed yet |
 | 2026-10-16 | **Truck magnet: the name in Poetsen One, to compare** (the owner sent it next) | `node scripts/print-magnet-art.mjs` → `vehicle-magnet-24x12-flat-cream-art-poetsen`; viewed in a 2 x 2 sheet with the Outfit, Righteous and ADLaM versions. Not printed yet |
 | 2026-10-16 | **Truck magnet: the name in ADLaM Display, to compare** (owner: "do this company") | Latin letters checked in the font; `node scripts/print-magnet-art.mjs` → `vehicle-magnet-24x12-flat-cream-art-adlam` (its i-dot, a diamond, in gold); viewed stacked with the Outfit and Righteous versions. Not printed yet |
 | 2026-10-16 | **Truck magnet: the name in Righteous, to compare** (owner sent Google Fonts' Righteous: "can we try this for company") | `node scripts/print-magnet-art.mjs` → `vehicle-magnet-24x12-flat-cream-art-righteous` (same layout, the name in Righteous 400 by `setWords`, gold dot kept); viewed under the Outfit Bold one. Not printed yet |

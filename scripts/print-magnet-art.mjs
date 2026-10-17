@@ -401,6 +401,7 @@ const NAME_FONTS = {
 }
 for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
+  const MONTSERRAT_UNDERLINE = fileURLToPath(new URL('../assets-source/brand/fonts/montserrat-underline/MontserratUnderline-Variable.ttf', import.meta.url))
   const ink = FLAT.blue, gold = FLAT.gold, deep = '#9A7428', red = C9[0], bg = '#FEFCF1'
   const L = { houseX: 1.55, houseH: 6.34, foot: 9.22, cx: 15.95, colW: 12.5, wm: [2.45, 4.05], xh: 1.06, est: 7.16, estCap: 0.95, cityGap: 0.18, site: 10.95, siteW: 7.4 }
   const house = bulbCottage(ink, { x: L.houseX, cy: L.foot - L.houseH / 2, h: L.houseH, windows: gold, bulbs: C9 })
@@ -410,7 +411,9 @@ for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
   const wmSvg = wm.map((it) => `<path transform="${it.tf}" fill="${it.role === 'accent' ? gold : ink}" d="${it.d}"/>`).join('')
   const est = T('FREE ESTIMATES', { font: OSWALD, location: { wght: 500 }, cap: L.estCap, tracking: 0.01, fill: deep })
   const phone = T(PHONE, { font: OUTFIT, location: { wght: 600 }, fit: L.colW, tracking: 0, fill: ink })
-  const city = T('PEARLAND, TX', { font: OUTFIT, location: { wght: 600 }, fit: house.w, tracking: 0.08, fill: deep })
+  // The town in Montserrat Underline (owner: "for the city name"; OFL): its underline is drawn into every letter, so
+  // the font's own spacing (extra tracking would break the line), as tall as before.
+  const city = T('PEARLAND, TX', { font: MONTSERRAT_UNDERLINE, location: { wght: 600 }, cap: 0.55, tracking: 0, fill: deep })
   // The site: navy, its x in the bulbs' red, right edge on the column's.
   const site = (() => {
     const g = glyphs('clcxmas.com', OUTFIT, { wght: 700 })
@@ -433,7 +436,7 @@ for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
   writeFileSync(out + '.svg', svg)
   svgToPdf(svg, W, H, out + '.pdf')
   await sharp(Buffer.from(svg), { density: Math.sqrt(72 * 150) }).withMetadata({ density: 150 }).png({ compressionLevel: 9 }).toFile(out + '.png')
-  console.log(`vehicle-magnet-24x12-flat-${variant}: the owner's layout, phone ${(phone.cap / U).toFixed(2)} in tall, FREE ESTIMATES ${(est.width / U).toFixed(2)} in wide, PEARLAND, TX ${(city.cap / U).toFixed(2)} in`)
+  console.log(`vehicle-magnet-24x12-flat-${variant}: the owner's layout, phone ${(phone.cap / U).toFixed(2)} in tall, FREE ESTIMATES ${(est.width / U).toFixed(2)} in wide, PEARLAND, TX ${(city.width / U).toFixed(2)} in wide (cottage ${house.w.toFixed(2)})`)
 }
 
 // The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
