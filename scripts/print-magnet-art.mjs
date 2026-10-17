@@ -390,11 +390,12 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
 // under it; on the right one column, centred: the wordmark (now in Outfit, setWords, its gold dot kept), FREE
 // ESTIMATES in Oswald, a condensed gold, the phone the biggest thing, its foot level with the cottage's; clcxmas.com, its x red,
 // right-aligned to the column at the bottom. Every word real font outlines; positions measured from his mockup.
-// Two versions of the name: Outfit Bold, and Righteous (owner, sending Google Fonts' Righteous: "can we try this for
-// company"; one weight, SIL Open Font License, assets-source/brand/fonts/righteous/).
+// Versions of the name: Outfit Bold, Righteous (owner, sending Google Fonts' Righteous: "can we try this for company")
+// and ADLaM Display (owner: "do this company"); one weight each, SIL Open Font License, assets-source/brand/fonts/.
 const NAME_FONTS = {
   'cream-art': { font: OUTFIT, location: { wght: 700 } },
   'cream-art-righteous': { font: fileURLToPath(new URL('../assets-source/brand/fonts/righteous/Righteous-Regular.ttf', import.meta.url)), location: {} },
+  'cream-art-adlam': { font: fileURLToPath(new URL('../assets-source/brand/fonts/adlam-display/ADLaMDisplay-Regular.ttf', import.meta.url)), location: {} },
 }
 for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
@@ -434,7 +435,7 @@ for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
 }
 
 // The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
-for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous']) {
+for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous', 'cream-art-adlam']) {
   const art = await sharp(`${DIR}vehicle-magnet-24x12-flat-${name}.png`).resize({ width: 820 }).png().toBuffer()
   const door = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560"><rect width="1000" height="560" fill="#b3191f"/><rect width="1000" height="40" fill="#8e1218"/>' +
     '<path d="M960 0 L960 560" stroke="#7a0f14" stroke-width="6"/><rect x="880" y="250" width="60" height="16" rx="8" fill="#cfd3d8"/></svg>'
