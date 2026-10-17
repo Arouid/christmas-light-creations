@@ -55,14 +55,15 @@ export function qrCode(code, { x, y, size, quiet = 3 }) {
   return { svg: `<path fill="${C.ink}" d="${d}"/>`, url, version: q.version, squares: n, moduleMm: mod * 25.4 }
 }
 
-// clcxmas.com in Montserrat Bold, its x red, w inches wide, centred on cx (or right-aligned to x1), baseline at base.
-export function redXSite({ w, base, cx, x1 }) {
+// clcxmas.com in Montserrat Bold, its x red and the rest in ink, w inches wide, centred on cx (or right-aligned to x1),
+// baseline at base.
+export function redXSite({ w, base, cx, x1, ink = C.ink }) {
   const g = glyphs('clcxmas.com', MONTSERRAT, { wght: 700 })
   const advEm = g.glyphs.reduce((s, gl) => s + gl.advance, 0) / g.upem + 0.01 * (g.glyphs.length - 1)
   const em = (w * U) / advEm, k = em / g.upem
   let x = (x1 !== undefined ? x1 - w : cx - w / 2) * U
   return g.glyphs.map((gl, i) => {
-    const p = gl.d ? `<path transform="translate(${fmt(x)} ${fmt(base * U)}) scale(${k} ${-k})" fill="${i === 3 ? C.red : C.ink}" d="${gl.d}"/>` : ''
+    const p = gl.d ? `<path transform="translate(${fmt(x)} ${fmt(base * U)}) scale(${k} ${-k})" fill="${i === 3 ? C.red : ink}" d="${gl.d}"/>` : ''
     x += gl.advance * k + 0.01 * em
     return p
   }).join('')

@@ -273,6 +273,16 @@ Also in `scripts/shirt-new-art.mjs`: `new-minimal-on-navy` / `-on-gold` (the ult
 gold or mustard shirts, `new-mustard-name-on-gold` and `new-mustard-name-phone-on-gold` (the mustard cottage over the
 wordmark, the second with the phone, 12 in).
 
+## The phone on every back print (2026-10-16)
+
+Owner: "very few back pieces have the business name and phone number on them", then "clcxmas.com should be on there",
+"red x like everything else". `node scripts/shirt-add-phone.mjs` writes `<design>-phone` (PNG, and SVG/PDF where the
+design has a vector) for the 44 back prints in `scripts/lib/backsWithPhone.mjs`: under the art, in Montserrat, CHRISTMAS
+LIGHT CREATIONS (only where the art has no name: the Holiday Lights badge, Bradley, the 2011 ornament, the big mustard
+cottage), 281-819-0163 and clcxmas.com with its red x, in an ink the design already prints (white, cream or gold on
+navy; navy on gold and light shirts). A print taller than 16 in with it is scaled to 16 in (a DTG platen is 14 x 16).
+`print-ready/` lists the -phone versions; chest and sleeve pieces are unchanged.
+
 ## Holiday Lights badge (Recraft)
 
 `recraft/holiday-lights-svg2.svg` (HOLIDAY LIGHTS arched over the cottage in a starry ring, PEARLAND, TX under it).

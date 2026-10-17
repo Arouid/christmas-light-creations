@@ -9,6 +9,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync
 import { basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { BACKS } from './lib/backsWithPhone.mjs'
 
 const SHIRTS = fileURLToPath(new URL('../assets-source/shirts/', import.meta.url))
 const OUT = SHIRTS + 'print-ready/'
@@ -99,6 +100,13 @@ const FOLDERS = {
     ],
   },
 }
+
+// Back prints with the phone footer (scripts/shirt-add-phone.mjs; owner: "very few back pieces have the business name
+// and phone number on them"): listed as their -phone versions.
+const PHONED = new Set(BACKS.map(([f]) => f))
+for (const { items } of Object.values(FOLDERS)) items.forEach((it, i) => {
+  if (PHONED.has(it[0])) items[i] = [it[0] + '-phone', it[1] + ', with the phone and clcxmas.com under it', it[2]]
+})
 
 const missing = []
 for (const { items } of Object.values(FOLDERS)) for (const [f, , extra = []] of items) {
