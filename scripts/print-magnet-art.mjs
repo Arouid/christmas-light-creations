@@ -421,7 +421,7 @@ const NAME_FONTS = {
   // best"): Elsie with Montserrat for the rest, the classic partner for a high-contrast serif and the family of the
   // town's Montserrat Underline: FREE ESTIMATES SemiBold capitals spaced wide, the phone SemiBold, the site Bold, and the
   // town plain Montserrat SemiBold too (owner: "its still underlined").
-  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, cityCap: 0.55, estCap: 0.62, estTracking: 0.14, siteW: 6.6, divider: true, dotLift: 0.06 }, // owner: "the gold i dot. push it up a couple pixels"
+  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, cityCap: 0.55, estCap: 0.62, estTracking: 0.14, siteW: 6.6, divider: true, dotLift: 0.06, bleed: true }, // owner: "the gold i dot. push it up a couple pixels"
 }
 for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
@@ -473,6 +473,16 @@ for (const [variant, v] of Object.entries(NAME_FONTS)) {
   writeFileSync(out + '.svg', svg)
   svgToPdf(svg, W, H, out + '.pdf')
   await sharp(Buffer.from(svg), { density: Math.sqrt(72 * 150) }).withMetadata({ density: 150 }).png({ compressionLevel: 9 }).toFile(out + '.png')
+  // The upload with bleed (BuildASign's designer is 25 x 13 in: the 24 x 12 magnet and 1/2 in all round that is cut
+  // away; a file without it was stretched to the width, so the frame's sides fell outside the cut, owner's screenshot
+  // 2026-10-16): the same art at true size in the middle, the cream carried out over the bleed, square.
+  if (v.bleed) {
+    const B = 0.5
+    const bled = svg.replace(/^<svg [^>]*>/, `<svg xmlns="http://www.w3.org/2000/svg" width="${W + 2 * B}in" height="${H + 2 * B}in" viewBox="${-B * U} ${-B * U} ${(W + 2 * B) * U} ${(H + 2 * B) * U}"><rect x="${-B * U}" y="${-B * U}" width="${(W + 2 * B) * U}" height="${(H + 2 * B) * U}" fill="${bg}"/>`)
+    writeFileSync(out + '-bleed.svg', bled)
+    svgToPdf(bled, W + 2 * B, H + 2 * B, out + '-bleed.pdf')
+    await sharp(Buffer.from(bled), { density: Math.sqrt(72 * 300) }).withMetadata({ density: 300 }).png({ compressionLevel: 9 }).toFile(out + '-bleed.png')
+  }
   console.log(`vehicle-magnet-24x12-flat-${variant}: the owner's layout, phone ${(phone.cap / U).toFixed(2)} in tall, FREE ESTIMATES ${(est.width / U).toFixed(2)} in wide, PEARLAND, TX ${(city.width / U).toFixed(2)} in wide (cottage ${house.w.toFixed(2)})`)
 }
 
