@@ -165,3 +165,63 @@ export function reletter(svg, lines) {
   const r = letterLines(svg, lines)
   return { ...r, svg: relettered(svg, r.dropped, r.made.join('')) }
 }
+
+// A glyph outline's subpaths and box (font units, y up). SVGPathPen writes absolute M L H V Q C Z.
+export function outline(d) {
+  const subs = []
+  let x = 0, y = 0, cur = null
+  for (const [, cmd, args] of d.matchAll(/([MLHVQCZ])([^MLHVQCZ]*)/g)) {
+    const n = args.trim() ? args.trim().split(/[ ,]+/).map(Number) : []
+    if (cmd === 'M') { cur = { d: '', pts: [] }; subs.push(cur) }
+    if (cmd === 'H') x = n[n.length - 1]
+    else if (cmd === 'V') y = n[n.length - 1]
+    else if (n.length) for (let k = 0; k + 1 < n.length; k += 2) { cur.pts.push([n[k], n[k + 1]]); [x, y] = [n[k], n[k + 1]] }
+    if (cmd === 'H' || cmd === 'V') cur.pts.push([x, y])
+    cur.d += cmd + args
+  }
+  const box = (pts) => [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))]
+  for (const s of subs) s.box = box(s.pts)
+  return { subs, box: box(subs.flatMap((s) => s.pts)) }
+}
+
+// Words set as separate glyph shapes for scripts that draw items { d, tf, box, role } themselves: each line's ink
+// sits on baseline `base` (drawing units, y down) between x0 and x1. The font keeps its own spacing (plus `tracking`,
+// em): the letters are sized so the widest line fits its x0–x1 (no bigger than x-height `xh` or cap height `cap`), and
+// each line is centred on its x0–x1 (`spread`: set at that size and spaced out to run from x0 to x1). `accent`:
+// [line, char index] of an i whose dot gets the role 'accent' (drawn `accentScale` times the font's size).
+export function setWords(lines, { font, location = {}, xh, cap, role = 'ink', accent, accentScale = 1, tracking = 0.01, spread = false }) {
+  const x = outline(glyphs('x', font, location).glyphs[0].d).box[3]
+  const { upem, capHeight } = glyphs('H', font, location)
+  const set = lines.map((L) => {
+    const gs = glyphs(L.text, font, location).glyphs.map((g) => ({ ...g, o: g.d ? outline(g.d) : null }))
+    const inked = gs.filter((g) => g.o)
+    const lsb = inked[0].o.box[0], rsb = inked[inked.length - 1].advance - inked[inked.length - 1].o.box[2]
+    return { L, gs, lsb, inkEm: (gs.reduce((t, g) => t + g.advance, 0) - lsb - rsb) / upem + tracking * (gs.length - 1) }
+  })
+  const size = xh ? (xh * upem) / x : (cap * upem) / capHeight
+  const em = spread ? size : Math.min(size, ...set.map(({ L, inkEm }) => (L.x1 - L.x0) / inkEm)), s = em / upem
+  const items = []
+  set.forEach(({ L, gs, lsb, inkEm }, li) => {
+    // spread: a tagline at its own size, letters spaced out to run from x0 to x1
+    const gap = spread ? (L.x1 - L.x0 - (inkEm - tracking * (gs.length - 1)) * em) / (gs.length - 1) : tracking * em
+    let at = spread ? L.x0 - lsb * s : (L.x0 + L.x1) / 2 - (inkEm * em) / 2 - lsb * s
+    gs.forEach((g, gi) => {
+      if (g.o) {
+        const tf = `translate(${fmt(at)} ${fmt(L.base)}) scale(${s} ${-s})`
+        const place = (b) => [at + b[0] * s, L.base - b[3] * s, at + b[2] * s, L.base - b[1] * s]
+        if (accent && accent[0] === li && accent[1] === gi) {
+          const dot = g.o.subs.reduce((a, b) => (b.box[1] > a.box[1] ? b : a))
+          // the dot can be drawn bigger than the font's (accentScale), round its own centre
+          const [cx, cy] = [(dot.box[0] + dot.box[2]) / 2, (dot.box[1] + dot.box[3]) / 2], k = accentScale
+          const big = [cx - (cx - dot.box[0]) * k, cy - (cy - dot.box[1]) * k, cx + (dot.box[2] - cx) * k, cy + (dot.box[3] - cy) * k]
+          for (const sub of g.o.subs) {
+            if (sub !== dot) items.push({ d: sub.d, tf, box: place(sub.box), role })
+            else items.push({ d: sub.d, tf: `${tf} translate(${fmt(cx)} ${fmt(cy)}) scale(${k}) translate(${fmt(-cx)} ${fmt(-cy)})`, box: place(big), role: 'accent' })
+          }
+        } else items.push({ d: g.d, tf, box: place(g.o.box), role })
+      }
+      at += g.advance * s + gap
+    })
+  })
+  return items
+}

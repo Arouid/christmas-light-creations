@@ -238,6 +238,12 @@ the 0), text in Outfit; each design `recraft/new-<design>-on-navy` and `-on-gold
 | `services` | 12 x 11 in | rooflines, trees, wreaths, install, storage, on schedule: icons and labels over the wordmark (back) |
 | `chest` | 4 x 1.55 in | the bulb cottage beside the wordmark (left chest, pairs with any back) |
 
+The wordmark (christmas light / creations, the first i's dot gold) is set in Outfit Bold where the AI's letters were,
+with the font's own spacing and the gold dot drawn 1.45 times the font's, as the AI drew it; the minimal design's
+heavier wordmark in Outfit ExtraBold and its tagline in Outfit Regular spaced to the same width (owner: "start
+replacing the letters with actual font in all the designs"; `setWords` in `scripts/lib/lettering.mjs`). The truck
+magnets still use the AI's wordmark until the owner says to switch them.
+
 ## Install Crew: kept as drawn (2026-10-16)
 
 Tried and dropped the same day: moving the mustard cottage's roof (or its whole house) onto Install Crew. The two AI

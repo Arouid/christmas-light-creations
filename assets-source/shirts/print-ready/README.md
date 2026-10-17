@@ -30,11 +30,11 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `mascot-gold-on-navy` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, gold ink |
 | `mascot-medal-on-navy` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal, white and gold |
 | `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (any shirt, DTG/DTF) |
-| `new-lit-house-on-navy` (png, svg, pdf) | 11.0 x 11.1 in | the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath |
-| `new-wreath-2011-on-navy` (png, svg, pdf) | 11.0 x 7.8 in | LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark |
-| `new-services-on-navy` (png, svg, pdf) | 12.0 x 11.0 in | six service icons with labels over the wordmark (back) |
+| `new-lit-house-on-navy` (png, svg, pdf) | 11.0 x 10.9 in | the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath |
+| `new-wreath-2011-on-navy` (png, svg, pdf) | 11.0 x 7.7 in | LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark |
+| `new-services-on-navy` (png, svg, pdf) | 12.0 x 10.8 in | six service icons with labels over the wordmark (back) |
 | `new-chest-on-navy` (png, svg, pdf) | 4.0 x 1.6 in | the bulb cottage beside the wordmark (left chest) |
-| `new-minimal-on-navy` (png, svg, pdf) | 10.0 x 3.1 in | the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front) |
+| `new-minimal-on-navy` (png, svg, pdf) | 10.0 x 2.9 in | the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front) |
 | `magnet-badge-back-on-navy` (png) | 11.0 x 8.2 in | truck-magnet artwork badge, back, 11 in |
 | `magnet-badge-sleeve-on-navy` (png) | 3.5 x 2.6 in | truck-magnet artwork badge, sleeve, 3.5 in |
 | `magnet-panel-back-on-navy` (png) | 11.0 x 6.6 in | truck-magnet artwork panel, back, 11 in |
@@ -63,14 +63,14 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `mascot-gold-on-gold` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, navy ink |
 | `mascot-line-on-light` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, navy ink |
 | `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (DTG/DTF) |
-| `new-lit-house-on-gold` (png, svg, pdf) | 11.0 x 11.1 in | the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath |
-| `new-wreath-2011-on-gold` (png, svg, pdf) | 11.0 x 7.8 in | LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark |
-| `new-services-on-gold` (png, svg, pdf) | 12.0 x 11.0 in | six service icons with labels over the wordmark (back) |
+| `new-lit-house-on-gold` (png, svg, pdf) | 11.0 x 10.9 in | the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath |
+| `new-wreath-2011-on-gold` (png, svg, pdf) | 11.0 x 7.7 in | LIGHTING UP PEARLAND SINCE 2011 (wreath as the 0) over the wordmark |
+| `new-services-on-gold` (png, svg, pdf) | 12.0 x 10.8 in | six service icons with labels over the wordmark (back) |
 | `new-chest-on-gold` (png, svg, pdf) | 4.0 x 1.6 in | the bulb cottage beside the wordmark (left chest) |
-| `new-minimal-on-gold` (png, svg, pdf) | 10.0 x 3.1 in | the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front) |
+| `new-minimal-on-gold` (png, svg, pdf) | 10.0 x 2.9 in | the ultra-minimalist wordmark with PEARLAND TX — EST 2011 (front) |
 | `install-crew-fixed-on-gold` (png, svg) | 12.0 x 16.1 in | Install Crew back print set up for gold: lettering in real fonts, the owner's roofline fix (his Inkscape file beside it) |
-| `new-mustard-name-on-gold` (png, svg, pdf) | 12.0 x 12.8 in | the mustard cottage over the wordmark (gold or mustard shirt) |
-| `new-mustard-name-phone-on-gold` (png, svg, pdf) | 12.0 x 14.0 in | the mustard cottage over the wordmark and the phone (gold or mustard shirt) |
+| `new-mustard-name-on-gold` (png, svg, pdf) | 12.0 x 12.6 in | the mustard cottage over the wordmark (gold or mustard shirt) |
+| `new-mustard-name-phone-on-gold` (png, svg, pdf) | 12.0 x 13.8 in | the mustard cottage over the wordmark and the phone (gold or mustard shirt) |
 | `magnet-badge-back-on-gold` (png) | 11.0 x 8.2 in | truck-magnet artwork badge, back, 11 in |
 | `magnet-badge-sleeve-on-gold` (png) | 3.5 x 2.6 in | truck-magnet artwork badge, sleeve, 3.5 in |
 | `magnet-panel-back-on-gold` (png) | 11.0 x 8.3 in | truck-magnet artwork panel, back, 11 in |

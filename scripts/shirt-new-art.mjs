@@ -18,6 +18,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { setWords } from './lib/lettering.mjs'
 import { fmt, glyphs, textLine, unifyNavy } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
@@ -46,9 +47,14 @@ const piece = (items) => ({ items, box: [0, 1, 2, 3].map((k) => (k < 2 ? Math.mi
 const place = (p, role, k = 1, tx = 0, ty = 0) => ({ d: p.d, role, tf: `translate(${fmt(tx)} ${fmt(ty)}) scale(${fmt(k * p.scale[0])} ${fmt(k * p.scale[1])})`,
   box: [p.box[0] * p.scale[0] * k + tx, p.box[1] * p.scale[1] * k + ty, p.box[2] * p.scale[0] * k + tx, p.box[3] * p.scale[1] * k + ty] })
 
-const wordmark = piece(parse('minimal-clc-name.svg').filter((p, i) => i > 0 && p.box[1] < 700)
-  .map((p) => place(p, { '#012753': 'ink', '#C99E38': 'accent' }[p.fill] || 'cut')))
-if (wordmark.items.filter((i) => i.role === 'ink').length !== 25) throw new Error('minimal-clc-name.svg is not the wordmark any more')
+// The wordmark: christmas light / creations, the first i's dot gold. Set in Outfit Bold where the AI's hand-drawn
+// letters were in minimal-clc-name.svg (owner: "start replacing the letters with actual font in all the designs";
+// scripts/lib/lettering.mjs setWords): each line on its old baseline and centre, the font's own spacing, sized so
+// "christmas light" spans the old width; the gold dot drawn bigger than the font's, as the AI drew it.
+const oldWordmark = parse('minimal-clc-name.svg').filter((p, i) => i > 0 && p.box[1] < 700)
+if (oldWordmark.filter((p) => p.fill === '#012753').length !== 25) throw new Error('minimal-clc-name.svg is not the wordmark any more')
+const wordmark = piece(setWords([{ text: 'christmas light', x0: 163, x1: 759, base: 541 }, { text: 'creations', x0: 271, x1: 658, base: 618 }],
+  { font: OUTFIT, location: { wght: 700 }, xh: 51, accent: [0, 3], accentScale: 1.45 }))
 
 const bulbSrc = parse('blue-navy-cottage-vector.svg').filter((p) => !isPage(p))
 const tall = (p) => (p.box[3] - p.box[1]) / (p.box[2] - p.box[0]) > 1.15
@@ -81,10 +87,16 @@ const year = (() => {
   return { ...piece([...digits, ...wreath]), base: BASE * sy, digitH: (BASE - DIGIT_TOP) * sy }
 })()
 
-// The ultra-minimalist: wordmark and tagline in its navy, the dot in its gold, its cream cut out.
-const minimal = piece(parse('vector-recraft-images/ultra-minimalist-t-shirt-print-on-a-plain-cream-ba.svg').filter((p) => !isPage(p))
-  .map((p) => place(p, { '#0B2149': 'ink', '#BE9744': 'accent' }[p.fill] || 'cut')))
-if (minimal.items.filter((i) => i.role === 'accent').length !== 1) throw new Error('ultra-minimalist svg: not the one-dot wordmark any more')
+// The ultra-minimalist: the same wordmark heavier, and PEARLAND TX — EST 2011 spaced wide under it, the dot gold. Set
+// in Outfit (ExtraBold, and Regular for the tagline) where the AI's letters were (owner: "start replacing the letters
+// with actual font in all the designs"); its layout read from the download.
+const oldMinimal = parse('vector-recraft-images/ultra-minimalist-t-shirt-print-on-a-plain-cream-ba.svg').filter((p) => !isPage(p))
+if (oldMinimal.filter((p) => p.fill === '#BE9744').length !== 1) throw new Error('ultra-minimalist svg: not the one-dot wordmark any more')
+const minimal = piece([
+  ...setWords([{ text: 'christmas light', x0: 88, x1: 833, base: 562 }, { text: 'creations', x0: 222, x1: 707, base: 657 }],
+    { font: OUTFIT, location: { wght: 800 }, xh: 64, accent: [0, 3], accentScale: 1.45 }),
+  ...setWords([{ text: 'PEARLAND TX — EST 2011', x0: 246, x1: 672, base: 695.5 }], { font: OUTFIT, location: { wght: 400 }, cap: 13.5, spread: true }),
+])
 
 // The mustard cottage as drawn (its own gradients), as a nested svg cropped to its art (rendered, then trimmed).
 const mustardSrc = readFileSync(DIR + 'big-cottage-mustard-limited-snow.svg', 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
