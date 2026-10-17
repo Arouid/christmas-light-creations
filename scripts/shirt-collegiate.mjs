@@ -3,8 +3,9 @@
 // - traced ("collegiate-…"): the download's own letters. It traced them well but filled the gaps between them
 //   with dark slivers (the shirt) and some pieces with part opacity, so the slivers go and every letter is one
 //   solid ink; the hand-traced edges keep a slight wobble.
-// - font ("collegiate-font-…"): the same words, sizes and places set in Graduate, a collegiate block face
-//   (Google Fonts, SIL Open Font License, assets-source/brand/fonts/graduate/), as outlines: straight edges.
+// - font ("collegiate-font-…", the print-ready one): the same words, sizes and places set in Graduate, a collegiate
+//   block face (Google Fonts, SIL Open Font License, assets-source/brand/fonts/graduate/), as outlines, thickened and
+//   narrowed to the traced weight: straight edges.
 // In both, EST. 2011 (traced as lumpy blobs) is set in Inter ExtraBold at the mockup's size.
 // Run: node scripts/shirt-collegiate.mjs   (reads and writes assets-source/shirts/recraft/, which is not in git)
 // Output per version and shirt: <name>-on-<shirt>.png (300 dpi, transparent, print size), .svg and .pdf (vector,
@@ -18,10 +19,15 @@ import { svgToPdf } from './lib/pdf.mjs'
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
 const SRC = DIR + 'CLC-collegiate-svg.svg'
 const GRADUATE = fileURLToPath(new URL('../assets-source/brand/fonts/graduate/Graduate-Regular.ttf', import.meta.url))
+// Graduate is the collegiate block but thin and wide; the traced letters are heavy and narrow. So the font version is
+// thickened by an outline in the same ink (STROKE, in em) and narrowed (NARROW), which reads as the varsity block,
+// straight (owner: "start replacing the letters with actual font in all the designs"; Rokkitt Black, tried first, was
+// too wide and lost the varsity look).
+const STROKE = 0.09, NARROW = 0.82
 const WIDTH_IN = 11 // across the front, like the varsity design
 const LETTERS = '#A67C37' // the traced gold; every other fill is the shirt showing between letters
 // In the download's drawing units: its two big lines are 120 tall with baselines at 377 and 522, centred on 640.5.
-const BIG = { lines: ['CHRISTMAS LIGHT', 'CREATIONS'], cap: 120, baselines: [377, 522], cx: 640.5, tracking: 0.03 }
+const BIG = { lines: ['CHRISTMAS LIGHT', 'CREATIONS'], cap: 120, baselines: [377, 522], cx: 640.5, tracking: 0.01 }
 const EST = { text: 'EST. 2011', cap: 34, baseline: 597, minY: 550, tracking: 0.12 } // sized like the mockup's line (the trace's was 22 tall)
 const PAD = 4 // room for round letters' overshoot
 const INKS = { navy: COLORS.gold, gold: COLORS.navyDeep }
@@ -49,9 +55,13 @@ function traced() {
 }
 
 function font() {
-  const lines = BIG.lines.map((t) => sized(t, GRADUATE, {}, BIG.cap, BIG.tracking))
-  const half = Math.max(...lines.map((l) => l.width)) / 2
-  return { body: lines.map((l, i) => l.svg(BIG.cx, BIG.baselines[i], 'middle')).join(''), left: BIG.cx - half, right: BIG.cx + half, top: BIG.baselines[0] - BIG.cap }
+  // the outline adds STROKE em to the cap height (half above, half below): the letters are set that much smaller
+  const g = glyphs('H', GRADUATE, {})
+  const cap = BIG.cap / (1 + (STROKE * g.upem) / g.capHeight), em = (cap * g.upem) / g.capHeight, out = (STROKE * em) / 2
+  const lines = BIG.lines.map((t) => textLine(t, { font: GRADUATE, location: {}, em, tracking: BIG.tracking, stroke: 'INK', strokeWidth: STROKE * g.upem }))
+  const half = (Math.max(...lines.map((l) => l.width)) * NARROW) / 2 + out
+  const body = lines.map((l, i) => `<g transform="translate(${BIG.cx} 0) scale(${NARROW} 1) translate(${-BIG.cx} 0)">${l.svg(BIG.cx, BIG.baselines[i] - out, 'middle')}</g>`).join('')
+  return { body, left: BIG.cx - half, right: BIG.cx + half, top: BIG.baselines[0] - BIG.cap }
 }
 
 const previews = { collegiate: [], 'collegiate-font': [] }
@@ -61,7 +71,7 @@ for (const [name, make] of [['collegiate', traced], ['collegiate-font', font]]) 
   const hIn = (WIDTH_IN * h) / w
   for (const [shirt, ink] of Object.entries(INKS)) {
     const svg = unifyNavy(`<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(WIDTH_IN)}in" height="${fmt(hIn)}in" viewBox="${fmt(left)} ${fmt(top)} ${fmt(w)} ${fmt(h)}">` +
-      `<g fill="${ink}">${(v.body + estSvg).replace(/ fill="[^"]*"/g, '')}</g></svg>`)
+      `<g fill="${ink}">${(v.body + estSvg).replace(/ fill="[^"]*"/g, '').replace(/stroke="INK"/g, `stroke="${ink}"`)}</g></svg>`)
     const file = `${name}-on-${shirt}`
     writeFileSync(DIR + file + '.svg', svg)
     svgToPdf(svg, WIDTH_IN, hIn, DIR + file + '.pdf')

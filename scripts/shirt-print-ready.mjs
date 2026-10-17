@@ -33,7 +33,7 @@ const FOLDERS = {
       ...crew('flat-knockout').map((f) => [f, 'the crew logo, full colour, wall knocked out to the shirt: the navy upload (DTG)']),
       ...crew('one-color-white').map((f) => [f, 'the crew logo in white only: screen print, 12+ shirts']),
       ...['scene', 'varsity', 'badge', 'badge-chest', 'sign', 'treepair', 'sunburst', 'crew', 'bulbs'].map((d) => D(`${d}-on-navy`, `${d} design (scripts/shirt-designs.mjs)`)),
-      R('collegiate-on-navy', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, gold ink'),
+      R('collegiate-font-on-navy', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate (Graduate, straight), gold ink'),
       R('holiday-lights-badge-on-navy', 'Holiday Lights badge (Recraft), lettering in real fonts, navy knocked out (scripts/shirt-holiday-lights.mjs)'),
       R('install-crew-fixed-on-navy', "Install Crew back print: lettering in real fonts, the owner's roofline fix (scripts/shirt-install-crew-fonts.mjs, then -fixed.mjs)"),
       R('lit-2011-on-navy', 'LIT SINCE 2011 with our cottage, cream and gold'),
@@ -50,7 +50,7 @@ const FOLDERS = {
     title: 'Gold or mustard shirts',
     items: [
       ...['varsity', 'badge', 'badge-chest', 'treepair', 'sunburst', 'crew', 'bulbs'].map((d) => D(`${d}-on-gold`, `${d} design in navy ink (scripts/shirt-designs.mjs)`)),
-      R('collegiate-on-gold', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate, navy ink'),
+      R('collegiate-font-on-gold', 'CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate (Graduate, straight), navy ink'),
       R('retro-clc-on-gold', 'Retro CLC rainbow, set up for gold (navy ring, cream shadows and snow)'),
       R('mascot-gold-on-gold', 'Bradley in his flat cap, navy ink'),
       R('mascot-line-on-light', 'Bradley line art, navy ink'),

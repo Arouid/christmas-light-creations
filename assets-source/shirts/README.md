@@ -115,7 +115,7 @@ the front, in two inks: `collegiate-on-navy` (gold `#ffcf4d`, for the navy shirt
 `#050b1a`, for a gold or mustard shirt), each as PNG (300 dpi, transparent), SVG and PDF, plus
 `collegiate-preview.png` on navy, gold and mustard. The download's dark slivers between the letters are dropped,
 every letter is one solid ink, and EST. 2011 (traced as blobs) is set again in Inter ExtraBold at the mockup's size.
-One ink, so it also screen-prints as a single colour. A second version, `collegiate-font-on-*`, sets the words in Graduate (a real collegiate face, Google Fonts, SIL Open Font License, in `assets-source/brand/fonts/graduate/`) as outlines: straight clean edges, but lighter and wider than the mockup's letters; `collegiate-preview.png` shows traced (top) and font (bottom). Owner picks.
+One ink, so it also screen-prints as a single colour. A second version, `collegiate-font-on-*`, sets the words in Graduate (a real collegiate face, Google Fonts, SIL Open Font License, in `assets-source/brand/fonts/graduate/`) as outlines, thickened by an outline in the same ink (0.09 em) and narrowed to 82 %, so it has the traced letters' weight and size but straight clean edges (owner: "start replacing the letters with actual font in all the designs"; he had asked how to straighten the traced one). It is the print-ready one; `collegiate-preview.png` shows traced (top) and font (bottom).
 
 ## Bradley as the mascot (2026-10-16)
 
