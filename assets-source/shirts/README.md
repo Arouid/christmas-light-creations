@@ -237,7 +237,15 @@ the 0), text in Outfit; each design `recraft/new-<design>-on-navy` and `-on-gold
 
 Tried and dropped the same day: moving the mustard cottage's roof (or its whole house) onto Install Crew. The two AI
 drawings don't share a house shape, and every fit left a gap or squashed the walls (owner: "these are messed up. just
-return them to how they were"). The prints stay `install-crew-red-on-navy.png` and `install-crew-on-gold.png`.
+return them to how they were"). A thin red line drawn along the eave, with the snow filled down to it, was dropped too
+("it looks stupid").
+
+**The owner's fix (in print-ready):** he fixed the roofline himself in Inkscape on the gold print
+(`recraft/install-crew-owner-fixed-gold.svg`: the gold PNG with his layer over it, snow over the neon and a thin strip of
+the red left showing as one line). `node scripts/shirt-install-crew-fixed.mjs` lays that layer over both prints:
+`install-crew-fixed-on-gold.png` and `install-crew-fixed-on-navy.png` (his navy outlines knocked out to the shirt, like
+the rest of the navy print). They replace `install-crew-red-on-navy.png` and `install-crew-on-gold.png` in
+`print-ready/`, which stay as the bases. A new change of his goes in his file, then rerun the script.
 
 Also in `scripts/shirt-new-art.mjs`: `new-minimal-on-navy` / `-on-gold` (the ultra-minimalist wordmark, 10 in) and, for
 gold or mustard shirts, `new-mustard-name-on-gold` and `new-mustard-name-phone-on-gold` (the mustard cottage over the
