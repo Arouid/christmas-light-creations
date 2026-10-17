@@ -391,35 +391,46 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
 // ESTIMATES in Oswald, a condensed gold, the phone the biggest thing, its foot level with the cottage's; clcxmas.com, its x red,
 // right-aligned to the column at the bottom. Every word real font outlines; positions measured from his mockup.
 // Versions of the name: Outfit Bold, Righteous (owner, sending Google Fonts' Righteous: "can we try this for company")
-// ADLaM Display (owner: "do this company") and Poetsen One (sent next); one weight each, SIL Open Font License,
-// assets-source/brand/fonts/.
+// ADLaM Display (owner: "do this company") and Poetsen One (sent next); and every word in New Amsterdam (owner: "set
+// everything to this"): tall narrow capitals only (its lowercase is drawn as capitals), and its i has no dot, so that
+// version has no gold dot; its words sized for narrow letters (the phone still the column's width). One weight each,
+// SIL Open Font License, assets-source/brand/fonts/. Then every word in Finlandica Headline (owner: "we'll try this one
+// next"): the name Bold, the rest SemiBold, the gold dot kept.
+const FINLANDICA = fileURLToPath(new URL('../assets-source/brand/fonts/finlandica-headline/FinlandicaHeadline-Variable.ttf', import.meta.url))
+const NEW_AMSTERDAM = { font: fileURLToPath(new URL('../assets-source/brand/fonts/new-amsterdam/NewAmsterdam-Regular.ttf', import.meta.url)), location: {} }
 const NAME_FONTS = {
-  'cream-art': { font: OUTFIT, location: { wght: 700 } },
-  'cream-art-righteous': { font: fileURLToPath(new URL('../assets-source/brand/fonts/righteous/Righteous-Regular.ttf', import.meta.url)), location: {} },
-  'cream-art-adlam': { font: fileURLToPath(new URL('../assets-source/brand/fonts/adlam-display/ADLaMDisplay-Regular.ttf', import.meta.url)), location: {} },
-  'cream-art-poetsen': { font: fileURLToPath(new URL('../assets-source/brand/fonts/poetsen-one/PoetsenOne-Regular.ttf', import.meta.url)), location: {} },
+  'cream-art': { name: { font: OUTFIT, location: { wght: 700 } } },
+  'cream-art-righteous': { name: { font: fileURLToPath(new URL('../assets-source/brand/fonts/righteous/Righteous-Regular.ttf', import.meta.url)), location: {} } },
+  'cream-art-adlam': { name: { font: fileURLToPath(new URL('../assets-source/brand/fonts/adlam-display/ADLaMDisplay-Regular.ttf', import.meta.url)), location: {} } },
+  'cream-art-poetsen': { name: { font: fileURLToPath(new URL('../assets-source/brand/fonts/poetsen-one/PoetsenOne-Regular.ttf', import.meta.url)), location: {} } },
+  'cream-art-new-amsterdam': { name: NEW_AMSTERDAM, all: NEW_AMSTERDAM, xh: 1.3, noDot: true, cityCap: 0.62, siteW: 4.6, phoneW: 0.88 },
+  'cream-art-finlandica': { name: { font: FINLANDICA, location: { wght: 700 } }, all: { font: FINLANDICA, location: { wght: 600 } }, cityCap: 0.6, siteW: 6.2, estCap: 0.74 },
 }
-for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
+for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
   const MONTSERRAT_UNDERLINE = fileURLToPath(new URL('../assets-source/brand/fonts/montserrat-underline/MontserratUnderline-Variable.ttf', import.meta.url))
   const ink = FLAT.blue, gold = FLAT.gold, deep = '#9A7428', red = C9[0], bg = '#FEFCF1'
-  const L = { houseX: 1.55, houseH: 6.34, foot: 9.22, cx: 15.95, colW: 12.5, wm: [2.45, 4.05], xh: 1.06, est: 7.16, estCap: 0.95, cityGap: 0.18, site: 10.95, siteW: 7.4 }
+  const L = { houseX: 1.55, houseH: 6.34, foot: 9.22, cx: 15.95, colW: 12.5, wm: [2.45, 4.05], xh: 1.06, estCap: 0.95, cityGap: 0.18, site: 10.95, siteW: 7.4 }
   const house = bulbCottage(ink, { x: L.houseX, cy: L.foot - L.houseH / 2, h: L.houseH, windows: gold, bulbs: C9 })
   const x0 = L.cx - L.colW / 2, x1 = L.cx + L.colW / 2
   const wm = setWords([{ text: 'christmas light', x0: x0 * U, x1: x1 * U, base: L.wm[0] * U }, { text: 'creations', x0: x0 * U, x1: x1 * U, base: L.wm[1] * U }],
-    { ...nameFont, xh: L.xh * U, accent: [0, 3], accentScale: 1.45 })
+    { ...v.name, xh: (v.xh || L.xh) * U, accent: v.noDot ? undefined : [0, 3], accentScale: 1.45 })
   const wmSvg = wm.map((it) => `<path transform="${it.tf}" fill="${it.role === 'accent' ? gold : ink}" d="${it.d}"/>`).join('')
-  const est = T('FREE ESTIMATES', { font: OSWALD, location: { wght: 500 }, cap: L.estCap, tracking: 0.01, fill: deep })
-  const phone = T(PHONE, { font: OUTFIT, location: { wght: 600 }, fit: L.colW, tracking: 0, fill: ink })
+  const est = T('FREE ESTIMATES', { ...(v.all || { font: OSWALD, location: { wght: 500 } }), cap: v.estCap || L.estCap, tracking: v.all ? 0.04 : 0.01, fill: deep })
+  const phone = T(PHONE, { ...(v.all || { font: OUTFIT, location: { wght: 600 } }), fit: L.colW * (v.phoneW || 1), tracking: v.all ? 0.02 : 0, fill: ink })
+  // FREE ESTIMATES the same 0.66 in above the phone in every version (his mockup's gap), however tall the phone sets
+  const estBase = L.foot - phone.cap / U - 0.66
   // The town in Montserrat Underline (owner: "for the city name"; OFL): its underline is drawn into every letter, so
   // the font's own spacing (extra tracking would break the line), as tall as before.
-  const city = T('PEARLAND, TX', { font: MONTSERRAT_UNDERLINE, location: { wght: 600 }, cap: 0.55, tracking: 0, fill: deep })
+  const city = v.all ? T('PEARLAND, TX', { ...v.all, cap: v.cityCap, tracking: 0.1, fill: deep })
+    : T('PEARLAND, TX', { font: MONTSERRAT_UNDERLINE, location: { wght: 600 }, cap: 0.55, tracking: 0, fill: deep })
   // The site: navy, its x in the bulbs' red, right edge on the column's.
   const site = (() => {
-    const g = glyphs('clcxmas.com', OUTFIT, { wght: 700 })
+    const sf = v.all || { font: OUTFIT, location: { wght: 700 } }, siteW = v.siteW || L.siteW
+    const g = glyphs('clcxmas.com', sf.font, sf.location)
     const advEm = g.glyphs.reduce((t, gl) => t + gl.advance, 0) / g.upem + 0.01 * (g.glyphs.length - 1)
-    const em = (L.siteW * U) / advEm, k = em / g.upem
-    let x = x1 * U - L.siteW * U
+    const em = (siteW * U) / advEm, k = em / g.upem
+    let x = x1 * U - siteW * U
     return g.glyphs.map((gl, i) => {
       const p = gl.d ? `<path transform="translate(${fmt(x)} ${fmt(L.site * U)}) scale(${k} ${-k})" fill="${i === 3 ? red : ink}" d="${gl.d}"/>` : ''
       x += gl.advance * k + 0.01 * em
@@ -430,7 +441,7 @@ for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
     `<rect width="${W * U}" height="${H * U}" rx="${0.75 * U}" fill="${bg}"/>` +
     `<rect x="${fmt(FRAME_INSET * U)}" y="${fmt(FRAME_INSET * U)}" width="${fmt((W - 2 * FRAME_INSET) * U)}" height="${fmt((H - 2 * FRAME_INSET) * U)}" rx="${fmt((0.75 - FRAME_INSET) * U)}" fill="none" stroke="${ink}" stroke-width="${fmt(FRAME_LINE * U)}"/>` +
     house.svg + city.svg((L.houseX + house.w / 2) * U, (L.foot + L.cityGap) * U + city.cap, 'middle') +
-    wmSvg + est.svg(L.cx * U, L.est * U, 'middle') + phone.svg(L.cx * U, L.foot * U, 'middle') + site + '</svg>'
+    wmSvg + est.svg(L.cx * U, estBase * U, 'middle') + phone.svg(L.cx * U, L.foot * U, 'middle') + site + '</svg>'
   svg = unifyNavy(svg)
   const out = `${DIR}vehicle-magnet-24x12-flat-${variant}`
   writeFileSync(out + '.svg', svg)
@@ -440,7 +451,7 @@ for (const [variant, nameFont] of Object.entries(NAME_FONTS)) {
 }
 
 // The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
-for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous', 'cream-art-adlam', 'cream-art-poetsen']) {
+for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous', 'cream-art-adlam', 'cream-art-poetsen', 'cream-art-new-amsterdam', 'cream-art-finlandica']) {
   const art = await sharp(`${DIR}vehicle-magnet-24x12-flat-${name}.png`).resize({ width: 820 }).png().toBuffer()
   const door = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560"><rect width="1000" height="560" fill="#b3191f"/><rect width="1000" height="40" fill="#8e1218"/>' +
     '<path d="M960 0 L960 560" stroke="#7a0f14" stroke-width="6"/><rect x="880" y="250" width="60" height="16" rx="8" fill="#cfd3d8"/></svg>'
