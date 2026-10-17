@@ -188,8 +188,9 @@ export function outline(d) {
 // sits on baseline `base` (drawing units, y down) between x0 and x1. The font keeps its own spacing (plus `tracking`,
 // em): the letters are sized so the widest line fits its x0–x1 (no bigger than x-height `xh` or cap height `cap`), and
 // each line is centred on its x0–x1 (`spread`: set at that size and spaced out to run from x0 to x1). `accent`:
-// [line, char index] of an i whose dot gets the role 'accent' (drawn `accentScale` times the font's size).
-export function setWords(lines, { font, location = {}, xh, cap, role = 'ink', accent, accentScale = 1, tracking = 0.01, spread = false }) {
+// [line, char index] of an i whose dot gets the role 'accent' (drawn `accentScale` times the font's size, raised
+// `accentLift`).
+export function setWords(lines, { font, location = {}, xh, cap, role = 'ink', accent, accentScale = 1, accentLift = 0, tracking = 0.01, spread = false }) {
   const x = outline(glyphs('x', font, location).glyphs[0].d).box[3]
   const { upem, capHeight } = glyphs('H', font, location)
   const set = lines.map((L) => {
@@ -221,7 +222,8 @@ export function setWords(lines, { font, location = {}, xh, cap, role = 'ink', ac
           const stem = g.o.subs.filter((sub) => !inDot(sub)), dotParts = g.o.subs.filter(inDot)
           const box = (subs) => [Math.min(...subs.map((b) => b.box[0])), Math.min(...subs.map((b) => b.box[1])), Math.max(...subs.map((b) => b.box[2])), Math.max(...subs.map((b) => b.box[3]))]
           if (stem.length) items.push({ d: stem.map((sub) => sub.d).join(''), tf, box: place(box(stem)), role })
-          items.push({ d: dotParts.map((sub) => sub.d).join(''), tf: `${tf} translate(${fmt(cx)} ${fmt(cy)}) scale(${k}) translate(${fmt(-cx)} ${fmt(-cy)})`, box: place(big), role: 'accent' })
+          const [bx0, by0, bx1, by1] = place(big) // accentLift: the dot raised that far (drawing units)
+          items.push({ d: dotParts.map((sub) => sub.d).join(''), tf: `translate(0 ${fmt(-accentLift)}) ${tf} translate(${fmt(cx)} ${fmt(cy)}) scale(${k}) translate(${fmt(-cx)} ${fmt(-cy)})`, box: [bx0, by0 - accentLift, bx1, by1 - accentLift], role: 'accent' })
         } else items.push({ d: g.d, tf, box: place(g.o.box), role })
       }
       at += g.advance * s + gap

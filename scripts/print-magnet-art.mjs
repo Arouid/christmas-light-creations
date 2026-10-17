@@ -420,7 +420,7 @@ const NAME_FONTS = {
   // The owner's pick for the name ("I like elsie for the name. set the font to everything else, what you think will look
   // best"): Elsie with Montserrat for the rest, the classic partner for a high-contrast serif and the family of the
   // town's Montserrat Underline (kept): FREE ESTIMATES SemiBold capitals spaced wide, the phone SemiBold, the site Bold.
-  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, keepCity: true, estCap: 0.62, estTracking: 0.14, siteW: 6.6, divider: true },
+  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, keepCity: true, estCap: 0.62, estTracking: 0.14, siteW: 6.6, divider: true, dotLift: 0.06 }, // owner: "the gold i dot. push it up a couple pixels"
 }
 for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
@@ -430,7 +430,7 @@ for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const house = bulbCottage(ink, { x: L.houseX, cy: L.foot - L.houseH / 2, h: L.houseH, windows: gold, bulbs: C9 })
   const x0 = L.cx - L.colW / 2, x1 = L.cx + L.colW / 2
   const wm = setWords([{ text: 'christmas light', x0: x0 * U, x1: x1 * U, base: L.wm[0] * U }, { text: 'creations', x0: x0 * U, x1: x1 * U, base: L.wm[1] * U }],
-    { ...v.name, xh: (v.xh || L.xh) * U, accent: v.noDot ? undefined : [0, 3], accentScale: 1.45 })
+    { ...v.name, xh: (v.xh || L.xh) * U, accent: v.noDot ? undefined : [0, 3], accentScale: 1.45, accentLift: (v.dotLift || 0) * U })
   const wmSvg = wm.map((it) => `<path transform="${it.tf}" fill="${it.role === 'accent' ? gold : ink}" d="${it.d}"/>`).join('')
   const est = T('FREE ESTIMATES', { ...(v.all || { font: OSWALD, location: { wght: 500 } }), cap: v.estCap || L.estCap, tracking: v.estTracking ?? (v.all ? 0.04 : 0.01), fill: deep })
   const phone = T(PHONE, { ...(v.all || { font: OUTFIT, location: { wght: 600 } }), fit: L.colW * (v.phoneW || 1), tracking: v.all ? 0.02 : 0, fill: ink })
