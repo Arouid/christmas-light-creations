@@ -114,6 +114,11 @@
     },
     {
       "group": "Getting started",
+      "q": "Are you insured?",
+      "a": "Yes. We carry general liability insurance, and we’re happy to email a certificate of insurance to you, your HOA or your property manager."
+    },
+    {
+      "group": "Getting started",
       "q": "Do you work on tile roofs?",
       "a": "No. Clay and other tile roofs are too fragile to work on safely."
     },

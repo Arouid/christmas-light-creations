@@ -20,7 +20,7 @@ Same name, phone and website everywhere: **Christmas Light Creations**, **281-81
 
 ## Short description (Google “From the business”, 750 max; also Thumbtack/Angi/Nextdoor)
 
-> Christmas Light Creations is a family-owned Christmas light installer in Pearland, TX, lighting homes and businesses since 2011 across Pearland, Friendswood, League City, Manvel, the Bay Area and Galveston County. Every install is measured and custom-fit to your roofline with commercial-grade lights, clips, cords and timers. Service calls are free all season, and in January we take everything down, label it and box it for next year. Worn-out lights are replaced new, free, for as long as you're a customer. Want to see it first? Our free online light designer lets you draw lights on a photo of your own home before you book. Free estimates, and you don't need to be home.
+> Christmas Light Creations is a family-owned, insured Christmas light installer in Pearland, TX, lighting homes and businesses since 2011 across Pearland, Friendswood, League City, Manvel, the Bay Area and Galveston County. Every install is measured and custom-fit to your roofline with commercial-grade lights, clips, cords and timers. Service calls are free all season, and in January we take everything down, label it and box it for next year. Worn-out lights are replaced new, free, for as long as you're a customer. Want to see it first? Our free online light designer lets you draw lights on a photo of your own home before you book. Free estimates, and you don't need to be home.
 
 ## Services (Google: price left on “No price”)
 
