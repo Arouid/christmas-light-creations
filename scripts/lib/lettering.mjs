@@ -135,7 +135,9 @@ export function straightText(text, { font, location = {}, fill, old, base, top, 
 // with them every shape drawn after a letter inside its box (the holes of A, R, O drawn in the background colour on
 // top, and specks). Returns { svg, notes, letters, extras }.
 const area = (s) => (s.box[2] - s.box[0]) * (s.box[3] - s.box[1])
-export function reletter(svg, lines) {
+// The new lettering for each line without touching the drawing: { made (one svg string per line), dropped (the old
+// letters' and holes' shape indices), notes }. For scripts that place shapes by index themselves.
+export function letterLines(svg, lines) {
   const shapes = parseShapes(svg)
   const drop = [], notes = [], made = []
   let letters = 0, extras = 0
@@ -157,5 +159,9 @@ export function reletter(svg, lines) {
     letters += old.length
     extras += holes.length
   }
-  return { svg: relettered(svg, drop, made.join('')), notes, letters, extras, dropped: drop.map((s) => s.i) }
+  return { made, notes, letters, extras, dropped: drop.map((s) => s.i) }
+}
+export function reletter(svg, lines) {
+  const r = letterLines(svg, lines)
+  return { ...r, svg: relettered(svg, r.dropped, r.made.join('')) }
 }

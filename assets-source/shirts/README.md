@@ -175,7 +175,9 @@ old house) and writes, 11 in wide front, PNG (300 dpi), SVG and PDF in `recraft/
 | `lit-2011-on-navy` | navy or black | cream `#F5E2C1` and gold `#D9A445` |
 | `lit-2011-on-white` | white, light grey, cream | navy `#112A4A` and gold |
 
-`lit-2011-mockups.png` shows both on a tee.
+`lit-2011-mockups.png` shows both on a tee. The small CHRISTMAS LIGHT CREATIONS line is set in Outfit SemiBold in
+the AI's place (owner: "start replacing the letters with actual font in all the designs"); the big groovy LIT SINCE
+2011 stays as drawn.
 
 ## Retro CLC (Recraft, 2026-10-16)
 

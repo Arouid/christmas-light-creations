@@ -12,11 +12,13 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { letterLines } from './lib/lettering.mjs'
 import { checkRoles, fmt, parseLogo, prepCottage, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
 const DPI = 300
+const OUTFIT = fileURLToPath(new URL('../assets-source/brand/fonts/outfit/Outfit-Variable.ttf', import.meta.url))
 const PRINT_IN = 11
 const CREAM = '#F5E2C1', GOLD = '#D9A445', NAVY = '#112A4A' // the design's own colours
 // The house: body, roof, cheeks, eyes, lash, smile, side wall and its windows, chimney (the roof and body are checked).
@@ -41,12 +43,17 @@ for (const [i, b] of Object.entries(HOUSE_CHECK)) {
   if (box(paths[i].d).some((v, k) => Math.abs(v - b[k]) > 2)) throw new Error(`lit-2011.svg: path ${i} is not the house any more (new download?)`)
 }
 const ROLE = { [CREAM]: 'cream', [GOLD]: 'gold', [NAVY]: 'navy' }
+// The small CHRISTMAS LIGHT CREATIONS line, hand-drawn by the AI, set again in Outfit SemiBold in its place (owner:
+// "start replacing the letters with actual font in all the designs"; scripts/lib/lettering.mjs). LIT SINCE 2011 is
+// big display lettering and stays as drawn.
+const NAME = letterLines(src, [{ text: 'CHRISTMAS LIGHT CREATIONS', colours: [CREAM], box: [270, 735, 735, 766], count: 24, font: OUTFIT, location: { wght: 600 }, fill: 'FILL' }])
+console.log(NAME.notes[0])
 const shapes = paths.flatMap((p, i) => {
   const [x0, y0, x1, y1] = box(p.d)
-  if (HOUSE.includes(i) || x1 - x0 > 700 || y1 - y0 > 700) return [] // the house, the page and the navy panel
+  if (HOUSE.includes(i) || NAME.dropped.includes(i) || x1 - x0 > 700 || y1 - y0 > 700) return [] // the house, the old name line, the page and the navy panel
   if (!ROLE[p.fill]) throw new Error(`lit-2011.svg: unexpected colour ${p.fill} (path ${i})`)
   return [{ role: ROLE[p.fill], svg: (fill) => `<path fill="${fill}" d="${p.d}"/>` }]
-})
+}).concat({ role: 'cream', svg: (fill) => NAME.made[0].replaceAll('fill="FILL"', `fill="${fill}"`) })
 
 // The cottage, one colour, no flakes or specks; its window frame and door gold, the rest cream.
 const LOGO = parseLogo('clc-cottage-one-color-white.svg')
