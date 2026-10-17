@@ -47,7 +47,7 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `polo-icon-1-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-1 (embroidery) |
 | `polo-icon-2-on-navy` (png, svg, pdf) | 4.3 x 1.5 in | navy polo, left chest icon-2 (embroidery) |
 
-## Gold or mustard shirts: `gold/` (28)
+## Gold or mustard shirts: `gold/` (29)
 
 | File | Size | What |
 |---|---|---|
@@ -60,6 +60,7 @@ printer or embroiderer. Sizes are the PNG at 300 dpi. Notes on each design: `../
 | `bulbs-on-gold` (png, svg, pdf) | 11.0 x 6.6 in | bulbs design in navy ink (scripts/shirt-designs.mjs) |
 | `collegiate-font-on-gold` (png, svg, pdf) | 11.0 x 3.5 in | CHRISTMAS LIGHT CREATIONS EST. 2011, collegiate (Graduate, straight), navy ink |
 | `retro-clc-on-gold` (png, svg, pdf) | 11.0 x 11.9 in | Retro CLC rainbow, set up for gold (navy ring, cream shadows and snow) |
+| `mascot-gold-on-gold` (png, svg, pdf) | 11.0 x 10.5 in | Bradley in his flat cap, navy ink |
 | `mascot-line-on-light` (png, svg, pdf) | 11.0 x 11.0 in | Bradley line art, navy ink |
 | `mascot-medal-color` (png, svg, pdf) | 11.0 x 11.3 in | Brad Medel medal as drawn (DTG/DTF) |
 | `new-lit-house-on-gold` (png, svg, pdf) | 11.0 x 11.1 in | the bulb cottage over the wordmark and PEARLAND, TX — EST. 2011 with the wreath |

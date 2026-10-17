@@ -135,6 +135,9 @@ portraits made from his photos (`recraft/bradley-blue-line art.svg`, `recraft/br
 | `mascot-medal-color` | any (digital printing: DTG, DTF) | as drawn, greys too |
 | `mascot-medal-patch` | the patch (owner: "this is the patch im wanting") | 3.5 in, navy disc included, 5 threads |
 
+The medal's BRAD MEDEL and CHRISTMAS LIGHT CREATIONS are set in Outfit (ExtraBold, Bold) on arcs fitted to the AI's
+letters (owner: "start replacing the letters with actual font in all the designs"); every medal file uses them.
+
 The fishing cap's patch (another company's fish logo) is replaced by our cottage. `mascot-mockups.png`: him on a
 navy polo's left sleeve (2.25 in), on the back of a navy tee (gold) and a mustard tee (line art) over the name, and
 laser-engraved on a leather cap patch, and the medal on a navy tee's chest and back. The medal also comes as a 4-in

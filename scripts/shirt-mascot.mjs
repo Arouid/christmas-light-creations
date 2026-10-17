@@ -18,18 +18,27 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { letterLines } from './lib/lettering.mjs'
 import { checkRoles, COLORS, fmt, FONTS, glyphs, NAVY_ROLES, parseLogo, prepCottage, textLine, unifyNavy, WHITE_ROLES } from './lib/logoArt.mjs'
 import { svgToPdf } from './lib/pdf.mjs'
 
 const DIR = fileURLToPath(new URL('../assets-source/shirts/recraft/', import.meta.url))
 const DPI = 300
+const OUTFIT = fileURLToPath(new URL('../assets-source/brand/fonts/outfit/Outfit-Variable.ttf', import.meta.url))
 const PRINT_IN = 11 // back-print width
 const { navyDeep: NAVY, white: WHITE, gold: GOLD } = COLORS
 const SOURCES = {
   // The patch: path 206 is its white face (box checked below); 207–209 are the fish and its two highlights.
   line: { file: 'bradley-blue-line art.svg', patch: { face: 206, box: [380, 116, 637, 242], drop: [207, 208, 209] } },
   gold: { file: 'bradley-navy-gold.svg' },
-  medal: { file: 'brad-medel-circle-tribute.svg' },
+  // The medal's lettering, hand-drawn by the AI, set again in Outfit on arcs fitted to it (owner: "start replacing the
+  // letters with actual font in all the designs"; scripts/lib/lettering.mjs): BRAD MEDEL (9 gold letters, the small
+  // stars left out by size) and CHRISTMAS LIGHT CREATIONS (23 white letters in the band, the snowflakes left out).
+  medal: { file: 'brad-medel-circle-tribute.svg', lines: [
+    { text: 'BRAD MEDEL', colours: ['#B6964F'], box: [150, 120, 870, 440], count: 9, where: (s) => s.box[2] - s.box[0] > 70, font: OUTFIT, location: { wght: 800 }, arc: 'top', colour: '#B6964F', fill: 'FILL' },
+    { text: 'CHRISTMAS LIGHT CREATIONS', colours: ['#FEFEFD'], box: [140, 480, 890, 900], count: 23, font: OUTFIT, location: { wght: 700 }, arc: 'bottom', colour: '#FEFEFD', fill: 'FILL',
+      where: (s) => { const d = Math.hypot((s.box[0] + s.box[2]) / 2 - 512, (s.box[1] + s.box[3]) / 2 - 512); return d > 300 && d < 400 && s.box[2] - s.box[0] < 66 && s.box[3] - s.box[1] < 66 } },
+  ] },
 }
 // Which ink each kind of shape gets per shirt (null: not printed, the shirt shows).
 const PRINTS = {
@@ -80,8 +89,10 @@ function cottage(fill, [x0, y0, x1, y1]) {
 }
 
 // A portrait as a list of shapes, each { shade, draw(fill) }, without the backing square; the line art's patch swapped.
-function load({ file, patch }) {
+function load({ file, patch, lines }) {
   const src = readFileSync(DIR + file, 'utf8').replace(/<metadata>[^]*?<\/metadata>/, '')
+  const lettering = lines ? letterLines(src, lines) : { dropped: [], made: [], notes: [] }
+  for (const n of lettering.notes) console.log(`${file}: ${n}`)
   const [, , vw, vh] = src.match(/viewBox="([^"]*)"/)[1].split(/[ ,]+/).map(Number)
   const stops = Object.fromEntries([...src.matchAll(/<linearGradient id="([^"]*)"[^>]*>\s*<stop[^>]*stop-color="([^"]*)"/g)].map((m) => [m[1], m[2]]))
   const paths = [...src.matchAll(/<path ([^>]*)\/>/g)].map((m) => {
@@ -93,7 +104,7 @@ function load({ file, patch }) {
   paths.forEach((p, i) => {
     const [x0, y0, x1, y1] = box(p.d)
     if (x1 - x0 >= vw * 0.98 && y1 - y0 >= vh * 0.98) return // the backing square
-    if (patch?.drop.includes(i)) return
+    if (patch?.drop.includes(i) || lettering.dropped.includes(i)) return
     shapes.push({ shade: shade(p.colour), colour: p.colour, draw: (fill) => `<path fill="${fill}" d="${p.d}"/>` })
     if (patch && i === patch.face) {
       if (box(p.d).some((v, k) => Math.abs(v - patch.box[k]) > 2)) throw new Error(`${file}: path ${i} is not the cap patch any more (new download?)`)
@@ -101,6 +112,7 @@ function load({ file, patch }) {
       shapes.push({ shade: 'dark', colour: NAVY, draw: (fill) => `<g transform="rotate(-3 ${fmt((px0 + px1) / 2)} ${fmt((py0 + py1) / 2)})">${cottage(fill, [px0, py0 + inset, px1, py1 - inset])}</g>` })
     }
   })
+  lettering.made.forEach((m, k) => shapes.push({ shade: shade(lines[k].colour), colour: lines[k].colour, draw: (fill) => m.replaceAll('fill="FILL"', `fill="${fill}"`) }))
   return { vw, vh, shapes }
 }
 const arts = Object.fromEntries(Object.entries(SOURCES).map(([k, s]) => [k, load(s)]))
