@@ -419,8 +419,9 @@ const NAME_FONTS = {
   'cream-art-princess-sofia': { name: PRINCESS, xh: 0.92 }, // its tall ascenders cleared the frame by a hair at 1.06
   // The owner's pick for the name ("I like elsie for the name. set the font to everything else, what you think will look
   // best"): Elsie with Montserrat for the rest, the classic partner for a high-contrast serif and the family of the
-  // town's Montserrat Underline (kept): FREE ESTIMATES SemiBold capitals spaced wide, the phone SemiBold, the site Bold.
-  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, keepCity: true, estCap: 0.62, estTracking: 0.14, siteW: 6.6, divider: true, dotLift: 0.06 }, // owner: "the gold i dot. push it up a couple pixels"
+  // town's Montserrat Underline: FREE ESTIMATES SemiBold capitals spaced wide, the phone SemiBold, the site Bold, and the
+  // town plain Montserrat SemiBold too (owner: "its still underlined").
+  'cream-art-elsie': { name: ELSIE, all: { font: MONTSERRAT, location: { wght: 600 } }, site: { font: MONTSERRAT, location: { wght: 700 } }, cityCap: 0.55, estCap: 0.62, estTracking: 0.14, siteW: 6.6, divider: true, dotLift: 0.06 }, // owner: "the gold i dot. push it up a couple pixels"
 }
 for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
