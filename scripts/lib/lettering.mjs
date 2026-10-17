@@ -210,14 +210,18 @@ export function setWords(lines, { font, location = {}, xh, cap, role = 'ink', ac
         const tf = `translate(${fmt(at)} ${fmt(L.base)}) scale(${s} ${-s})`
         const place = (b) => [at + b[0] * s, L.base - b[3] * s, at + b[2] * s, L.base - b[1] * s]
         if (accent && accent[0] === li && accent[1] === gi) {
-          const dot = g.o.subs.reduce((a, b) => (b.box[1] > a.box[1] ? b : a))
-          // the dot can be drawn bigger than the font's (accentScale), round its own centre
+          // the dot: the highest outline not inside another one (an inline font draws a groove inside each part)
+          const inside = (a, b) => a !== b && a.box[0] >= b.box[0] && a.box[1] >= b.box[1] && a.box[2] <= b.box[2] && a.box[3] <= b.box[3]
+          const dot = g.o.subs.filter((a) => !g.o.subs.some((b) => inside(a, b))).reduce((a, b) => (b.box[1] > a.box[1] ? b : a))
+          // the dot can be drawn bigger than the font's (accentScale), round its own centre. Outlines inside the dot's
+          // (an inline font's groove) stay with it, and the stem's with the stem, each part one path, so holes stay holes.
           const [cx, cy] = [(dot.box[0] + dot.box[2]) / 2, (dot.box[1] + dot.box[3]) / 2], k = accentScale
           const big = [cx - (cx - dot.box[0]) * k, cy - (cy - dot.box[1]) * k, cx + (dot.box[2] - cx) * k, cy + (dot.box[3] - cy) * k]
-          for (const sub of g.o.subs) {
-            if (sub !== dot) items.push({ d: sub.d, tf, box: place(sub.box), role })
-            else items.push({ d: sub.d, tf: `${tf} translate(${fmt(cx)} ${fmt(cy)}) scale(${k}) translate(${fmt(-cx)} ${fmt(-cy)})`, box: place(big), role: 'accent' })
-          }
+          const inDot = (sub) => sub.box[0] >= dot.box[0] && sub.box[1] >= dot.box[1] && sub.box[2] <= dot.box[2] && sub.box[3] <= dot.box[3]
+          const stem = g.o.subs.filter((sub) => !inDot(sub)), dotParts = g.o.subs.filter(inDot)
+          const box = (subs) => [Math.min(...subs.map((b) => b.box[0])), Math.min(...subs.map((b) => b.box[1])), Math.max(...subs.map((b) => b.box[2])), Math.max(...subs.map((b) => b.box[3]))]
+          if (stem.length) items.push({ d: stem.map((sub) => sub.d).join(''), tf, box: place(box(stem)), role })
+          items.push({ d: dotParts.map((sub) => sub.d).join(''), tf: `${tf} translate(${fmt(cx)} ${fmt(cy)}) scale(${k}) translate(${fmt(-cx)} ${fmt(-cy)})`, box: place(big), role: 'accent' })
         } else items.push({ d: g.d, tf, box: place(g.o.box), role })
       }
       at += g.advance * s + gap

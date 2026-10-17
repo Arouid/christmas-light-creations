@@ -397,6 +397,12 @@ for (const [ground, { bg, ink, windows, small = ink, accent, band, bandText, cot
 // SIL Open Font License, assets-source/brand/fonts/. Then every word in Finlandica Headline (owner: "we'll try this one
 // next"): the name Bold, the rest SemiBold, the gold dot kept. Then every word in Madimi One (sent next; rounded and
 // heavy, one weight, its dotted i keeps the gold dot).
+// And the name alone in Fascinate Inline (owner: "business name"; art-deco capitals-style letters with an inline groove).
+const FASCINATE = { font: fileURLToPath(new URL('../assets-source/brand/fonts/fascinate-inline/FascinateInline-Regular.ttf', import.meta.url)), location: {} }
+// And Princess Sofia (owner: "business name"): a script, set with no extra tracking so its letters join.
+const PRINCESS = { font: fileURLToPath(new URL('../assets-source/brand/fonts/princess-sofia/PrincessSofia-Regular.ttf', import.meta.url)), location: {}, tracking: 0 }
+// And Elsie Swash Caps Black (owner: "try this the name"): an elegant high-contrast face; Black, the heavier of its two.
+const ELSIE = { font: fileURLToPath(new URL('../assets-source/brand/fonts/elsie-swash-caps/ElsieSwashCaps-Black.ttf', import.meta.url)), location: {} }
 const MADIMI = { font: fileURLToPath(new URL('../assets-source/brand/fonts/madimi-one/MadimiOne-Regular.ttf', import.meta.url)), location: {} }
 const FINLANDICA = fileURLToPath(new URL('../assets-source/brand/fonts/finlandica-headline/FinlandicaHeadline-Variable.ttf', import.meta.url))
 const NEW_AMSTERDAM = { font: fileURLToPath(new URL('../assets-source/brand/fonts/new-amsterdam/NewAmsterdam-Regular.ttf', import.meta.url)), location: {} }
@@ -408,6 +414,9 @@ const NAME_FONTS = {
   'cream-art-new-amsterdam': { name: NEW_AMSTERDAM, all: NEW_AMSTERDAM, xh: 1.3, noDot: true, cityCap: 0.62, siteW: 4.6, phoneW: 0.88 },
   'cream-art-finlandica': { name: { font: FINLANDICA, location: { wght: 700 } }, all: { font: FINLANDICA, location: { wght: 600 } }, cityCap: 0.6, siteW: 6.2, estCap: 0.74 },
   'cream-art-madimi': { name: MADIMI, all: MADIMI, cityCap: 0.58, siteW: 6.2, estCap: 0.72 },
+  'cream-art-fascinate': { name: FASCINATE },
+  'cream-art-princess-sofia': { name: PRINCESS, xh: 0.92 }, // its tall ascenders cleared the frame by a hair at 1.06
+  'cream-art-elsie': { name: ELSIE },
 }
 for (const [variant, v] of Object.entries(NAME_FONTS)) {
   const OSWALD = fileURLToPath(new URL('../assets-source/brand/fonts/oswald/Oswald-Variable.ttf', import.meta.url)) // FREE ESTIMATES: as narrow as his mockup's
@@ -454,7 +463,7 @@ for (const [variant, v] of Object.entries(NAME_FONTS)) {
 }
 
 // The cream magnets on a red truck door (owner's truck is red), for a look before ordering.
-for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous', 'cream-art-adlam', 'cream-art-poetsen', 'cream-art-new-amsterdam', 'cream-art-finlandica', 'cream-art-madimi']) {
+for (const name of ['cream', 'cream-bulbs', 'cream-bulbs-nobar', 'cream-art', 'cream-art-righteous', 'cream-art-adlam', 'cream-art-poetsen', 'cream-art-new-amsterdam', 'cream-art-finlandica', 'cream-art-madimi', 'cream-art-fascinate', 'cream-art-princess-sofia', 'cream-art-elsie']) {
   const art = await sharp(`${DIR}vehicle-magnet-24x12-flat-${name}.png`).resize({ width: 820 }).png().toBuffer()
   const door = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560"><rect width="1000" height="560" fill="#b3191f"/><rect width="1000" height="40" fill="#8e1218"/>' +
     '<path d="M960 0 L960 560" stroke="#7a0f14" stroke-width="6"/><rect x="880" y="250" width="60" height="16" rx="8" fill="#cfd3d8"/></svg>'
