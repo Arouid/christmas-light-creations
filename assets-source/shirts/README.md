@@ -270,3 +270,9 @@ Owner: "set this one up to be a sleeve/back piece. gold/navy", "these two as wel
 Their near-black navies (lettering, outlines, the light string) are the one print navy now (`unifyNavy`). On navy the
 badge's and the panel's navy is knocked out (the shirt is the panel); on gold it prints, as a badge; the cream panel
 prints on both. Full-bleed panels get rounded corners.
+
+**Lettering in real fonts** (owner: "start replacing the letters with actual font in all the designs"): every line the AI
+drew (CHRISTMAS / LIGHT / CREATIONS, the ribbon name, PEARLAND, TX • EST. 2011) is set again in Barlow Condensed,
+ExtraBold for the big words and Bold for the small lines, in the same place and size (`scripts/lib/lettering.mjs`
+`reletter`: each line's old letters found by colour, box and count, the holes of A, R, O drawn over them removed too,
+the ribbon's name on an arc fitted to the old letters). A wider font that would touch is set a little smaller.
