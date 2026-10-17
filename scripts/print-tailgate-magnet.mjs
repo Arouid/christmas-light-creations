@@ -77,11 +77,17 @@ const site = (() => {
     return p
   }).join('')
 })()
-// The arrow: a short gold line with a head, pointing left at the code, under the two words.
 // DY: the column centred on the code's printed squares (not its quiet zone)
 const DY = 0.45
-const ay = 6.15 + DY, ax0 = cx - 1.1, ax1 = cx + 1.1
-const arrow = `<path fill="none" stroke="${deep}" stroke-width="${fmt(0.07 * U)}" stroke-linecap="round" stroke-linejoin="round" d="M${fmt(ax1 * U)} ${fmt(ay * U)} H${fmt(ax0 * U)} M${fmt((ax0 + 0.32) * U)} ${fmt((ay - 0.28) * U)} L${fmt(ax0 * U)} ${fmt(ay * U)} L${fmt((ax0 + 0.32) * U)} ${fmt((ay + 0.28) * U)}"/>`
+// The arrow (owner: "do we have a higher quality arrow?"): drawn like the divider, a shaft tapering to a fine point
+// at its tail, and a solid head with swept-back, gently curved sides and a notched back; deep gold.
+const ay = 6.15 + DY, ax0 = cx - 1.25, ax1 = cx + 1.25 // tip, tail
+const headL = 0.5, headH = 0.34, notch = 0.16, shaft = 0.09
+const P = (x, y) => `${fmt(x * U)} ${fmt(y * U)}`
+const head = `M${P(ax0, ay)} Q${P(ax0 + headL * 0.45, ay - headH * 0.35)} ${P(ax0 + headL, ay - headH)} Q${P(ax0 + headL - notch * 0.6, ay - headH * 0.35)} ${P(ax0 + headL - notch, ay)} ` +
+  `Q${P(ax0 + headL - notch * 0.6, ay + headH * 0.35)} ${P(ax0 + headL, ay + headH)} Q${P(ax0 + headL * 0.45, ay + headH * 0.35)} ${P(ax0, ay)} Z`
+const tail = `M${P(ax0 + headL - notch - 0.02, ay - shaft / 2)} L${P(ax1, ay)} L${P(ax0 + headL - notch - 0.02, ay + shaft / 2)} Z`
+const arrow = `<path fill="${deep}" d="${head} ${tail}"/>`
 const right = scan1.svg(cx * U, (4.55 + DY) * U, 'middle') + scan2.svg(cx * U, (5.35 + DY) * U, 'middle') + arrow + phone.svg(cx * U, (8.15 + DY) * U, 'middle') + site
 
 const frame = `<rect x="${fmt(FRAME_INSET * U)}" y="${fmt(FRAME_INSET * U)}" width="${fmt((W - 2 * FRAME_INSET) * U)}" height="${fmt((H - 2 * FRAME_INSET) * U)}" rx="${fmt((RADIUS - FRAME_INSET) * U)}" fill="none" stroke="${ink}" stroke-width="${fmt(FRAME_LINE * U)}"/>`
